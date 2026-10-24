@@ -33,10 +33,10 @@
       "test": "green"
     },
     "tools\\run_robocopy_integration_tests.bat": {
-      "test": "failed"
+      "test": "green"
     },
     "python tools\\test_close_running_fman.py": {
-      "test": "failed"
+      "test": "green"
     },
     "python tools\\test_release_version.py": {
       "test": "green"
@@ -125,10 +125,5 @@
     "tests": true
   },
   "analysis_tests_answered": true,
-  "analysis_format_command": "tools/fix_ruff_issues.bat",
-  "analysis_command_failing_tests": {
-    "tools\\run_robocopy_integration_tests.bat": [
-      "(errors=1)"
-    ]
-  }
+  "analysis_format_command": "tools/fix_ruff_issues.bat"
 }
