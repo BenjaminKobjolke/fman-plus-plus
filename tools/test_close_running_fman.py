@@ -13,6 +13,10 @@ from pathlib import Path
 SCRIPT = Path(__file__).with_name("close_running_fman.ps1")
 
 
+def report_progress(message):
+    print(message, flush=True)
+
+
 def run_helper(directory, timeout_seconds):
     return subprocess.run(
         [
@@ -123,9 +127,11 @@ def check_close_running_fman():
     with tempfile.TemporaryDirectory(prefix="close-running-fman-") as temporary:
         directory = Path(temporary)
 
+        report_progress("Checking a missing build directory")
         result = run_helper(directory / "missing", 1)
         assert result.returncode == 0, result.stdout + result.stderr
 
+        report_progress("Checking a process that does not answer")
         process = start_cmd(directory)
         try:
             result = run_helper(directory, 1)
@@ -135,6 +141,7 @@ def check_close_running_fman():
         finally:
             stop_cmd(process)
 
+        report_progress("Checking a process that closes its input")
         process = start_cmd(directory)
         close_stdin = threading.Timer(0.5, process.stdin.close)
         try:
@@ -146,6 +153,7 @@ def check_close_running_fman():
             close_stdin.join()
             stop_cmd(process)
 
+        report_progress("Checking fman closing after its countdown")
         process = start_countdown_window(directory, "exit")
         try:
             time.sleep(1)
@@ -155,6 +163,7 @@ def check_close_running_fman():
         finally:
             stop_cmd(process)
 
+        report_progress("Checking fman canceling its countdown")
         process = start_countdown_window(directory, "cancel")
         try:
             time.sleep(1)
@@ -165,6 +174,7 @@ def check_close_running_fman():
         finally:
             stop_cmd(process)
 
+        report_progress("Checking a process that loaded a DLL from the build directory")
         process = start_dll_user(directory)
         try:
             time.sleep(1)
