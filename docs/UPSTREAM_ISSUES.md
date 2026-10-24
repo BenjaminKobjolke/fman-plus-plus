@@ -13,6 +13,11 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
+| [#38](https://github.com/mherrmann/fman/issues/38) | Visual feedback when copying/cutting files | enhancement, 16 votes | already fixed | 2026-10-24 | Copy and Cut show a three-second status message naming the files; the upstream comments confirm this shipped in fman 1.4.6. |
+| [#35](https://github.com/mherrmann/fman/issues/35) | ".." entry in folders | enhancement, 35 votes | deferred | 2026-10-24 | A parent-directory row needs a product decision because fman deliberately uses keyboard navigation to save screen space; Backspace and Ctrl+Up already go up. |
+| [#34](https://github.com/mherrmann/fman/issues/34) | Multiple tabs | enhancement, 108 votes | deferred | 2026-10-24 | Multiple tabs are a substantial UI/session change and conflict with fman's stated screen-space direction; needs a separately approved plan and product decision. |
+| [#33](https://github.com/mherrmann/fman/issues/33) | WebDAV support | enhancement, 1 vote | deferred | 2026-10-24 | WebDAV needs a remote-protocol filesystem subsystem or dependency decision; needs a separately approved plan. |
+| [#32](https://github.com/mherrmann/fman/issues/32) | SCP support | enhancement, 11 votes | skipped | 2026-10-24 | Duplicate of #31 (deferred): the upstream discussion says SCP is outdated and points to SFTP. |
 | [#28](https://github.com/mherrmann/fman/issues/28) | fman becomes very slow after pressing Alt+F1 when there are disconnected network drives | bug, windows | fixed | 2026-10-24 | Drive labels no longer query volume information for mapped network drives; `drives.py` and `test_drives.py`. |
 | [#31](https://github.com/mherrmann/fman/issues/31) | SFTP support | enhancement, 43 votes | deferred | 2026-10-24 | Adding SFTP requires a protocol subsystem or dependency decision; needs a separately approved plan. |
 | [#30](https://github.com/mherrmann/fman/issues/30) | FTP support | enhancement, 8 votes | deferred | 2026-10-24 | Adding FTP requires a protocol subsystem or dependency decision; needs a separately approved plan. |
