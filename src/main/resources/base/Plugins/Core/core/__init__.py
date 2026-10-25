@@ -4,8 +4,8 @@ from importlib import import_module as _import_module
 from datetime import datetime
 from fman.fs import Column
 from fman.url import basename
-from math import log
 from PyQt5.QtCore import QLocale, QDateTime
+from .util import format_size
 
 import fman.fs
 import re
@@ -67,14 +67,7 @@ class Size(Column):
 			return ''
 		if size_bytes is None:
 			return ''
-		units = ('%d B', '%d KB', '%.1f MB', '%.1f GB')
-		if size_bytes <= 0:
-			unit_index = 0
-		else:
-			unit_index = min(int(log(size_bytes, 1000)), len(units) - 1)
-		unit = units[unit_index]
-		base = 1024 ** unit_index
-		return unit % (size_bytes / base)
+		return format_size(size_bytes)
 	def get_sort_value(self, url, is_ascending):
 		try:
 			is_dir = self._fs.is_dir(url)

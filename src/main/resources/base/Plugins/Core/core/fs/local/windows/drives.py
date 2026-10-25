@@ -1,10 +1,11 @@
 from core.fs.local.windows.network import NetworkFileSystem
-from core.util import filenotfounderror
+from core.util import filenotfounderror, format_size
 from ctypes import windll
 from fman.fs import FileSystem, Column
 from fman.url import as_url, splitscheme
 
 import ctypes
+import shutil
 import string
 
 _DRIVE_REMOTE = 4
@@ -16,7 +17,10 @@ class DrivesFileSystem(FileSystem):
 	NETWORK = 'Network...'
 
 	def get_default_columns(self, path):
-		return DriveName.__module__ + '.' + DriveName.__name__,
+		return tuple(
+			column.__module__ + '.' + column.__name__
+			for column in (DriveName, DriveSize, DriveFree)
+		)
 	def resolve(self, path):
 		if not path:
 			# Showing the list of all drives:
@@ -45,6 +49,48 @@ class DrivesFileSystem(FileSystem):
 			bitmask >>= 1
 		return result
 
+def _is_remote(path):
+	return windll.kernel32.GetDriveTypeW(ctypes.c_wchar_p(path)) == _DRIVE_REMOTE
+
+class _DriveSpaceColumn(Column):
+	field = None
+
+	def _get_usage(self, url):
+		scheme, path = splitscheme(url)
+		if scheme != DrivesFileSystem.scheme:
+			raise ValueError('Unsupported URL: %r' % url)
+		if path == DrivesFileSystem.NETWORK:
+			return None
+		volume_path = path + '\\'
+		if _is_remote(volume_path):
+			return None
+		try:
+			return shutil.disk_usage(volume_path)
+		except OSError:
+			return None
+
+	def get_str(self, url):
+		usage = self._get_usage(url)
+		if usage is None:
+			return ''
+		return format_size(getattr(usage, self.field))
+
+	def get_sort_value(self, url, is_ascending):
+		scheme, path = splitscheme(url)
+		if scheme != DrivesFileSystem.scheme:
+			raise ValueError('Unsupported URL: %r' % url)
+		usage = self._get_usage(url)
+		value = getattr(usage, self.field) if usage is not None else 0
+		return path == DrivesFileSystem.NETWORK, value
+
+class DriveSize(_DriveSpaceColumn):
+	display_name = 'Size'
+	field = 'total'
+
+class DriveFree(_DriveSpaceColumn):
+	display_name = 'Free'
+	field = 'free'
+
 class DriveName(Column):
 
 	display_name = 'Name'
@@ -70,7 +116,7 @@ class DriveName(Column):
 		return path == DrivesFileSystem.NETWORK, self.get_str(url).lower()
 	def _get_volume_name(self, volume_path):
 		kernel32 = windll.kernel32
-		if kernel32.GetDriveTypeW(ctypes.c_wchar_p(volume_path)) == _DRIVE_REMOTE:
+		if _is_remote(volume_path):
 			return ''
 		buffer = ctypes.create_unicode_buffer(1024)
 		if not kernel32.GetVolumeInformationW(

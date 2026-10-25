@@ -5,6 +5,17 @@ from pathlib import PurePosixPath
 
 import errno
 import fman.fs
+from math import log
+
+def format_size(size_bytes):
+	units = ('%d B', '%d KB', '%.1f MB', '%.1f GB', '%.1f TB')
+	if size_bytes <= 0:
+		unit_index = 0
+	else:
+		unit_index = min(int(log(size_bytes, 1000)), len(units) - 1)
+	unit = units[unit_index]
+	base = 1024 ** unit_index
+	return unit % (size_bytes / base)
 
 def strformat_dict_values(dict_, replacements):
 	result = {}
