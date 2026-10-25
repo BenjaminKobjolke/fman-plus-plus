@@ -15,6 +15,9 @@ function Test-InFolder([string]$path) {
     $path -and $path.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)
 }
 
+# A missing build directory cannot contain a process or locked DLL.
+if (-not (Test-Path -LiteralPath $prefix)) { exit 0 }
+
 # Other programs can hold a DLL from the folder too, eg. php.exe started from a
 # terminal fman opened (child processes inherit PyInstaller's DLL directory).
 # They are not ours to close, so name them and stop the build. The Restart
