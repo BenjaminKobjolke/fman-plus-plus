@@ -119,6 +119,18 @@ other = panes[(panes.index(pane) + 1) % len(panes)]
 There are two panes by default, but the count comes from the saved session, so
 never assume exactly two.
 
+Plugins can change the pane count through the window:
+
+| Method | Does |
+|--------|------|
+| `pane.window.add_pane()` | Appends and returns a `DirectoryPane`. Call `set_path()` to choose its folder; until then, it has no location to show. |
+| `pane.window.remove_pane(pane)` | Removes a pane. Raises `ValueError` if it is the last pane or does not belong to this window. |
+
+Removing a pane shifts the indices of panes to its right down by one. If your
+plugin stores data by pane index, remove the deleted pane's entry yourself;
+Core does this for its `Panes.json` settings. Listeners registered on a removed
+pane receive no further events.
+
 Location and selection: `get_path()`, `set_path(url, callback, onerror)`,
 `reload()`, `get_selected_files()`, `get_file_under_cursor()`,
 `place_cursor_at(url)`, `select()` / `deselect()`, `focus()`,

@@ -39,6 +39,8 @@ No default key binding is set — the feature is palette-only.
   (there is nothing to collapse).
 - While a pane is hidden, `switch_panes` (`Tab`) does nothing — it would
   otherwise move the cursor into the pane you can't see.
+- "Add pane" and "Remove pane" are hidden from the palette until all panes are
+  visible again.
 
 ## Implementation
 

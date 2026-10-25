@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#57](https://github.com/mherrmann/fman/issues/57) | Let plugins (/the user) add or remove panes (so there can not just be 2 but 1..N) | enhancement, 18 votes | deferred | 2026-10-25 | Variable pane counts change the fixed dual-pane window and plugin API; needs a separately approved product and compatibility plan. |
+| [#57](https://github.com/mherrmann/fman/issues/57) | Let plugins (/the user) add or remove panes (so there can not just be 2 but 1..N) | enhancement, 18 votes | fixed | 2026-10-25 | Added the "Add pane" and "Remove pane" commands and the `Window.remove_pane()` plugin API. |
 | [#54](https://github.com/mherrmann/fman/issues/54) | Make it possible to visually distinguish hidden files/directories, eg. by making them a little transparent | enhancement, 31 votes | deferred | 2026-10-25 | Hidden files can be toggled, but choosing a consistent visual treatment needs a product decision that works with custom themes and file icons. |
 | [#52](https://github.com/mherrmann/fman/issues/52) | Let Windows users pick the install location | enhancement, windows, 4 votes | already fixed | 2026-10-25 | The Windows installer includes a directory selection page and supports choosing between per-user and all-user installation. |
 | [#50](https://github.com/mherrmann/fman/issues/50) | Support Cmd+Z for un-deleting files | enhancement, 1 vote | deferred | 2026-10-25 | Restoring deleted files requires a recovery flow and filesystem-specific trash support; needs a separately approved design. |
