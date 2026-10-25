@@ -61,6 +61,11 @@ palette is the only way to reach them:
   it leaves behind; messages keep being set, nothing draws them (also
   found by *statusbar*, *message bar*, *bottom bar*). See
   [`docs/STATUSBAR.md`](STATUSBAR.md).
+- **Toggle incognito mode** — stop counting folders opened for GoTo and keep
+  the previously saved pane folders when quitting. The status bar shows a
+  permanent marker while it is on; restarting turns it off (also found by
+  *privacy*, *private*, *folder history* or *visit history*). See
+  [`docs/functions/go-to.md`](functions/go-to.md#incognito-mode).
 - **Go home** — opens your home directory, plus a sibling command per
   destination that is otherwise awkward to reach: **Go to desktop**,
   **Go to documents**, **Go to downloads**, **Go to AppData**, **Go to temp**,

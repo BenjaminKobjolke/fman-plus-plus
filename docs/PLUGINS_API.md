@@ -139,6 +139,27 @@ other = panes[(panes.index(pane) + 1) % len(panes)]
 There are two panes by default, but the count comes from the saved session, so
 never assume exactly two.
 
+### Incognito mode
+
+`fman.is_incognito()` returns whether incognito mode is currently enabled. The
+setting lasts for the current fman session and is off again after a restart.
+Plugins that record visited folders should skip adding visits to their history
+while this returns `True`:
+
+```python
+import fman
+
+if not fman.is_incognito():
+	visited_folders.add(folder)
+```
+
+`DirectoryPaneListener.on_incognito_changed(enabled)` is called on a worker
+thread each time the user turns the mode on or off. It is sent to listeners
+registered with every open pane. Keep Qt calls off this callback thread, just
+as with other listener callbacks. A plugin loaded while incognito is already
+on does not receive an initial callback; query `fman.is_incognito()` when it
+loads to learn the current state.
+
 ### Pane status messages
 
 Use a pane's status methods for feedback that belongs to that pane. A message

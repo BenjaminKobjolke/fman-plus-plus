@@ -32,6 +32,26 @@ current drive, and a bare drive letter (`E:`) gets its backslash added.
 If the directory you pick has since been deleted, fman drops it from
 `Visited Paths.json` instead of showing an error, so it stops being suggested.
 
+## Incognito mode
+
+Run **Toggle incognito mode** from the command palette to temporarily stop
+recording GoTo visits. While it is on, folders you open do not gain visit
+counts. Existing GoTo suggestions remain available, and the history already
+saved before the toggle stays on disk.
+
+When you quit fman in incognito mode, it keeps the pane folders saved before
+you turned the mode on. The folders opened during incognito are not saved for
+the next start. Window size, position and fman version are still saved.
+Incognito mode is off again after restarting fman.
+
+The status bar shows a permanent **Incognito** marker while the mode is on,
+along with a short message each time it is toggled. Registered pane listeners
+also receive the change; see [the plugin API](../PLUGINS_API.md#incognito-mode).
+
+| Command name | Palette label | Hidden search keywords | Default key binding |
+|--------------|---------------|------------------------|---------------------|
+| `toggle_incognito` | Toggle incognito mode | incognito, privacy, private, folder, history, folder history, visit history | none (palette only) |
+
 ## Commands
 
 The GoTo prompt itself:

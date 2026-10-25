@@ -30,6 +30,13 @@ longer for hints.
 A message may contain HTML links (the changelog one does); they open in the
 external browser.
 
+When incognito mode is on, a permanent **Incognito** marker appears at the
+right side of the bar. It has its own slot, so later status messages do not
+replace it. Turning incognito on or off also shows `Incognito on.` or
+`Incognito off.` in the message slot. The marker is hidden while the whole
+status bar is hidden. See [Incognito mode](functions/go-to.md#incognito-mode)
+for what the mode keeps out of saved history and session locations.
+
 ## Turning it off
 
 Press **`Ctrl+Shift+P`** and run **"Toggle status bar"**. The bar disappears
@@ -39,6 +46,7 @@ size on screen. Running the command again brings it back.
 | Command name        | Palette label     | Platform | Default key binding |
 |----------------------|--------------------|-----------|----------------------|
 | `toggle_status_bar`  | Toggle status bar  | all       | none (palette only)  |
+| `toggle_incognito` | Toggle incognito mode | all | none (palette only) |
 
 *statusbar*, *hide status bar*, *message bar*, *bottom bar* and *chrome* also
 find the row — hidden keywords, so it still reads "Toggle status bar". See
