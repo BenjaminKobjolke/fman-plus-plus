@@ -5,7 +5,6 @@ from core.textviewer_io import (
 )
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
-from unittest.mock import patch
 
 import os
 
