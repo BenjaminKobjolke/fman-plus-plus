@@ -24,7 +24,7 @@
       "test": "green"
     },
     "tools\\run_core_tests.bat": {
-      "test": "green"
+      "test": "failed"
     },
     "tools\\run_robocopy_tests.bat": {
       "test": "green"
@@ -125,5 +125,10 @@
     "tests": true
   },
   "analysis_tests_answered": true,
-  "analysis_format_command": "tools/fix_ruff_issues.bat"
+  "analysis_format_command": "tools/fix_ruff_issues.bat",
+  "analysis_command_failing_tests": {
+    "tools\\run_core_tests.bat": [
+      "(failures=2, skipped=1)"
+    ]
+  }
 }
