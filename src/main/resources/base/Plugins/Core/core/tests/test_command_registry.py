@@ -22,7 +22,7 @@ import core
 import inspect
 
 EXPECTED = frozenset({
-	'About', 'ArchiveOpenListener', 'CenterWindow', 'CheckForUpdates',
+	'About', 'AddPane', 'ArchiveOpenListener', 'CenterWindow', 'CheckForUpdates',
 	'CommandPalette', 'CompareDirectories', 'Copy', 'CopyFileName', 'CopyFilePath',
 	'CopyPathsToClipboard',
 	'CopyToClipboard',
@@ -43,7 +43,7 @@ EXPECTED = frozenset({
 	'OpenInRightPane', 'OpenListener', 'OpenNativeFileManager', 'OpenOrView',
 	'OpenSelectedFiles', 'OpenTerminal', 'OpenWith', 'OpenWithEditor', 'Pack',
 	'Paste', 'PasteCut', 'Quit', 'Reload', 'ReloadPlugins',
-	'RememberSortSettings', 'RemovePlugin', 'Rename', 'RenameListener',
+	'RememberSortSettings', 'RemovePane', 'RemovePlugin', 'Rename', 'RenameListener',
 	'ResetFont', 'ResetPaneFontSize', 'SelectAll', 'SelectFont',
 	'SelectIconSet', 'SelectTheme', 'SetIconColor', 'SetIconSize', 'SetTextEditor',
 	'SetWindowOpacity', 'ShowAllPanes', 'ShowExplorerProperties',

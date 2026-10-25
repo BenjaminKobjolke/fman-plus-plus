@@ -1,5 +1,5 @@
 from core.commands.hidden_files import _get_pane_info, _hidden_file_filter, \
-	_toggle_hidden_files
+	_forget_pane_info, _toggle_hidden_files
 from fman import PLATFORM
 from stat import FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL
 from unittest import TestCase, skipIf
@@ -98,3 +98,23 @@ class ToggleHiddenFilesTest(TestCase):
 		), patch('core.commands.hidden_files.save_json') as save_json:
 			_toggle_hidden_files(pane, value)
 		return pane, settings, save_json
+
+class ForgetPaneInfoTest(TestCase):
+	def test_deletes_entry_and_saves(self):
+		panes = [MagicMock(), MagicMock(), MagicMock()]
+		panes[1].window.get_panes.return_value = panes
+		settings = [{'i': 0}, {'i': 1}, {'i': 2}]
+		with patch('core.commands.hidden_files.load_json', return_value=settings), \
+				patch('core.commands.hidden_files.save_json') as save_json:
+			_forget_pane_info(panes[1])
+		self.assertEqual([{'i': 0}, {'i': 2}], settings)
+		save_json.assert_called_once_with('Panes.json')
+	def test_out_of_range_does_not_change_or_save(self):
+		pane = MagicMock()
+		pane.window.get_panes.return_value = [MagicMock(), pane]
+		settings = [{'i': 0}]
+		with patch('core.commands.hidden_files.load_json', return_value=settings), \
+				patch('core.commands.hidden_files.save_json') as save_json:
+			_forget_pane_info(pane)
+		self.assertEqual([{'i': 0}], settings)
+		save_json.assert_not_called()

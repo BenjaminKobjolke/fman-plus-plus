@@ -1,5 +1,5 @@
 from core.commands.pane_view import ShowAllPanes, ShowOnlyActivePane, \
-	SwitchPanes
+	AddPane, RemovePane, SwitchPanes
 from core.tests.commands import FakeWindow
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
@@ -19,12 +19,20 @@ class _FakeWidget:
 		self._visible = visible
 
 class _FakePane:
-	def __init__(self, window):
+	def __init__(self, window, path='file:///current'):
 		self.window = window
 		self._widget = _FakeWidget()
 		self.focused = False
+		self.path = path
+		self.set_path_calls = []
 	def focus(self):
 		self.focused = True
+	def get_path(self):
+		return self.path
+	def set_path(self, path, callback=None):
+		self.set_path_calls.append(path)
+		if callback:
+			callback()
 
 def _two_pane_window():
 	window = FakeWindow()
@@ -57,6 +65,60 @@ class SwitchPanesTest(TestCase):
 		ShowOnlyActivePane(active)()
 		SwitchPanes(active)()
 		self.assertFalse(other.focused)
+	def test_ignores_out_of_range_pane_index(self):
+		window, active, other = _two_pane_window()
+		SwitchPanes(active)(pane_index=2)
+		self.assertFalse(active.focused)
+		self.assertFalse(other.focused)
+
+class AddPaneTest(TestCase):
+	def test_adds_pane_at_current_path_and_focuses_it(self):
+		window, active, _ = _two_pane_window()
+		def add_pane():
+			pane = _FakePane(window)
+			window._panes.append(pane)
+			return pane
+		window.add_pane = add_pane
+		command = AddPane(active)
+		command()
+		self.assertEqual(3, len(window._panes))
+		new_pane = window._panes[-1]
+		self.assertEqual([active.get_path()], new_pane.set_path_calls)
+		self.assertTrue(new_pane.focused)
+	def test_hidden_pane_hides_command(self):
+		window, active, other = _two_pane_window()
+		other._widget.setVisible(False)
+		self.assertFalse(AddPane(active).is_visible())
+
+class RemovePaneTest(TestCase):
+	def test_removes_active_and_focuses_next_pane(self):
+		window, active, other = _two_pane_window()
+		third = _FakePane(window)
+		window._panes.append(third)
+		window.remove_pane = lambda pane: window._panes.remove(pane)
+		RemovePane(other)()
+		self.assertEqual([active, third], window._panes)
+		self.assertTrue(third.focused)
+	def test_removing_last_pane_focuses_first(self):
+		window = FakeWindow()
+		active, other = _FakePane(window), _FakePane(window)
+		window._panes = [active, other]
+		window.remove_pane = lambda pane: window._panes.remove(pane)
+		RemovePane(other)()
+		self.assertTrue(active.focused)
+	def test_one_pane_is_hidden_and_call_is_noop(self):
+		window = FakeWindow()
+		pane = _FakePane(window)
+		window._panes = [pane]
+		window.remove_pane = lambda pane: self.fail('must not remove')
+		command = RemovePane(pane)
+		self.assertFalse(command.is_visible())
+		command()
+		self.assertFalse(pane.focused)
+	def test_hidden_pane_hides_command(self):
+		window, active, other = _two_pane_window()
+		other._widget.setVisible(False)
+		self.assertFalse(RemovePane(active).is_visible())
 
 class ShowAllPanesTest(TestCase):
 	def test_restores_all_panes(self):

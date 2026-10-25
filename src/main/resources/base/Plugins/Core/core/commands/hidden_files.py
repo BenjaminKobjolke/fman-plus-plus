@@ -59,6 +59,13 @@ def _get_pane_info(pane):
 		settings.append(default.copy())
 	return settings[pane_index]
 
+def _forget_pane_info(pane):
+	settings = load_json('Panes.json', default=[])
+	pane_index = pane.window.get_panes().index(pane)
+	if pane_index < len(settings):
+		del settings[pane_index]
+		save_json('Panes.json')
+
 def _hidden_file_filter(url):
 	if PLATFORM == 'Mac' and url == 'file:///Volumes':
 		return True

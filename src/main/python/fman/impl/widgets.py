@@ -559,6 +559,14 @@ class MainWindow(QMainWindow):
 	def get_panes(self):
 		return self._panes
 	@run_in_main_thread
+	def remove_pane(self, pane_widget):
+		self._panes.remove(pane_widget)
+		pane_widget.setParent(None)
+		pane_widget.deleteLater()
+		for index, pane in enumerate(self._panes):
+			pane.set_backgrounds(self._backgrounds, index)
+		self.update()
+	@run_in_main_thread
 	def minimize(self):
 		self.setWindowState(Qt.WindowMinimized)
 	@run_in_main_thread

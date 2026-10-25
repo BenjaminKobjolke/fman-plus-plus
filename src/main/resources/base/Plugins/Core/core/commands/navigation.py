@@ -106,11 +106,13 @@ class InvertSelection(DirectoryPaneCommand):
 		self.pane.select(to_select)
 
 class _OpenInPaneCommand(DirectoryPaneCommand):
+	def is_visible(self):
+		return len(self.pane.window.get_panes()) > 1
 	def __call__(self):
 		panes = self.pane.window.get_panes()
 		num_panes = len(panes)
 		if num_panes < 2:
-			raise NotImplementedError()
+			return
 		this_pane = panes.index(self.pane)
 		source_pane = panes[self.get_source_pane(this_pane, num_panes)]
 		if source_pane is self.pane:
@@ -156,7 +158,8 @@ class ShowVolumes(DirectoryPaneCommand):
 		if pane_index is None:
 			pane = self.pane
 		else:
-			pane = self.pane.window.get_panes()[pane_index]
+			panes = self.pane.window.get_panes()
+			pane = panes[pane_index] if pane_index < len(panes) else self.pane
 		def callback():
 			pane.focus()
 			pane.move_cursor_home()

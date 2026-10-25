@@ -13,6 +13,26 @@ class _ArgRecordingPane(FakePane):
 		super().run_command(name, args)
 		self.args_run = args
 
+class _PaneWindow:
+	def __init__(self, panes):
+		self._panes = panes
+	def get_panes(self):
+		return self._panes
+
+class _NavigationPane(FakePane):
+	def __init__(self, panes, url='file:///current'):
+		super().__init__(_PaneWindow(panes), url)
+		self.path = url
+		self.set_path_calls = []
+	def get_path(self):
+		return self.path
+	def set_path(self, path, callback=None):
+		self.set_path_calls.append(path)
+		if callback:
+			callback()
+	def move_cursor_home(self):
+		pass
+
 @skipUnless(PLATFORM == 'Windows', '.lnk shortcuts are a Windows concept')
 class FollowShortcutTest(TestCase):
 	def test_visible_only_on_local_shortcuts(self):
@@ -87,3 +107,20 @@ class HistoryTest(TestCase):
 	def _go_to(self, *paths):
 		for path in paths:
 			self._history.path_changed(path)
+
+class OnePaneNavigationTest(TestCase):
+	def test_open_in_left_or_right_is_hidden_and_noop(self):
+		pane = _NavigationPane([])
+		pane.window._panes.append(pane)
+		for command_type in (navigation.OpenInLeftPane, navigation.OpenInRightPane):
+			with self.subTest(command=command_type.__name__):
+				command = command_type(pane)
+				self.assertFalse(command.is_visible())
+				command()
+		self.assertEqual([], pane.commands_run)
+	def test_show_volumes_out_of_range_uses_current_pane(self):
+		pane = _NavigationPane([])
+		pane.window._panes.append(pane)
+		with patch('core.commands.navigation._get_volumes_url', return_value='drives://'):
+			navigation.ShowVolumes(pane)(pane_index=1)
+		self.assertEqual(['drives://'], pane.set_path_calls)

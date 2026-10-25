@@ -216,6 +216,17 @@ class Window:
 		self._panes.append(pane)
 		_get_controller().register_pane(pane_widget, pane)
 		return pane
+	def remove_pane(self, pane):
+		"""Remove a pane; indices to its right shift down by one."""
+		if len(self._panes) < 2:
+			raise ValueError('Cannot remove the last pane.')
+		if pane not in self._panes:
+			raise ValueError('Pane does not belong to this window.')
+		if pane.get_mounted_widget() is not None:
+			pane.unmount_widget()
+		self._panes.remove(pane)
+		_get_controller().unregister_pane(pane._widget, pane)
+		self._widget.remove_pane(pane._widget)
 
 class DirectoryPaneCommand:
 	# True promises the command acts on the viewed file, its folder, or layout;

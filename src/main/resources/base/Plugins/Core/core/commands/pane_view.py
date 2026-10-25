@@ -7,6 +7,7 @@ of the global in another module would silently break the icon scaling that
 derives from it (see docs/ICONS.md).
 """
 from core.commands.util import get_opposite_pane
+from core.commands.hidden_files import _forget_pane_info
 from core.font_size import change_font_size, effective_font_size, \
 	get_saved_font_size, reset_font_size
 from fman import DirectoryPaneCommand, DirectoryPaneListener
@@ -16,9 +17,9 @@ from fman import set_icon_scale, set_palette_font_scale
 from fman.impl.util.qt.thread import run_in_main_thread
 
 __all__ = [
-	'DecreasePaneFontSize', 'IncreasePaneFontSize', 'InitPaneFontSize',
+	'AddPane', 'DecreasePaneFontSize', 'IncreasePaneFontSize', 'InitPaneFontSize',
 	'Reload', 'ResetPaneFontSize', 'ShowAllPanes', 'ShowOnlyActivePane',
-	'SwitchPanes'
+	'SwitchPanes', 'RemovePane'
 ]
 
 class Reload(DirectoryPaneCommand):
@@ -33,12 +34,37 @@ class SwitchPanes(DirectoryPaneCommand):
 		if pane_index is None:
 			pane = get_opposite_pane(self.pane)
 		else:
-			pane = self.pane.window.get_panes()[pane_index]
+			panes = self.pane.window.get_panes()
+			if pane_index >= len(panes):
+				return
+			pane = panes[pane_index]
 		# In single-pane mode (ShowOnlyActivePane) the other pane is hidden;
 		# focusing it would move the cursor into a pane the user can't see.
 		if not pane._widget.isVisible():
 			return
 		pane.focus()
+
+class AddPane(DirectoryPaneCommand):
+	usable_in_viewer = True
+	def is_visible(self):
+		return not _any_pane_hidden(self.pane.window.get_panes())
+	def __call__(self):
+		new_pane = self.pane.window.add_pane()
+		new_pane.set_path(self.pane.get_path(), callback=new_pane.focus)
+
+class RemovePane(DirectoryPaneCommand):
+	usable_in_viewer = True
+	def is_visible(self):
+		panes = self.pane.window.get_panes()
+		return len(panes) > 1 and not _any_pane_hidden(panes)
+	def __call__(self):
+		panes = self.pane.window.get_panes()
+		if len(panes) < 2:
+			return
+		neighbour = get_opposite_pane(self.pane)
+		_forget_pane_info(self.pane)
+		self.pane.window.remove_pane(self.pane)
+		neighbour.focus()
 
 def _any_pane_hidden(panes):
 	return any(not pane._widget.isVisible() for pane in panes)
