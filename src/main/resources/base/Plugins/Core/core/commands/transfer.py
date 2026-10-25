@@ -14,6 +14,7 @@ from core.commands.util import get_opposite_pane, is_file_url, \
 	CANNOT_READ, NO_SELECTION
 from core.fileoperations import CopyFiles, MoveFiles
 from core.util import is_parent
+from core.undo_history import CopyRecord, MoveRecord, record_transfer
 from fman import DirectoryPaneCommand, DirectoryPaneListener, NO, YES, \
 	YES_TO_ALL, show_alert, submit_task
 from fman.fs import makedirs, notify_file_added
@@ -44,9 +45,22 @@ class _TreeCommand(DirectoryPaneCommand):
 		proceed = self._confirm_tree_operation(files, dest_dir)
 		if proceed:
 			dest_dir, dest_name = proceed
+			transfers = tuple(
+				(file_, join(dest_dir, dest_name or basename(file_)))
+				for file_ in files
+			)
+			destinations_that_existed = {
+				dest_url for _, dest_url in transfers
+				if fman.fs.exists(dest_url)
+			}
 			if not self._call_elevated(files, dest_dir, dest_name):
 				makedirs(dest_dir, exist_ok=True)
 				self._call(files, dest_dir, dest_name)
+			self._record_operation(
+				transfers, destinations_that_existed
+			)
+	def _record_operation(self, transfers, destinations_that_existed):
+		pass
 	def _call(self, files, dest_dir, dest_name=None):
 		raise NotImplementedError()
 	def _call_elevated(self, files, dest_dir, dest_name):
@@ -185,12 +199,20 @@ class Copy(_TreeCommand):
 		submit_task(CopyFiles(files, dest_dir, dest_name))
 	def _call_elevated(self, files, dest_dir, dest_name):
 		return elevation.copy(files, dest_dir, dest_name)
+	def _record_operation(self, transfers, destinations_that_existed):
+		record_transfer(
+			CopyRecord, transfers, destinations_that_existed, fman.fs.exists
+		)
 
 class Move(_TreeCommand):
 	def _call(self, files, dest_dir, dest_name=None):
 		submit_task(MoveFiles(files, dest_dir, dest_name))
 	def _call_elevated(self, files, dest_dir, dest_name):
 		return elevation.move(files, dest_dir, dest_name)
+	def _record_operation(self, transfers, destinations_that_existed):
+		record_transfer(
+			MoveRecord, transfers, destinations_that_existed, fman.fs.exists
+		)
 
 class DragAndDropListener(DirectoryPaneListener):
 	def on_files_dropped(self, file_urls, dest_dir, is_copy_not_move):

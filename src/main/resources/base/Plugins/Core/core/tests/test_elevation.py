@@ -233,6 +233,8 @@ class CommandHooksTest(_PatchingTest):
 				'core.commands.%s.submit_task' % module, self._submit_task
 			)
 		self._makedirs = self._patch('core.commands.transfer.makedirs')
+		self._patch('core.commands.transfer.fman.fs.exists', return_value=False)
+		self._patch('core.commands.deletion.exists', return_value=True)
 	def _elevation(self, function, handled):
 		return patch('core.elevation.' + function, return_value=handled)
 	def _new_file_prompt(self, error=PermissionError):

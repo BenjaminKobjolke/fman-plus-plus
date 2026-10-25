@@ -50,7 +50,7 @@ EXPECTED = frozenset({
 	'ShowOnlyActivePane', 'ShowReleaseNotes', 'ShowVolumes', 'SortByColumn',
 	'SwitchPanes', 'Symlink', 'ToggleExecutableIcons', 'ToggleHiddenFiles',
 	'ToggleModifiedColumn', 'ToggleNetworkIcons', 'ToggleSelection',
-	'ToggleSizeColumn', 'UpdateWindowTitle', 'ViewFile',
+	'ToggleSizeColumn', 'Undo', 'UpdateWindowTitle', 'ViewFile',
 	'ViewFileInOtherPane', 'ZenOfFman', 'none'
 })
 

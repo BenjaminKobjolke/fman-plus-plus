@@ -1,4 +1,5 @@
-from core.commands.rename import _Rename
+from core.commands.rename import _Rename, rename_to
+from core.undo_history import RenameRecord, history
 from core.tests import StubUI
 from fman import CANCEL, RETRY, Task
 # Not in fman's __all__, so it isn't part of the star import Core uses:
@@ -24,22 +25,42 @@ class RenameTest(TestCase):
 		self._rename()
 		self.assertEqual([(self._SRC, self._DST)] * 2, self._prepared)
 		self._pane.place_cursor_at.assert_called_once_with(self._DST)
+		self.assertEqual(
+			RenameRecord(((self._SRC, self._DST),)), history.pop()
+		)
 	def test_cancel_gives_up(self):
 		self._expect_alert(answer=CANCEL)
 		self._rename()
 		self.assertEqual([(self._SRC, self._DST)], self._prepared)
 		self._pane.place_cursor_at.assert_not_called()
+		self.assertIsNone(history.pop())
 	def test_escape_gives_up(self):
 		# MessageBox lets Escape through, which returns 0 rather than a button.
 		self._expect_alert(answer=0)
 		self._rename()
 		self.assertEqual([(self._SRC, self._DST)], self._prepared)
 		self._pane.place_cursor_at.assert_not_called()
+		self.assertIsNone(history.pop())
+	def test_case_only_rename_is_recorded(self):
+		with patch('core.commands.rename.exists', return_value=True), \
+				patch('core.commands.rename.samefile', return_value=True), \
+				patch('core.commands.rename.elevation.rename', return_value=True):
+			result = rename_to(
+				self._pane, 'file://C:/dir/Foo', 'foo'
+			)
+		self.assertEqual('file://C:/dir/foo', result)
+		self.assertEqual(
+			RenameRecord((('file://C:/dir/Foo', 'file://C:/dir/foo'),)),
+			history.pop()
+		)
 	def setUp(self):
 		super().setUp()
 		self._prepared = []
 		self._dialog = _StubProgressDialog(self)
 		self._pane = MagicMock(spec=DirectoryPane)
+		history.clear()
+	def tearDown(self):
+		history.clear()
 	def _expect_alert(self, answer):
 		self._dialog.expect_alert(self._ALERT, answer)
 	def _rename(self):

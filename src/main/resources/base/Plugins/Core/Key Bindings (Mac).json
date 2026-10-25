@@ -4,6 +4,7 @@
 	{ "keys": ["Cmd+C"], "command": "copy_to_clipboard" },
 	{ "keys": ["Cmd+X"], "command": "cut" },
 	{ "keys": ["Cmd+V"], "command": "paste" },
+	{ "keys": ["Cmd+Z"], "command": "undo" },
 	{ "keys": ["Cmd+Alt+V"], "command": "paste_cut" },
 	{ "keys": ["Cmd+A"], "command": "select_all" },
 	{ "keys": ["Cmd+D"], "command": "deselect" },

@@ -1,11 +1,41 @@
 from core.commands import deletion
 from core.commands.deletion import _describe, DeletePermanently
+from core.undo_history import TrashRecord, history
 from fman import DirectoryPane, PLATFORM, Task, YES
 from fman.url import as_url
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
 class TrashTest(TestCase):
+	def setUp(self):
+		history.clear()
+
+	def tearDown(self):
+		history.clear()
+
+	def test_trash_records_only_local_files_that_are_gone(self):
+		urls = ['file:///a.txt', 'ftp://host/b.txt']
+		with patch('core.commands.deletion.elevation.delete', return_value=True), \
+				patch('core.commands.deletion.exists', side_effect=[False]), \
+				patch('core.commands.deletion.history.record') as record:
+			deletion.trash(urls)
+		record.assert_called_once_with(TrashRecord(('file:///a.txt',)))
+
+	def test_trash_can_skip_recording_for_undo(self):
+		with patch('core.commands.deletion.elevation.delete', return_value=True), \
+				patch('core.commands.deletion.exists') as exists, \
+				patch('core.commands.deletion.history.record') as record:
+			deletion.trash(['file:///a.txt'], undoable=False)
+		exists.assert_not_called()
+		record.assert_not_called()
+
+	def test_trash_does_not_record_files_that_still_exist(self):
+		with patch('core.commands.deletion.elevation.delete', return_value=True), \
+				patch('core.commands.deletion.exists', return_value=True), \
+				patch('core.commands.deletion.history.record') as record:
+			deletion.trash(['file:///a.txt'])
+		record.assert_not_called()
+
 	def test_trash_with_unsupported_url_deletes_nothing(self):
 		urls = ['file://C:/a.zip', 'zip://C:/a.zip/report.txt']
 		local_task = Mock(spec=Task)
@@ -18,6 +48,7 @@ class TrashTest(TestCase):
 				 side_effect=prepare_trash), \
 			 patch('core.commands.deletion.prepare_delete',
 				 side_effect=AssertionError('Permanent delete fallback')), \
+			 patch('core.commands.deletion.exists', return_value=True), \
 			 patch('core.commands.deletion.submit_task') as submit_task, \
 			 patch('core.commands.deletion.elevation.delete', return_value=False):
 			deletion.trash(urls)

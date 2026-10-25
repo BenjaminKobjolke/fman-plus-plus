@@ -6,6 +6,7 @@ offer Retry without the user retyping the new name - see its own comment.
 from core import elevation
 from core.commands.editor import _find_extension_start
 from core.commands.util import create_as_admin, is_dir_checked, NO_SELECTION
+from core.undo_history import RenameRecord, history
 from fman import CANCEL, DirectoryPaneCommand, DirectoryPaneListener, \
 	PLATFORM, RETRY, show_alert, show_prompt, submit_task, Task
 from fman.fs import exists, FileSystem, makedirs, prepare_move, \
@@ -72,9 +73,13 @@ def rename_to(pane, file_url, new_name):
 			return None
 	if elevation.rename(file_url, new_name):
 		_place_cursor_at(pane, new_url)
+		_record_rename(file_url, new_url)
 	else:
 		submit_task(_Rename(pane, file_url, new_url))
 	return new_url
+
+def _record_rename(src_url, dst_url):
+	history.record(RenameRecord(((src_url, dst_url),)))
 
 def _place_cursor_at(pane, url):
 	try:
@@ -115,6 +120,7 @@ class _Rename(Task):
 					continue
 				return
 			_place_cursor_at(self._pane, self._dst_url)
+			_record_rename(self._src_url, self._dst_url)
 			return
 
 class CreateDirectory(DirectoryPaneCommand):

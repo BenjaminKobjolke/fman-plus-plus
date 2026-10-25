@@ -127,6 +127,7 @@
 		"title bar", "titlebar", "window frame", "borderless", "frameless",
 		"caption", "chrome", "hide title bar"
 	],
+	"undo": ["undo", "undelete", "restore deleted files", "put back"],
 	"video_mute": ["sound", "volume", "audio", "silence"],
 	"video_reset_volume": ["volume", "audio", "loudness"],
 	"view_file": ["view", "internal viewer", "preview"],

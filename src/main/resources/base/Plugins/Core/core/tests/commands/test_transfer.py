@@ -1,10 +1,12 @@
-from core.commands.transfer import Move, _from_human_readable, \
+from core.commands.transfer import Copy, Move, Symlink, _from_human_readable, \
 	get_dest_suggestion
+from core.undo_history import CopyRecord, MoveRecord, history
 from core.tests import StubUI
 from core.util import filenotfounderror
 from fman import OK, YES, NO, PLATFORM
 from fman.url import join, as_human_readable, as_url
 from unittest import TestCase
+from unittest.mock import Mock, patch
 
 import os
 import os.path
@@ -161,6 +163,71 @@ class ConfirmTreeOperationTest(TestCase):
 			self._a_txt: {'is_dir': False},
 			self._b_txt: {'is_dir': False},
 		})
+
+
+class TransferRecordingTest(TestCase):
+	_SRC = 'file:///src/a.txt'
+	_DEST = 'file:///dest/a.txt'
+
+	def setUp(self):
+		history.clear()
+
+	def tearDown(self):
+		history.clear()
+
+	def test_move_records_a_successful_destination(self):
+		with self._move_command(exists=[False, True]) as command:
+			command(files=[self._SRC], dest_dir='file:///dest')
+		self.assertEqual(MoveRecord(((self._SRC, self._DEST),)), history.pop())
+
+	def test_copy_records_a_successful_destination(self):
+		with self._copy_command(exists=[False, True]) as command:
+			command(files=[self._SRC], dest_dir='file:///dest')
+		self.assertEqual(CopyRecord(((self._SRC, self._DEST),)), history.pop())
+
+	def test_copy_skips_a_destination_that_existed_before_the_operation(self):
+		with self._copy_command(exists=[True]) as command:
+			command(files=[self._SRC], dest_dir='file:///dest')
+		self.assertIsNone(history.pop())
+
+	def test_symlink_operations_are_not_recorded(self):
+		Symlink(Mock())._record_operation(
+			((self._SRC, self._DEST),), set()
+		)
+		self.assertIsNone(history.pop())
+
+	def _move_command(self, exists):
+		return self._command(Move, exists)
+
+	def _copy_command(self, exists):
+		return self._command(Copy, exists)
+
+	def _command(self, command_type, exists):
+		command = command_type(Mock())
+		command._confirm_tree_operation = Mock(
+			return_value=('file:///dest', None)
+		)
+		command._call = Mock()
+		return _CommandContext(command, exists)
+
+
+class _CommandContext:
+	def __init__(self, command, exists):
+		self._command = command
+		self._exists = exists
+	def __enter__(self):
+		self._exists_patch = patch(
+			'core.commands.transfer.fman.fs.exists',
+			side_effect=self._exists
+		)
+		self._makedirs_patch = patch('core.commands.transfer.makedirs')
+		self._exists_patch.start()
+		self._makedirs_patch.start()
+		return self._command
+	def __exit__(self, *_):
+		self._makedirs_patch.stop()
+		self._exists_patch.stop()
+		return False
 
 class GetDestSuggestionTest(TestCase):
 	def test_file(self):

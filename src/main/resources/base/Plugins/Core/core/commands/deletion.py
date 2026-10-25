@@ -8,9 +8,10 @@ implement `prepare_trash` - the user asked for a recoverable delete.
 """
 from fman import DirectoryPaneCommand, PLATFORM, show_alert, submit_task, \
 	Task, NO, YES, YES_TO_ALL
-from fman.fs import prepare_delete, prepare_trash
+from fman.fs import exists, prepare_delete, prepare_trash
 from core import elevation
 from core.commands.util import NO_SELECTION
+from core.undo_history import TrashRecord, history
 from fman.url import splitscheme
 from io import UnsupportedOperation
 from os import strerror
@@ -63,9 +64,16 @@ def confirm_delete(urls):
 def _trash_name():
 	return 'Recycle Bin' if PLATFORM == 'Windows' else 'Trash'
 
-def trash(urls):
+def trash(urls, undoable=True):
 	if not elevation.delete(urls, to_trash=True):
 		submit_task(_Delete(urls, prepare_trash, _TRASH_UNSUPPORTED))
+	if undoable:
+		deleted_urls = tuple(
+			url for url in urls
+			if splitscheme(url)[0] == 'file://' and not exists(url)
+		)
+		if deleted_urls:
+			history.record(TrashRecord(deleted_urls))
 
 def delete(urls):
 	if not elevation.delete(urls, to_trash=False):
