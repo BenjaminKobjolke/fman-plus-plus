@@ -179,6 +179,9 @@ class DirectoryPaneWidget(QWidget):
 	def add_filter(self, filter_):
 		self._model.add_filter(filter_)
 	@run_in_main_thread
+	def set_dimmer(self, dimmer):
+		self._model.set_dimmer(dimmer)
+	@run_in_main_thread
 	def remove_filter(self, filter_):
 		self._model.remove_filter(filter_)
 	@property

@@ -39,7 +39,16 @@ QTableView::item:open {
 	padding-right: 0.25em;
 }
 
-QTableView::item:selected {
+/* :disabled is set by the delegate for hidden rows; repeat the selected
+ * selector so selection color wins over the hidden-row color. */
+QTableView::item:disabled {
+	color: $pane_hidden_fg;
+}
+QTableView::item:has-children:disabled {
+	color: $pane_hidden_fg_dir;
+}
+
+QTableView::item:selected, QTableView::item:selected:disabled {
 	color: $pane_selected_fg;
 	/* Avoid the ugly default blue background color for selected cells: */
 	background-color: $pane_bg;

@@ -27,6 +27,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		self._fs = fs
 		self._null_location = null_location
 		self._filters = []
+		self._dimmer = None
 		self._already_visited = set()
 		self._num_rows_to_preload = 0
 		self.set_location(null_location)
@@ -106,6 +107,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 			self._fs, url, columns, sort_col_index, ascending,
 			self._num_rows_to_preload, self._filters
 		)
+		new_model.set_dimmer(self._dimmer)
 		self.setSourceModel(new_model)
 		self._connect_signals(new_model)
 		self._already_visited.add(url)
@@ -141,6 +143,10 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 	def add_filter(self, filter_):
 		self._filters.append(filter_)
 		self.sourceModel().add_filter(filter_)
+	def set_dimmer(self, dimmer):
+		self._dimmer = dimmer
+		if self.sourceModel():
+			self.sourceModel().set_dimmer(dimmer)
 	def remove_filter(self, filter_):
 		self._filters.remove(filter_)
 		self.sourceModel().remove_filter(filter_)

@@ -1,6 +1,6 @@
 from collections import namedtuple
 from fman.impl.model.table import _get_move_destination, invalidate_icons, \
-	Row as ModelRow, Rows, TableModel
+	DimmedRole, Row as ModelRow, Rows, TableModel
 from unittest import TestCase
 
 class GetMoveDestinationTest(TestCase):
@@ -80,6 +80,22 @@ class RowsFindTest(TestCase):
 		self._rows = Rows()
 
 class TableModelTest(TestCase):
+	def test_dimmed_role_is_false_without_a_dimmer(self):
+		self._model.insert_rows([Row('a')])
+		self.assertFalse(self._model.data(self._model.index(0, 0), DimmedRole))
+	def test_dimmed_role_follows_the_dimmer(self):
+		self._model.insert_rows([Row('hidden'), Row('visible')])
+		self._model.set_dimmer(lambda key: key == 'hidden')
+		self.assertTrue(self._model.data(self._model.index(0, 0), DimmedRole))
+		self.assertFalse(self._model.data(self._model.index(1, 0), DimmedRole))
+	def test_set_dimmer_notifies_all_rows(self):
+		self._model.insert_rows([Row('a'), Row('b')])
+		self._model.dataChanged = StubSignal()
+		self._model.set_dimmer(lambda _key: True)
+		top_left, bottom_right, roles = self._model.dataChanged.args
+		self.assertEqual((0, 0), (top_left.row(), top_left.column()))
+		self.assertEqual((1, 0), (bottom_right.row(), bottom_right.column()))
+		self.assertEqual([DimmedRole], roles)
 	def test_empty(self):
 		# Sanity check
 		self._expect_rows([])
@@ -149,7 +165,7 @@ class TableModelTest(TestCase):
 
 class StubSignal:
 	def emit(self, *args):
-		pass
+		self.args = args
 
 class StubTableModel(TableModel):
 
@@ -170,7 +186,19 @@ class StubTableModel(TableModel):
 	def endRemoveRows(self):
 		pass
 	def index(self, row, column):
-		pass
+		return StubIndex(self, row, column)
+
+class StubIndex:
+	def __init__(self, model, row, column):
+		self._model, self._row, self._column = model, row, column
+	def isValid(self):
+		return True
+	def model(self):
+		return self._model
+	def row(self):
+		return self._row
+	def column(self):
+		return self._column
 
 class Row(namedtuple('Row', ('key', 'value'))):
 	def __new__(cls, key, value=None):

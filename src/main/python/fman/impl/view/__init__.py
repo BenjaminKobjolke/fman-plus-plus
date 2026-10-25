@@ -2,6 +2,7 @@ from fbs_runtime.platform import is_mac
 from fman.impl.background import chrome_is_transparent, focus_changes_pane, \
 	for_pane, pane_is_transparent
 from fman.impl.frameless_dialog import extra_margin
+from fman.impl.model.table import DimmedRole
 from fman.impl.util.qt import WA_MacShowFocusRect, Key_Home, Key_End, \
 	ShiftModifier, Key_Return, Key_Enter, ToolTipRole, connect_once
 from fman.impl.view.backgrounds import PAINTER, set_transparent
@@ -370,6 +371,10 @@ class FileListItemDelegate(QStyledItemDelegate):
 				return True
 		return False
 	def adapt_style_option(self, option, index):
+		if index.data(DimmedRole):
+			# Hidden files: no State_Enabled grays the icon (QIcon.Disabled) and
+			# gives QSS :disabled; flags stay enabled so selecting/renaming work.
+			option.state &= ~QStyle.State_Enabled
 		# We want to be able to style the first and last columns with QSS.
 		# However, unlike QTreeView::item, QTableView::item has no :first or
 		# :last selectors. We work around this by setting the fake

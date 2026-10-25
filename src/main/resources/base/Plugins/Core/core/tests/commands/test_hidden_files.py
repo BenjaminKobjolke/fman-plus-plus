@@ -1,5 +1,5 @@
 from core.commands.hidden_files import _get_pane_info, _hidden_file_filter, \
-	_forget_pane_info, _toggle_hidden_files
+	_forget_pane_info, _is_hidden_file, _toggle_hidden_files
 from fman import PLATFORM
 from stat import FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL
 from unittest import TestCase, skipIf
@@ -81,12 +81,14 @@ class ToggleHiddenFilesTest(TestCase):
 	def test_showing_removes_the_filter(self):
 		pane, settings, save_json = self._toggle(True)
 		pane._remove_filter.assert_called_once_with(_hidden_file_filter)
+		pane._set_dimmer.assert_called_once_with(_is_hidden_file)
 		pane._add_filter.assert_not_called()
 		self.assertTrue(settings[0]['show_hidden_files'])
 		save_json.assert_called_once_with('Panes.json')
 	def test_hiding_adds_the_filter(self):
 		pane, settings, _ = self._toggle(False)
 		pane._add_filter.assert_called_once_with(_hidden_file_filter)
+		pane._set_dimmer.assert_called_once_with(None)
 		pane._remove_filter.assert_not_called()
 		self.assertFalse(settings[0]['show_hidden_files'])
 	def _toggle(self, value):
@@ -95,9 +97,23 @@ class ToggleHiddenFilesTest(TestCase):
 		settings = []
 		with patch(
 			'core.commands.hidden_files.load_json', return_value=settings
-		), patch('core.commands.hidden_files.save_json') as save_json:
+		), patch('core.commands.hidden_files.save_json') as save_json, patch(
+			'core.commands.hidden_files.get_setting', return_value=True
+		):
 			_toggle_hidden_files(pane, value)
 		return pane, settings, save_json
+	def test_setting_disables_dimming(self):
+		pane = MagicMock()
+		pane.window.get_panes.return_value = [pane]
+		with patch(
+			'core.commands.hidden_files.load_json', return_value=[]
+		), patch('core.commands.hidden_files.save_json'), patch(
+			'core.commands.hidden_files.get_setting', return_value=False
+		):
+			_toggle_hidden_files(pane, True)
+		pane._set_dimmer.assert_called_once_with(None)
+	def test_non_file_locations_are_not_dimmed(self):
+		self.assertFalse(_is_hidden_file('zip://C:/archive.zip/file.txt'))
 
 class ForgetPaneInfoTest(TestCase):
 	def test_deletes_entry_and_saves(self):

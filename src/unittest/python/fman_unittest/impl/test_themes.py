@@ -51,6 +51,18 @@ class SubstituteTest(TestCase):
 		self.assertEqual('100$ ', substitute('100$ ', {'foo': 'x'}))
 
 class ResolveColorsTest(TestCase):
+	def test_hidden_file_colors_follow_pane_foreground_at_sixty_percent(self):
+		result = resolve_colors({'colors': {'pane_fg': '#abcdef'}})
+		self.assertEqual('#99abcdef', result['pane_hidden_fg'])
+	def test_explicit_hidden_file_color_wins(self):
+		result = resolve_colors({'colors': {
+			'pane_fg': '#abcdef', 'pane_hidden_fg': '#123456'
+		}})
+		self.assertEqual('#123456', result['pane_hidden_fg'])
+	def test_hidden_directory_color_follows_directory_fallback(self):
+		result = resolve_colors({'colors': {'pane_fg_dir': '#123456'}})
+		self.assertEqual('#99123456', result['pane_hidden_fg_dir'])
+		self.assertEqual('#99ffffff', resolve_colors({})['pane_hidden_fg_dir'])
 	def test_empty_theme_is_the_default(self):
 		self.assertEqual(DEFAULT_COLORS, resolve_colors({}))
 	def test_overrides_only_what_it_names(self):

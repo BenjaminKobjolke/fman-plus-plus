@@ -121,6 +121,8 @@ DEFAULT_COLORS = {
 	'pane_bg': '#272822',
 	'pane_fg': '#75715e',
 	'pane_fg_dir': 'white',
+	'pane_hidden_fg': '#9975715e',
+	'pane_hidden_fg_dir': '#99ffffff',
 	'pane_selected_fg': '#f92672',
 	'pane_cursor_bg': '#49483e',
 	'header_bg': '#363731',
@@ -209,6 +211,14 @@ FALLBACKS = {
 	'palette_shadow': 'button_bg'
 }
 
+# Derive faded colors from each theme; a fixed fallback can be brighter than
+# a theme's pane foreground.
+_FADED = {
+	'pane_hidden_fg': 'pane_fg',
+	'pane_hidden_fg_dir': 'pane_fg_dir'
+}
+_HIDDEN_OPACITY = 0.6
+
 # A theme's value ends up inside a QSS declaration, so anything that could
 # close it turns a theme file into a stylesheet injection. The quotes are
 # in here for the font family: build_tokens wraps it in double quotes, so
@@ -231,7 +241,16 @@ def resolve_colors(theme_json):
 		key: value for key, value in (theme_json.get('colors') or {}).items()
 		if key in DEFAULT_COLORS and is_valid_color(value)
 	}
-	return {token: _resolve(token, given) for token in DEFAULT_COLORS}
+	result = {token: _resolve(token, given) for token in DEFAULT_COLORS}
+	for token, parent in _FADED.items():
+		if token not in given:
+			result[token] = _faded(result[parent])
+	return result
+
+def _faded(color):
+	color = QColor(color)
+	color.setAlphaF(color.alphaF() * _HIDDEN_OPACITY)
+	return color.name(QColor.HexArgb)
 
 def build_tokens(colors, font):
 	"""

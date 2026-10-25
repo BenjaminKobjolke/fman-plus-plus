@@ -3,9 +3,11 @@
 "Toggle hidden files" flips the pane's filter; `InitHiddenFilesFilter`
 installs it at startup because fman instantiates commands lazily and the
 filter has to exist before the first pane is drawn. The per-pane choice
-lives in 'Panes.json' so it survives a restart.
+lives in 'Panes.json' so it survives a restart. Shown hidden entries are
+faded unless `dim_hidden_files` in Core Settings.json is false.
 """
 from core.commands.util import is_hidden
+from core.settings import get_setting, SETTINGS_FILE
 from fman import DirectoryPaneCommand, DirectoryPaneListener, PLATFORM, \
 	load_json, save_json
 from fman.fs import query
@@ -13,6 +15,8 @@ from fman.url import splitscheme
 from stat import FILE_ATTRIBUTE_HIDDEN
 
 __all__ = ['InitHiddenFilesFilter', 'ToggleHiddenFiles']
+
+_DIM_SETTING_KEY = 'dim_hidden_files'
 
 class ToggleHiddenFiles(DirectoryPaneCommand):
 
@@ -29,6 +33,8 @@ class InitHiddenFilesFilter(DirectoryPaneListener):
 		# lazily.
 		if not _is_showing_hidden_files(self.pane):
 			_toggle_hidden_files(self.pane, False)
+		else:
+			_apply_dimmer(self.pane, True)
 
 def _is_showing_hidden_files(pane):
 	return _get_pane_info(pane)['show_hidden_files']
@@ -50,6 +56,13 @@ def _toggle_hidden_files(pane, value):
 	save_json('Panes.json')
 	# When we toggle hidden files again, this avoids an error caused by
 	# `_remove_filter` being called for a non-active filter.
+	_apply_dimmer(pane, value)
+
+def _apply_dimmer(pane, showing_hidden):
+	dimmer = _is_hidden_file if showing_hidden and get_setting(
+		SETTINGS_FILE, _DIM_SETTING_KEY, True
+	) else None
+	pane._set_dimmer(dimmer)
 
 def _get_pane_info(pane):
 	settings = load_json('Panes.json', default=[])
@@ -84,3 +97,6 @@ def _hidden_file_filter(url):
 			return True
 		return not attrs & FILE_ATTRIBUTE_HIDDEN
 	return not is_hidden(path)
+
+def _is_hidden_file(url):
+	return not _hidden_file_filter(url)

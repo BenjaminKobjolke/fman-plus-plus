@@ -7,6 +7,9 @@ from fman.impl.util.qt import DisplayRole, EditRole, DecorationRole, \
 from PyQt5.QtCore import QModelIndex, QVariant, Qt
 from threading import RLock
 
+# Draw this row faded.
+DimmedRole = Qt.UserRole + 1
+
 class TableModel:
 	"""
 	Mixin for QAbstractTableModel. Encapsulates the logic for a table where each
@@ -18,6 +21,7 @@ class TableModel:
 		self.transaction_ended = Event()
 		self._column_headers = column_headers
 		self._rows = Rows()
+		self._dimmer = None
 		self._transaction_level = 0
 		self._transaction_made_changes = False
 	def rowCount(self, parent=QModelIndex()):
@@ -38,13 +42,24 @@ class TableModel:
 		return len(self._column_headers)
 	def data(self, index, role=DisplayRole):
 		if self._index_is_valid(index):
-			if role in (DisplayRole, EditRole):
+			if role == DimmedRole:
+				return self._dimmer is not None \
+					and self._dimmer(self._rows[index.row()].key)
+			elif role in (DisplayRole, EditRole):
 				return self._rows[index.row()].cells[index.column()].str
 			elif role == DecorationRole and index.column() == 0:
 				return self._rows[index.row()].icon
 			elif role == ToolTipRole:
 				return super().data(index, DisplayRole)
 		return QVariant()
+	def set_dimmer(self, dimmer):
+		self._dimmer = dimmer
+		if self.rowCount():
+			self.dataChanged.emit(
+				self.index(0, 0),
+				self.index(self.rowCount() - 1, self.columnCount() - 1),
+				[DimmedRole]
+			)
 	def headerData(self, section, orientation, role=DisplayRole):
 		if orientation == Qt.Horizontal and role == DisplayRole \
 			and 0 <= section < self.columnCount():
