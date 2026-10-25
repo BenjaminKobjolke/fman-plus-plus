@@ -139,6 +139,24 @@ other = panes[(panes.index(pane) + 1) % len(panes)]
 There are two panes by default, but the count comes from the saved session, so
 never assume exactly two.
 
+### Pane status messages
+
+Use a pane's status methods for feedback that belongs to that pane. A message
+appears in its own line and, by default, is also copied to the window-wide
+[status bar](STATUSBAR.md). `timeout_secs` is optional; without it, the message
+stays until replaced or cleared.
+
+```python
+self.pane.show_status_message('Copied 3 files', timeout_secs=3)
+self.pane.clear_status_message()
+```
+
+`clear_status_message()` clears this pane's line. It also clears the window
+status bar only if the bar still contains this pane's message, so it cannot
+erase newer feedback. The commands **Toggle pane status lines** and **Toggle
+pane messages in status bar** control these destinations; their saved settings
+and theme support are described in the [status bar guide](STATUSBAR.md).
+
 Plugins can change the pane count through the window:
 
 | Method | Does |

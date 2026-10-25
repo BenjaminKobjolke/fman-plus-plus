@@ -72,14 +72,18 @@ All three viewers work the same way where it counts:
   The exception is the zoom rows, which follow the global pane font-size
   shortcut and so edit `Key Bindings (<OS>).json` instead; see
   [`docs/COMMAND_PALETTE_KEYBINDINGS.md`](../COMMAND_PALETTE_KEYBINDINGS.md).
-- **Status bar feedback:** every palette action confirms what it did in the
-  [status bar](../STATUSBAR.md) — `Reloaded from disk`, `Edit mode`, `Saved`,
-  `Font size 12`, `Zoom 125%`, `Paused`, `Renamed to notes.md`, or the name of
-  the file Next/Previous landed on. It matters most where the pane looks unchanged afterwards: a
-  reload of a file that hasn't changed on disk is otherwise invisible. Messages
-  clear after 3 seconds. The exceptions are "Exit viewer" (the file list coming
-  back says it) and [search](../views/TEXT_VIEWER.md#search), whose line stays
-  up for as long as search mode is active.
+- **Status feedback:** every palette action confirms what it did —
+  `Reloaded from disk`, `Edit mode`, `Saved`, `Font size 12`, `Zoom 125%`,
+  `Paused`, `Renamed to notes.md`, or the name of the file Next/Previous
+  landed on. These messages appear in the line at the bottom of the pane
+  showing the viewer and, by default, in the window-wide
+  [status bar](../STATUSBAR.md). It matters most where the pane looks unchanged
+  afterwards: a reload of a file that hasn't changed on disk is otherwise
+  invisible. Messages clear after 3 seconds. The exceptions are "Exit viewer"
+  (the file list coming back says it) and
+  [search](../views/TEXT_VIEWER.md#search), whose line stays up for as long as
+  search mode is active. The two pane-message destinations can be configured
+  with **Toggle pane status lines** and **Toggle pane messages in status bar**.
 - **Per-pane, one at a time:** opening a viewer replaces whatever viewer is
   already open in that pane; the other pane is unaffected.
 - **Theme-aware:** background/letterbox colors follow the active file-list

@@ -126,6 +126,10 @@ does it; its rows are held apart by the green text alone.
 | `readonly_fg` | `muted_fg` |
 | `input_border`, `locationbar_border`, `palette_midlight` | `header_bg` |
 | `statusbar_bg_bottom` | `statusbar_bg_top` |
+| `pane_statusbar_bg_top` | `statusbar_bg_top` |
+| `pane_statusbar_bg_bottom` | `pane_statusbar_bg_top` |
+| `pane_statusbar_fg` | `bright_fg` |
+| `pane_statusbar_border` | `border` |
 | `popup_query_border`, `popup_query_inner_border`, `popup_divider_top`, `popup_divider_bottom`, `popup_input_border` | `border` |
 | `popup_input_bg` | `input_bg` |
 | `popup_input_fg` | `bright_fg` |
@@ -408,7 +412,8 @@ fixed set of selectors, mapped to real Qt ones (`_CSS_TO_QSS`):
 |--------------|------------------|
 | `*` | `*` (everything) |
 | `th` | `QTableView QHeaderView::section` |
-| `.statusbar` | `QStatusBar, QStatusBar QLabel` |
+| `.statusbar` | `QStatusBar, QStatusBar QLabel, PaneStatusLine` |
+| `.pane-statusbar` | `PaneStatusLine` |
 | `.locationbar` | `LocationBar:read-only` |
 | `.quicksearch-query` | `Quicksearch QLineEdit` |
 | `.quicksearch-item` | `Quicksearch QListView::item` |

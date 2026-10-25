@@ -11,9 +11,17 @@ immediately, and is remembered across restarts.
   Windows and Linux fman has no menu at all, so the command is not registered
   and does not appear in the palette.
 
-The bar at the bottom has its own command, `toggle_status_bar`, on every
-platform — see [`docs/STATUSBAR.md`](../STATUSBAR.md). It shares this page's
-persistence mechanism (`WindowChrome`) and none of its caveats.
+The bars and messages below the panes have three commands on every platform —
+see [`docs/STATUSBAR.md`](../STATUSBAR.md):
+
+| Command | What it controls |
+|---------|------------------|
+| `toggle_status_bar` | The window-wide message strip at the bottom |
+| `toggle_pane_status_lines` | The message line under each pane |
+| `toggle_pane_messages_in_status_bar` | Whether pane messages are also copied to the window bar |
+
+Their settings persist across restarts. The pane commands do not share the
+title-bar caveats described here.
 
 The two are never stacked inside the window: hiding the title bar does not
 uncover a menu row below it, because on the platforms where the title bar sits

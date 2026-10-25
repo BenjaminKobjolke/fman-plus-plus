@@ -14,6 +14,8 @@ except *Center window* are remembered across restarts.
 | `toggle_title_bar` | Hides the OS title bar and the window frame with it | [window-bars.md](functions/window-bars.md) |
 | `toggle_menu_bar` | Hides fman's **Help** menu — **macOS only** | [window-bars.md](functions/window-bars.md) |
 | `toggle_status_bar` | Hides the message strip along the bottom | [STATUSBAR.md](STATUSBAR.md) |
+| `toggle_pane_status_lines` | Shows or hides the message line under each pane | [STATUSBAR.md](STATUSBAR.md#pane-status-lines) |
+| `toggle_pane_messages_in_status_bar` | Copies pane messages to the window status bar | [STATUSBAR.md](STATUSBAR.md#pane-status-lines) |
 | `set_window_opacity` | Makes the whole window see-through | [window-opacity.md](functions/window-opacity.md) |
 | `center_window` | Puts the window back in the middle of its screen | [below](#center-window) |
 | `minimize` | Minimizes the window | — |
@@ -26,7 +28,9 @@ is not something you switch on. It is a theme color — see
 
 The title bar, the macOS menu bar and the status bar each toggle on their own
 and each stay off across restarts, sharing one persistence mechanism
-(`WindowChrome`).
+(`WindowChrome`). The pane status commands configure the per-pane message lines
+and whether their messages are copied to the window status bar; see
+[Pane status lines](STATUSBAR.md#pane-status-lines).
 
 Two things worth knowing before hiding the title bar:
 

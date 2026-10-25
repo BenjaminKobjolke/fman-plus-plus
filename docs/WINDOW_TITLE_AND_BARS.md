@@ -71,8 +71,12 @@ stay off across restarts:
 There is no menu on Windows or Linux, so `toggle_menu_bar` is not registered
 there and never shows up in the palette.
 
-The bar *below* the panes goes the same way: `toggle_status_bar`, everywhere,
-also remembered — see [`docs/STATUSBAR.md`](STATUSBAR.md).
+The bars and messages below the panes have three more commands:
+`toggle_status_bar` hides the window-wide status bar,
+`toggle_pane_status_lines` shows or hides the line under each pane, and
+`toggle_pane_messages_in_status_bar` controls whether pane messages are copied
+to the window bar. Their settings persist across restarts; see
+[`docs/STATUSBAR.md`](STATUSBAR.md).
 
 Hiding the title bar hides the title described above with it — the string is
 still set, there is just nothing drawing it, and it comes back untouched when
