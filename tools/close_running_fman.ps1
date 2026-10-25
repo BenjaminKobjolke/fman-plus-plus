@@ -23,7 +23,9 @@ if (-not (Test-Path -LiteralPath $prefix)) { exit 0 }
 # They are not ours to close, so name them and stop the build. The Restart
 # Manager answers "who holds these files" directly; enumerating every process's
 # modules from PowerShell takes minutes.
-Add-Type -TypeDefinition @'
+function Initialize-Interop {
+    if ('FileLockers' -as [type]) { return }
+    Add-Type -TypeDefinition @'
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -52,19 +54,20 @@ public static class FileLockers {
 
     public static int[] Find(string[] files) {
         uint handle;
-        if (RmStartSession(out handle, 0, Guid.NewGuid().ToString()) != 0) return new int[0];
+        int result = RmStartSession(out handle, 0, Guid.NewGuid().ToString());
+        if (result != 0) throw new InvalidOperationException("RmStartSession failed with error code " + result + ".");
         try {
-            if (RmRegisterResources(handle, (uint)files.Length, files, 0, IntPtr.Zero, 0, null) != 0) return new int[0];
+            result = RmRegisterResources(handle, (uint)files.Length, files, 0, IntPtr.Zero, 0, null);
+            if (result != 0) throw new InvalidOperationException("RmRegisterResources failed with error code " + result + ".");
             uint needed, count = 0, reasons = 0;
             RM_PROCESS_INFO[] infos = null;
-            int result;
             // ERROR_MORE_DATA (234): the list grew between the two calls.
             do {
                 infos = new RM_PROCESS_INFO[count];
                 result = RmGetList(handle, out needed, ref count, infos, ref reasons);
                 count = needed;
             } while (result == 234);
-            if (result != 0) return new int[0];
+            if (result != 0) throw new InvalidOperationException("RmGetList failed with error code " + result + ".");
             var ids = new List<int>();
             for (int i = 0; i < needed; i++) ids.Add(infos[i].Process.dwProcessId);
             return ids.ToArray();
@@ -109,11 +112,13 @@ public static class FmanWindow {
     }
 }
 '@
+}
 
 function Exit-IfDllsLocked {
     if (-not (Test-Path -LiteralPath $prefix)) { return }
     $files = @(Get-ChildItem -LiteralPath $prefix -Recurse -File -Include *.dll, *.pyd | ForEach-Object FullName)
     if ($files.Count -eq 0) { return }
+    Initialize-Interop
     $holders = @([FileLockers]::Find($files) | Sort-Object -Unique)
     if ($holders.Count -eq 0) { return }
     foreach ($id in $holders) {
@@ -129,6 +134,7 @@ if ($running.Count -eq 0) { Exit-IfDllsLocked; exit 0 }
 
 $waitSeconds = $TimeoutSeconds
 foreach ($process in $running) {
+    Initialize-Interop
     if ([FmanWindow]::AskToClose($process.Id, $MessageName, $CountdownSeconds)) {
         Write-Host "$($process.ProcessName) (PID $($process.Id)) closes in $CountdownSeconds s. Press Esc there to keep it running."
         $waitSeconds = $TimeoutSeconds + $CountdownSeconds
