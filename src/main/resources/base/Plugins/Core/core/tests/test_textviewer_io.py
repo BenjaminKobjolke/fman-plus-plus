@@ -110,6 +110,9 @@ class _StubView:
 	# PaneTextView is a QPlainTextEdit and would need a QApplication.
 	def toPlainText(self):
 		return 'contents'
+	def __init__(self):
+		from core.tests.viewer_stubs import StubPane
+		self._nav = type('Nav', (), {'pane': StubPane([])})()
 
 class WriteTest(TestCase):
 	def test_writes_the_buffer_as_utf8(self):
@@ -123,6 +126,8 @@ class WriteTest(TestCase):
 		# Uncaught, a palette save would traceback and the user would believe
 		# it saved.
 		missing_dir = os.path.join(_write_temp_file(self, b''), 'nope.txt')
-		with patch('core.viewer_status.show_status_message') as status:
-			self.assertFalse(write_view(_StubView(), missing_dir))
-		self.assertIn('Could not save:', status.call_args[0][0])
+		view = _StubView()
+		self.assertFalse(write_view(view, missing_dir))
+		message, timeout = view._nav.pane.status_messages[0]
+		self.assertIn('Could not save:', message)
+		self.assertEqual(3, timeout)

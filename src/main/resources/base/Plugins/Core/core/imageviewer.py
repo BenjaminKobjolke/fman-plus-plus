@@ -188,12 +188,12 @@ class PaneImageView(QScrollArea):
 		]
 
 	def _fit_to_window(self):
-		reset_image_scale(self._apply_scale)
+		reset_image_scale(self, self._apply_scale)
 
 	def _actual_size(self):
 		save_scale(1.0)
 		self._apply_scale(1.0)
-		viewer_status(zoom_message(1.0))
+		viewer_status(self._nav.pane, zoom_message(1.0))
 
 @run_in_main_thread
 def show_image_viewer(pane, url, focus_view=True):

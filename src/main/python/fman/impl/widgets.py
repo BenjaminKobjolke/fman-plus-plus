@@ -3,6 +3,7 @@ from fman import APP_NAME, OK
 from fman.impl.background import chrome_is_transparent, for_window
 from fman.impl.frameless_dialog import make_frameless
 from fman.impl.model import SortedFileSystemModel
+from fman.impl.pane_status import PaneStatusLine, PaneStatusMode
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.util.qt import disable_window_animations_mac, Key_Escape, \
 	NoFocus, Key_Backspace, DisplayRole
@@ -85,7 +86,9 @@ class DirectoryPaneWidget(QWidget):
 		self._file_view.setModel(self._model)
 		self._file_view.doubleClicked.connect(self._on_doubleclicked)
 		self._file_view.key_press_event_filter = self._on_key_pressed
-		self.setLayout(Layout(self._location_bar, self._file_view))
+		self._status_line = PaneStatusLine(self)
+		self.setLayout(Layout(
+			self._location_bar, self._file_view, self._status_line))
 		self._location_bar.setFocusProxy(self._file_view)
 		self.setFocusProxy(self._file_view)
 		# The widget currently shown in place of the file list - a file
@@ -115,6 +118,13 @@ class DirectoryPaneWidget(QWidget):
 		# column header and the status bar, so it clears the same way.
 		self._file_view.set_backgrounds(backgrounds, pane_index)
 		set_transparent(self._location_bar, chrome_is_transparent(backgrounds))
+		set_transparent(self._status_line, chrome_is_transparent(backgrounds))
+	def set_status_message(self, text, timeout_secs=None):
+		self._status_line.set_status_message(text, timeout_secs)
+	def clear_status_message(self):
+		self._status_line.clear_status_message()
+	def set_status_line_visible(self, visible):
+		self._status_line.set_status_line_visible(visible)
 	def resizeEvent(self, e):
 		super().resizeEvent(e)
 		self._filter_bar.reposition()
@@ -377,6 +387,8 @@ class MainWindow(QMainWindow):
 		self._panes = []
 		self._file_list_icon_size = None
 		self._backgrounds = ()
+		self._pane_status_mode = PaneStatusMode(True, True)
+		self._pane_status_bar_owner = None
 		self._splitter = Splitter(self)
 		self.setCentralWidget(self._splitter)
 		self._status_bar = QStatusBar(self)
@@ -543,6 +555,7 @@ class MainWindow(QMainWindow):
 	@run_in_main_thread
 	def show_status_message(self, text, timeout_secs=None):
 		self._status_bar_text.setText(text)
+		self._pane_status_bar_owner = None
 		if timeout_secs:
 			self._timer.start(int(timeout_secs * 1000))
 		else:
@@ -551,11 +564,28 @@ class MainWindow(QMainWindow):
 	def clear_status_message(self):
 		self.show_status_message('Ready.')
 	@run_in_main_thread
+	def set_pane_status_mode(self, mode):
+		self._pane_status_mode = mode
+		for pane in self._panes:
+			pane.set_status_line_visible(mode.lines_visible)
+	@run_in_main_thread
+	def show_pane_status_message(self, pane, text, timeout_secs=None):
+		pane.set_status_message(text, timeout_secs)
+		if self._pane_status_mode.copies_to_status_bar:
+			self.show_status_message(text, timeout_secs)
+			self._pane_status_bar_owner = pane
+	@run_in_main_thread
+	def clear_pane_status_message(self, pane):
+		pane.clear_status_message()
+		if self._pane_status_bar_owner is pane:
+			self.clear_status_message()
+	@run_in_main_thread
 	def add_pane(self):
 		result = DirectoryPaneWidget(
 			self._fs, self._null_location, self._splitter, self._controller
 		)
 		result.set_icon_size(self._file_list_icon_size)
+		result.set_status_line_visible(self._pane_status_mode.lines_visible)
 		self._panes.append(result)
 		# After the append, because the pane's own index is what decides
 		# which of the theme's images belong to it.

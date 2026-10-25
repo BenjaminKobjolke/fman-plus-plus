@@ -34,7 +34,10 @@ def mount_widget(pane, pane_widget, view, focus=True):
 	mounting into the *other* pane (ViewFileInOtherPane), so the pane the
 	command ran from stays focused for continued browsing.
 	"""
-	pane_widget.layout().addWidget(view)
+	# Keep the pane status line last so it stays at the bottom while mounted
+	# viewers and plugin widgets take the file list's place.
+	pane_widget.layout().insertWidget(
+		pane_widget.layout().count() - 1, view)
 	pane_widget._file_view.setVisible(False)
 	pane_widget._mounted_widget = view
 	# Re-point the pane's focus proxy at the mounted widget. switch_panes()

@@ -211,7 +211,7 @@ class PaneVideoView(QWidget):
 		# gets the same text, so video feedback reads the same as every other
 		# viewer's even when the OSD is missed or the video is letterboxed.
 		self._player.show_text(text, 1000)
-		viewer_status(text)
+		viewer_status(self._nav.pane, text)
 
 	def _restart(self):
 		self._player.time_pos = 0

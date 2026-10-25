@@ -8,7 +8,7 @@ class Theme:
 	_CSS_TO_QSS = {
 		'*': '*',
 		'th': 'QTableView QHeaderView::section',
-		'.statusbar': 'QStatusBar, QStatusBar QLabel',
+		'.statusbar': 'QStatusBar, QStatusBar QLabel, PaneStatusLine',
 		'.quicksearch-query': 'Quicksearch QLineEdit',
 		'.quicksearch-item': 'Quicksearch QListView::item',
 		'.locationbar': 'LocationBar:read-only'

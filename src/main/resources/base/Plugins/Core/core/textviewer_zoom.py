@@ -35,13 +35,14 @@ def change_view_font_size(view, apply_size, delta):
 	# Reported here rather than from the palette entry so the Alt+Up/Alt+Down
 	# key path (zoom_delta_for) confirms the step too.
 	viewer_status(
+		view._nav.pane,
 		'Font size %d'
 		% change_font_size(_SETTING_KEY, view.font, apply_size, delta)
 	)
 
-def reset_view_font_size(apply_size):
+def reset_view_font_size(view, apply_size):
 	reset_font_size(_SETTING_KEY, apply_size)
-	viewer_status('Font size reset')
+	viewer_status(view._nav.pane, 'Font size reset')
 
 def zoom_step(title, command, key_bindings, run):
 	"""
@@ -75,7 +76,7 @@ def zoom_actions(view, apply_size, key_bindings):
 		step('Increase font size', +1, INCREASE_COMMAND),
 		step('Decrease font size', -1, DECREASE_COMMAND),
 		(
-			'Reset font size', lambda: reset_view_font_size(apply_size), '',
+			'Reset font size', lambda: reset_view_font_size(view, apply_size), '',
 			RESET_COMMAND,
 		),
 	]

@@ -51,10 +51,11 @@ def _same_type_key(category):
 def get_same_type_only(category):
 	return bool(get_setting(SETTINGS_FILE, _same_type_key(category), True))
 
-def toggle_same_type_only(category):
+def toggle_same_type_only(pane, category):
 	new_value = not get_same_type_only(category)
 	save_setting(SETTINGS_FILE, _same_type_key(category), new_value)
 	viewer_status(
+		pane,
 		'Advance only for same type: %s' % ('on' if new_value else 'off')
 	)
 	return new_value
@@ -101,7 +102,12 @@ class ViewerNavigator:
 		advance(self._pane, -1, self._category)
 
 	def toggle_same_type(self):
-		toggle_same_type_only(self._category)
+		toggle_same_type_only(self._pane, self._category)
+
+	@property
+	def pane(self):
+		"""The pane currently displaying this viewer."""
+		return self._pane
 
 	def delete_file(self):
 		delete_current(
@@ -115,7 +121,7 @@ class ViewerNavigator:
 		)
 
 	def toggle_after_delete(self):
-		toggle_close_after_delete()
+		toggle_close_after_delete(self._pane)
 
 	def run_pane_shortcut(self, key_event):
 		if self._on_close is None:
@@ -273,7 +279,7 @@ def advance(pane, direction, category):
 			# Qt's moveCursor clamps at the ends (no wrap), so an unchanged
 			# cursor means we hit the boundary without finding a match.
 			pane.place_cursor_at(start)
-			viewer_status('No further file to view')
+			viewer_status(pane, 'No further file to view')
 			return
 		if not accepts(after, category, same_type_only):
 			continue
@@ -281,5 +287,5 @@ def advance(pane, direction, category):
 		# Named, not silent: the pane looks the same after a successful step
 		# except for the content itself, which may not say which file it is.
 		# After view_file, so mounting the new viewer can't overwrite it.
-		viewer_status(basename(after))
+		viewer_status(pane, basename(after))
 		return

@@ -2,6 +2,7 @@ from core.textviewer_zoom import (
 	change_view_font_size, reset_view_font_size, zoom_actions, zoom_delta_for,
 )
 from core.viewer_navigation import ViewerAction
+from core.tests.viewer_stubs import StubPane
 from fman.impl.util.qt.key_event import QtKeyEvent
 from PyQt5.QtCore import Qt
 from unittest import TestCase
@@ -79,17 +80,17 @@ class ZoomStatusMessageTest(TestCase):
 		# Only `font` is read, and only to hand it to change_font_size -
 		# which is patched out here, so it is never called.
 		font = None
+		def __init__(self):
+			self._nav = type('Nav', (), {'pane': StubPane([])})()
 
 	def test_a_step_reports_the_size_it_settled_on(self):
-		with patch('core.viewer_status.show_status_message') as status:
-			with patch(
-				'core.textviewer_zoom.change_font_size', return_value=15
-			):
-				change_view_font_size(self._FakeView(), lambda size: None, +1)
-		self.assertEqual('Font size 15', status.call_args[0][0])
+		view = self._FakeView()
+		with patch('core.textviewer_zoom.change_font_size', return_value=15):
+			change_view_font_size(view, lambda size: None, +1)
+		self.assertEqual([('Font size 15', 3)], view._nav.pane.status_messages)
 
 	def test_reset_says_so(self):
-		with patch('core.viewer_status.show_status_message') as status:
-			with patch('core.textviewer_zoom.reset_font_size'):
-				reset_view_font_size(lambda size: None)
-		self.assertEqual('Font size reset', status.call_args[0][0])
+		view = self._FakeView()
+		with patch('core.textviewer_zoom.reset_font_size'):
+			reset_view_font_size(view, lambda size: None)
+		self.assertEqual([('Font size reset', 3)], view._nav.pane.status_messages)

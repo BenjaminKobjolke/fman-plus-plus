@@ -75,6 +75,14 @@ class ThemeTest(TestCase):
 		self.assertLess(
 			stylesheet.index('#123456'), stylesheet.index('font-size: 14pt')
 		)
+	def test_statusbar_font_rule_covers_pane_status_lines(self):
+		theme = self._make_theme()
+		theme.load(self._write(
+			'Theme.css', _QUICKSEARCH_CSS + '\n.statusbar { font-size: 8pt; }'))
+		theme.enable_updates()
+		self.assertIn(
+			'QStatusBar, QStatusBar QLabel, PaneStatusLine {',
+			self._app.stylesheet)
 	def test_unload_forgets_the_source(self):
 		theme = self._make_theme()
 		path = self._write('Theme.css', _QUICKSEARCH_CSS)

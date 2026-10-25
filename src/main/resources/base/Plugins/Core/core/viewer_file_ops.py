@@ -45,10 +45,11 @@ def get_close_after_delete():
 	# too easy to do by accident as a default.
 	return bool(get_setting(SETTINGS_FILE, _CLOSE_AFTER_DELETE_KEY, True))
 
-def toggle_close_after_delete():
+def toggle_close_after_delete(pane):
 	new_value = not get_close_after_delete()
 	save_setting(SETTINGS_FILE, _CLOSE_AFTER_DELETE_KEY, new_value)
 	viewer_status(
+		pane,
 		'After deleting: %s' % ('close viewer' if new_value else 'next file')
 	)
 	return new_value
@@ -69,7 +70,7 @@ def after_file_gone(pane, category, on_close):
 		on_close()
 	elif accepts(cursor_file, category, get_same_type_only(category)):
 		pane.run_command('view_file')
-		viewer_status(basename(cursor_file))
+		viewer_status(pane, basename(cursor_file))
 	else:
 		advance(pane, +1, category)
 		if pane.get_file_under_cursor() == cursor_file:
@@ -128,5 +129,5 @@ def rename_current(pane, url, on_renamed=None):
 			return
 		if on_renamed is not None:
 			on_renamed(new_url)
-		viewer_status('Renamed to %s' % basename(new_url))
+		viewer_status(pane, 'Renamed to %s' % basename(new_url))
 	_in_background(rename)

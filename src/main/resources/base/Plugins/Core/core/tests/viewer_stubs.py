@@ -26,6 +26,10 @@ class StubPane:
 		self._aliases = aliases or {}
 		self._viewer_commands = set(viewer_commands)
 		self.on_run = on_run
+		self.status_messages = []
+
+	def show_status_message(self, text, timeout_secs=None):
+		self.status_messages.append((text, timeout_secs))
 
 	def get_selected_files(self):
 		return list(self.selected)

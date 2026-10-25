@@ -17,11 +17,7 @@ class _SettingsTestCase(TestCase):
 			patcher = patch('core.viewer_file_ops.' + name, func)
 			patcher.start()
 			self.addCleanup(patcher.stop)
-		# Every viewer message goes through core/viewer_status.py, so that is
-		# where show_status_message has to be patched out.
-		patcher = patch('core.viewer_status.show_status_message')
-		patcher.start()
-		self.addCleanup(patcher.stop)
+		self.pane = StubPane([])
 		# Run the off-the-Qt-thread work inline, so assertions see it done.
 		patcher = patch('core.viewer_file_ops._in_background', lambda work: work())
 		patcher.start()
@@ -32,14 +28,14 @@ class CloseAfterDeletePersistenceTest(_SettingsTestCase):
 		self.assertIs(True, get_close_after_delete())
 
 	def test_toggle_flips_and_persists(self):
-		self.assertIs(False, toggle_close_after_delete())
+		self.assertIs(False, toggle_close_after_delete(self.pane))
 		self.assertIs(False, get_close_after_delete())
-		self.assertIs(True, toggle_close_after_delete())
+		self.assertIs(True, toggle_close_after_delete(self.pane))
 		self.assertIs(True, get_close_after_delete())
 
 	def test_label_offers_the_other_mode(self):
 		self.assertEqual('Go to next file after deleting', after_delete_label())
-		toggle_close_after_delete()
+		toggle_close_after_delete(self.pane)
 		self.assertEqual('Close viewer after deleting', after_delete_label())
 
 class DeleteCurrentTest(_SettingsTestCase):
@@ -85,7 +81,7 @@ class DeleteCurrentTest(_SettingsTestCase):
 		self.assertEqual([], pane.commands)
 
 	def test_next_file_mode_advances_and_stays_open(self):
-		toggle_close_after_delete()
+		toggle_close_after_delete(self.pane)
 		pane = StubPane(['file:///a.png', 'file:///b.png'], cursor=0)
 		self._delete(pane)
 		self.assertEqual([], self.closed)
@@ -94,7 +90,7 @@ class DeleteCurrentTest(_SettingsTestCase):
 		self.assertEqual([['file:///a.png']], self.trashed)
 
 	def test_next_file_mode_closes_when_there_is_no_next_file(self):
-		toggle_close_after_delete()
+		toggle_close_after_delete(self.pane)
 		pane = StubPane(['file:///a.png'], cursor=0)
 		self._delete(pane)
 		# advance() put the cursor back on the file we are deleting, so there
@@ -185,12 +181,12 @@ class AfterFileGoneTest(_SettingsTestCase):
 		after_file_gone(pane, 'image', lambda: closed.append(True))
 		self.assertEqual([True], closed)
 		self.assertEqual([], pane.commands)
-		toggle_close_after_delete()
+		toggle_close_after_delete(self.pane)
 		after_file_gone(StubPane([]), 'image', lambda: closed.append(True))
 		self.assertEqual([True, True], closed)
 
 	def test_next_mode_uses_cursor_or_advances(self):
-		toggle_close_after_delete()
+		toggle_close_after_delete(self.pane)
 		closed = []
 		pane = StubPane(['file:///b.png'])
 		after_file_gone(pane, 'image', lambda: closed.append(True))
@@ -202,7 +198,7 @@ class AfterFileGoneTest(_SettingsTestCase):
 		self.assertEqual([], closed)
 
 	def test_next_mode_closes_if_no_viewable_file(self):
-		toggle_close_after_delete()
+		toggle_close_after_delete(self.pane)
 		closed = []
 		pane = StubPane(['file:///sub'])
 		after_file_gone(pane, 'image', lambda: closed.append(True))

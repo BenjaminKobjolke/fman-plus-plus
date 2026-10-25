@@ -182,6 +182,13 @@ class DirectoryPane:
 		unmount_widget(self._widget)
 	def get_mounted_widget(self):
 		return self._widget._mounted_widget
+	def show_status_message(self, text, timeout_secs=None):
+		"""Show a message for this pane, optionally clearing it after a timeout."""
+		return self.window._widget.show_pane_status_message(
+			self._widget, text, timeout_secs)
+	def clear_status_message(self):
+		"""Clear this pane's message without removing another pane's message."""
+		return self.window._widget.clear_pane_status_message(self._widget)
 	def get_colors(self):
 		"""
 		This pane's live (background, foreground) as hex strings. Mounted

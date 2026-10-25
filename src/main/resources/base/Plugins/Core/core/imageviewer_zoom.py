@@ -47,9 +47,9 @@ def change_image_scale(
 	new_scale = clamp_scale(base * (SCALE_STEP ** delta))
 	save(new_scale)
 	apply_scale(new_scale)
-	viewer_status(zoom_message(new_scale))
+	viewer_status(view._nav.pane, zoom_message(new_scale))
 
-def reset_image_scale(apply_scale, save=save_scale):
+def reset_image_scale(view, apply_scale, save=save_scale):
 	save(None)
 	apply_scale(None)
-	viewer_status('Fit to window')
+	viewer_status(view._nav.pane, 'Fit to window')

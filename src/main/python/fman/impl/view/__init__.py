@@ -405,10 +405,11 @@ class FileListItemDelegate(QStyledItemDelegate):
 		return result
 
 class Layout(QVBoxLayout):
-	def __init__(self, path_view, file_view):
+	def __init__(self, path_view, file_view, status_line):
 		super().__init__()
 		self.addWidget(path_view)
 		self.addWidget(file_view)
+		self.addWidget(status_line)
 		self.setContentsMargins(0, 0, 0, 0)
 		self.setSpacing(0)
 

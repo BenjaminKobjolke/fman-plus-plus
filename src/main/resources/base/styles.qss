@@ -75,6 +75,7 @@ QTableView[fman_background="true"]::item:selected,
 QHeaderView[fman_background="true"],
 QHeaderView[fman_background="true"]::section,
 QStatusBar[fman_background="true"],
+PaneStatusLine[fman_background="true"],
 LocationBar[fman_background="true"] {
 	background: transparent;
 }
@@ -194,6 +195,13 @@ QStatusBar, QStatusBar QLabel {
 }
 
 QStatusBar QLabel {
+	padding-left: .1ex;
+}
+
+PaneStatusLine {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 $statusbar_bg_top, stop: 1 $statusbar_bg_bottom);
+	border-top: 1px solid $border;
+	color: $bright_fg;
 	padding-left: .1ex;
 }
 

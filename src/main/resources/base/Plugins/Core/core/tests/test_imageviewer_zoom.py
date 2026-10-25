@@ -9,6 +9,9 @@ class _FakeView:
 	# on screen right now" fallback used when nothing is saved yet.
 	def effective_scale(self):
 		return 1.0
+	def __init__(self):
+		from core.tests.viewer_stubs import StubPane
+		self._nav = type('Nav', (), {'pane': StubPane([])})()
 
 class ClampScaleTest(TestCase):
 	def test_clamps_below_minimum(self):
@@ -68,9 +71,12 @@ class ChangeImageScaleTest(TestCase):
 class ResetImageScaleTest(TestCase):
 	def test_clears_saved_scale_and_applies_fit_mode(self):
 		result = {}
+		view = _FakeView()
 		reset_image_scale(
+			view,
 			lambda s: result.setdefault('applied', s),
 			save=lambda s: result.setdefault('saved', s),
 		)
 		self.assertIsNone(result['saved'])
 		self.assertIsNone(result['applied'])
+		self.assertEqual([('Fit to window', 3)], view._nav.pane.status_messages)

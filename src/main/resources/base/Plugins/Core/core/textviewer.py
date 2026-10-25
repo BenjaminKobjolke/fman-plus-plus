@@ -147,7 +147,7 @@ class PaneTextView(QPlainTextEdit):
 		commands.update(self._search.commands())
 		commands.update(self._cursor_keys.commands())
 		commands[RESET_COMMAND] = \
-			lambda: reset_view_font_size(self._apply_font_size)
+			lambda: reset_view_font_size(self, self._apply_font_size)
 		return commands
 
 	@run_in_main_thread
@@ -236,7 +236,7 @@ class PaneTextView(QPlainTextEdit):
 		self._editing = True
 		self.setReadOnly(False)
 		self.setTextInteractionFlags(Qt.TextEditorInteraction)
-		viewer_status('Edit mode')
+		viewer_status(self._nav.pane, 'Edit mode')
 
 	def _revert(self):
 		if self._editing and self.document().isModified():
@@ -245,7 +245,7 @@ class PaneTextView(QPlainTextEdit):
 			) & YES:
 				return
 		if not reload_from_disk(self, tail=False):
-			viewer_status('Reloaded from disk')
+			viewer_status(self._nav.pane, 'Reloaded from disk')
 
 	def _exit_with_dirty_check(self):
 		if confirm_close(self):

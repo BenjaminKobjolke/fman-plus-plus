@@ -42,13 +42,14 @@ class MountWidgetTest(TestCase):
 
 	def setUp(self):
 		self.widget = _pane_widget()
+		self.widget.layout.return_value.count.return_value = 1
 		self.pane = _pane(self.widget)
 		self.view = MagicMock()
 
 	def test_adds_the_view_to_the_pane_layout(self):
 		with patch('fman.impl.view.pane_mount.QTimer'):
 			mount_widget(self.pane, self.widget, self.view)
-		self.widget.layout().addWidget.assert_called_once_with(self.view)
+		self.widget.layout().insertWidget.assert_called_once_with(0, self.view)
 
 	def test_hides_the_file_list(self):
 		with patch('fman.impl.view.pane_mount.QTimer'):

@@ -51,6 +51,6 @@ def reload_from_disk(view, tail):
 	if view._editing and not view._editable:
 		view._editing = False
 		view._set_read_only()
-		viewer_status('File no longer editable - now read-only')
+		viewer_status(view._nav.pane, 'File no longer editable - now read-only')
 		return True
 	return False

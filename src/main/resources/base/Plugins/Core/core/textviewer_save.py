@@ -26,7 +26,7 @@ def write_view(view, path):
 		with open(path, 'wb') as f:
 			f.write(view.toPlainText().encode('utf-8'))
 	except OSError as e:
-		viewer_status('Could not save: %s' % (e.strerror or e))
+		viewer_status(view._nav.pane, 'Could not save: %s' % (e.strerror or e))
 		return False
 	return True
 
@@ -39,7 +39,7 @@ def _persist(view, path, message):
 	view._path = path
 	notify_file_changed(view._url)
 	view.document().setModified(False)
-	viewer_status(message)
+	viewer_status(view._nav.pane, message)
 
 def save(view):
 	_persist(view, view._path, 'Saved')

@@ -37,6 +37,18 @@ class BuiltinPlugin(Plugin):
 			def __call__(self):
 				window_chrome.toggle_status_bar(self.window._widget)
 
+		class TogglePaneStatusLines(ApplicationCommand):
+			aliases = ('Toggle pane status lines',)
+			def __call__(self):
+				window_chrome.pane_status.toggle_lines_visible(
+					self.window._widget)
+
+		class TogglePaneMessagesInStatusBar(ApplicationCommand):
+			aliases = ('Toggle pane messages in status bar',)
+			def __call__(self):
+				window_chrome.pane_status.toggle_in_status_bar(
+					self.window._widget)
+
 		class ToggleMenuBar(ApplicationCommand):
 			aliases = ('Toggle menu bar',)
 			def __call__(self):
@@ -47,6 +59,8 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(ToggleFullscreen)
 		self._register_application_command(ToggleTitleBar)
 		self._register_application_command(ToggleStatusBar)
+		self._register_application_command(TogglePaneStatusLines)
+		self._register_application_command(TogglePaneMessagesInStatusBar)
 		# Only Mac has a menu bar to toggle: MainWindow._init_help_menu builds
 		# the Help menu from ApplicationContext.help_menu_actions, which is
 		# empty everywhere else. Registering it off Mac would put a row in the

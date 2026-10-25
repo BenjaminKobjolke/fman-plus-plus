@@ -63,7 +63,7 @@ def start_auto_reload(view, tail):
 	if view._watcher is None:
 		view._watcher = _watch_view(view)
 	view._tail = tail
-	viewer_status('Tail mode on' if tail else 'Auto-reload on')
+	viewer_status(view._nav.pane, 'Tail mode on' if tail else 'Auto-reload on')
 	if tail:
 		scroll_to_end(view)
 
@@ -71,11 +71,11 @@ def stop_auto_reload(view):
 	view._watcher.deleteLater()
 	view._watcher = None
 	view._tail = False
-	viewer_status('Auto-reload off')
+	viewer_status(view._nav.pane, 'Auto-reload off')
 
 def on_file_changed(view):
 	if view._editing and view.document().isModified():
-		viewer_status('File changed on disk (not reloaded)')
+		viewer_status(view._nav.pane, 'File changed on disk (not reloaded)')
 		return
 	if not os.path.exists(view._path):
 		return  # Transient during an atomic save (temp file not yet renamed).

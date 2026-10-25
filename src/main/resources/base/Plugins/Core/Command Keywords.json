@@ -118,6 +118,13 @@
 	],
 	"toggle_modified_column": ["show / hide modified column", "date column"],
 	"toggle_network_icons": ["show real icons on network drives"],
+	"toggle_pane_messages_in_status_bar": [
+		"pane messages in status bar", "copy pane messages",
+		"status bar pane messages"
+	],
+	"toggle_pane_status_lines": [
+		"pane status lines", "pane status bar", "show pane status"
+	],
 	"toggle_size_column": ["show / hide size column"],
 	"toggle_status_bar": [
 		"status bar", "statusbar", "hide status bar", "message bar",
