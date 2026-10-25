@@ -16,6 +16,8 @@ class TimeoutTestResult(unittest.TextTestResult):
 	def startTest(self, test):
 		# exit=True ends the process with code 1 and dumps every thread's stack,
 		# which includes the hung test's name.
+		self.stream.writeln("Running test: {}".format(test.id()))
+		self.stream.flush()
 		faulthandler.dump_traceback_later(TEST_TIMEOUT_SECONDS, exit=True)
 		super().startTest(test)
 

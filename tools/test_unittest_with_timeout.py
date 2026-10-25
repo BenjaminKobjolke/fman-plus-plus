@@ -55,6 +55,9 @@ def check_unittest_with_timeout():
 		assert result.returncode != 0, result.stdout + result.stderr
 		assert "Timeout" in result.stderr, result.stdout + result.stderr
 		assert "test_sleeps" in result.stderr, result.stdout + result.stderr
+		assert "Running test: test_sample.SampleTest.test_sleeps" in result.stderr, (
+			result.stdout + result.stderr
+		)
 		assert elapsed < 30, f"The sleeping test ran for {elapsed:.1f} seconds"
 
 
