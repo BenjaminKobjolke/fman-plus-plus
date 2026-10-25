@@ -2,6 +2,7 @@ from fbs_runtime.platform import is_windows, is_mac
 from fman import APP_NAME, OK
 from fman.impl.background import chrome_is_transparent, for_window
 from fman.impl.frameless_dialog import make_frameless
+from fman.impl.incognito import MARKER_TEXT
 from fman.impl.model import SortedFileSystemModel
 from fman.impl.pane_status import PaneStatusLine, PaneStatusMode
 from fman.impl.quicksearch import Quicksearch
@@ -397,6 +398,9 @@ class MainWindow(QMainWindow):
 		self._status_bar_text.setMinimumWidth(1)
 		self._status_bar_text.setOpenExternalLinks(True)
 		self._status_bar.addWidget(self._status_bar_text)
+		self._incognito_marker = QLabel(MARKER_TEXT, self._status_bar)
+		self._incognito_marker.hide()
+		self._status_bar.addPermanentWidget(self._incognito_marker)
 		self._status_bar.setSizeGripEnabled(False)
 		self.setStatusBar(self._status_bar)
 		self._timer = QTimer(self)
@@ -560,6 +564,9 @@ class MainWindow(QMainWindow):
 			self._timer.start(int(timeout_secs * 1000))
 		else:
 			self._timer.stop()
+	@run_in_main_thread
+	def set_incognito_marker_visible(self, visible):
+		self._incognito_marker.setVisible(visible)
 	@run_in_main_thread
 	def clear_status_message(self):
 		self.show_status_message('Ready.')

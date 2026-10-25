@@ -2,6 +2,7 @@ from . import clipboard
 from .url import dirname
 from .impl.task import StubProgressDialog, ChildProgressDialog
 from .impl.console_log import format_log_args, get_console_log
+from .impl.incognito import is_incognito
 from .impl.view.pane_mount import get_colors, mount_widget, unmount_widget
 from contextlib import contextmanager
 from fbs_runtime import platform
@@ -21,6 +22,7 @@ __all__ = [
 	'get_application_commands', 'run_application_command',
 	'log',
 	'get_application_command_aliases', 'load_plugin', 'unload_plugin',
+	'is_incognito',
 	'get_themes', 'get_theme', 'set_theme',
 	'get_window_opacity', 'set_window_opacity',
 	'clipboard',
@@ -306,6 +308,8 @@ class DirectoryPaneListener:
 	def on_command(self, command_name, args):
 		pass
 	def on_location_bar_clicked(self):
+		pass
+	def on_incognito_changed(self, enabled):
 		pass
 
 def load_json(name, default=None, save_on_quit=False):

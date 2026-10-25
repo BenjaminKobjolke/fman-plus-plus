@@ -1,6 +1,7 @@
 from base64 import b64encode, b64decode
 from concurrent.futures import ThreadPoolExecutor
 from fman import links
+from fman.impl import incognito
 from fman.impl.util.path import make_absolute
 from fman.impl.util.url import get_existing_pardir
 from fman.url import as_url, dirname, as_human_readable
@@ -158,8 +159,10 @@ class SessionManager:
 		self._settings['window_geometry'] = _encode(main_window.saveGeometry())
 		self._settings['window_state'] = \
 			_encode(main_window.saveState(self._MAIN_WINDOW_VERSION))
-		self._settings['panes'] = \
-			list(map(self._read_pane_settings, main_window.get_panes()))
+		if not incognito.is_incognito():
+			self._settings['panes'] = \
+				list(map(self._read_pane_settings, main_window.get_panes()))
+		# Keep the last non-incognito locations so the next session can restore them.
 		self._settings['fman_version'] = self._fman_version
 		try:
 			self._settings.flush()

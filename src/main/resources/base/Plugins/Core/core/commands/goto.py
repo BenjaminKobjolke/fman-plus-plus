@@ -2,7 +2,7 @@ from core.commands.util import get_user, get_well_known_dirs, is_hidden
 from core.quicksearch_matchers import path_starts_with, basename_starts_with, \
 	contains_substring, contains_chars
 from fman import DirectoryPaneCommand, show_quicksearch, PLATFORM, load_json, \
-	DirectoryPaneListener, QuicksearchItem
+	DirectoryPaneListener, QuicksearchItem, is_incognito
 from fman.fs import exists, resolve
 from fman.url import as_url, splitscheme, as_human_readable
 from itertools import islice, chain
@@ -144,6 +144,8 @@ class GoToListener(DirectoryPaneListener):
 			# on_path_changed() is also called when fman starts. Since this is
 			# not a user-initiated path change, we don't want to count it:
 			self.is_first_path_change = False
+			return
+		if is_incognito():
 			return
 		url = self.pane.get_path()
 		scheme, path = splitscheme(url)

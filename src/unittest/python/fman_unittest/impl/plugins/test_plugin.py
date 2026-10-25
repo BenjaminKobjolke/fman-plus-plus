@@ -1,11 +1,34 @@
+from fman import DirectoryPaneListener
 from fman.fs import FileSystem
 from fman.impl.plugins.plugin import _get_command_name, \
-	get_command_class_name, ExternalPlugin, FileSystemWrapper
+	get_command_class_name, ExternalPlugin, FileSystemWrapper, ListenerWrapper
 from fman_unittest.impl.plugins import StubErrorHandler
+from threading import Event, current_thread
 from types import ModuleType
 from unittest import TestCase
 
 import sys
+
+class IncognitoListenerTest(TestCase):
+	def test_listener_wrapper_dispatches_on_incognito_changed_on_thread(self):
+		called = Event()
+		calls = []
+		caller_thread = current_thread()
+
+		class Listener(DirectoryPaneListener):
+			def on_incognito_changed(self, enabled):
+				calls.append((enabled, current_thread()))
+				called.set()
+
+		wrapper = ListenerWrapper(Listener(None), StubErrorHandler())
+		wrapper.on_incognito_changed(True)
+
+		self.assertTrue(called.wait(1))
+		self.assertEqual(True, calls[0][0])
+		self.assertIsNot(caller_thread, calls[0][1])
+
+	def test_base_listener_callback_is_noop(self):
+		self.assertIsNone(DirectoryPaneListener(None).on_incognito_changed(True))
 
 class GetCommandNameTest(TestCase):
 	def test_single_letter(self):

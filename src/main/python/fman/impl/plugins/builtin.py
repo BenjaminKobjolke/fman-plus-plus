@@ -1,5 +1,7 @@
 from fman import ApplicationCommand, DirectoryPaneCommand
 from fman.fs import FileSystem, Column
+from fman.impl import incognito
+from fman.impl.incognito import OFF_MESSAGE, ON_INCOGNITO_CHANGED, ON_MESSAGE
 from fman.impl.plugins.plugin import Plugin
 from fman.impl.util import filenotfounderror
 from fman.impl.util.qt.thread import run_in_main_thread
@@ -37,6 +39,18 @@ class BuiltinPlugin(Plugin):
 			def __call__(self):
 				window_chrome.toggle_status_bar(self.window._widget)
 
+		class ToggleIncognito(ApplicationCommand):
+			aliases = ('Toggle incognito mode',)
+			def __call__(self):
+				enabled = not incognito.is_incognito()
+				incognito.set_incognito(enabled)
+				window = self.window._widget
+				window.set_incognito_marker_visible(enabled)
+				for pane in self.window.get_panes():
+					pane._broadcast(ON_INCOGNITO_CHANGED, enabled)
+				window.show_status_message(
+					ON_MESSAGE if enabled else OFF_MESSAGE)
+
 		class TogglePaneStatusLines(ApplicationCommand):
 			aliases = ('Toggle pane status lines',)
 			def __call__(self):
@@ -59,6 +73,7 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(ToggleFullscreen)
 		self._register_application_command(ToggleTitleBar)
 		self._register_application_command(ToggleStatusBar)
+		self._register_application_command(ToggleIncognito)
 		self._register_application_command(TogglePaneStatusLines)
 		self._register_application_command(TogglePaneMessagesInStatusBar)
 		# Only Mac has a menu bar to toggle: MainWindow._init_help_menu builds

@@ -1,12 +1,55 @@
 from core.commands.goto import _shrink_visited_paths, _with_well_known_dirs, \
-	SuggestLocations
+	SuggestLocations, GoToListener
 from core.util import filenotfounderror
 from fman import PLATFORM
+from fman.impl import incognito
+from fman.url import as_human_readable
 from os.path import normpath
 from unittest import TestCase, skipIf
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import os
+
+
+class GoToListenerIncognitoTest(TestCase):
+	def setUp(self):
+		self.addCleanup(incognito.set_incognito, False)
+		self.listener = GoToListener(Mock(spec=['get_path']))
+		self.listener.is_first_path_change = False
+		self.listener.pane.get_path.return_value = 'file:///visited/folder'
+
+	def test_does_not_count_visits_while_incognito(self):
+		incognito.set_incognito(True)
+
+		with patch('core.commands.goto.load_json') as load_json:
+			self.listener.on_path_changed()
+
+		load_json.assert_not_called()
+
+	def test_ignores_initial_path_change_before_checking_incognito(self):
+		incognito.set_incognito(True)
+		self.listener.is_first_path_change = True
+
+		with patch('core.commands.goto.load_json') as load_json:
+			self.listener.on_path_changed()
+
+		self.assertFalse(self.listener.is_first_path_change)
+		load_json.assert_not_called()
+
+	def test_counts_visits_when_incognito_is_off(self):
+		incognito.set_incognito(False)
+		visited_paths = {}
+
+		with patch(
+				'core.commands.goto.load_json',
+				return_value=visited_paths) as load_json:
+			with patch('core.commands.goto._remove_nonexistent'):
+				self.listener.on_path_changed()
+
+		load_json.assert_called_once_with(
+			'Visited Paths.json', default={}, save_on_quit=True)
+		path = as_human_readable(self.listener.pane.get_path())
+		self.assertEqual(1, visited_paths[path])
 
 class ShrinkVisiblePathsTest(TestCase):
 	def test_basic(self):

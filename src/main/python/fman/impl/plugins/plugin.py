@@ -2,6 +2,7 @@ from fman import DirectoryPaneCommand, DirectoryPaneListener, \
 	ApplicationCommand, Viewer
 from fman.fs import FileSystem, Column
 from fman.impl.font_database import FontError
+from fman.impl.incognito import ON_INCOGNITO_CHANGED
 from fman.impl.util import listdir_absolute
 from glob import glob
 from importlib.machinery import SourceFileLoader
@@ -352,6 +353,8 @@ class ListenerWrapper(Wrapper):
 			return self._wrapped.before_location_change(*args)
 	def on_location_bar_clicked(self, *args):
 		self._notify_listener('on_location_bar_clicked', *args)
+	def on_incognito_changed(self, enabled):
+		self._notify_listener(ON_INCOGNITO_CHANGED, enabled)
 	def _notify_listener(self, *args):
 		Thread(
 			target=self._notify_listener_in_thread, args=args, daemon=True

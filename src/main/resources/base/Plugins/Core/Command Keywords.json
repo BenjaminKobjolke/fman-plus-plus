@@ -113,6 +113,10 @@
 	"toggle_hidden_files": [
 		"show / hide hidden files", "dotfiles", "invisible", "system files"
 	],
+	"toggle_incognito": [
+		"incognito", "privacy", "private", "folder", "history",
+		"folder history", "visit history"
+	],
 	"toggle_menu_bar": [
 		"menu bar", "help menu", "hide menu", "show menu", "chrome"
 	],
