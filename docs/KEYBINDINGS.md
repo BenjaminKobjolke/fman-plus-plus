@@ -128,6 +128,7 @@ it and both keep working.
 | `Ctrl+C` | `copy_to_clipboard` |
 | `Ctrl+X` | `cut` |
 | `Ctrl+V` | `paste` |
+| `Ctrl+Z` | `undo` |
 | `Ctrl+A` | `select_all` |
 | `Ctrl+D` | `deselect` |
 | `Ctrl+.` | `toggle_hidden_files` |
@@ -151,6 +152,7 @@ it and both keep working.
 | `Cmd+C` | `copy_to_clipboard` |
 | `Cmd+X` | `cut` |
 | `Cmd+V` | `paste` |
+| `Cmd+Z` | `undo` |
 | `Cmd+Alt+V` | `paste_cut` |
 | `Cmd+A` | `select_all` |
 | `Cmd+D` | `deselect` |
@@ -182,6 +184,7 @@ it and both keep working.
 | `Ctrl+C` | `copy_to_clipboard` |
 | `Ctrl+X` | `cut` |
 | `Ctrl+V` | `paste` |
+| `Ctrl+Z` | `undo` |
 | `Ctrl+A` | `select_all` |
 | `Ctrl+D` | `deselect` |
 | `Ctrl+.` | `toggle_hidden_files` |
