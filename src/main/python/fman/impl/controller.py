@@ -26,6 +26,8 @@ class Controller:
 		self._plugin_support.unregister_pane(pane)
 	def on_location_changed(self, pane_widget):
 		self._panes[pane_widget]._broadcast('on_path_changed')
+	def on_activated(self, pane_widget):
+		self._panes[pane_widget]._broadcast('on_activated')
 	def on_location_bar_clicked(self, pane_widget):
 		past_events = self._metrics.past_events[::]
 		self._metrics.track('ClickedLocationBar')

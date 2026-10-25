@@ -10,6 +10,22 @@ from unittest import TestCase
 import sys
 
 class IncognitoListenerTest(TestCase):
+	def test_listener_wrapper_dispatches_on_activated_on_thread(self):
+		called = Event()
+		calls = []
+		caller_thread = current_thread()
+
+		class Listener(DirectoryPaneListener):
+			def on_activated(self):
+				calls.append(current_thread())
+				called.set()
+
+		wrapper = ListenerWrapper(Listener(None), StubErrorHandler())
+		wrapper.on_activated()
+
+		self.assertTrue(called.wait(1))
+		self.assertIsNot(caller_thread, calls[0])
+
 	def test_listener_wrapper_dispatches_on_incognito_changed_on_thread(self):
 		called = Event()
 		calls = []

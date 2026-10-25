@@ -22,6 +22,8 @@ class FileListView(
 	SingleRowMode, MoveWithoutUpdatingSelection, DragAndDrop,
 	ResizeColumnsToContents
 ):
+	activated = pyqtSignal()
+
 	def __init__(self, parent, get_context_menu):
 		super().__init__(parent)
 		self._get_context_menu = get_context_menu
@@ -254,6 +256,7 @@ class FileListView(
 		PAINTER.paint(painter, viewport.rect(), backgrounds)
 	def focusInEvent(self, event):
 		super().focusInEvent(event)
+		self.activated.emit()
 		self._repaint_if_focus_matters()
 	def focusOutEvent(self, event):
 		super().focusOutEvent(event)

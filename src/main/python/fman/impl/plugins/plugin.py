@@ -337,6 +337,8 @@ class ReportExceptions:
 class ListenerWrapper(Wrapper):
 	def __init__(self, listener, error_handler):
 		super().__init__(listener, 'DirectoryPaneListener', error_handler)
+	def on_activated(self):
+		self._notify_listener('on_activated')
 	def on_doubleclicked(self, *args):
 		self._notify_listener('on_doubleclicked', *args)
 	def on_name_edited(self, *args):

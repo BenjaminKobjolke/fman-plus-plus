@@ -294,6 +294,8 @@ class Viewer:
 class DirectoryPaneListener:
 	def __init__(self, pane):
 		self.pane = pane
+	def on_activated(self):
+		pass
 	def on_doubleclicked(self, file_url):
 		pass
 	def on_name_edited(self, file_url, new_name):

@@ -139,6 +139,12 @@ other = panes[(panes.index(pane) + 1) % len(panes)]
 There are two panes by default, but the count comes from the saved session, so
 never assume exactly two.
 
+### Pane activation
+
+`DirectoryPaneListener.on_activated()` is called on a worker thread when the
+pane receives keyboard focus. It is sent to listeners registered with that
+pane. Keep Qt calls off this callback thread.
+
 ### Incognito mode
 
 `fman.is_incognito()` returns whether incognito mode is currently enabled. The
