@@ -1,6 +1,7 @@
 from . import clipboard
 from .url import dirname
 from .impl.task import StubProgressDialog, ChildProgressDialog
+from .impl.console_log import format_log_args, get_console_log
 from .impl.view.pane_mount import get_colors, mount_widget, unmount_widget
 from contextlib import contextmanager
 from fbs_runtime import platform
@@ -18,6 +19,7 @@ __all__ = [
 	'show_file_open_dialog',
 	'show_quicksearch', 'QuicksearchItem',
 	'get_application_commands', 'run_application_command',
+	'log',
 	'get_application_command_aliases', 'load_plugin', 'unload_plugin',
 	'get_themes', 'get_theme', 'set_theme',
 	'get_window_opacity', 'set_window_opacity',
@@ -307,6 +309,9 @@ def save_json(name, value=None):
 
 def show_alert(text, buttons=OK, default_button=OK):
 	return _get_ui().show_alert(text, buttons, default_button)
+
+def log(*args):
+	get_console_log().append(format_log_args(*args))
 
 def show_prompt(text, default='', selection_start=0, selection_end=None):
 	return _get_ui().show_prompt(text, default, selection_start, selection_end)

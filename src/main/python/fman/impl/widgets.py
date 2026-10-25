@@ -457,7 +457,8 @@ class MainWindow(QMainWindow):
 		help_menu.aboutToHide.connect(disable_shortcuts)
 	@run_in_main_thread
 	def show_alert(
-		self, text, buttons=OK, default_button=OK, allow_escape=True
+		self, text, buttons=OK, default_button=OK, allow_escape=True,
+		button_texts=None
 	):
 		alert = MessageBox(self, allow_escape)
 		# API users might pass arbitrary objects as text when trying to
@@ -465,6 +466,8 @@ class MainWindow(QMainWindow):
 		# this:
 		alert.setText(str(text))
 		alert.setStandardButtons(buttons)
+		for button, label in (button_texts or {}).items():
+			alert.button(button).setText(label)
 		alert.setDefaultButton(default_button)
 		return self.exec_dialog(alert)
 	@run_in_main_thread

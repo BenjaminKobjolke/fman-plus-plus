@@ -104,6 +104,26 @@ dozen Core modules and is the sanctioned way to do this.
 
 Exceptions inside a command are caught and reported rather than crashing fman.
 
+## Console and plugin logging
+
+`print()` output from plugins is captured in fman's console, while still being
+forwarded to the original output stream when one exists. Plugins can also add
+messages explicitly with `fman.log(*args)`, which joins the arguments with
+spaces and appends a newline:
+
+```python
+import fman
+
+fman.log('Finished loading', plugin_name)
+```
+
+Open the live console in a pane with **Show console**, or in a separate window
+with **Show console window**. It includes a Python prompt for inspecting
+`fman`, `window` and `pane`; entered code runs on a worker thread, like plugin
+commands. Plugin failures appear in the console with their traceback. The
+failure alert offers **Dismiss**, **Open in console** and **Copy error**.
+See [The console](CONSOLE.md) for the entry formats and behavior.
+
 ## Panes
 
 You receive a `DirectoryPane`; you never construct one. `self.pane` in a

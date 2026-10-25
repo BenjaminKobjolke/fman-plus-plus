@@ -6,6 +6,7 @@ from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from fbs_runtime.platform import is_mac
 from fman import APP_NAME, PLATFORM, DATA_DIRECTORY, Window
 from fman.impl.controller import Controller
+from fman.impl.console_log import get_console_log, install_stream_capture
 from fman.impl.font_database import FontDatabase
 from fman.impl.metrics import Metrics, ServerBackend, AsynchronousMetrics, \
 	LoggingBackend
@@ -148,6 +149,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 			abs_paths
 		)
 	def init_logging(self):
+		install_stream_capture(get_console_log())
 		logging.basicConfig()
 	def _start_metrics(self):
 		self.metrics.initialize(callback=self._on_metrics_initialised)
@@ -391,7 +393,14 @@ class DevelopmentApplicationContext(ApplicationContext):
 		)
 	@cached_property
 	def plugin_error_handler(self):
-		return PluginErrorHandler(self.app)
+		return PluginErrorHandler(
+			self.app, get_console_log(), self._open_console_from_error
+		)
+	def _open_console_from_error(self):
+		pane = self.plugin_support.get_active_pane()
+		if pane is None:
+			pane = self.main_window.get_panes()[0]
+		pane.run_command('show_console')
 	@cached_property
 	def controller(self):
 		return Controller(
@@ -530,6 +539,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 
 class FrozenApplicationContext(DevelopmentApplicationContext):
 	def init_logging(self):
+		install_stream_capture(get_console_log())
 		logging.basicConfig(level=logging.CRITICAL)
 	def on_main_window_shown(self):
 		if PLATFORM == 'Linux':
