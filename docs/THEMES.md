@@ -134,6 +134,14 @@ does it; its rows are held apart by the green text alone.
 | `alt_row_bg` | `pane_cursor_bg` |
 | `button_fg` | `muted_fg` |
 | `palette_mid`, `palette_dark`, `palette_shadow` | `button_bg` |
+| `pane_hidden_fg` | 60% of `pane_fg` unless set |
+| `pane_hidden_fg_dir` | 60% of `pane_fg_dir` unless set |
+
+Hidden file text uses `pane_hidden_fg`; hidden directory text uses
+`pane_hidden_fg_dir`. For example, set either token under `colors` to choose
+an explicit faded color: `"pane_hidden_fg": "#99aabbcc"`. Setting them to
+`pane_fg` and `pane_fg_dir` keeps the text at its normal color while the
+hidden-file icons remain gray.
 
 ### Dimming behind dialogs
 
