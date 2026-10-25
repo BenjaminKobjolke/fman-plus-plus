@@ -50,8 +50,11 @@ in the ledger.
 ## Step 3 — triage all 5 before fixing any
 
 For each issue, check whether the behavior already exists here first: run
-`graphify query "<feature or bug>"`, then verify the result with grep. This fork has its
-own viewers, command palette, status bar, archive, keybinding and large-directory work.
+`graphify query "<feature or bug>"`, then verify the result with grep. Also search the installed
+plugins as described in `CLAUDE.md` (`## Planning a new feature: check existing plugins first`); a
+plugin that covers the issue gives the verdict `already fixed`, naming the plugin, as #12689 did
+with JustSearch. This fork has its own viewers, command palette, status bar, archive, keybinding
+and large-directory work.
 
 Choose one verdict:
 

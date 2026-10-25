@@ -26,6 +26,38 @@ Do not inline rules back into this file and do not use `@import` for either file
 they are intentionally referenced, not imported.
 
 
+## Planning a new feature: check existing plugins first
+
+For `/tickets:plan` runs about new features or behavior changes, especially `Upstream #<n>: …`
+todos, check installed plugins before asking design questions. This does not apply to bug fixes in
+existing fman++ code.
+
+Search `%APPDATA%\fman\Plugins\User` and `%APPDATA%\fman\Plugins\Third-party`. For plugins with
+matching names, read their README and search their `.py` files for the feature's keywords, such as
+command names, protocols or "search". Also run the normal `graphify query` on this repository.
+When a plugin already implements some or all of the feature, name it and what it covers in the
+first question round, which asks only:
+
+- `build into fman++` — plan the work here;
+- `extend the plugin` — move the todo to that plugin's project, when it has one;
+- `Nothing left to do, cancel` — offer only when the plugin may cover the whole request, never as
+  the default.
+
+Default to `extend the plugin` when it has a project, otherwise `build into fman++`. Ask detail
+questions about keys, libraries, UI and credential storage in the next round. If no matching
+implementation is found, say so in one line in the plan's Context and plan as usual.
+
+| Plugin folder | Tickets project |
+| --- | --- |
+| `FMAN_FTPClient` | #12337 |
+| `JustSearch` | #12358 |
+| `FMAN-Favorites` | #12351 |
+| `fman-media-file-explorer` | #12346 |
+
+For other plugins, use `projectsList` to match the project by name; no match means the plugin has
+no project.
+
+
 ## Testing
 
 `tools\run_tests.bat` runs all of `fman_unittest` offscreen (~5 s). The `run_*_tests.bat` watcher commands use `tools\unittest_with_timeout.bat`, which drops the watcher's venv and stops a test after 120 s. `python build.py test` is not a usable check because fbs ignores the result and always exits 0.
