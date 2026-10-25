@@ -36,7 +36,7 @@
       "test": "green"
     },
     "python tools\\test_close_running_fman.py": {
-      "test": "failed"
+      "test": "green"
     },
     "python tools\\test_release_version.py": {
       "test": "green"
