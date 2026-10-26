@@ -177,6 +177,8 @@ class DirectoryPaneWidget(QWidget):
 	@run_in_main_thread
 	def get_location(self):
 		return self._model.get_location()
+	def shutdown(self):
+		self._model.shutdown()
 	def set_location(
 		self, url, sort_column='', ascending=True, callback=None, onerror=None
 	):
@@ -607,6 +609,7 @@ class MainWindow(QMainWindow):
 	@run_in_main_thread
 	def remove_pane(self, pane_widget):
 		self._panes.remove(pane_widget)
+		pane_widget.shutdown()
 		pane_widget.setParent(None)
 		pane_widget.deleteLater()
 		for index, pane in enumerate(self._panes):

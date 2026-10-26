@@ -32,6 +32,14 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		self._num_rows_to_preload = 0
 		self.set_location(null_location)
 		self._fs.file_removed.add_callback(self._on_file_removed)
+	def shutdown(self):
+		try:
+			self._fs.file_removed.remove_callback(self._on_file_removed)
+		except ValueError:
+			pass
+		source_model = self.sourceModel()
+		if source_model is not None:
+			source_model.shutdown()
 	def set_num_rows_to_preload(self, preload_rows):
 		self._num_rows_to_preload = preload_rows
 	def set_location(

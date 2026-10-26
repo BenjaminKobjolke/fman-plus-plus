@@ -1,8 +1,10 @@
 from fman.fs import Column
 from fman.impl.model import Model, Cell
+from fman.impl.model import SortedFileSystemModel
 from fman.impl.model import model as model_module
 from fman.impl.model.file_watcher import FileWatcher
 from fman.impl.model.model import File, _NOT_LOADED
+from fman.impl.util import Event
 from fman.impl.util.qt.thread import Executor
 from fman.url import basename, splitscheme
 from fman_unittest.impl.model import StubFileSystem
@@ -397,6 +399,21 @@ class ModelShutdownTest(ExecutorTestCase):
 		model.shutdown()
 		model._worker._thread.join(2)
 		model._file_watcher.shutdown.assert_called_once_with()
+
+class SortedFileSystemModelShutdownTest(TestCase):
+	def test_shutdown_unregisters_file_removed_callback_and_is_idempotent(self):
+		class StubFileSystem:
+			def __init__(self):
+				self.file_removed = Event()
+
+		fs = StubFileSystem()
+		with patch.object(SortedFileSystemModel, 'set_location'):
+			model = SortedFileSystemModel(None, fs, 'null://')
+
+		self.assertIn(model._on_file_removed, fs.file_removed._callbacks)
+		model.shutdown()
+		self.assertNotIn(model._on_file_removed, fs.file_removed._callbacks)
+		model.shutdown()
 
 class NameColumn(Column):
 	def get_str(self, url):
