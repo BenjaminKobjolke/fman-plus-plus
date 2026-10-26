@@ -45,6 +45,7 @@ class UndoTest(TestCase):
 		find.assert_called_once_with('file:///a.txt')
 		restore.assert_called_once_with(entry)
 		added.assert_called_once_with('file:///a.txt')
+		self.pane.place_cursor_at.assert_called_once_with('file:///a.txt')
 
 	def test_trash_restore_aggregates_failures(self):
 		with patch('core.commands.undo.PLATFORM', 'Windows'), \

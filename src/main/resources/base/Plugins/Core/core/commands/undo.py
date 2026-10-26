@@ -34,6 +34,7 @@ class Undo(DirectoryPaneCommand):
 			show_alert(_TRASH_UNSUPPORTED)
 			return
 		failures = []
+		last_restored_url = None
 		for url in record.urls:
 			try:
 				entry = find_entry(url)
@@ -41,8 +42,11 @@ class Undo(DirectoryPaneCommand):
 					raise FileNotFoundError('No matching Recycle Bin entry')
 				restore_entry(entry)
 				notify_file_added(url)
+				last_restored_url = url
 			except OSError as error:
 				failures.append(_failure(url, error))
+		if last_restored_url is not None:
+			_place_cursor_at(self.pane, last_restored_url)
 		if failures:
 			show_alert('Some items could not be restored:\n' + '\n'.join(failures))
 
