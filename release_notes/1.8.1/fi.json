@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Enemmän hallintaa ja selkeämmät tiedostotiedot",
+  "notes": [
+    "Kumoa yleisiä tiedostotoimintoja, kuten roskakoriin siirtämistä, siirtämistä, uudelleennimeämistä ja kopioimista, kun haluat peruuttaa muutoksen.",
+    "Mukauta työtilaasi lisäpaneeleilla, tarkastele asemien vapaata ja kokonaiskapasiteettia ja löydä piilotetut tiedostot helpommin.",
+    "Lisäosien kehittäjät saavat käyttöönsä sovellukseen upotetun virheenjäljityskonsolin ja aktivointikutsut, ja GoTo-historia voidaan nyt pitää yksityisenä nykyisen istunnon ajan.",
+    "Tilaviestit liittyvät nyt niihin kuuluvaan paneeliin, eivätkä ne enää estä ikkunan kaventamista."
+  ]
+}

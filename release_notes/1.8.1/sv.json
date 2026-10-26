@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Mer kontroll och tydligare filinformation",
+  "notes": [
+    "Ångra vanliga filåtgärder som att flytta filer till papperskorgen, flytta, byta namn på och kopiera dem när du behöver återställa en ändring.",
+    "Anpassa din arbetsyta med fler paneler, se ledigt och totalt utrymme på enheter och upptäck dolda filer enklare.",
+    "Pluginutvecklare får en inbäddad felsökningskonsol och återanrop vid aktivering, samtidigt som GoTo-historiken nu kan hållas privat under den aktuella sessionen.",
+    "Statusmeddelanden är nu kopplade till den aktuella panelen och hindrar inte längre fönstret från att göras smalare."
+  ]
+}

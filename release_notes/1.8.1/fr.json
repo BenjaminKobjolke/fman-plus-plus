@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Davantage de contrôle et des informations plus claires sur les fichiers",
+  "notes": [
+    "Annulez les opérations courantes sur les fichiers, comme la mise à la corbeille, le déplacement, le renommage et la copie, lorsque vous souhaitez revenir en arrière.",
+    "Personnalisez votre espace de travail avec des volets supplémentaires, consultez l’espace libre et total des lecteurs et repérez plus facilement les fichiers masqués.",
+    "Les développeurs de plugins disposent désormais d’une console de débogage intégrée et de callbacks d’activation, tandis que l’historique de GoTo peut désormais rester privé pour la session en cours.",
+    "Les messages d’état sont désormais associés au volet concerné et n’empêchent plus la fenêtre de devenir plus étroite."
+  ]
+}

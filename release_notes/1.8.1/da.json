@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Mere kontrol og tydeligere filoplysninger",
+  "notes": [
+    "Fortryd almindelige filhandlinger som at flytte filer til papirkurven, flytte, omdøbe og kopiere dem, når du har brug for at rulle en ændring tilbage.",
+    "Tilpas dit arbejdsområde med flere paneler, se ledig og samlet plads på drev, og find skjulte filer nemmere.",
+    "Pluginudviklere får en indlejret fejlfindingskonsol og tilbagekald ved aktivering, mens GoTo-historikken nu kan forblive privat i den aktuelle session.",
+    "Statusmeddelelser er nu knyttet til det relevante panel og forhindrer ikke længere vinduet i at blive smallere."
+  ]
+}

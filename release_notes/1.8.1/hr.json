@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Više kontrole i jasniji detalji o datotekama",
+  "notes": [
+    "Poništite uobičajene radnje s datotekama, poput premještanja u smeće, premještanja, preimenovanja i kopiranja, kada trebate vratiti promjenu.",
+    "Prilagodite radni prostor dodatnim oknima, pregledajte slobodan i ukupan prostor na pogonima te lakše uočite skrivene datoteke.",
+    "Razvojni programeri dodataka dobivaju ugrađenu konzolu za otklanjanje pogrešaka i povratne pozive pri aktivaciji, a povijest značajke GoTo sada može ostati privatna tijekom trenutačne sesije.",
+    "Poruke o statusu sada su povezane s odgovarajućim oknom i više ne sprječavaju sužavanje prozora."
+  ]
+}

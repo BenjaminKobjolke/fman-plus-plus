@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Mai mult control și detalii mai clare despre fișiere",
+  "notes": [
+    "Anulați operațiuni uzuale cu fișiere, precum mutarea la coș, mutarea, redenumirea și copierea, atunci când trebuie să reveniți asupra unei modificări.",
+    "Personalizați-vă spațiul de lucru cu panouri suplimentare, vedeți spațiul liber și spațiul total de pe unități și găsiți mai ușor fișierele ascunse.",
+    "Dezvoltatorii de pluginuri au la dispoziție o consolă de depanare încorporată și apeluri inverse pentru activare, iar istoricul GoTo poate rămâne acum privat pe durata sesiunii curente.",
+    "Mesajele de stare sunt acum asociate panoului relevant și nu mai împiedică îngustarea ferestrei."
+  ]
+}

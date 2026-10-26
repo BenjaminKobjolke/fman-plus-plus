@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Mais controlo e informações mais claras sobre ficheiros",
+  "notes": [
+    "Anule operações comuns sobre ficheiros, como enviá-los para o lixo, movê-los, mudar-lhes o nome e copiá-los, quando precisar de reverter uma alteração.",
+    "Personalize o seu espaço de trabalho com painéis adicionais, consulte o espaço livre e total das unidades e localize ficheiros ocultos mais facilmente.",
+    "Os programadores de plugins passam a dispor de uma consola de depuração integrada e de callbacks de ativação, enquanto o histórico de GoTo pode agora permanecer privado durante a sessão atual.",
+    "As mensagens de estado estão agora associadas ao painel relevante e já não impedem que a janela fique mais estreita."
+  ]
+}

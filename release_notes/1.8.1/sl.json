@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Več nadzora in jasnejši podatki o datotekah",
+  "notes": [
+    "Povrnite pogosta dejanja z datotekami, kot so premikanje v koš, premikanje, preimenovanje in kopiranje, kadar želite razveljaviti spremembo.",
+    "Prilagodite svoj delovni prostor z dodatnimi podokni, preverite razpoložljiv in skupni prostor na pogonih ter lažje poiščite skrite datoteke.",
+    "Razvijalci vtičnikov imajo na voljo vdelano konzolo za odpravljanje napak in povratne klice ob aktivaciji, zgodovina GoTo pa lahko zdaj ostane zasebna za trenutno sejo.",
+    "Sporočila o stanju so zdaj povezana z ustreznim podoknom in ne preprečujejo več zoženja okna."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Rohkem juhtimisvõimalusi ja selgemad failide üksikasjad",
+  "notes": [
+    "Vajaduse korral võta tagasi levinud failitoimingud, näiteks prügikasti teisaldamine, teisaldamine, ümbernimetamine ja kopeerimine.",
+    "Kohanda oma tööala lisapaanidega, vaata ketaste vaba ja kogumahtu ning leia peidetud failid hõlpsamalt.",
+    "Pistikprogrammide arendajad saavad kasutada manustatud silumiskonsooli ja aktiveerimise tagasihelistusi, samas kui GoTo ajalugu saab nüüd praeguse seansi ajaks privaatseks jätta.",
+    "Olekuteated on nüüd seotud vastava paaniga ega takista enam akna kitsamaks muutmist."
+  ]
+}

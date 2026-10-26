@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Większa kontrola i czytelniejsze informacje o plikach",
+  "notes": [
+    "Cofaj typowe operacje na plikach, takie jak przenoszenie do kosza, przenoszenie, zmiana nazw i kopiowanie, gdy chcesz odwrócić wprowadzone zmiany.",
+    "Dostosuj przestrzeń roboczą za pomocą dodatkowych paneli, sprawdzaj wolne i całkowite miejsce na dyskach oraz łatwiej dostrzegaj ukryte pliki.",
+    "Twórcy wtyczek otrzymują wbudowaną konsolę debugowania i wywołania zwrotne aktywacji, a historia GoTo może teraz pozostać prywatna w bieżącej sesji.",
+    "Komunikaty o stanie są teraz powiązane z odpowiednim panelem i nie uniemożliwiają już zwężania okna."
+  ]
+}

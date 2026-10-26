@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Daugiau valdymo galimybių ir aiškesnė failų informacija",
+  "notes": [
+    "Jei reikia atšaukti pakeitimą, anuliuokite įprastas failų operacijas, pavyzdžiui, perkėlimą į šiukšlinę, perkėlimą, pervadinimą ir kopijavimą.",
+    "Pritaikykite darbo aplinką naudodami papildomas sritis, peržiūrėkite laisvą ir bendrą diskų vietą bei lengviau raskite paslėptus failus.",
+    "Įskiepių kūrėjai gali naudotis integruota derinimo konsole ir aktyvinimo atgaliniais iškvietimais, o „GoTo“ istorija dabar gali likti privati visos dabartinės sesijos metu.",
+    "Būsenos pranešimai dabar susieti su atitinkama sritimi ir nebeapsunkina lango susiaurinimo."
+  ]
+}

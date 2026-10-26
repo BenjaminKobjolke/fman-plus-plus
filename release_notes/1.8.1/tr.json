@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Daha fazla kontrol ve daha net dosya ayrıntıları",
+  "notes": [
+    "Bir değişikliği geri almak istediğinizde dosyaları çöp kutusuna taşıma, taşıma, yeniden adlandırma ve kopyalama gibi yaygın işlemleri geri alın.",
+    "Ek bölmelerle çalışma alanınızı özelleştirin, sürücülerin boş ve toplam alanını görün ve gizli dosyaları daha kolay fark edin.",
+    "Eklenti geliştiricileri artık yerleşik bir hata ayıklama konsoluna ve etkinleştirme geri çağrılarına sahip. GoTo geçmişi de artık geçerli oturum için gizli kalabiliyor.",
+    "Durum mesajları artık ilgili bölmeye bağlı ve pencerenin daha dar hale gelmesini engellemiyor."
+  ]
+}

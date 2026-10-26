@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Meer controle en duidelijkere bestandsinformatie",
+  "notes": [
+    "Maak veelvoorkomende bestandsbewerkingen ongedaan, zoals bestanden naar de prullenbak verplaatsen, verplaatsen, hernoemen en kopiëren, wanneer je een wijziging wilt terugdraaien.",
+    "Pas je werkruimte aan met extra deelvensters, bekijk de beschikbare en totale schijfruimte en vind verborgen bestanden eenvoudiger.",
+    "Pluginontwikkelaars krijgen een ingebouwde debugconsole en callbacks voor activatie, terwijl de GoTo-geschiedenis nu privé kan blijven voor de huidige sessie.",
+    "Statusmeldingen zijn nu gekoppeld aan het relevante deelvenster en voorkomen niet langer dat het venster smaller wordt."
+  ]
+}

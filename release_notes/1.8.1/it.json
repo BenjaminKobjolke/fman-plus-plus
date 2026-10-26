@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Più controllo e dettagli sui file più chiari",
+  "notes": [
+    "Annulla le operazioni più comuni sui file, come spostarli nel cestino, spostarli, rinominarli e copiarli, quando vuoi ripristinare una modifica.",
+    "Personalizza il tuo spazio di lavoro con riquadri aggiuntivi, visualizza lo spazio libero e totale delle unità e individua più facilmente i file nascosti.",
+    "Gli sviluppatori di plugin hanno a disposizione una console di debug integrata e callback di attivazione, mentre la cronologia di Vai a può ora rimanere privata per la sessione corrente.",
+    "I messaggi di stato sono ora associati al riquadro pertinente e non impediscono più di restringere la finestra."
+  ]
+}

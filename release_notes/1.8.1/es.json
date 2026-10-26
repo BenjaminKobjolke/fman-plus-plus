@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Más control y detalles de archivo más claros",
+  "notes": [
+    "Deshaz operaciones habituales con archivos, como moverlos a la papelera, moverlos, cambiarles el nombre o copiarlos, cuando necesites revertir un cambio.",
+    "Personaliza tu espacio de trabajo con paneles adicionales, consulta el espacio libre y total de las unidades y detecta más fácilmente los archivos ocultos.",
+    "Los desarrolladores de plugins disponen de una consola de depuración integrada y callbacks de activación, mientras que el historial de GoTo ahora puede mantenerse privado durante la sesión actual.",
+    "Los mensajes de estado ahora están vinculados al panel correspondiente y ya no impiden reducir el ancho de la ventana."
+  ]
+}

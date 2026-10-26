@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Nagyobb irányítás és részletesebb fájladatok",
+  "notes": [
+    "Vond vissza a gyakori fájlműveleteket, például a kukába helyezést, az áthelyezést, az átnevezést és a másolást, ha vissza szeretnél állítani egy módosítást.",
+    "Szabd testre a munkaterületedet további panelekkel, nézd meg a meghajtók szabad és teljes tárhelyét, és találd meg könnyebben a rejtett fájlokat.",
+    "A bővítményfejlesztők beágyazott hibakereső konzolt és aktiválási visszahívásokat kapnak, a GoTo előzményei pedig mostantól az aktuális munkamenetben privátak maradhatnak.",
+    "Az állapotüzenetek mostantól a megfelelő panelhez kapcsolódnak, és már nem akadályozzák az ablak keskenyebbre húzását."
+  ]
+}

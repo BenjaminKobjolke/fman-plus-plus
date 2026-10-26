@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Mehr Kontrolle und klarere Dateiinformationen",
+  "notes": [
+    "Machen Sie gängige Dateioperationen wie das Verschieben in den Papierkorb, Verschieben, Umbenennen und Kopieren rückgängig, wenn Sie eine Änderung rückgängig machen möchten.",
+    "Passen Sie Ihren Arbeitsbereich mit zusätzlichen Bereichen an, sehen Sie den freien und gesamten Speicherplatz von Laufwerken ein und finden Sie versteckte Dateien leichter.",
+    "Plugin-Entwickler erhalten eine eingebettete Debugging-Konsole und Aktivierungs-Callbacks. Außerdem lässt sich der GoTo-Verlauf jetzt für die aktuelle Sitzung privat halten.",
+    "Statusmeldungen sind jetzt dem jeweiligen Bereich zugeordnet und verhindern nicht mehr, dass das Fenster schmaler wird."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "More control and clearer file details",
+  "notes": [
+    "Undo common file operations such as trashing, moving, renaming, and copying when you need to reverse a change.",
+    "Customize your workspace with additional panes, see free and total space for drives, and spot hidden files more easily.",
+    "Plugin developers get an embedded debugging console and activation callbacks, while GoTo history can now stay private for the current session.",
+    "Status messages are now tied to the relevant pane and no longer prevent the window from becoming narrower."
+  ]
+}

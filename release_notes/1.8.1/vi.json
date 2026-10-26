@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Kiểm soát tốt hơn và thông tin tệp rõ ràng hơn",
+  "notes": [
+    "Hoàn tác các thao tác tệp thường dùng như chuyển vào thùng rác, di chuyển, đổi tên và sao chép khi bạn cần khôi phục thay đổi.",
+    "Tùy chỉnh không gian làm việc với các ngăn bổ sung, xem dung lượng trống và tổng dung lượng của ổ đĩa, đồng thời dễ dàng tìm thấy các tệp ẩn hơn.",
+    "Nhà phát triển plugin có thể sử dụng bảng điều khiển gỡ lỗi tích hợp và các lệnh gọi lại khi kích hoạt; lịch sử GoTo giờ đây cũng có thể được giữ riêng tư trong phiên hiện tại.",
+    "Thông báo trạng thái giờ đây gắn với ngăn liên quan và không còn ngăn cửa sổ thu hẹp hơn."
+  ]
+}

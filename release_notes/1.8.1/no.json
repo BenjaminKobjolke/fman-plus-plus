@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Mer kontroll og tydeligere filinformasjon",
+  "notes": [
+    "Angre vanlige filoperasjoner som å flytte filer til papirkurven, flytte, gi nytt navn til og kopiere filer når du trenger å reversere en endring.",
+    "Tilpass arbeidsområdet med flere paneler, se ledig og total plass på stasjoner, og finn skjulte filer enklere.",
+    "Programtilleggsutviklere får en innebygd feilsøkingskonsoll og tilbakeringinger ved aktivering, mens GoTo-historikken nå kan holdes privat for den gjeldende økten.",
+    "Statusmeldinger er nå knyttet til det relevante panelet og hindrer ikke lenger vinduet i å bli smalere."
+  ]
+}

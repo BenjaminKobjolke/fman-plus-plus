@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Viac možností ovládania a prehľadnejšie informácie o súboroch",
+  "notes": [
+    "V prípade potreby môžete vrátiť späť bežné operácie so súbormi, napríklad presunutie do koša, presunutie, premenovanie a kopírovanie.",
+    "Prispôsobte si pracovný priestor pomocou ďalších panelov, zobrazte voľné aj celkové miesto na jednotkách a ľahšie nájdite skryté súbory.",
+    "Vývojári doplnkov získajú zabudovanú konzolu na ladenie a spätné volania pri aktivácii. História funkcie GoTo môže teraz zostať súkromná počas aktuálnej relácie.",
+    "Stavové správy sú teraz priradené k príslušnému panelu a už nebránia zúženiu okna."
+  ]
+}

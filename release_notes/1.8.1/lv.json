@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Lielāka kontrole un skaidrāka informācija par failiem",
+  "notes": [
+    "Ja nepieciešams atsaukt izmaiņas, atceliet bieži veiktās darbības ar failiem, piemēram, to pārvietošanu uz miskasti, pārvietošanu, pārdēvēšanu un kopēšanu.",
+    "Pielāgojiet savu darbvietu, pievienojot papildu paneļus, skatiet disku brīvo un kopējo vietu un vieglāk atrodiet slēptos failus.",
+    "Spraudņu izstrādātājiem tagad ir pieejama iegulta atkļūdošanas konsole un aktivizācijas atzvanīšanas funkcijas, savukārt GoTo vēsture tagad var palikt privāta pašreizējās sesijas laikā.",
+    "Statusa ziņojumi tagad ir saistīti ar attiecīgo paneli un vairs neliedz padarīt logu šaurāku."
+  ]
+}

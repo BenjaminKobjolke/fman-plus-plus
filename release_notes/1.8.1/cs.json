@@ -1,0 +1,11 @@
+{
+  "version": "1.8.1",
+  "date": "2026-10-26",
+  "title": "Více možností ovládání a přehlednější podrobnosti o souborech",
+  "notes": [
+    "V případě potřeby můžete vrátit běžné operace se soubory, například přesunutí do koše, přesunutí, přejmenování a kopírování.",
+    "Přizpůsobte si pracovní prostor pomocí dalších panelů, zobrazte volné i celkové místo na discích a snadněji najděte skryté soubory.",
+    "Vývojáři pluginů mají k dispozici integrovanou ladicí konzoli a callbacky aktivace. Historie funkce GoTo může nově zůstat soukromá po dobu aktuální relace.",
+    "Stavové zprávy jsou nyní přiřazeny k příslušnému panelu a už nebrání zmenšení šířky okna."
+  ]
+}
