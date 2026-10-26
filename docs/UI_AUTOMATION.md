@@ -21,6 +21,17 @@ The instance runs without user plugins and does not move or click the real
 mouse. Native Windows dialogs and global hotkeys cannot be driven. Screenshots
 of video viewer areas are black.
 
+## Use by the tickets watcher
+
+The tickets watcher's validation agent finds this driver through the
+`desktop_ui_driver` key in `tools/tickets-watcher.json`, which names
+`tools/fman_ui.bat` and this document. Both paths must stay real files inside
+the checkout or the watcher ignores the key. Agents use only the default
+fixtures, never `--left` or `--right`, so checks cannot touch folders outside
+`%TEMP%\fman-ui\`. Agents always run `tools\fman_ui.bat close` at the end,
+including when a check fails. Screenshots an agent wants to attach go under the
+ticket's `attach/validation/` folder.
+
 ## Commands
 
 Every command prints one JSON result. API failures print `{"error": "…"}` and

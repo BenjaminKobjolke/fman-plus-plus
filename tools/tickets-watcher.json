@@ -2,6 +2,10 @@
   "files": {
     "TICKETS_WATCHER_COMMANDS.md": 3
   },
+  "desktop_ui_driver": {
+    "command": "tools/fman_ui.bat",
+    "doc": "docs/UI_AUTOMATION.md"
+  },
   "analysis_commands": [
     "tools\\analyze_changed_and_new_files.bat",
     "tools\\run_tests.bat",
