@@ -11,7 +11,9 @@
     "tools\\run_robocopy_integration_tests.bat",
     "python tools\\test_close_running_fman.py",
     "python tools\\test_release_version.py",
-    "python tools\\test_unittest_with_timeout.py"
+    "python tools\\test_unittest_with_timeout.py",
+    "python tools\\test_fman_ui.py",
+    "tools\\run_automation_tests.bat"
   ],
   "analysis_command_states": {
     "tools/fix_ruff_issues.bat": {
@@ -43,6 +45,12 @@
     },
     "python tools\\test_unittest_with_timeout.py": {
       "test": "green"
+    },
+    "python tools\\test_fman_ui.py": {
+      "test": "green"
+    },
+    "tools\\run_automation_tests.bat": {
+      "test": "green"
     }
   },
   "command_check_scripts": [
@@ -63,8 +71,10 @@
     "find_build_python.bat",
     "fix_ruff_issues.bat",
     "fix_ruff_issues_dry_run.bat",
+    "fman_ui.bat",
     "github_release.bat",
     "release_create.bat",
+    "run_automation_tests.bat",
     "run_build_shutdown_tests.bat",
     "run_core_tests.bat",
     "run_icon_tests.bat",
@@ -135,6 +145,8 @@
     "tools\\run_robocopy_integration_tests.bat": "test",
     "python tools\\test_close_running_fman.py": "test",
     "python tools\\test_release_version.py": "test",
-    "python tools\\test_unittest_with_timeout.py": "test"
+    "python tools\\test_unittest_with_timeout.py": "test",
+    "python tools\\test_fman_ui.py": "test",
+    "tools\\run_automation_tests.bat": "test"
   }
 }

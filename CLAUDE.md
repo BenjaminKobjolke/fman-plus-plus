@@ -81,6 +81,16 @@ the setting option applies to the detail round that follows.
 
 ## Testing
 
+### Checking UI behavior
+
+For fman UI behavior checks, see `docs/UI_AUTOMATION.md` and use
+`tools\fman_ui.bat` to launch and drive a throwaway instance.
+
+After touching `tools/fman_ui/**`, run `python tools/test_fman_ui.py`.
+After touching `src/main/python/fman/impl/scripting/automation.py` or
+`src/main/python/fman/impl/util/qt/key_events.py`, run
+`tools\run_automation_tests.bat`.
+
 `tools\run_tests.bat` runs all of `fman_unittest` offscreen (~5 s). The `run_*_tests.bat` watcher commands use `tools\unittest_with_timeout.bat`, which drops the watcher's venv and stops a test after 120 s. `python build.py test` is not a usable check because fbs ignores the result and always exits 0.
 
 For one Core test module, run `tools\run_core_tests.bat core.tests.fs.test_drives`. Never run bare `python` or `pytest` on a test file: watcher runs use the watcher's venv, which reports `fbs_runtime` missing even though it is installed in the system Python.
