@@ -13,6 +13,8 @@ from core.key_bindings import (
 	dispatch_bindable_command, KEY_BINDINGS_FILE, VIEWER_KEY_BINDINGS_FILE,
 )
 from core.textviewer_cursor import ViewerCursor
+from core.textviewer_format import ViewerFormat
+from core.textviewer_highlight import ViewerSyntax
 from core.textviewer_io import MAX_VIEW_BYTES as _MAX_VIEW_BYTES, load_for_view
 from core.textviewer_pane import (
 	caret_fix_css, confirm_close, begin_new_view, mount_view,
@@ -21,7 +23,9 @@ from core.textviewer_pane import (
 from core.textviewer_reload import reload_from_disk
 from core.textviewer_save import save as save_view, save_as as save_view_as
 from core.textviewer_search import ViewerSearch
-from core.textviewer_watch import rewatch, toggle_auto_reload, toggle_tail
+from core.textviewer_watch import (
+	rewatch, reload_actions, toggle_auto_reload, toggle_tail,
+)
 from core.textviewer_zoom import (
 	get_saved_view_font_size, change_view_font_size, reset_view_font_size,
 	zoom_actions, zoom_delta_for, RESET_COMMAND,
@@ -47,6 +51,8 @@ class PaneTextView(QPlainTextEdit):
 		self._fg = fg
 		self._path = path
 		self._url = url
+		self._format = ViewerFormat(self)
+		self._syntax = ViewerSyntax(self, bg)
 		self._editable = editable
 		self._editing = False
 		self._watcher = None
@@ -125,6 +131,7 @@ class PaneTextView(QPlainTextEdit):
 				'text_revert': self._revert,
 				'viewer_close': self._exit_with_dirty_check,
 				'viewer_open_palette': self._open_palette,
+				'text_toggle_syntax_colors': self._syntax.toggle_syntax_colors,
 			}
 		else:
 			commands = {
@@ -133,6 +140,8 @@ class PaneTextView(QPlainTextEdit):
 				'viewer_close': self._on_close,
 				'viewer_switch_panes': self._on_switch,
 				'viewer_open_palette': self._open_palette,
+				'text_toggle_pretty': self._format.toggle_pretty,
+				'text_toggle_syntax_colors': self._syntax.toggle_syntax_colors,
 			}
 			if self._path is not None:
 				commands['text_toggle_auto_reload'] = lambda: toggle_auto_reload(self)
@@ -160,6 +169,7 @@ class PaneTextView(QPlainTextEdit):
 		# builds a QFileSystemWatcher.
 		self._url = new_url
 		self._path = as_human_readable(new_url)
+		self._syntax._highlighter.set_path(self._path)
 		rewatch(self)
 
 	def _apply_font_size(self, size):
@@ -172,27 +182,7 @@ class PaneTextView(QPlainTextEdit):
 
 	def _get_actions(self):
 		key_bindings = load_json(KEY_BINDINGS_FILE, default=[])
-		watching = self._watcher is not None
-		reload_actions = []
-		if self._path is not None:
-			auto_label = (
-				'Disable auto-reload' if watching and not self._tail
-				else 'Enable auto-reload'
-			)
-			tail_label = (
-				'Disable tail mode' if watching and self._tail
-				else 'Enable tail mode (follow end)'
-			)
-			reload_actions = [
-				(
-					auto_label, lambda: toggle_auto_reload(self), '',
-					'text_toggle_auto_reload'
-				),
-				(
-					tail_label, lambda: toggle_tail(self), '',
-					'text_toggle_tail'
-				),
-			]
+		watch_actions = reload_actions(self)
 		zoom = zoom_actions(self, self._apply_font_size, key_bindings)
 		if self._editing:
 			mode_actions = [
@@ -202,7 +192,7 @@ class PaneTextView(QPlainTextEdit):
 					'Revert / reload from disk', self._revert, '',
 					'text_revert'
 				),
-			] + reload_actions + zoom + [
+			] + watch_actions + self._syntax.actions() + zoom + [
 				(
 					'Exit viewer', self._exit_with_dirty_check, '',
 					'viewer_close'
@@ -218,7 +208,8 @@ class PaneTextView(QPlainTextEdit):
 				('Exit viewer', self._on_close, '', 'viewer_close'),
 				('Edit file', self._enter_edit_mode, '', 'text_edit'),
 				('Reload from disk', self._revert, '', 'text_reload'),
-			] + reload_actions + zoom + nav_actions
+			] + watch_actions + self._format.actions() \
+				+ self._syntax.actions() + zoom + nav_actions
 		# Listed in both modes (core/textviewer_cursor.py, _search.py).
 		return mode_actions + self._cursor_keys.actions() \
 			+ self._search.actions()
@@ -236,7 +227,12 @@ class PaneTextView(QPlainTextEdit):
 		self._editing = True
 		self.setReadOnly(False)
 		self.setTextInteractionFlags(Qt.TextEditorInteraction)
-		viewer_status(self._nav.pane, 'Edit mode')
+		self._syntax.set_editing(True)
+		message = (
+			'Edit mode (pretty-printed - Save reformats the file)'
+			if self._format.is_pretty() else 'Edit mode'
+		)
+		viewer_status(self._nav.pane, message)
 
 	def _revert(self):
 		if self._editing and self.document().isModified():
@@ -275,7 +271,7 @@ def _mount_new_view(pane, text, path, url, editable, focus_view=True):
 		lambda: pane.run_command('switch_panes'),
 		pane, bg, fg, path, url, editable,
 	)
-	view.setPlainText(text)
+	view.setPlainText(view._format.display(text))
 	mount_view(pane, widget, view, focus_view=focus_view)
 
 @run_in_main_thread

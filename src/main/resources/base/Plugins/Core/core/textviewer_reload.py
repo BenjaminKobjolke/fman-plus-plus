@@ -42,6 +42,7 @@ def reload_from_disk(view, tail):
 	"""
 	text, editable = load_for_view(view._path)
 	view._editable = editable
+	text = view._format.display(text)
 	if tail:
 		view.setPlainText(text)
 		view.document().setModified(False)

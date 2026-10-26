@@ -324,6 +324,8 @@ file-list commands also work there, as described below.
 | `image_actual_size` | image | *(none)* | Actual size (100%) |
 | `text_edit` / `text_reload` | text (view mode) | *(none)* | Edit file / Reload from disk |
 | `text_toggle_auto_reload` / `text_toggle_tail` | text (view mode, backed file) | *(none)* | Toggle auto-reload / tail mode |
+| `text_toggle_pretty` | text (view mode) | *(none)* | Switch between pretty-printed and original JSON/XML text |
+| `text_toggle_syntax_colors` | text (both modes) | *(none)* | Toggle syntax colors for the current viewer session |
 | `text_save` / `text_save_as` / `text_revert` | text (edit mode) | *(none)* | Save / Save as… / Revert |
 | `text_reset_font_size` | text (both modes) | *(none)* | Reset the viewer's own zoom (not the pane's) |
 | `text_find` | text (both modes) | `/` (view mode) | Prompt for a search query, jump to the first match |

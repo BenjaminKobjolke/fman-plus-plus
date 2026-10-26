@@ -49,6 +49,17 @@ searches the file-list widget and that's hidden while viewing).
 *Decrease font size*, *Reset font size*, *Exit viewer*, *Find…*, *Find next*,
 *Find previous*.
 
+For files with a supported JSON or XML-based extension, the viewer pretty-prints
+valid content automatically. In view mode, *Show original* and *Pretty print*
+switch between the file as stored and its formatted display. Invalid or already
+formatted content stays as it is. Reloading from disk, including auto-reload
+and tail mode, applies the currently selected display mode.
+
+Syntax colors are enabled by default for file types recognized by Pygments.
+*Disable syntax colors* / *Enable syntax colors* toggles them for the current
+viewer session in either mode. Files without a matching lexer remain plain text;
+highlighting is skipped for text larger than 512 KiB.
+
 Notes:
 
 - **Entering edit mode is confirmed, not silent.** *Edit file* reports
@@ -57,6 +68,11 @@ Notes:
   `Could not save: <reason>` if the write fails (a read-only file, a path
   whose directory doesn't exist), which leaves the buffer modified so you can
   retry with *Save file as…* rather than losing the edit.
+- **Saving a pretty-printed file reformats it.** Editing uses the text shown
+  in the viewer, so Save writes the indented JSON/XML display back to disk.
+  To preserve the original formatting, choose *Show original* before entering
+  edit mode. When entering edit mode from a pretty-printed display, the status
+  bar says `Edit mode (pretty-printed - Save reformats the file)`.
 - **Not every file can be edited.** *Edit file* only makes the buffer
   editable if the file wasn't [size-truncated](#behaviour) and its bytes are
   strict UTF-8 — the same replacement decoding used for display is lossy, so
@@ -188,6 +204,8 @@ mode (see [Editing](#editing)).
 | `text_save`                   | *(none — palette only)*  | edit | Save file                |
 | `text_save_as`                | *(none — palette only)*  | edit | Save file as…            |
 | `text_revert`                 | *(none — palette only)*  | edit | Revert / reload from disk |
+| `text_toggle_pretty`          | *(none — palette only)*  | view | Switch between pretty-printed and original JSON/XML text |
+| `text_toggle_syntax_colors`   | *(none — palette only)*  | both | Toggle Pygments syntax colors for this viewer session |
 | `text_find`                   | `/` (view mode)          | both | Prompt for a search query, jump to the first match |
 | `text_find_next`              | `n` (view mode)          | both | Next match (wraps)      |
 | `text_find_previous`          | `N` (view mode)          | both | Previous match (wraps)  |

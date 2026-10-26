@@ -45,6 +45,24 @@ def toggle_tail(view):
 	else:
 		start_auto_reload(view, tail=True)
 
+def reload_actions(view):
+	"""Palette rows for file watching, or none for text without a file."""
+	if view._path is None:
+		return []
+	watching = view._watcher is not None
+	auto_label = (
+		'Disable auto-reload' if watching and not view._tail
+		else 'Enable auto-reload'
+	)
+	tail_label = (
+		'Disable tail mode' if watching and view._tail
+		else 'Enable tail mode (follow end)'
+	)
+	return [
+		(auto_label, lambda: toggle_auto_reload(view), '', 'text_toggle_auto_reload'),
+		(tail_label, lambda: toggle_tail(view), '', 'text_toggle_tail'),
+	]
+
 def _watch_view(view):
 	return start_watch(view._path, lambda: on_file_changed(view), view)
 
