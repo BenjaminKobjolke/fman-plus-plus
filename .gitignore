@@ -46,3 +46,6 @@ tools/previous_version.txt
 tools/CREATE_RELEASE_NOTES.md
 # Temporary command copies written by tools\tickets-watcher (see TICKETS_WATCHER_COMMANDS.md)
 /tools/.tw-run-*.bat
+
+# Scratch files in the scripting API example folder
+examples/scripting_api/test*.md
