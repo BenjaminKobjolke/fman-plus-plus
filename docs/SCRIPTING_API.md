@@ -105,6 +105,39 @@ you trust every program that can reach the server and has the token.
 In the examples, replace `<token>` with the contents of
 `ScriptingApiToken.txt`.
 
+### Example scripts
+
+`examples/scripting_api/` holds ready-to-run clients. Each reads the token
+file itself and uses `http://127.0.0.1:47447` unless the `FMAN_API_URL`
+environment variable is set.
+
+| File | Needs | Usage |
+| --- | --- | --- |
+| `fman_api.py` | Python 3 | `python fman_api.py state`, `commands`, `command <name> [args-json] [--pane N]` |
+| `fman_api.ps1` | PowerShell 5.1 or 7 | `.\fman_api.ps1 state`, `commands`, `command <name> [-Arguments @{...}] [-Pane N]` |
+| `fman_api.bat` | `curl.exe` (Windows 10+) | `fman_api.bat state`, `commands`, `command <name>`, `open <folder>` |
+| `fman_api.ahk` | AutoHotkey v2 | Hotkeys, see below |
+
+```bat
+python fman_api.py command open_directory "{\"url\": \"file://C:/Windows\"}"
+python fman_api.py command reload --pane 1
+fman_api.bat open C:\Windows
+```
+
+```powershell
+.\fman_api.ps1 command open_directory -Arguments @{ url = 'file://C:/Windows' }
+```
+
+In PowerShell 7, quote the Python JSON argument as
+`'{"url": "file://C:/Windows"}'`. The batch `command` sends no arguments; use
+`open` or another client for commands that need them.
+
+The AutoHotkey script binds Ctrl+Alt+S (show the state), Ctrl+Alt+D (move the
+cursor down), Ctrl+Alt+W (open `C:\Windows`) and Ctrl+Alt+E (open the folder
+of the active Explorer window in fman). It shows responses as raw JSON.
+
+The snippets below show the bare requests.
+
 ### curl
 
 ```sh
