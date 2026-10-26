@@ -57,6 +57,27 @@ implementation is found, say so in one line in the plan's Context and plan as us
 For other plugins, use `projectsList` to match the project by name; no match means the plugin has
 no project.
 
+## Planning questions: offer a setting for taste or performance
+
+For `/tickets:plan` design questions about how an fman behavior should work, check whether the
+answer is a matter of taste or of performance: refresh timers and intervals, where a message is
+shown, live vs. snapshot views, switching a visual cue on or off. When it is, always add the
+option `setting (default: <X>)`, where `<X>` is one of the other options. Picking it means the
+user chooses the behavior in a settings file and the plan names the default value, the key and
+the file:
+
+- `Core Settings.json` for Core plugin behavior, read through `get_setting` in
+  `core/settings.py` (as `drive_space_refresh_seconds` and `dim_hidden_files` do);
+- `%APPDATA%/fman/Local/Settings.json` for app-level window state (as `theme` and
+  `status_bar_visible` do).
+
+Keep the question's own default as it is; the setting option does not have to be the default.
+When the plan prefers one fixed behavior, the question or the plan's Context says in one
+sentence why a setting is not needed (for example: correctness, not taste). This does not apply
+to bug fixes or to questions with one correct answer.
+
+The plugin-first rule keeps precedence: its first round still asks only the gating question, and
+the setting option applies to the detail round that follows.
 
 ## Testing
 
