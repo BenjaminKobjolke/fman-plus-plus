@@ -44,11 +44,22 @@ class BuiltinPlugin(Plugin):
 			aliases = ('Toggle incognito mode',)
 			def __call__(self):
 				enabled = not incognito.is_incognito()
+				panes = self.window.get_panes()
+				if enabled:
+					incognito.remember_pane_states([
+						incognito.PaneState(
+							pane.get_path(), pane.get_file_under_cursor())
+						for pane in panes
+					])
+				else:
+					pane_states = incognito.get_pane_states()
 				incognito.set_incognito(enabled)
 				window = self.window._widget
 				window.set_incognito_marker_visible(enabled)
-				for pane in self.window.get_panes():
+				for pane in panes:
 					pane._broadcast(ON_INCOGNITO_CHANGED, enabled)
+				if not enabled:
+					incognito.restore_pane_states(panes, pane_states)
 				window.show_status_message(
 					ON_MESSAGE if enabled else OFF_MESSAGE)
 

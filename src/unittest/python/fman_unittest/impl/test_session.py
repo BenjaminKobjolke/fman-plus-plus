@@ -22,16 +22,26 @@ class SessionManagerCloseTest(TestCase):
 			self.settings['panes'])
 		self._assert_window_settings_saved()
 
-	def test_preserves_panes_but_saves_other_settings_when_incognito(self):
+	def test_saves_remembered_panes_but_current_column_widths_when_incognito(self):
+		incognito.remember_pane_states([
+			incognito.PaneState('file://C:/snapshot', 'file://C:/snapshot/file.txt')
+		])
+		incognito.set_incognito(True)
+
+		self.manager.on_close(self.window)
+
+		self.assertEqual(
+			[{'location': 'file://C:/snapshot', 'col_widths': [200]}],
+			self.settings['panes'])
+		self._assert_window_settings_saved()
+
+	def test_preserves_previous_panes_when_incognito_has_no_snapshot(self):
 		previous_panes = self.settings['panes']
 		incognito.set_incognito(True)
 
 		self.manager.on_close(self.window)
 
 		self.assertIs(previous_panes, self.settings['panes'])
-		self.assertEqual(
-			[{'location': 'file://C:/before', 'col_widths': [100]}],
-			self.settings['panes'])
 		self._assert_window_settings_saved()
 
 	def _assert_window_settings_saved(self):

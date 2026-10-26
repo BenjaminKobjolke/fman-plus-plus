@@ -61,8 +61,9 @@ palette is the only way to reach them:
   it leaves behind; messages keep being set, nothing draws them (also
   found by *statusbar*, *message bar*, *bottom bar*). See
   [`docs/STATUSBAR.md`](STATUSBAR.md).
-- **Toggle incognito mode** — stop counting folders opened for GoTo and keep
-  the previously saved pane folders when quitting. The status bar shows a
+- **Toggle incognito mode** — stop counting folders opened for GoTo, return to
+  the folders shown before the mode was enabled when turning it off, and keep
+  those folders when quitting. The status bar shows a
   permanent marker while it is on; restarting turns it off (also found by
   *privacy*, *private*, *folder history* or *visit history*). See
   [`docs/functions/go-to.md`](functions/go-to.md#incognito-mode).

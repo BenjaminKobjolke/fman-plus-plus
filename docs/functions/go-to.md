@@ -40,9 +40,12 @@ counts. Existing GoTo suggestions remain available, and the history already
 saved before the toggle stays on disk.
 
 When you quit fman in incognito mode, it keeps the pane folders saved before
-you turned the mode on. The folders opened during incognito are not saved for
-the next start. Window size, position and fman version are still saved.
-Incognito mode is off again after restarting fman.
+you turned the mode on. Turning incognito off returns each pane to the folder
+and file it showed when you turned the mode on; if that folder has been deleted,
+the pane opens its nearest existing parent. Quitting while incognito is on saves
+those same folders for the next start, not folders opened during incognito.
+Window size, position and fman version are still saved. Incognito mode is off
+again after restarting fman.
 
 The status bar shows a permanent **Incognito** marker while the mode is on,
 along with a short message each time it is toggled. Registered pane listeners

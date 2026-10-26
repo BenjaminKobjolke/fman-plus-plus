@@ -1,3 +1,4 @@
+from fman import DirectoryPane
 from fman.impl import incognito
 from fman.impl.incognito import OFF_MESSAGE, ON_INCOGNITO_CHANGED, ON_MESSAGE
 from fman.impl.plugins.builtin import BuiltinPlugin
@@ -31,11 +32,21 @@ class ToggleIncognitoTest(TestCase):
 			commands.index(by_name['ToggleStatusBar']) + 1)
 
 		window = MagicMock()
-		left, right = MagicMock(), MagicMock()
+		left = MagicMock(spec=DirectoryPane)
+		right = MagicMock(spec=DirectoryPane)
+		left.get_path.return_value = 'file://C:/a'
+		left.get_file_under_cursor.return_value = 'file://C:/a/x.txt'
+		right.get_path.return_value = 'file://C:/b'
+		right.get_file_under_cursor.return_value = None
 		window.get_panes.return_value = [left, right]
 		command = by_name['ToggleIncognito'](window)
 
 		command()
+		left.set_path.assert_not_called()
+		right.set_path.assert_not_called()
+		left.get_path.return_value = 'file://C:/elsewhere-a'
+		right.get_path.return_value = 'file://C:/elsewhere-b'
+		left.place_cursor_at.side_effect = ValueError
 		command()
 
 		self.assertEqual(
@@ -48,6 +59,15 @@ class ToggleIncognitoTest(TestCase):
 		self.assertEqual(
 			window._widget.show_status_message.call_args_list,
 			[call(ON_MESSAGE), call(OFF_MESSAGE)])
+		self.assertEqual(left.set_path.call_count, 1)
+		self.assertEqual(right.set_path.call_count, 1)
+		self.assertEqual(left.set_path.call_args.args[0], 'file://C:/a')
+		self.assertEqual(right.set_path.call_args.args[0], 'file://C:/b')
+		left.set_path.call_args.args[1]()
+		right.set_path.call_args.args[1]()
+		left.place_cursor_at.assert_called_once_with('file://C:/a/x.txt')
+		right.place_cursor_at.assert_not_called()
+		self.assertEqual((), incognito.get_pane_states())
 
 	def test_toggle_scripting_api_shows_controller_message(self):
 		commands = []

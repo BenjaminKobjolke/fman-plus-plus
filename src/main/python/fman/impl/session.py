@@ -159,18 +159,24 @@ class SessionManager:
 		self._settings['window_geometry'] = _encode(main_window.saveGeometry())
 		self._settings['window_state'] = \
 			_encode(main_window.saveState(self._MAIN_WINDOW_VERSION))
-		if not incognito.is_incognito():
+		pane_states = incognito.get_pane_states()
+		if incognito.is_incognito() and pane_states:
+			self._settings['panes'] = [
+				self._read_pane_settings(pane, state.location)
+				for pane, state in zip(main_window.get_panes(), pane_states)
+			]
+		elif not incognito.is_incognito():
 			self._settings['panes'] = \
 				list(map(self._read_pane_settings, main_window.get_panes()))
-		# Keep the last non-incognito locations so the next session can restore them.
+		# Incognito saves the pre-mode snapshot so private navigation isn't restored.
 		self._settings['fman_version'] = self._fman_version
 		try:
 			self._settings.flush()
 		except OSError:
 			pass
-	def _read_pane_settings(self, pane):
+	def _read_pane_settings(self, pane, location=None):
 		return {
-			'location': pane.get_location(),
+			'location': location if location is not None else pane.get_location(),
 			'col_widths': pane.get_column_widths()
 		}
 

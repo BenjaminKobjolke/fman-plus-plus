@@ -164,7 +164,9 @@ thread each time the user turns the mode on or off. It is sent to listeners
 registered with every open pane. Keep Qt calls off this callback thread, just
 as with other listener callbacks. A plugin loaded while incognito is already
 on does not receive an initial callback; query `fman.is_incognito()` when it
-loads to learn the current state.
+loads to learn the current state. When the mode turns off, fman then navigates
+the panes back, so listeners receive the normal path-change callbacks after
+`on_incognito_changed(False)`.
 
 ### Pane status messages
 
