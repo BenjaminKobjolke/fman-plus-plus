@@ -26,6 +26,10 @@ from fman.impl.plugins.key_bindings import KeyBindings
 from fman.impl.plugins.mother_fs import MotherFileSystem
 from fman.impl.viewers import ViewerRegistry
 from fman.impl.session import SessionManager
+from fman.impl.scripting.actions import ScriptingActions
+from fman.impl.scripting.config import ScriptingApiConfig
+from fman.impl.scripting.control import ScriptingApiControl
+from fman.impl.scripting.server import ScriptingServer
 from fman.impl.single_instance import SingleInstance, server_name_for, \
 	open_paths_in_running_instance
 from fman.impl.theme import Theme
@@ -79,6 +83,12 @@ class DevelopmentApplicationContext(ApplicationContext):
 			self.single_instance.start_listening()
 		self._start_metrics()
 		self._load_plugins()
+		if ScriptingApiConfig.from_settings(self.local_settings).enabled:
+			try:
+				self.scripting_control.start()
+			except OSError:
+				# The control logged the bind failure; fman remains usable.
+				pass
 		self.session_manager.show_main_window(self.window)
 		return self.app.exec_()
 	def _run_demo(self):
@@ -187,6 +197,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 	def on_main_window_close(self):
 		self.session_manager.on_close(self.main_window)
 	def on_quit(self):
+		self.scripting_control.stop()
 		self.config.on_quit()
 		if self.metrics_logging_enabled:
 			log_dir = dirname(self._get_metrics_json_path())
@@ -303,6 +314,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 		return BuiltinPlugin(
 			self.tour_controller, self.tutorial_factory,
 			self.cleanupguide_factory, self.window_chrome,
+			self.scripting_control,
 			self.plugin_error_handler,
 			self.application_command_registry, self.pane_command_registry,
 			self.key_bindings, self.mother_fs, self.viewer_registry,
@@ -314,6 +326,16 @@ class DevelopmentApplicationContext(ApplicationContext):
 	@cached_property
 	def window_chrome(self):
 		return WindowChrome(self.local_settings)
+	@cached_property
+	def scripting_control(self):
+		return ScriptingApiControl(
+			self.local_settings,
+			self._get_local_data_file('ScriptingApiToken.txt'),
+			lambda config, token: ScriptingServer(
+				config, token,
+				ScriptingActions(self.plugin_support, self.main_window)
+			),
+		)
 	@cached_property
 	def mother_fs(self):
 		# Resolve the cyclic dependency MotherFileSystem <-> IconProvider:

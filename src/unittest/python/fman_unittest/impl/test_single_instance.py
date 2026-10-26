@@ -1,5 +1,5 @@
 from fman.impl.session import SessionManager
-from fman.impl.single_instance import SingleInstance, _panes_active_first
+from fman.impl.single_instance import SingleInstance, panes_active_first
 from os import getpid
 from PyQt5.QtCore import QEventLoop
 from PyQt5.QtWidgets import QApplication
@@ -55,7 +55,7 @@ class PanesActiveFirstTest(TestCase):
 	def test_uses_get_active_pane_when_available(self):
 		left, right = _FakePane(), _FakePane()
 		plugin_support = _FakePluginSupport([left, right], active=right)
-		panes = _panes_active_first(plugin_support, _FakeMainWindow(None))
+		panes = panes_active_first(plugin_support, _FakeMainWindow(None))
 		self.assertEqual([right, left], panes)
 	def test_falls_back_to_focus_widget_when_no_active_pane(self):
 		# Window in the background: no pane has live focus, but focusWidget()
@@ -63,12 +63,12 @@ class PanesActiveFirstTest(TestCase):
 		left, right = _FakePane(), _FakePane()
 		main_window = _FakeMainWindow(right.child_widget)
 		plugin_support = _FakePluginSupport([left, right], active=None)
-		panes = _panes_active_first(plugin_support, main_window)
+		panes = panes_active_first(plugin_support, main_window)
 		self.assertEqual([right, left], panes)
 	def test_defaults_to_first_pane_without_focus(self):
 		left, right = _FakePane(), _FakePane()
 		plugin_support = _FakePluginSupport([left, right], active=None)
-		panes = _panes_active_first(plugin_support, _FakeMainWindow(None))
+		panes = panes_active_first(plugin_support, _FakeMainWindow(None))
 		self.assertEqual([left, right], panes)
 
 class _FakeWidget:

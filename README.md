@@ -84,6 +84,9 @@ instead of freezing the UI. Release notes are translated into 40 languages and
 readable in-app. → [SINGLE_INSTANCE.md](docs/SINGLE_INSTANCE.md) ·
 [WINDOWS_NETWORK_SUPPORT.md](docs/WINDOWS_NETWORK_SUPPORT.md)
 
+**Script it.** Read pane state and run allowed fman commands from local
+scripts over the authenticated HTTP API. → [SCRIPTING_API.md](docs/SCRIPTING_API.md)
+
 Full shortcut reference:
 **[workflow-tools.com/fast-file-manager/help/keybindings](https://workflow-tools.com/fast-file-manager/help/keybindings)**
 
@@ -250,6 +253,7 @@ These are the ones maintained on this account.
 | [ROBOCOPY.md](docs/ROBOCOPY.md) | Copy and Move with robocopy (Windows): destination picker, progress, logs |
 | [STATUSBAR.md](docs/STATUSBAR.md) | The bar at the bottom: what it says, hiding it, theming it |
 | [SINGLE_INSTANCE.md](docs/SINGLE_INSTANCE.md) | Reusing a running window, and the `single_instance` setting |
+| [SCRIPTING_API.md](docs/SCRIPTING_API.md) | Read fman state and run allowed commands from scripts |
 | [THEMES.md](docs/THEMES.md) | Theme files, color tokens and switching |
 | [TUTORIAL.md](docs/TUTORIAL.md) | The onboarding tour: where its bubble sits, who owns the keyboard, writing a step |
 | [WINDOWS_NETWORK_SUPPORT.md](docs/WINDOWS_NETWORK_SUPPORT.md) | UNC paths, network drive icons |

@@ -11,12 +11,13 @@ from PyQt5.QtCore import Qt
 class BuiltinPlugin(Plugin):
 	def __init__(
 		self, tour_controller, tutorial_factory, cleanupguide_factory,
-		window_chrome, *super_args
+		window_chrome, scripting_control, *super_args
 	):
 		super().__init__(*super_args)
 
 		# We need to define the command classes here so we get access to the
-		# scoped variables tour_controller, *_factory, window_chrome. Creating
+		# scoped variables tour_controller, *_factory, window_chrome and
+		# scripting_control. Creating
 		# a factory via lambda: ... would not work because fman's current
 		# implementation of commands requires them to be actual classes, not
 		# lambdas.
@@ -51,6 +52,13 @@ class BuiltinPlugin(Plugin):
 				window.show_status_message(
 					ON_MESSAGE if enabled else OFF_MESSAGE)
 
+		class ToggleScriptingApi(ApplicationCommand):
+			aliases = ('Toggle scripting API',)
+			@run_in_main_thread
+			def __call__(self):
+				self.window._widget.show_status_message(
+					scripting_control.toggle())
+
 		class TogglePaneStatusLines(ApplicationCommand):
 			aliases = ('Toggle pane status lines',)
 			def __call__(self):
@@ -74,6 +82,7 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(ToggleTitleBar)
 		self._register_application_command(ToggleStatusBar)
 		self._register_application_command(ToggleIncognito)
+		self._register_application_command(ToggleScriptingApi)
 		self._register_application_command(TogglePaneStatusLines)
 		self._register_application_command(TogglePaneMessagesInStatusBar)
 		# Only Mac has a menu bar to toggle: MainWindow._init_help_menu builds

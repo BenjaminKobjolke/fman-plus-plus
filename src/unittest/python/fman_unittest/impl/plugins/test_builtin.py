@@ -14,6 +14,7 @@ class ToggleIncognitoTest(TestCase):
 		commands = []
 		window_chrome = MagicMock()
 		args = [MagicMock() for _ in range(7)]
+		scripting_control = MagicMock()
 		with patch.object(
 			BuiltinPlugin, '_register_application_command',
 			side_effect=commands.append
@@ -21,7 +22,7 @@ class ToggleIncognitoTest(TestCase):
 			patch.object(BuiltinPlugin, '_register_file_system'), \
 			patch.object(BuiltinPlugin, '_register_column'), \
 			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
-			BuiltinPlugin(None, None, None, window_chrome, *args)
+			BuiltinPlugin(None, None, None, window_chrome, scripting_control, *args)
 
 		by_name = {command.__name__: command for command in commands}
 		self.assertIn('ToggleIncognito', by_name)
@@ -47,3 +48,28 @@ class ToggleIncognitoTest(TestCase):
 		self.assertEqual(
 			window._widget.show_status_message.call_args_list,
 			[call(ON_MESSAGE), call(OFF_MESSAGE)])
+
+	def test_toggle_scripting_api_shows_controller_message(self):
+		commands = []
+		window_chrome = MagicMock()
+		scripting_control = MagicMock()
+		scripting_control.toggle.return_value = 'Scripting API on'
+		args = [MagicMock() for _ in range(7)]
+		with patch.object(
+			BuiltinPlugin, '_register_application_command',
+			side_effect=commands.append
+		), patch.object(BuiltinPlugin, '_register_directory_pane_command'), \
+			patch.object(BuiltinPlugin, '_register_file_system'), \
+			patch.object(BuiltinPlugin, '_register_column'), \
+			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
+			BuiltinPlugin(None, None, None, window_chrome, scripting_control, *args)
+
+		by_name = {command.__name__: command for command in commands}
+		command_class = by_name['ToggleScriptingApi']
+		self.assertEqual(('Toggle scripting API',), command_class.aliases)
+		window = MagicMock()
+		command = command_class(window)
+		command_class.__call__.__wrapped__(command)
+		scripting_control.toggle.assert_called_once_with()
+		window._widget.show_status_message.assert_called_once_with(
+			'Scripting API on')

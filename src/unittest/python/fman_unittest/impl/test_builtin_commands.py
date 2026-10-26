@@ -11,6 +11,7 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 		commands = []
 		args = [MagicMock() for _ in range(7)]
 		window_chrome = MagicMock()
+		scripting_control = MagicMock()
 		with patch.object(
 			BuiltinPlugin, '_register_application_command',
 			side_effect=commands.append
@@ -18,7 +19,7 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 			patch.object(BuiltinPlugin, '_register_file_system'), \
 			patch.object(BuiltinPlugin, '_register_column'), \
 			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
-			BuiltinPlugin(None, None, None, window_chrome, *args)
+			BuiltinPlugin(None, None, None, window_chrome, scripting_control, *args)
 
 		by_name = {command.__name__: command for command in commands}
 		self.assertIn('TogglePaneStatusLines', by_name)

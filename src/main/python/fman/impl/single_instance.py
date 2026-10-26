@@ -25,13 +25,13 @@ def open_paths_in_running_instance(
 	main_window.activateWindow()
 	if not abs_paths:
 		return
-	panes = _panes_active_first(plugin_support, main_window)
+	panes = panes_active_first(plugin_support, main_window)
 	for path, pane in zip(abs_paths, panes):
 		session_manager.open_path_in_pane(pane, path)
 	if panes:
 		panes[0].focus()
 
-def _panes_active_first(plugin_support, main_window):
+def panes_active_first(plugin_support, main_window):
 	all_panes = plugin_support.get_panes()
 	if not all_panes:
 		return []
