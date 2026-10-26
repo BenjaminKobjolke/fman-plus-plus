@@ -23,6 +23,7 @@ import inspect
 
 EXPECTED = frozenset({
 	'About', 'AddPane', 'ArchiveOpenListener', 'CenterWindow', 'CheckForUpdates',
+	'ClearHiddenAttribute',
 	'CommandPalette', 'CompareDirectories', 'Copy', 'CopyFileName', 'CopyFilePath',
 	'CopyPathsToClipboard',
 	'CopyToClipboard',
@@ -49,7 +50,7 @@ EXPECTED = frozenset({
 	'ResetFont', 'ResetPaneFontSize', 'SelectAll', 'SelectFont', 'SelectGroup',
 	'SelectSameExtension',
 	'SelectIconSet', 'SelectTheme', 'SetIconColor', 'SetIconSize', 'SetTextEditor',
-	'SetWindowOpacity', 'ShowAllPanes', 'ShowExplorerProperties',
+	'SetHiddenAttribute', 'SetWindowOpacity', 'ShowAllPanes', 'ShowExplorerProperties',
 	'ShowConsole', 'ShowConsoleWindow', 'ShowOnlyActivePane', 'ShowReleaseNotes',
 	'ShowVolumes', 'SortByColumn',
 	'SwitchPanes', 'Symlink', 'ToggleExecutableIcons', 'ToggleHiddenFiles',

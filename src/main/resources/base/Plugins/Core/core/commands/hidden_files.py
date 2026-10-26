@@ -5,18 +5,73 @@ installs it at startup because fman instantiates commands lazily and the
 filter has to exist before the first pane is drawn. The per-pane choice
 lives in 'Panes.json' so it survives a restart. Shown hidden entries are
 faded unless `dim_hidden_files` in Core Settings.json is false.
+The Windows commands change the file's hidden attribute; the toggle only
+changes what the pane shows.
 """
-from core.commands.util import is_hidden
+from core.commands.util import chosen_files, is_file_url, is_hidden
 from core.settings import get_setting, SETTINGS_FILE
 from fman import DirectoryPaneCommand, DirectoryPaneListener, PLATFORM, \
-	load_json, save_json
-from fman.fs import query
-from fman.url import splitscheme
+	load_json, save_json, show_alert, show_status_message
+from fman.fs import notify_file_changed, query
+from fman.url import as_human_readable, splitscheme
 from stat import FILE_ATTRIBUTE_HIDDEN
 
 __all__ = ['InitHiddenFilesFilter', 'ToggleHiddenFiles']
 
+if PLATFORM == 'Windows':
+	__all__ += ['SetHiddenAttribute', 'ClearHiddenAttribute']
+	import ctypes
+	import ctypes.wintypes
+	import os
+	from stat import FILE_ATTRIBUTE_NORMAL
+
+	_kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+	_kernel32.SetFileAttributesW.argtypes = (
+		ctypes.wintypes.LPCWSTR, ctypes.wintypes.DWORD
+	)
+	_kernel32.SetFileAttributesW.restype = ctypes.wintypes.BOOL
+
+	def _set_hidden_attribute(path, hidden):
+		attrs = os.lstat(path).st_file_attributes
+		new = attrs | FILE_ATTRIBUTE_HIDDEN if hidden else \
+			attrs & ~FILE_ATTRIBUTE_HIDDEN
+		if new == attrs:
+			return
+		# FILE_ATTRIBUTE_NORMAL is only valid alone, and 0 is not a valid value.
+		if not _kernel32.SetFileAttributesW(
+			path, new or FILE_ATTRIBUTE_NORMAL
+		):
+			raise ctypes.WinError(ctypes.get_last_error())
+
 _DIM_SETTING_KEY = 'dim_hidden_files'
+_ATTRIBUTE_FAILED = 'Could not change the hidden attribute of:'
+
+if PLATFORM == 'Windows':
+	def _apply_hidden_attribute(command, hidden):
+		files = chosen_files(command)
+		if not files:
+			return
+		failed = []
+		for url in files:
+			name = as_human_readable(url)
+			if not is_file_url(url):
+				failed.append(name)
+				continue
+			try:
+				_set_hidden_attribute(name, hidden)
+			except OSError as error:
+				failed.append('%s: %s' % (name, error.strerror or str(error)))
+		notify_file_changed(command.pane.get_path())
+		if failed:
+			show_alert('%s\n%s' % (_ATTRIBUTE_FAILED, '\n'.join(failed)))
+		else:
+			verb = 'set on' if hidden else 'removed from'
+			count = len(files)
+			noun = 'file' if count == 1 else 'files'
+			show_status_message(
+				'Hidden attribute %s %d %s' % (verb, count, noun),
+				timeout_secs=3
+			)
 
 class ToggleHiddenFiles(DirectoryPaneCommand):
 
@@ -100,3 +155,20 @@ def _hidden_file_filter(url):
 
 def _is_hidden_file(url):
 	return not _hidden_file_filter(url)
+
+if PLATFORM == 'Windows':
+	class SetHiddenAttribute(DirectoryPaneCommand):
+		aliases = ('Set hidden attribute',)
+
+		def __call__(self):
+			_apply_hidden_attribute(self, True)
+		def is_visible(self):
+			return is_file_url(self.pane.get_path())
+
+	class ClearHiddenAttribute(DirectoryPaneCommand):
+		aliases = ('Remove hidden attribute',)
+
+		def __call__(self):
+			_apply_hidden_attribute(self, False)
+		def is_visible(self):
+			return is_file_url(self.pane.get_path())

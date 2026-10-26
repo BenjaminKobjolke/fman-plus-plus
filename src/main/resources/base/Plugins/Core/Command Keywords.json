@@ -4,6 +4,7 @@
 		"position", "recenter"
 	],
 	"check_for_updates": ["update", "upgrade", "new version", "latest release", "github"],
+	"clear_hidden_attribute": ["unhide file", "show file", "unmark hidden", "attrib -h", "attribute"],
 	"create_and_edit_file": ["create file", "create and edit file", "new"],
 	"create_directory": [
 		"create folder", "new directory", "create directory", "mkdir"
@@ -92,6 +93,7 @@
 		"icon tint", "recolor icons", "colorize icons", "icon theme color",
 		"colour icons"
 	],
+	"set_hidden_attribute": ["hide file", "mark hidden", "attrib +h", "attribute"],
 	"set_icon_size": [
 		"bigger icons", "smaller icons", "icon scale", "large icons",
 		"row height"
