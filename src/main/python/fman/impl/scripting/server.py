@@ -12,6 +12,7 @@ from fman.impl.scripting.config import (
 	COMMAND_PATH,
 	COMMANDS_PATH,
 	CLICK_PATH,
+	DIALOG_PATH,
 	FILES_PATH,
 	KEYS_PATH,
 	ORIGIN_HEADER,
@@ -75,6 +76,12 @@ class ScriptingServer:
 					self._send_bytes(
 						200, 'image/png', server._automation_actions.screenshot_png(),
 					)
+				elif path.path == DIALOG_PATH:
+					if not self._automation_enabled():
+						return
+					self._send_json(200, {
+						'dialog': server._automation_actions.get_dialog(),
+					})
 				elif path.path == FILES_PATH:
 					if not self._automation_enabled():
 						return

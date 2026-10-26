@@ -2,7 +2,7 @@
 
 from PyQt5.QtCore import QBuffer, QIODevice, QPoint, QPointF, Qt, QEvent
 from PyQt5.QtGui import QContextMenuEvent, QMouseEvent
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 
 from fman.impl.scripting.actions import get_pane
 from fman.impl.util.qt.key_events import post_chord, post_text
@@ -61,6 +61,25 @@ class AutomationActions:
 		buffer.open(QIODevice.WriteOnly)
 		self._window_target().grab().save(buffer, 'PNG')
 		return bytes(buffer.data())
+
+	@run_in_main_thread
+	def get_dialog(self):
+		dialog = QApplication.activeModalWidget()
+		if dialog is None:
+			return None
+		if not isinstance(dialog, QMessageBox):
+			return {
+				'type': type(dialog).__name__,
+				'title': dialog.windowTitle(),
+				'text': '',
+				'buttons': [],
+			}
+		return {
+			'type': type(dialog).__name__,
+			'title': dialog.windowTitle(),
+			'text': dialog.text(),
+			'buttons': [button.text() for button in dialog.buttons()],
+		}
 
 	def _window_target(self):
 		return QApplication.activeModalWidget() \

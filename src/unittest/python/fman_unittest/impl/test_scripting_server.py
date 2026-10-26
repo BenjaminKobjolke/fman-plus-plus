@@ -111,6 +111,7 @@ class ScriptingServerTest(TestCase):
 	def test_automation_routes_are_disabled_by_default(self):
 		for method, path, payload in (
 			('GET', '/v1/files', None), ('GET', '/v1/screenshot', None),
+			('GET', '/v1/dialog', None),
 			('POST', '/v1/keys', {'keys': ['A']}),
 			('POST', '/v1/click', {'x': 1, 'y': 2}),
 		):
@@ -125,6 +126,10 @@ class ScriptingServerTest(TestCase):
 		actions = MagicMock(spec=AutomationActions)
 		actions.get_visible_files.return_value = ['file:///a.txt']
 		actions.screenshot_png.return_value = b'png-data'
+		actions.get_dialog.return_value = {
+			'type': 'MessageBox', 'title': 'Confirm', 'text': 'Continue?',
+			'buttons': ['&Yes', '&No'],
+		}
 		server = ScriptingServer(config, self.TOKEN, self.actions, actions)
 		server.start()
 		try:
@@ -141,9 +146,13 @@ class ScriptingServerTest(TestCase):
 			))
 			self.assertEqual((200, 'image/png', b'png-data'), self._binary_at(
 				base_url, '/v1/screenshot'))
+			self.assertEqual({
+				'dialog': actions.get_dialog.return_value,
+			}, self._request_at(base_url, 'GET', '/v1/dialog'))
 			actions.send_keys.assert_called_once_with(['Ctrl+P'])
 			actions.type_text.assert_called_once_with('x')
 			actions.click_at.assert_called_once_with(10, 20, 'left', False)
+			actions.get_dialog.assert_called_once_with()
 		finally:
 			server.stop()
 

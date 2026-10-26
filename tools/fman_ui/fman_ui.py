@@ -10,9 +10,11 @@ import subprocess
 import sys
 import time
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, urljoin, urlsplit
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 import uuid
+
+from recycle_cleanup import cleanup_session as cleanup_recycle_bin
 
 
 def _root():
@@ -59,6 +61,10 @@ def _make_fixture(path):
 	hidden = path / 'hidden.txt'
 	hidden.write_text('hidden fixture\n', encoding='utf-8')
 	(path / 'folder').mkdir(exist_ok=True)
+	bracket_folder = path / '[--brackets--]'
+	bracket_folder.mkdir(exist_ok=True)
+	(bracket_folder / 'visible.txt').write_text(
+		'visible fixture in a bracketed folder\n', encoding='utf-8')
 	if os.name == 'nt':
 		subprocess.run(['attrib', '+h', str(hidden)], check=True,
 			stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -157,19 +163,38 @@ def _run(args):
 	if args.action == 'close':
 		subprocess.run(['taskkill', '/PID', str(session['pid']), '/T', '/F'],
 			check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+		try:
+			removed_entries = cleanup_recycle_bin(
+				Path(session['profile']).parent)
+		except OSError:
+			removed_entries = 0
 		shutil.rmtree(Path(session['profile']).parent, ignore_errors=True)
 		_current_path().unlink(missing_ok=True)
-		return {'ok': True}
+		return {'ok': True, 'recycle_bin_entries_removed': removed_entries}
 	if args.action in ('state', 'commands'):
 		return _api(session, 'GET', '/v1/' + args.action)
 	if args.action == 'files':
 		return _api(session, 'GET', '/v1/files?pane=%d' % args.pane)
+	if args.action == 'dialog':
+		return _api(session, 'GET', '/v1/dialog')
 	if args.action == 'command':
 		payload = {
 			'name': args.name, 'args': json.loads(args.args_json),
 			'pane': args.pane,
 		}
-		result = _api(session, 'POST', '/v1/command', payload)
+		try:
+			result = _api(session, 'POST', '/v1/command', payload)
+		except (TimeoutError, URLError) as error:
+			if isinstance(error, URLError) and not isinstance(
+					error.reason, TimeoutError):
+				raise
+			try:
+				dialog = _api(session, 'GET', '/v1/dialog').get('dialog')
+			except (OSError, RuntimeError, URLError):
+				raise error
+			if dialog is None:
+				raise error
+			return {'running': True, 'dialog': dialog}
 		_settle(args.settle)
 		return result
 	if args.action == 'keys':
@@ -188,7 +213,7 @@ def _run(args):
 				raise RuntimeError('Pane index is out of range.')
 			if not urlsplit(args.file).scheme:
 				base = state['panes'][pane_index]['path'].rstrip('/') + '/'
-				file_url = urljoin(base, quote(args.file))
+				file_url = base + args.file
 			else:
 				file_url = args.file
 			payload = {'pane': pane_index, 'file': file_url}
@@ -215,7 +240,7 @@ def _parser():
 	launch = commands.add_parser('launch')
 	launch.add_argument('--left')
 	launch.add_argument('--right')
-	for name in ('state', 'commands', 'close'):
+	for name in ('state', 'commands', 'close', 'dialog'):
 		commands.add_parser(name)
 	command = commands.add_parser('command')
 	command.add_argument('name')

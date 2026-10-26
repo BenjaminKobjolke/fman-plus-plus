@@ -7,7 +7,8 @@ from unittest.mock import patch
 
 from core.trash import move_to_trash
 from core.recycle_bin import (
-	RecycleBinEntry, find_entry, parse_entry, restore_entry,
+	RecycleBinEntry, find_entry, iter_entries, parse_entry, remove_entry,
+	restore_entry,
 )
 from fman import PLATFORM
 
@@ -129,6 +130,30 @@ class FindEntryTest(TestCase):
 		return RecycleBinEntry(original_path, data_path, path, deleted_at, 3)
 
 
+class IterateEntriesTest(TestCase):
+	def test_iterates_parsed_entries_and_skips_unreadable_or_missing_data(self):
+		with TemporaryDirectory() as folder:
+			first = FindEntryTest()._entry(
+				folder, '$Ione', r'C:\Users\one.txt', 1)
+			second = FindEntryTest()._entry(
+				folder, '$Itwo', r'C:\Users\two.txt', 2)
+			with open(join(folder, '$Ibroken'), 'wb') as file:
+				file.write(b'broken metadata')
+			missing_data = FindEntryTest()._entry(
+				folder, '$Imissing', r'C:\Users\missing.txt', 3)
+			os.remove(missing_data.data_path)
+			with patch(
+				'core.recycle_bin.get_current_user_sid',
+				return_value='S-1-5-21-test'
+			), patch(
+				'core.recycle_bin._recycle_bin_directory',
+				return_value=folder,
+			):
+				entries = list(iter_entries(r'C:\Users\fixture'))
+		self.assertEqual({first.info_path, second.info_path},
+			{entry.info_path for entry in entries})
+
+
 class RestoreEntryTest(TestCase):
 	def test_restores_data_then_removes_metadata(self):
 		with TemporaryDirectory() as folder:
@@ -177,6 +202,39 @@ class RestoreEntryTest(TestCase):
 		return RecycleBinEntry(
 			original_path, data_path, info_path,
 			datetime(2024, 1, 2, tzinfo=timezone.utc), 8,
+		)
+
+
+class RemoveEntryTest(TestCase):
+	def test_removes_file_data_and_its_metadata(self):
+		with TemporaryDirectory() as folder:
+			entry = self._entry(folder, is_directory=False)
+			remove_entry(entry)
+			self.assertFalse(exists(entry.data_path))
+			self.assertFalse(exists(entry.info_path))
+
+	def test_removes_folder_data_recursively_and_its_metadata(self):
+		with TemporaryDirectory() as folder:
+			entry = self._entry(folder, is_directory=True)
+			remove_entry(entry)
+			self.assertFalse(exists(entry.data_path))
+			self.assertFalse(exists(entry.info_path))
+
+	def _entry(self, folder, is_directory):
+		data_path = join(folder, '$Rabc')
+		info_path = join(folder, '$Iabc')
+		if is_directory:
+			os.makedirs(join(data_path, 'nested'))
+			with open(join(data_path, 'nested', 'file.txt'), 'wb') as file:
+				file.write(b'trash')
+		else:
+			with open(data_path, 'wb') as file:
+				file.write(b'trash')
+		with open(info_path, 'wb') as file:
+			file.write(b'metadata')
+		return RecycleBinEntry(
+			join(folder, 'original'), data_path, info_path,
+			datetime(2024, 1, 2, tzinfo=timezone.utc), 5,
 		)
 
 

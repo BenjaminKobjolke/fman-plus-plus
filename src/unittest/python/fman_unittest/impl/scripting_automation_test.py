@@ -1,13 +1,15 @@
 """Qt event tests for the scripting API's desktop automation actions."""
 
 from unittest import TestCase
+from unittest.mock import patch
 
 from PyQt5.QtCore import QEvent
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QMessageBox, QWidget
 
 from fman.impl.scripting.automation import AutomationActions, UnknownFile
 from fman.impl.scripting.actions import InvalidPane
 from fman.impl.util.qt.key_events import parse_chord, post_chord, post_text
+from fman.impl.widgets import MessageBox
 
 
 class ScriptingAutomationTest(TestCase):
@@ -37,6 +39,30 @@ class ScriptingAutomationTest(TestCase):
 		self.addCleanup(window.close)
 		data = AutomationActions(window, None).screenshot_png()
 		self.assertTrue(data.startswith(b'\x89PNG\r\n\x1a\n'))
+
+	def test_get_dialog_returns_none_without_an_active_modal_widget(self):
+		actions = AutomationActions(_Window(), None)
+		with patch('fman.impl.scripting.automation.QApplication.activeModalWidget',
+				return_value=None):
+			self.assertIsNone(actions.get_dialog())
+
+	def test_get_dialog_returns_message_box_details(self):
+		parent = QWidget()
+		dialog = MessageBox(parent)
+		dialog.setWindowTitle('Confirm deletion')
+		dialog.setText('Move this file to the Recycle Bin?')
+		dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+		actions = AutomationActions(_Window(), None)
+		with patch(
+			'fman.impl.scripting.automation.QApplication.activeModalWidget',
+			return_value=dialog,
+		):
+			self.assertEqual({
+				'type': 'MessageBox',
+				'title': 'Confirm deletion',
+				'text': 'Move this file to the Recycle Bin?',
+				'buttons': ['&Yes', '&No'],
+			}, actions.get_dialog())
 
 	def test_visible_files_follow_the_model_display_order(self):
 		model = _Rows(['file:///second', 'file:///first'])

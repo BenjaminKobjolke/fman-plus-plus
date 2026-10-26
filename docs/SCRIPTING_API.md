@@ -50,12 +50,15 @@ or global hotkeys.
 | `POST /v1/keys` | `{"keys": ["Ctrl+Shift+P"], "text": "hidden"}` (either field or both) | `{"ok": true}` |
 | `POST /v1/click` | `{"pane": 0, "file": "<url>", "button": "left", "double": false}` or `{"x": 10, "y": 20}` | `{"ok": true}` |
 | `GET /v1/screenshot` | — | PNG image of the active modal, popup or main window |
+| `GET /v1/dialog` | — | `{"dialog": {"type": "MessageBox", "title": "Confirm", "text": "Continue?", "buttons": ["&Yes", "&No"]}}` or `{"dialog": null}` |
 | `GET /v1/files?pane=0` | Pane index is active-first and defaults to `0` | `{"pane": 0, "files": ["<url>"]}` |
 
 The click `button` may be `left` or `right`; `double` defaults to `false`.
 Coordinates refer to the screenshot of the current window target. An unknown
 file returns 404, invalid input or pane indexes return 400, and all automation
-routes return 403 while automation is disabled.
+routes return 403 while automation is disabled. The dialog endpoint returns
+the active fman message box's type, title, text and button labels, or `null`
+when no modal dialog is open.
 
 The server checks the requested command name against the allowlist before
 dispatch. A plugin's `on_command` hook may rewrite a command after this

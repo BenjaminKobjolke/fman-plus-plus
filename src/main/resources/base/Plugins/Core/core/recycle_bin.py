@@ -6,6 +6,7 @@ from glob import glob
 from os import remove, rename
 from os.path import basename, dirname, isdir, join, lexists
 import ntpath
+import shutil
 from fman.url import as_human_readable
 
 
@@ -63,24 +64,31 @@ def parse_entry(info_path):
 	)
 
 
-def find_entry(original_path):
-	"""Return the newest current-user trash entry for an original path."""
+def iter_entries(original_path):
+	"""Yield readable current-user trash entries for the path's drive."""
 	if original_path.startswith('file://'):
 		original_path = as_human_readable(original_path)
 	sid = get_current_user_sid()
 	bin_directory = _recycle_bin_directory(original_path, sid)
 	if not isdir(bin_directory):
-		return None
-	matches = []
+		return
 	for info_path in glob(join(bin_directory, '$I*')):
 		try:
 			entry = parse_entry(info_path)
 		except (OSError, ValueError):
 			continue
-		if entry.original_path.casefold() != original_path.casefold():
-			continue
 		if lexists(entry.data_path):
-			matches.append(entry)
+			yield entry
+
+
+def find_entry(original_path):
+	"""Return the newest current-user trash entry for an original path."""
+	if original_path.startswith('file://'):
+		original_path = as_human_readable(original_path)
+	matches = (
+		entry for entry in iter_entries(original_path)
+		if entry.original_path.casefold() == original_path.casefold()
+	)
 	return max(matches, key=lambda entry: entry.deleted_at, default=None)
 
 
@@ -91,6 +99,15 @@ def restore_entry(entry):
 	if lexists(entry.original_path):
 		raise FileExistsError(entry.original_path)
 	rename(entry.data_path, entry.original_path)
+	remove(entry.info_path)
+
+
+def remove_entry(entry):
+	"""Permanently remove trashed data, then remove its metadata file."""
+	if isdir(entry.data_path):
+		shutil.rmtree(entry.data_path)
+	else:
+		remove(entry.data_path)
 	remove(entry.info_path)
 
 
