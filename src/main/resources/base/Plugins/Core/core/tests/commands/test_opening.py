@@ -81,6 +81,78 @@ class OpenShortcutTest(TestCase):
 			_open_local_files_win([path], pane)
 		return pane, shell_execute
 
+@skipUnless(PLATFORM == 'Windows', 'ShellExecute is a Windows API')
+class OpenFailureTest(TestCase):
+	path = r'C:\a\x.json'
+
+	def test_yes_opens_the_windows_open_with_dialog(self):
+		import pywintypes
+		error = pywintypes.error(
+			31, 'ShellExecute',
+			'A device attached to the system is not functioning.'
+		)
+		pane, shell_execute, show_alert = self._open(
+			[error, None], return_value=self._yes()
+		)
+		self.assertIn(self.path, show_alert.call_args[0][0])
+		self.assertEqual(2, shell_execute.call_count)
+		self.assertEqual('openas', shell_execute.call_args.args[1])
+		self.assertEqual(self.path, shell_execute.call_args.args[2])
+
+	def test_no_does_not_open_the_windows_dialog(self):
+		import pywintypes
+		error = pywintypes.error(
+			31, 'ShellExecute',
+			'A device attached to the system is not functioning.'
+		)
+		_, shell_execute, show_alert = self._open([error], return_value=self._no())
+		show_alert.assert_called_once()
+		shell_execute.assert_called_once()
+
+	def test_cancelled_uac_prompt_stays_silent(self):
+		import pywintypes
+		from winerror import ERROR_CANCELLED
+		error = pywintypes.error(
+			ERROR_CANCELLED, 'ShellExecute',
+			'The operation was canceled by the user.'
+		)
+		_, shell_execute, show_alert = self._open([error])
+		show_alert.assert_not_called()
+		shell_execute.assert_called_once()
+
+	def test_open_with_failure_shows_a_fallback_alert(self):
+		import pywintypes
+		error = pywintypes.error(
+			31, 'ShellExecute',
+			'A device attached to the system is not functioning.'
+		)
+		_, shell_execute, show_alert = self._open(
+			[error, error], return_value=self._yes()
+		)
+		self.assertEqual(2, show_alert.call_count)
+		self.assertEqual(2, shell_execute.call_count)
+
+	def _open(self, side_effect, return_value=None):
+		pane = MagicMock()
+		with patch('win32api.ShellExecute', side_effect=side_effect) as shell_execute:
+			with patch(
+				'core.commands.opening.show_alert', return_value=return_value
+			) as show_alert, patch(
+				'core.commands.opening.is_shortcut', return_value=False
+			):
+				_open_local_files_win([self.path], pane)
+		return pane, shell_execute, show_alert
+
+	@staticmethod
+	def _yes():
+		from fman import YES
+		return YES
+
+	@staticmethod
+	def _no():
+		from fman import NO
+		return NO
+
 class _ViewerTestCase(TestCase):
 
 	# Every test here needs the same three seams: what the file system says

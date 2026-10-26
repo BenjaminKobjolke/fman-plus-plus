@@ -8,7 +8,7 @@ from core.commands.util import get_opposite_pane, is_dir_checked, \
 	is_file_url, is_shortcut, require_file_url, shortcut_target, NO_SELECTION
 from core.viewers import viewer_for
 from fman import APP_NAME, DirectoryPaneCommand, DirectoryPaneListener, \
-	PLATFORM, load_json, save_json, show_alert
+	NO, PLATFORM, YES, load_json, save_json, show_alert
 from fman.fs import is_dir, resolve
 from fman.url import as_human_readable, as_url, dirname, splitscheme
 from subprocess import Popen, DEVNULL
@@ -137,16 +137,37 @@ def _open_local_files_win(paths, pane):
 			if target and is_dir(as_url(target)):
 				pane.set_path(as_url(target))
 				return
+		from win32api import ShellExecute
+		from win32con import SW_SHOWNORMAL
+		import pywintypes
+		from winerror import ERROR_CANCELLED
 		try:
-			from win32api import ShellExecute
-			from win32con import SW_SHOWNORMAL
 			cwd = os.path.dirname(path)
 			ShellExecute(0, None, path, None, cwd, SW_SHOWNORMAL)
-		except OSError:
+		except pywintypes.error as e:
 			# This for instance happens when the file is an .exe that requires
 			# Admin privileges, but the user cancels the UAC "do you want to run
 			# this file?" dialog.
-			pass
+			if e.winerror != ERROR_CANCELLED:
+				_offer_open_with_win(path, cwd, e.strerror)
+
+def _offer_open_with_win(path, cwd, reason):
+	# A broken association can be reset in the Windows "Open with" dialog.
+	from win32api import ShellExecute
+	from win32con import SW_SHOWNORMAL
+	import pywintypes
+	message = 'Could not open %s:\n%s\n\nChoose the app Windows uses for this file?' % (
+		path, reason
+	)
+	if show_alert(message, YES | NO, YES) & YES:
+		try:
+			ShellExecute(0, 'openas', path, None, cwd, SW_SHOWNORMAL)
+		except pywintypes.error as e:
+			show_alert(
+				'Could not show the "Open with" dialog for %s:\n%s' % (
+					path, e.strerror
+				)
+			)
 
 def _open_local_files_mac(paths):
 	non_executables = []
