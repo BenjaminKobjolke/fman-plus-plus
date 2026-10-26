@@ -26,7 +26,7 @@ _COMMAND_MODULES = (
 	'editor', 'external', 'file_properties', 'goto', 'hidden_files',
 	'locked_files',
 	'navigation', 'open_with', 'opening', 'pack', 'palette', 'pane_view',
-	'places', 'plugins', 'release_notes', 'rename', 'theme', 'transfer',
+	'places', 'plugins', 'release_notes', 'rename', 'selection', 'theme', 'transfer',
 	'undo', 'updates', 'window'
 )
 __all__ = []

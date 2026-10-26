@@ -124,3 +124,33 @@ class OnePaneNavigationTest(TestCase):
 		with patch('core.commands.navigation._get_volumes_url', return_value='drives://'):
 			navigation.ShowVolumes(pane)(pane_index=1)
 		self.assertEqual(['drives://'], pane.set_path_calls)
+
+class InvertSelectionTest(TestCase):
+	def test_default_still_inverts_files_and_folders(self):
+		pane = FakePane(url='file:///dir')
+		pane.get_path = lambda: 'file:///dir'
+		pane.get_selected_files = lambda: ['file:///dir/folder']
+		pane.select = lambda urls: setattr(pane, 'selected', list(urls))
+		pane.deselect = lambda urls: setattr(pane, 'deselected', list(urls))
+		with patch(
+			'core.commands.navigation.iterdir', return_value=['folder', 'other.txt']
+		):
+			navigation.InvertSelection(pane)()
+		self.assertEqual(['file:///dir/other.txt'], pane.selected)
+		self.assertEqual(['file:///dir/folder'], pane.deselected)
+
+	def test_files_only_keeps_folders_out_of_both_selection_calls(self):
+		pane = FakePane(url='file:///dir')
+		pane.get_path = lambda: 'file:///dir'
+		pane.get_selected_files = lambda: ['file:///dir/selected.txt', 'file:///dir/folder']
+		with patch('core.commands.navigation.iterdir', return_value=[
+				'selected.txt', 'folder', 'other.txt']), \
+				patch(
+					'core.commands.navigation.is_dir',
+					side_effect=lambda url: url.endswith('/folder'),
+				):
+			pane.select = lambda urls: setattr(pane, 'selected', list(urls))
+			pane.deselect = lambda urls: setattr(pane, 'deselected', list(urls))
+			navigation.InvertSelection(pane)(files_only=True)
+		self.assertEqual(['file:///dir/other.txt'], pane.selected)
+		self.assertEqual(['file:///dir/selected.txt'], pane.deselected)

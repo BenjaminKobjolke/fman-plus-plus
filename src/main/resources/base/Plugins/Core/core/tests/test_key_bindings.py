@@ -2,6 +2,8 @@ from core.key_bindings import command_for_key_event, command_for_shortcut, \
 	dispatch_bindable_command, get_shortcuts_for_command, DO_NOTHING
 from fman.impl.util.qt.key_event import QtKeyEvent
 from PyQt5.QtCore import Qt
+import json
+import os
 from unittest import TestCase
 
 class CommandForKeyEventTest(TestCase):
@@ -109,3 +111,35 @@ class GetShortcutsForCommandTest(TestCase):
 	def _check(self, key_bindings, command, expected_shortcuts):
 		actual = list(get_shortcuts_for_command(key_bindings, command))
 		self.assertEqual(expected_shortcuts, actual)
+
+class KeypadSelectionBindingsTest(TestCase):
+	def test_base_bindings_register_the_total_commander_keypad_set(self):
+		path = os.path.join(
+			os.path.dirname(__file__), '..', '..', 'Key Bindings.json'
+		)
+		with open(os.path.normpath(path), encoding='utf-8') as bindings_file:
+			bindings = json.load(bindings_file)
+		expected = [
+			{'keys': ['Num++'], 'command': 'select_group'},
+			{'keys': ['Num+-'], 'command': 'deselect_group'},
+			{
+				'keys': ['Num+*'], 'command': 'invert_selection',
+				'args': {'files_only': True},
+			},
+			{
+				'keys': ['Ctrl+Num++'], 'command': 'select_group',
+				'args': {'mask': '*.*'},
+			},
+			{'keys': ['Ctrl+Num+-'], 'command': 'deselect'},
+			{'keys': ['Alt+Num++'], 'command': 'select_same_extension'},
+			{'keys': ['Alt+Num+-'], 'command': 'deselect_same_extension'},
+		]
+		self.assertTrue(all(binding in bindings for binding in expected))
+		import core
+		for binding in expected:
+			command = binding['command']
+			self.assertTrue(hasattr(core, ''.join(
+				part.title() for part in command.split('_')
+			)), command)
+		self.assertTrue(QtKeyEvent(Qt.Key_Plus, Qt.KeypadModifier).matches('Num++'))
+		self.assertFalse(QtKeyEvent(Qt.Key_Plus, Qt.NoModifier).matches('Num++'))

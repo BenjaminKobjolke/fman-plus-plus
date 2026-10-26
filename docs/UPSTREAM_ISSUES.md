@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#78](https://github.com/mherrmann/fman/issues/78) | Mimic TC's shortcuts for *, + , - on keypad | enhancement, 2 votes | deferred | 2026-10-26 | The title does not define the selection behavior for each keypad key; the existing `SelectByRegExp` plugin covers regex selection only, so the key mappings and selection scope need a product decision. |
+| [#78](https://github.com/mherrmann/fman/issues/78) | Mimic TC's shortcuts for *, + , - on keypad | enhancement, 2 votes | fixed | 2026-10-26 | Keypad shortcuts now select, deselect and invert files by wildcard mask or matching extension, with mask history. |
 | [#77](https://github.com/mherrmann/fman/issues/77) | Try opening a file with an unknown extension: Nothing happens | bug, mac, 1 vote | skipped | 2026-10-26 | The requested Finder “Choose Application” flow is macOS-specific and cannot be reproduced or tested on this Windows fork. |
 | [#76](https://github.com/mherrmann/fman/issues/76) | Add an interface that lets other applications script fman | enhancement, 1 vote | fixed | 2026-10-26 | Authenticated local HTTP API exposes pane state and allowlisted commands; see [SCRIPTING_API.md](SCRIPTING_API.md). |
 | [#75](https://github.com/mherrmann/fman/issues/75) | Gracious rollback when an error occurs while moving files | enhancement | fixed | 2026-10-26 | Local moves now roll completed files back automatically when canceled or stopped, while protecting occupied source paths and existing destination folders. |

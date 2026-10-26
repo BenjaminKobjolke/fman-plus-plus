@@ -73,6 +73,10 @@ command palette — see
 | `PgUp` / `Num+PgUp` | `move_cursor_page_up` |
 | `Shift+PgUp` | `move_cursor_page_up` (extends selection) |
 | `Space` | `toggle_selection` |
+| `Num++` / `Num+-` | `select_group` / `deselect_group` (wildcard mask) |
+| `Num+*` | `invert_selection` (files only) |
+| `Ctrl+Num++` / `Ctrl+Num+-` | `select_group` (all files) / `deselect` (all) |
+| `Alt+Num++` / `Alt+Num+-` | `select_same_extension` / `deselect_same_extension` |
 | `Tab` | `switch_panes` |
 | `Backspace` | `go_up` |
 | `Enter` | `open` (navigate into folders, OS-open files) |
@@ -96,6 +100,10 @@ command palette — see
 | `Num+Insert` | `move_cursor_down` (extends selection) |
 | `Alt+Up` | `increase_pane_font_size` |
 | `Alt+Down` | `decrease_pane_font_size` |
+
+Keypad `+` and `-` accept `;`-separated wildcard masks; text after `|` excludes matches.
+A trailing `\` (or `/`) matches folders, while `*.*` means all files.
+Matching is case-insensitive and affects files only unless a folder mask is used.
 
 Choose the program F4 starts and its arguments with **Set text editor** in the Command Center; presets are available for Notepad++, CudaText, Notepad 4, EmEditor and Ecode, or you can enter manual arguments.
 

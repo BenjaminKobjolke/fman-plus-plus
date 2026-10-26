@@ -8,7 +8,7 @@ from core.commands.util import is_file_url, is_shortcut, shortcut_target, \
 	SHORTCUT_TARGET_MISSING
 from fman import DirectoryPaneCommand, DirectoryPaneListener, PLATFORM, \
 	show_alert
-from fman.fs import iterdir
+from fman.fs import is_dir, iterdir
 from fman.impl.util import get_user
 from fman.url import as_human_readable, as_url, dirname, join, splitscheme
 from pathlib import PurePath
@@ -97,13 +97,24 @@ class Deselect(DirectoryPaneCommand):
 		self.pane.clear_selection()
 
 class InvertSelection(DirectoryPaneCommand):
-	def __call__(self, *args, **kwargs):
+	def __call__(self, files_only=False, *args, **kwargs):
 		url = self.pane.get_path()
 		all_files = (join(url, fname) for fname in iterdir(url))
 		to_deselect = set(self.pane.get_selected_files())
+		if files_only:
+			all_files = (file_url for file_url in all_files if _is_file(file_url))
+			to_deselect = {
+				file_url for file_url in to_deselect if _is_file(file_url)
+			}
 		to_select = (f for f in all_files if f not in to_deselect)
 		self.pane.deselect(to_deselect)
 		self.pane.select(to_select)
+
+def _is_file(url):
+	try:
+		return not is_dir(url)
+	except OSError:
+		return False
 
 class _OpenInPaneCommand(DirectoryPaneCommand):
 	def is_visible(self):
