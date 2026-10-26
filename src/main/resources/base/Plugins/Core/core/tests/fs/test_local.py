@@ -126,6 +126,39 @@ class LocalFileSystemTest(TestCase):
 			self.assertFalse(b.exists(), 'Failed to delete symlink to folder')
 	def test_copy_file(self):
 		self._test_transfer_file(self._fs.copy, deletes_src=False)
+	def test_failed_copy_removes_partial_target_and_temporary_file(self):
+		with TemporaryDirectory() as tmp_dir:
+			src = Path(tmp_dir, 'src')
+			src.write_bytes(b'x' * (16 * 1024 + 1))
+			dst = Path(tmp_dir, 'dst')
+			partial = Path(str(dst) + '.fman-partial')
+			real_open = open
+			with patch('builtins.open', side_effect=_fail_after_first_write(real_open)):
+				with self.assertRaises(OSError):
+					self._fs.copy(as_url(src), as_url(dst))
+			self.assertFalse(dst.exists())
+			self.assertFalse(partial.exists())
+	def test_failed_replacement_preserves_old_target(self):
+		with TemporaryDirectory() as tmp_dir:
+			src = Path(tmp_dir, 'src')
+			src.write_bytes(b'x' * (16 * 1024 + 1))
+			dst = Path(tmp_dir, 'dst')
+			dst.write_bytes(b'old contents')
+			partial = Path(str(dst) + '.fman-partial')
+			real_open = open
+			with patch('builtins.open', side_effect=_fail_after_first_write(real_open)):
+				with self.assertRaises(OSError):
+					self._fs.copy(as_url(src), as_url(dst))
+			self.assertEqual(b'old contents', dst.read_bytes())
+			self.assertFalse(partial.exists())
+	def test_successful_copy_removes_temporary_file(self):
+		with TemporaryDirectory() as tmp_dir:
+			src = Path(tmp_dir, 'src')
+			src.write_bytes(b'contents')
+			dst = Path(tmp_dir, 'dst')
+			self._fs.copy(as_url(src), as_url(dst))
+			self.assertEqual(b'contents', dst.read_bytes())
+			self.assertFalse(Path(str(dst) + '.fman-partial').exists())
 	def test_move_file(self):
 		self._test_transfer_file(self._fs.move, deletes_src=True)
 	def _test_transfer_file(self, transfer_fn, deletes_src):
@@ -303,6 +336,30 @@ class TemporaryCwd:
 		self._tmp_dir.cleanup()
 
 fake_statresult = namedtuple('fake_statresult', ('st_dev', 'st_ino'))
+
+def _fail_after_first_write(real_open):
+	class FailingFile:
+		def __init__(self, file):
+			self._file = file
+			self._writes = 0
+		def __enter__(self):
+			return self
+		def __exit__(self, *args):
+			return self._file.__exit__(*args)
+		def __getattr__(self, name):
+			return getattr(self._file, name)
+		def write(self, data):
+			self._writes += 1
+			if self._writes > 1:
+				raise OSError('simulated mid-copy failure')
+			return self._file.write(data)
+
+	def open_file(path, mode='r', *args, **kwargs):
+		file = real_open(path, mode, *args, **kwargs)
+		if mode == 'wb':
+			return FailingFile(file)
+		return file
+	return open_file
 
 def _urlpath(file_path):
 	return splitscheme(as_url(file_path))[1]

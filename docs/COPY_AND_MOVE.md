@@ -63,6 +63,37 @@ _gather_files()                        _run_gathered_tasks()
   yet. Files transferred before that point stay transferred, the same as an
   Abort on an error prompt mid-copy.
 
+## When a move stops halfway
+
+Core automatically moves completed local files back to their original
+locations when you cancel a move, choose Abort on an overwrite or error prompt,
+or an unexpected error stops the operation. An error on the last file also
+counts as stopping: its prompt only offers OK, so there is no way to continue.
+If a source location has been filled again before rollback reaches it, Core
+leaves that moved file at the destination and reports the paths it could not
+restore. The alert lists up to ten paths and gives the count of any remaining
+ones. A destination file replaced with your approval cannot be recovered by
+rolling the moved file back.
+
+This rollback applies to local file-system moves. Plugin file systems can opt
+in by marking their move tasks with the same rollback data; other plugins and
+moves run in an elevated process do not roll back. When a local move does roll
+back, it removes only empty folders created under its new destination, and
+keeps pre-existing folders and any files another process placed there.
+
+Local copies and moves that copy across drives write regular files to a
+temporary `.fman-partial` name beside the destination, then publish the final
+name only after the copy and metadata update succeed. A failed or canceled copy
+removes the temporary file and preserves any old destination file until that
+publish. Symlinks keep their existing handling.
+
+Before a local file is moved across drives or replaces an existing copy
+destination, Core checks whether another program has it open. This happens
+right before each file so large folder operations do not need a slow up-front
+scan. The check is on by default on Windows; use the **Toggle locked file
+check** command to turn it off or back on. Its setting key is
+`check_locked_files` in `Core Settings.json`. Other platforms skip the check.
+
 ## Parallel workers
 
 A file system can ask for several transferring threads: Copy and Move ask

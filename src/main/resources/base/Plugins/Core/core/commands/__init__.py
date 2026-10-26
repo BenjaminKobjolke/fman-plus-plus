@@ -24,6 +24,7 @@ _COMMAND_MODULES = (
 	'app', 'archives', 'clipboard', 'columns', 'deletion', 'drag_to_app',
 	'console', 'drive_space',
 	'editor', 'external', 'file_properties', 'goto', 'hidden_files',
+	'locked_files',
 	'navigation', 'open_with', 'opening', 'pack', 'palette', 'pane_view',
 	'places', 'plugins', 'release_notes', 'rename', 'theme', 'transfer',
 	'undo', 'updates', 'window'

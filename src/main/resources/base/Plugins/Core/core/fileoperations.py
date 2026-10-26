@@ -6,6 +6,7 @@ from fman.url import basename, join, dirname, splitscheme, relpath, \
 from os.path import pardir
 from queue import Queue
 from threading import Lock, Thread
+from core.move_rollback import MoveRollback
 
 import fman.fs
 
@@ -34,6 +35,8 @@ class FileTreeOperation(Task):
 		self._src_dir = dirname(files[0])
 		self._queue = Queue()
 		self._gather_aborted = False
+		self._gather_canceled = False
+		self._ended_early = False
 		self._gather_exception = None
 		self._stop_gathering = False
 		# Overwrite prompts come from the gathering thread, error prompts from
@@ -78,7 +81,7 @@ class FileTreeOperation(Task):
 		try:
 			self._gather_aborted = not self._gather_files()
 		except Task.Canceled:
-			pass
+			self._gather_canceled = True
 		except Exception as e:
 			self._gather_exception = e
 		finally:
@@ -125,9 +128,13 @@ class FileTreeOperation(Task):
 			if not self._handle_exception(message, is_last, e):
 				return False
 			progress.set_progress(size)
+		else:
+			self._on_task_done(task)
 		finally:
 			worker.title = ''
 		return True
+	def _on_task_done(self, task):
+		pass
 	def _gather_files(self):
 		# Checked before the destination is created: a rejected transfer must
 		# not leave a new folder behind, least of all inside its own source.
@@ -265,11 +272,16 @@ class FileTreeOperation(Task):
 			message += ' Do you want to continue?'
 		choice = self.show_alert(message, buttons, default_button)
 		if is_last:
+			# The last task has no continue choice; an error still stops the move.
+			self._ended_early = True
 			return choice & OK
 		else:
 			if choice & YES_TO_ALL:
 				self._ignore_exceptions = True
-			return choice & YES or choice & YES_TO_ALL
+			continue_transfer = choice & YES or choice & YES_TO_ALL
+			if not continue_transfer:
+				self._ended_early = True
+			return continue_transfer
 	def _get_dest_dir_url(self):
 		try:
 			splitscheme(self._dest_dir)
@@ -329,6 +341,30 @@ class CopyFiles(FileTreeOperation):
 class MoveFiles(FileTreeOperation):
 	def __init__(self, *super_args, **super_kwargs):
 		super().__init__('move', *super_args, **super_kwargs)
+		self._rollback = MoveRollback()
+	def __call__(self):
+		dest_dir = self._get_dest_dir_url()
+		if not self._fs.exists(dest_dir):
+			self._rollback.add_new_destination(dest_dir)
+		try:
+			super().__call__()
+		except BaseException:
+			self._run_rollback()
+			raise
+		if self._ended_early or self._gather_aborted or self._gather_canceled:
+			self._run_rollback()
+	def _on_task_done(self, task):
+		self._rollback.record(task)
+	def _run_rollback(self):
+		self.set_text('Moving files back...')
+		failed_urls = self._rollback.run(self._fs)
+		if failed_urls:
+			failed_names = [as_human_readable(url) for url in failed_urls[:10]]
+			message = 'Could not move these files back:\n' + '\n'.join(failed_names)
+			remaining = len(failed_urls) - len(failed_names)
+			if remaining:
+				message += '\n... and %d more.' % remaining
+			self.show_alert(message)
 	def _transfer(self, src, dest):
 		self._fs.move(src, dest)
 	def _can_transfer_samefile(self):
@@ -337,6 +373,8 @@ class MoveFiles(FileTreeOperation):
 		# rename one to the other.
 		return True
 	def _prepare_transfer(self, src, dest):
+		if self._fs.is_dir(src) and not self._fs.exists(dest):
+			self._rollback.add_new_destination(dest)
 		return self._fs.prepare_move(src, dest)
 	def _does_postprocess_directory(self):
 		return True

@@ -1,5 +1,6 @@
 from core.trash import move_to_trash
 from core.util import filenotfounderror
+from core.fs.local import locks
 from datetime import datetime
 from errno import ENOENT
 from fman import PLATFORM, Task
@@ -122,10 +123,13 @@ class LocalFileSystem(FileSystem):
 			except KeyError:
 				dst_par_dev = self.stat(dst_par_path).st_dev
 			if src_stat.st_dev == dst_par_dev:
-				yield Task(
+				task = Task(
 					'Moving ' + basename(src_url), size=1,
 					fn=self._rename, args=(src_url, dst_url)
 				)
+				# Core reads this attribute; plugin filesystems can opt in too.
+				task.moved_urls = (src_url, dst_url)
+				yield task
 				return
 		src_is_dir = self.is_dir(src_path)
 		if src_is_dir:
@@ -335,18 +339,30 @@ class CopyFile(Task):
 		dst = as_human_readable(self._dst_url)
 		if islink(src):
 			os.symlink(os.readlink(src), dst)
+			copystat(src, dst, follow_symlinks=False)
 		else:
-			with open(src, 'rb') as fsrc:
-				with open(dst, 'wb') as fdst:
-					num_written = 0
-					while True:
-						self.check_canceled()
-						buf = fsrc.read(16 * 1024)
-						if not buf:
-							break
-						num_written += fdst.write(buf)
-						self.set_progress(num_written)
-		copystat(src, dst, follow_symlinks=False)
+			if dst_existed:
+				locks.raise_if_locked(dst)
+			temp = dst + '.fman-partial'
+			try:
+				with open(src, 'rb') as fsrc:
+					with open(temp, 'wb') as fdst:
+						num_written = 0
+						while True:
+							self.check_canceled()
+							buf = fsrc.read(16 * 1024)
+							if not buf:
+								break
+							num_written += fdst.write(buf)
+							self.set_progress(num_written)
+				copystat(src, temp, follow_symlinks=False)
+				os.replace(temp, dst)
+			except BaseException:
+				try:
+					remove(temp)
+				except FileNotFoundError:
+					pass
+				raise
 		if not dst_existed:
 			self._fs.notify_file_added(dst_urlpath)
 
@@ -356,7 +372,10 @@ class MoveByCopying(Task):
 		self._fs = fs
 		self._src_url = src_url
 		self._dst_url = dst_url
+		# Core reads this attribute; plugin filesystems can opt in too.
+		self.moved_urls = (src_url, dst_url)
 	def __call__(self, *args, **kwargs):
+		locks.raise_if_locked(as_human_readable(self._src_url))
 		self._fs.copy(self._src_url, self._dst_url)
 		self._fs.delete(splitscheme(self._src_url)[1])
 
