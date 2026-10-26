@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest import TestCase
 from unittest import main
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 from urllib.error import URLError
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'fman_ui'))
