@@ -116,6 +116,8 @@ class DirectoryPaneWidget(QWidget):
 		self._file_view.setIconSize(
 			QSize() if size is None else QSize(size, size)
 		)
+	def get_file_view(self):
+		return self._file_view
 	def set_backgrounds(self, backgrounds, pane_index):
 		# The seam the window talks to: nothing outside this class
 		# reaches into _file_view. The location bar is chrome like the

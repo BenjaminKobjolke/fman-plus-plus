@@ -15,6 +15,7 @@ class ScriptingApiConfigTest(TestCase):
 		config = ScriptingApiConfig.from_settings(_Settings({}))
 
 		self.assertFalse(config.enabled)
+		self.assertFalse(config.automation)
 		self.assertEqual('127.0.0.1', config.bind_address)
 		self.assertFalse(config.allow_all_commands)
 		self.assertEqual(frozenset(DEFAULT_ALLOWED_COMMANDS), config.allowed_commands)
@@ -60,6 +61,17 @@ class ScriptingApiConfigTest(TestCase):
 		}))
 
 		self.assertEqual(DEFAULT_PORT, config.port)
+
+	def test_automation_must_be_a_boolean_and_defaults_to_false(self):
+		config = ScriptingApiConfig.from_settings(_Settings({
+			'scripting_api': {'automation': True},
+		}))
+		invalid = ScriptingApiConfig.from_settings(_Settings({
+			'scripting_api': {'automation': 1},
+		}))
+
+		self.assertTrue(config.automation)
+		self.assertFalse(invalid.automation)
 
 	def test_toggle_command_is_not_in_default_allowlist(self):
 		self.assertNotIn('toggle_scripting_api', DEFAULT_ALLOWED_COMMANDS)

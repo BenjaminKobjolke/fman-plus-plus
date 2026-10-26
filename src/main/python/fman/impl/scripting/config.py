@@ -19,6 +19,11 @@ PORT_KEY = 'port'
 ALLOWED_HOSTS_KEY = 'allowed_hosts'
 COMMAND_ACCESS_KEY = 'command_access'
 ALLOWED_COMMANDS_KEY = 'allowed_commands'
+AUTOMATION_KEY = 'automation'
+KEYS_PATH = '/v1/keys'
+CLICK_PATH = '/v1/click'
+SCREENSHOT_PATH = '/v1/screenshot'
+FILES_PATH = '/v1/files'
 STATUS_ON = 'Scripting API on: http://{address}:{port} (token in {token_path})'
 STATUS_OFF = 'Scripting API off'
 STATUS_START_FAILED = 'Scripting API could not start: {error}'
@@ -54,6 +59,7 @@ DEFAULT_ALLOWED_COMMANDS = (
 @dataclass(frozen=True)
 class ScriptingApiConfig:
 	enabled: bool
+	automation: bool
 	port: int
 	allowed_networks: tuple
 	allow_all_commands: bool
@@ -71,6 +77,11 @@ class ScriptingApiConfig:
 		if not isinstance(enabled, bool):
 			_LOG.warning('Ignoring invalid scripting API enabled setting.')
 			enabled = False
+
+		automation = settings.get(AUTOMATION_KEY, False)
+		if not isinstance(automation, bool):
+			_LOG.warning('Ignoring invalid scripting API automation setting.')
+			automation = False
 
 		port = settings.get(PORT_KEY, DEFAULT_PORT)
 		if (
@@ -113,6 +124,7 @@ class ScriptingApiConfig:
 
 		return cls(
 			enabled,
+			automation,
 			port,
 			tuple(allowed_networks),
 			command_access == 'all',

@@ -6,6 +6,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from fman.impl.scripting.actions import InvalidPane, ScriptingActions, UnknownCommand
+from fman.impl.scripting.automation import AutomationActions, UnknownFile
 from fman.impl.scripting.config import ScriptingApiConfig
 from fman.impl.scripting.server import ScriptingServer
 
@@ -107,23 +108,97 @@ class ScriptingServerTest(TestCase):
 		}))
 		self.assertFalse(config.is_client_allowed('192.168.1.6'))
 
+	def test_automation_routes_are_disabled_by_default(self):
+		for method, path, payload in (
+			('GET', '/v1/files', None), ('GET', '/v1/screenshot', None),
+			('POST', '/v1/keys', {'keys': ['A']}),
+			('POST', '/v1/click', {'x': 1, 'y': 2}),
+		):
+			with self.subTest(path=path):
+				self.assertEqual(403, self._request_error(method, path, payload))
+
+	def test_enabled_automation_routes_dispatch_and_return_binary_screenshot(self):
+		config = replace(
+			ScriptingApiConfig.from_settings(_Settings({})), port=0,
+			automation=True,
+		)
+		actions = MagicMock(spec=AutomationActions)
+		actions.get_visible_files.return_value = ['file:///a.txt']
+		actions.screenshot_png.return_value = b'png-data'
+		server = ScriptingServer(config, self.TOKEN, self.actions, actions)
+		server.start()
+		try:
+			base_url = 'http://127.0.0.1:%s' % server.port
+			self.assertEqual(
+				{'pane': 0, 'files': ['file:///a.txt']},
+				self._request_at(base_url, 'GET', '/v1/files?pane=0'),
+			)
+			self.assertEqual({'ok': True}, self._request_at(
+				base_url, 'POST', '/v1/keys', {'keys': ['Ctrl+P'], 'text': 'x'},
+			))
+			self.assertEqual({'ok': True}, self._request_at(
+				base_url, 'POST', '/v1/click', {'x': 10, 'y': 20},
+			))
+			self.assertEqual((200, 'image/png', b'png-data'), self._binary_at(
+				base_url, '/v1/screenshot'))
+			actions.send_keys.assert_called_once_with(['Ctrl+P'])
+			actions.type_text.assert_called_once_with('x')
+			actions.click_at.assert_called_once_with(10, 20, 'left', False)
+		finally:
+			server.stop()
+
+	def test_automation_rejects_bad_bodies_unknown_files_and_bad_panes(self):
+		config = replace(
+			ScriptingApiConfig.from_settings(_Settings({})), port=0,
+			automation=True,
+		)
+		actions = MagicMock(spec=AutomationActions)
+		actions.click_file.side_effect = UnknownFile('missing')
+		actions.get_visible_files.side_effect = InvalidPane('out of range')
+		server = ScriptingServer(config, self.TOKEN, self.actions, actions)
+		server.start()
+		try:
+			base_url = 'http://127.0.0.1:%s' % server.port
+			self.assertEqual(400, self._request_error_at(
+				base_url, 'POST', '/v1/keys', {'keys': 'Ctrl+P'}))
+			self.assertEqual(404, self._request_error_at(
+				base_url, 'POST', '/v1/click', {'pane': 0, 'file': 'file:///x'}))
+			self.assertEqual(400, self._request_error_at(
+				base_url, 'GET', '/v1/files?pane=nope'))
+			self.assertEqual(401, self._request_error_at(
+				base_url, 'GET', '/v1/files', token=None))
+		finally:
+			server.stop()
+
 	def _request(self, method, path, payload=None, token=TOKEN, headers=None):
+		return self._request_at(self.base_url, method, path, payload, token, headers)
+
+	def _request_at(
+		self, base_url, method, path, payload=None, token=TOKEN, headers=None,
+	):
 		body = None if payload is None else json.dumps(payload).encode('utf-8')
 		request_headers = self._headers(token)
 		request_headers.update(headers or {})
 		request = Request(
-			self.base_url + path, data=body, headers=request_headers,
+			base_url + path, data=body, headers=request_headers,
 			method=method,
 		)
 		with urlopen(request, timeout=3) as response:
 			return json.loads(response.read().decode('utf-8'))
 
 	def _request_error(self, method, path, payload=None, token=TOKEN, headers=None):
+		return self._request_error_at(
+			self.base_url, method, path, payload, token, headers,
+		)
+
+	def _request_error_at(
+		self, base_url, method, path, payload=None, token=TOKEN, headers=None,
+	):
 		body = None if payload is None else json.dumps(payload).encode('utf-8')
 		request_headers = self._headers(token)
 		request_headers.update(headers or {})
 		request = Request(
-			self.base_url + path, data=body, headers=request_headers,
+			base_url + path, data=body, headers=request_headers,
 			method=method,
 		)
 		with self.assertRaises(HTTPError) as caught:
@@ -143,6 +218,13 @@ class ScriptingServerTest(TestCase):
 		if token is not None:
 			headers['Authorization'] = 'Bearer ' + token
 		return headers
+
+	def _binary_at(self, base_url, path):
+		request = Request(base_url + path, headers=self._headers())
+		with urlopen(request, timeout=3) as response:
+			return (
+				response.status, response.headers.get('Content-Type'), response.read(),
+			)
 
 
 class _Settings:

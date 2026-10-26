@@ -27,6 +27,7 @@ from fman.impl.plugins.mother_fs import MotherFileSystem
 from fman.impl.viewers import ViewerRegistry
 from fman.impl.session import SessionManager
 from fman.impl.scripting.actions import ScriptingActions
+from fman.impl.scripting.automation import AutomationActions
 from fman.impl.scripting.config import ScriptingApiConfig
 from fman.impl.scripting.control import ScriptingApiControl
 from fman.impl.scripting.server import ScriptingServer
@@ -333,7 +334,8 @@ class DevelopmentApplicationContext(ApplicationContext):
 			self._get_local_data_file('ScriptingApiToken.txt'),
 			lambda config, token: ScriptingServer(
 				config, token,
-				ScriptingActions(self.plugin_support, self.main_window)
+				ScriptingActions(self.plugin_support, self.main_window),
+				AutomationActions(self.main_window, self.plugin_support),
 			),
 		)
 	@cached_property

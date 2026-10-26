@@ -36,6 +36,27 @@ looked up among pane commands first, then application commands.
 The command response is sent when the command returns; a copy or move may
 continue running in the background after that.
 
+## Automation endpoints
+
+The desktop automation routes are available only when
+`scripting_api.automation` is `true`; the setting defaults to `false`. They
+share the API's bearer token, loopback/client-address rules and browser-Origin
+rejection. Key and mouse events are posted inside Qt, so they do not take over
+the operating system's mouse or keyboard. They cannot drive native OS dialogs
+or global hotkeys.
+
+| Method and path | Request | Successful response |
+| --- | --- | --- |
+| `POST /v1/keys` | `{"keys": ["Ctrl+Shift+P"], "text": "hidden"}` (either field or both) | `{"ok": true}` |
+| `POST /v1/click` | `{"pane": 0, "file": "<url>", "button": "left", "double": false}` or `{"x": 10, "y": 20}` | `{"ok": true}` |
+| `GET /v1/screenshot` | — | PNG image of the active modal, popup or main window |
+| `GET /v1/files?pane=0` | Pane index is active-first and defaults to `0` | `{"pane": 0, "files": ["<url>"]}` |
+
+The click `button` may be `left` or `right`; `double` defaults to `false`.
+Coordinates refer to the screenshot of the current window target. An unknown
+file returns 404, invalid input or pane indexes return 400, and all automation
+routes return 403 while automation is disabled.
+
 The server checks the requested command name against the allowlist before
 dispatch. A plugin's `on_command` hook may rewrite a command after this
 check, so the rewritten name is not checked a second time.
@@ -57,6 +78,7 @@ Settings are in `%APPDATA%/fman/Local/Settings.json`:
 ```json
 "scripting_api": {
   "enabled": false,
+  "automation": false,
   "port": 47447,
   "allowed_hosts": [],
   "command_access": "allowlist",

@@ -56,14 +56,18 @@ class ScriptingActions:
 
 	@run_in_main_thread
 	def _get_pane(self, pane_index):
-		panes = panes_active_first(self._plugin_support, self._main_window)
-		if pane_index is None:
-			pane_index = 0
-		if not isinstance(pane_index, int) or isinstance(pane_index, bool):
-			raise InvalidPane('Pane index must be an integer.')
-		if pane_index < 0:
-			raise InvalidPane('Pane index is out of range.')
-		try:
-			return panes[pane_index]
-		except IndexError:
-			raise InvalidPane('Pane index is out of range.') from None
+		return get_pane(self._plugin_support, self._main_window, pane_index)
+
+
+def get_pane(plugin_support, main_window, pane_index):
+	panes = panes_active_first(plugin_support, main_window)
+	if pane_index is None:
+		pane_index = 0
+	if not isinstance(pane_index, int) or isinstance(pane_index, bool):
+		raise InvalidPane('Pane index must be an integer.')
+	if pane_index < 0:
+		raise InvalidPane('Pane index is out of range.')
+	try:
+		return panes[pane_index]
+	except IndexError:
+		raise InvalidPane('Pane index is out of range.') from None
