@@ -84,6 +84,9 @@ instead of freezing the UI. Release notes are translated into 40 languages and
 readable in-app. → [SINGLE_INSTANCE.md](docs/SINGLE_INSTANCE.md) ·
 [WINDOWS_NETWORK_SUPPORT.md](docs/WINDOWS_NETWORK_SUPPORT.md)
 
+From cmd, run `fman [left [right]]` to open folders; with no arguments it opens
+the current folder.
+
 **Script it.** Read pane state and run allowed fman commands from local
 scripts over the authenticated HTTP API. → [SCRIPTING_API.md](docs/SCRIPTING_API.md)
 

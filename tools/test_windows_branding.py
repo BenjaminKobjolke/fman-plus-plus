@@ -74,6 +74,33 @@ def check_installer():
     assert 'Delete "$SMPROGRAMS\\${app_name}.lnk"' in uninstall
     assert 'Delete "$SMPROGRAMS\\${display_name}.lnk"' in uninstall
 
+    install = script.split("Section\n", 1)[1].split("SectionEnd", 1)[0]
+    assert 'Push "add"\n  Call UpdateUserPath' in install
+    path_helper = script.split(
+        "!macro DefineUpdateUserPath function", 1
+    )[1].split("!macroend", 1)[0]
+    assert 'StrCpy $0 "$InstDir\\bin"' in path_helper
+    assert 'StrCpy $0 "$0;$InstDir\\bin"' in path_helper
+    assert (
+        '${un.WordReplace} "$0" ";$InstDir\\bin" "" "+" $0'
+        in path_helper
+    )
+    assert '${un.WordReplace} "$0" "$InstDir\\bin;" "" "+" $0' in path_helper
+    assert '${un.WordReplace} "$0" "$InstDir\\bin" "" "+" $0' in path_helper
+    assert 'WriteRegExpandStr HKCU "Environment" "Path"' in script
+    assert (
+        'SendMessage ${HWND_BROADCAST} ${WM_SETTINGCHANGE} 0 "STR:Environment"'
+        in script
+    )
+    assert 'DetailPrint "User PATH is too long' in script
+    assert 'IntOp $2 ${NSIS_MAX_STRLEN} - 100' in script
+    assert 'IntCmp $1 $2 path_too_long path_safe path_too_long' in script
+    assert 'WordReplace}' in script
+    assert '!insertmacro WordReplace' in script
+    assert '!insertmacro un.WordReplace' in script
+    assert 'ReadRegStr $0 HKCU "Environment" "Path"' in script
+    assert 'Push "remove"\n  Call un.UpdateUserPath' in uninstall
+
 
 def main():
     check_installer()
