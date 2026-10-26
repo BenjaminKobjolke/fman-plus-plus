@@ -26,13 +26,12 @@ _COLUMN_SETTING_KEYS = {
 	'core.Modified': 'hide_modified_column',
 }
 
-def _find_column_index(columns, col_qual_name):
-	# Some filesystems (e.g. the Windows drives view) don't offer Size/
-	# Modified at all - callers must be able to skip those gracefully.
-	try:
-		return columns.index(col_qual_name)
-	except ValueError:
-		return None
+def _get_hidden_flags(columns):
+	# Every index gets a flag: Qt keeps a section hidden across navigation, so a
+	# column a filesystem doesn't share with file:// (eg. DriveSize) must be unhidden.
+	return [
+		col in _COLUMN_SETTING_KEYS and _is_column_hidden(col) for col in columns
+	]
 
 def _is_column_hidden(col_qual_name):
 	key = _COLUMN_SETTING_KEYS[col_qual_name]
@@ -56,10 +55,8 @@ def _apply_column_visibility(pane):
 	# fire and the view still repaints/relayouts normally.
 	view._handle_col_resize = False
 	try:
-		for col_qual_name in _COLUMN_SETTING_KEYS:
-			index = _find_column_index(columns, col_qual_name)
-			if index is not None:
-				view.setColumnHidden(index, _is_column_hidden(col_qual_name))
+		for index, hidden in enumerate(_get_hidden_flags(columns)):
+			view.setColumnHidden(index, hidden)
 	finally:
 		view._handle_col_resize = True
 	# setColumnHidden(...) alone doesn't relayout the visible columns to fill
