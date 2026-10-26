@@ -20,7 +20,8 @@ import os
 
 if PLATFORM == 'Windows':
 	from core.fs.local.windows.drives import (
-		DrivesFileSystem as DrivesFileSystem, DriveName as DriveName
+		DrivesFileSystem as DrivesFileSystem, DriveName as DriveName,
+		DriveSize as DriveSize, DriveFree as DriveFree
 	)
 	from core.fs.local.windows.network import NetworkFileSystem as NetworkFileSystem
 

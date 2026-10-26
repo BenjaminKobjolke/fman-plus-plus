@@ -36,14 +36,19 @@ class DriveNameTest(TestCase):
 @skipIf(PLATFORM != 'Windows', 'drives:// only exists on Windows')
 class DriveSpaceTest(TestCase):
 	def test_default_columns_include_drive_name_size_and_free(self):
+		import core
+
+		columns = DrivesFileSystem().get_default_columns('')
 		self.assertEqual(
 			(
 				DriveName.__module__ + '.DriveName',
 				DriveSize.__module__ + '.DriveSize',
 				DriveFree.__module__ + '.DriveFree',
 			),
-			DrivesFileSystem().get_default_columns('')
+			columns
 		)
+		for name in columns:
+			self.assertTrue(hasattr(core, name.rsplit('.', 1)[1]))
 
 	class Kernel32:
 		def __init__(self, drive_type=0):
