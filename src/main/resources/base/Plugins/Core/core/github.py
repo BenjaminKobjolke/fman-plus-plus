@@ -8,7 +8,9 @@ import sys
 DESCRIPTION_FILE = 'description.md'
 
 def find_repos(topics):
-	query = '+'.join('topic:' + topic for topic in topics)
+	# Archived repos are read-only, so their plugin can never be updated.
+	# Filter server-side so total_count - and thus paging - stays correct.
+	query = '+'.join('topic:' + topic for topic in topics) + '+archived:false'
 	url = "https://api.github.com/search/repositories?q=" + query
 	repos = map(GitHubRepo, _fetch_all_pages(url))
 	# Newest first, most-starred among equally recent ones. GitHub's default is

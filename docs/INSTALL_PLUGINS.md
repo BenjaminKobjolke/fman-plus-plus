@@ -29,8 +29,10 @@ Implementation: `core/commands/plugins.py` (`InstallPlugin`),
 ## What happens, step by step
 
 1. **Discover** — with no argument, fman queries GitHub's repository search
-   for repos carrying *both* topics `fman` and `plugin`, and caches the result
-   for the lifetime of the command object (one fetch per fman run).
+   for repos carrying *both* topics `fman` and `plugin`, excluding archived
+   repos, and caches the result for the lifetime of the command object (one
+   fetch per fman run). Archived repos are read-only, so installing one would
+   pin a plugin that can never receive an update.
 2. **Pick** — the results are shown in a quicksearch picker: plugin name,
    the repo description as the subtitle, and the star count as the hint
    (`123 ★`). Already-installed plugins are filtered out, matched by
@@ -69,7 +71,7 @@ anonymous.
 
 | Step | Endpoint |
 |------|----------|
-| Search | `GET https://api.github.com/search/repositories?q=topic:fman+topic:plugin` |
+| Search | `GET https://api.github.com/search/repositories?q=topic:fman+topic:plugin+archived:false` |
 | Fetch one repo (`github_repo` argument) | `GET https://api.github.com/repos/<owner>/<name>` |
 | Plugin description | `GET https://raw.githubusercontent.com/<owner>/<name>/<default-branch>/description.md` |
 | Latest release | `GET .../repos/<owner>/<name>/releases/latest` |
@@ -202,7 +204,7 @@ disk, so remove the directory (or use *Remove plugin*) before retrying.
 | Symptom | Cause |
 |---------|-------|
 | *Could not fetch available plugins: `<reason>`.* | Network, DNS or TLS failure during the search. Only the picker path catches this; passing `github_repo` explicitly lets the error propagate. |
-| Nothing in the picker | No repo carries both the `fman` and `plugin` topics, or every one of them is already installed. |
+| Nothing in the picker | No repo carries both the `fman` and `plugin` topics without being archived, or every one of them is already installed. |
 | *Plugin X seems to already be installed.* | `Plugins\Third-party\<name>` exists. Remove it first. |
 | HTTP 403 | GitHub rate limit — wait, or install by `github_repo` to spend fewer requests. |
 

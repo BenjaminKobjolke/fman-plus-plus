@@ -50,6 +50,15 @@ class FindReposTest(TestCase):
 			[repo.name for repo in self._find_repos(items)]
 		)
 
+	def test_search_excludes_archived_repos(self):
+		response = {'items': [], 'total_count': 0}
+		with patch('core.github._get_json', return_value=response) as get_json:
+			find_repos(['fman', 'plugin'])
+		get_json.assert_called_once_with(
+			'https://api.github.com/search/repositories'
+			'?q=topic:fman+topic:plugin+archived:false&per_page=100&page=1'
+		)
+
 	def _find_repos(self, items):
 		response = {'items': items, 'total_count': len(items)}
 		with patch('core.github._get_json', return_value=response):
