@@ -4,11 +4,17 @@ fman checks the latest published GitHub release five minutes after its main
 window appears, then every 24 hours while it remains open. The automatic check
 does not run in demo mode. It stays quiet when the app is current or the check
 fails. When a newer release exists, a dialog names both versions and offers to
-open its download page. Each release is announced automatically only once.
+download and install it. The download shows a cancelable progress dialog.
+
+On Windows, fman runs the downloaded installer and quits so the update can be
+installed. On macOS, fman opens the downloaded `fman.dmg` and stays open. Linux
+has no installer asset, so fman opens the GitHub releases page. If a download
+fails, fman shows an alert and opens that page as a fallback. Each release is
+announced automatically only once.
 
 You can check at any time from the command palette (`Ctrl+Shift+P`). The manual
 command always reports the result, including an up-to-date or failed check, and
-offers the download page even if it has announced that release before.
+offers to download the update even if it has announced that release before.
 
 ## Commands
 
