@@ -1,4 +1,5 @@
 from core.github import find_repos, GitHubRepo
+from contextlib import contextmanager
 from unittest import TestCase
 from unittest.mock import patch
 from urllib.error import HTTPError, URLError
@@ -10,6 +11,12 @@ def _repo(name, pushed_at, num_stars=0):
 	}
 
 class FindReposTest(TestCase):
+	@contextmanager
+	def _patched_search(self, items):
+		response = {'items': items, 'total_count': len(items)}
+		with patch('core.github._get_json', return_value=response) as get_json:
+			yield get_json
+
 	def test_orders_by_last_modified_newest_first(self):
 		items = [
 			_repo('Stale', '2019-01-01T00:00:00Z'),
@@ -51,8 +58,7 @@ class FindReposTest(TestCase):
 		)
 
 	def test_search_excludes_archived_repos(self):
-		response = {'items': [], 'total_count': 0}
-		with patch('core.github._get_json', return_value=response) as get_json:
+		with self._patched_search([]) as get_json:
 			find_repos(['fman', 'plugin'])
 		get_json.assert_called_once_with(
 			'https://api.github.com/search/repositories'
@@ -60,8 +66,7 @@ class FindReposTest(TestCase):
 		)
 
 	def _find_repos(self, items):
-		response = {'items': items, 'total_count': len(items)}
-		with patch('core.github._get_json', return_value=response):
+		with self._patched_search(items):
 			return find_repos(['fman', 'plugin'])
 
 class GitHubRepoTest(TestCase):
