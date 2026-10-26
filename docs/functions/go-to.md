@@ -70,6 +70,7 @@ One command per well-known destination, all reachable from the
 | `go_to_documents` | Go to documents | your Documents | all |
 | `go_to_downloads` | Go to downloads | your Downloads | all |
 | `go_to_app_data` | Go to AppData | `%APPDATA%`; `~/Library/Application Support` on macOS; `$XDG_CONFIG_HOME` or `~/.config` on Linux | all |
+| `go_to_plugins_directory` | Go to fman++ plugins directory | the plugins folder in fman's data directory (`%APPDATA%\fman\Plugins`, `~/Library/Application Support/fman/Plugins`, `~/.config/fman/Plugins`; follows `FMAN_DATA_DIRECTORY`) | all |
 | `go_to_temp` | Go to temp | `%TEMP%`, `/tmp` | all |
 | `go_to_local_app_data` | Go to local AppData | `%LOCALAPPDATA%` | Windows |
 | `go_to_program_data` | Go to ProgramData | `%PROGRAMDATA%` | Windows |
@@ -85,7 +86,7 @@ And the rest of the navigation family, for orientation:
 | `go_forward` | Go forward | `Alt+Right` (`Cmd+Right` on macOS) |
 | `go_to_root_of_current_drive` | Go to root of current drive | `Ctrl+\` (Windows only) |
 
-*Home*, *user profile*, *appdata*, *roaming*, *%temp%*, *installed programs*
+*Home*, *user profile*, *appdata*, *roaming*, *plugins folder*, *%temp%*, *installed programs*
 and friends find these rows too — they are hidden keywords, so the row still
 reads "Go home". See
 [the command palette](../COMMAND_PALLETTE.md#hidden-search-keywords).

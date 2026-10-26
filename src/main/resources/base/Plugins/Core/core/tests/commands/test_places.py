@@ -6,7 +6,16 @@ from unittest.mock import patch
 
 import os
 
-from fman import PLATFORM
+from fman import DATA_DIRECTORY, PLATFORM
+
+class GoToPluginsDirectoryTest(TestCase):
+	def test_is_plugins_folder_in_data_directory(self):
+		from core.commands.places import GoToPluginsDirectory
+
+		self.assertEqual(
+			os.path.join(DATA_DIRECTORY, 'Plugins'),
+			GoToPluginsDirectory(None).get_directory()
+		)
 
 class EnvDirTest(TestCase):
 	def test_unset_variable_is_none(self):

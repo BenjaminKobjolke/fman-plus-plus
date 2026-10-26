@@ -10,7 +10,7 @@ command here gives one such place a name you can find by typing it.
 
 from core.commands.util import get_desktop, get_documents, get_downloads, \
 	get_home, get_program_files, get_program_files_x86
-from fman import DirectoryPaneCommand, PLATFORM
+from fman import DATA_DIRECTORY, DirectoryPaneCommand, PLATFORM
 from fman.url import as_url
 from os.path import expanduser
 from tempfile import gettempdir
@@ -19,7 +19,7 @@ import os
 
 __all__ = [
 	'GoHome', 'GoToAppData', 'GoToDesktop', 'GoToDocuments', 'GoToDownloads',
-	'GoToTemp'
+	'GoToPluginsDirectory', 'GoToTemp'
 ]
 
 def _env_dir(name):
@@ -79,6 +79,13 @@ class GoToAppData(_GoToDirectory):
 		if PLATFORM == 'Mac':
 			return expanduser('~/Library/Application Support')
 		return _env_dir('XDG_CONFIG_HOME') or expanduser('~/.config')
+
+class GoToPluginsDirectory(_GoToDirectory):
+
+	aliases = ('Go to fman++ plugins directory',)
+
+	def get_directory(self):
+		return os.path.join(DATA_DIRECTORY, 'Plugins')
 
 class GoToTemp(_GoToDirectory):
 

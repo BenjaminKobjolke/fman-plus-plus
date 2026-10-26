@@ -21,13 +21,17 @@
 	],
 	"go_to_app_data": [
 		"appdata", "roaming", "%appdata%", "application data",
-		"plugins folder", "settings folder"
+		"settings folder"
 	],
 	"go_to_desktop": ["desktop", "go to desktop"],
 	"go_to_documents": ["documents", "my documents", "personal folder"],
 	"go_to_downloads": ["downloads", "downloaded files"],
 	"go_to_local_app_data": [
 		"localappdata", "%localappdata%", "local app data", "local settings"
+	],
+	"go_to_plugins_directory": [
+		"plugins folder", "plugin directory", "user plugins", "third-party plugins",
+		"installed plugins", "extensions"
 	],
 	"go_to_program_data": [
 		"programdata", "%programdata%", "all users", "common app data"
