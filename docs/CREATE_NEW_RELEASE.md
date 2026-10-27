@@ -84,6 +84,9 @@ tools\build_decrement.bat   :: restore the version from the current Git commit
 These are thin wrappers over `tools\release\build_number.py` (plain `python`, no
 `uv` — this project uses `requirements/*.txt`). The helper updates the `version` in
 `src/build/settings/base.json`; no separate counter or manual version bump is needed.
+The current version is the newer of `base.json` and the highest plain `X.Y.Z` Git tag.
+If a version bump is lost (reverted or never committed), the next release continues after the
+released tag instead of failing at `git tag` after the build.
 
 The release script calculates the next version before authoring notes. From
 `1.7.13`, the next release is `1.8.0`; then `1.8.1` through `1.8.10`, followed by
