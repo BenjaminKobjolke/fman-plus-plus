@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Sujuvampi tekstinäkymä ja helpommat päivitykset",
+  "notes": [
+    "Tarkastele JSON- ja XML-tiedostoja automaattisesti muotoiltuina ja syntaksiväreillä korostettuina. Voit vaihtaa muotoillun ja alkuperäisen tekstin välillä komennoilla.",
+    "Jos Windows ei pysty avaamaan tiedostoa, fman selittää nyt ongelman ja tarjoaa Avaa sovelluksessa -valintaikkunan tiedostokytkennän korjaamista varten.",
+    "Päivitä fman suoraan sovelluksesta. Windowsissa ja macOS:ssä latauksen ja asennuksen voi peruuttaa. Tarvittaessa voit siirtyä julkaisusivulle.",
+    "Laajennushaussa arkistoidut tietovarastot piilotetaan, joten et vahingossa asenna laajennuksia, jotka eivät enää saa päivityksiä."
+  ]
+}

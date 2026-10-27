@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Kényelmesebb szövegmegjelenítő és egyszerűbb frissítések",
+  "notes": [
+    "A JSON- és XML-fájlok automatikus formázással és szintaxiskiemeléssel jelennek meg. Parancsokkal válthatsz a formázott és az eredeti szöveg között.",
+    "Ha a Windows nem tud megnyitni egy fájlt, az fman most elmagyarázza a problémát, és felajánlja a „Megnyitás ezzel” párbeszédpanelt a fájltársítás javításához.",
+    "Frissítsd az fmant közvetlenül az alkalmazásból: Windows és macOS rendszeren megszakítható a letöltés és a telepítő futtatása, szükség esetén pedig a kiadási oldal is elérhető.",
+    "A bővítmények keresése mostantól elrejti az archivált tárolókat, így elkerülheted olyan bővítmények telepítését, amelyek már nem kapnak frissítéseket."
+  ]
+}

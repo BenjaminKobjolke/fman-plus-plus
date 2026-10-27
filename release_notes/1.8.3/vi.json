@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Trình xem văn bản mượt mà hơn và cập nhật dễ dàng hơn",
+  "notes": [
+    "Xem các tệp JSON và XML với tính năng tự động định dạng đẹp và tô màu cú pháp; dùng các lệnh để chuyển đổi giữa văn bản đã định dạng và văn bản gốc.",
+    "Khi Windows không thể mở một tệp, fman sẽ giải thích sự cố và cung cấp hộp thoại “Mở bằng” để khắc phục liên kết tệp.",
+    "Cập nhật fman trực tiếp trong ứng dụng với trình tải xuống có thể hủy và trình cài đặt trên Windows và macOS; khi cần, bạn có thể chuyển đến trang phát hành.",
+    "Tính năng tìm kiếm plugin hiện ẩn các kho lưu trữ đã lưu trữ, giúp bạn tránh cài đặt những plugin không còn nhận được bản cập nhật."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Pohodlnejšie zobrazovanie textu a jednoduchšie aktualizácie",
+  "notes": [
+    "Zobrazujte súbory JSON a XML s automatickým formátovaním a zvýrazňovaním syntaxe. Pomocou príkazov môžete prepínať medzi formátovaným a pôvodným textom.",
+    "Keď systém Windows nedokáže otvoriť súbor, fman teraz vysvetlí problém a ponúkne dialógové okno Otvoriť v programe, v ktorom môžete opraviť priradenie súboru.",
+    "Aktualizujte fman priamo v aplikácii. V systémoch Windows a macOS môžete zrušiť sťahovanie alebo inštaláciu. Ak to bude potrebné, môžete prejsť na stránku s vydaniami.",
+    "Vyhľadávanie doplnkov teraz skrýva archivované repozitáre, takže sa vyhnete inštalácii doplnkov, ktoré už nemôžu dostávať aktualizácie."
+  ]
+}

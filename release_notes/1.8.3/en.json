@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "A smoother text viewer and easier updates",
+  "notes": [
+    "View JSON and XML files with automatic pretty-printing and syntax colors, with commands to switch between formatted and original text.",
+    "When Windows cannot open a file, fman now explains the problem and offers the Open with dialog to repair its file association.",
+    "Update fman directly from the app with a cancelable download and installer on Windows and macOS, with a release-page fallback when needed.",
+    "Plugin search now hides archived repositories, helping you avoid installing plugins that can no longer receive updates."
+  ]
+}

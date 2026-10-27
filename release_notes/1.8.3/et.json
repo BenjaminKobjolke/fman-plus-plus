@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Sujuvam tekstivaatur ja lihtsamad uuendused",
+  "notes": [
+    "Vaata JSON- ja XML-faile automaatse vorminduse ja süntaksi värvimisega ning vaheta käskude abil vormindatud ja algteksti vahel.",
+    "Kui Windows ei saa faili avada, selgitab fman nüüd probleemi ja pakub failiseose parandamiseks dialoogi „Ava rakendusega”.",
+    "Uuenda fmani otse rakenduses: Windowsis ja macOS-is saad allalaadimise tühistada ning kasutada installiprogrammi. Vajaduse korral suunatakse sind väljalaske lehele.",
+    "Pistikprogrammide otsing peidab nüüd arhiveeritud hoidlad, et sa ei paigaldaks pistikprogramme, mis enam uuendusi ei saa."
+  ]
+}

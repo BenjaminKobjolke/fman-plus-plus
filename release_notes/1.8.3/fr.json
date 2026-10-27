@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Un affichage du texte plus fluide et des mises à jour simplifiées",
+  "notes": [
+    "Affichez les fichiers JSON et XML avec une mise en forme automatique et une coloration syntaxique. Des commandes permettent de passer du texte mis en forme au texte d’origine.",
+    "Lorsque Windows ne parvient pas à ouvrir un fichier, fman explique désormais le problème et propose la boîte de dialogue « Ouvrir avec » pour réparer l’association de fichiers.",
+    "Mettez fman à jour directement depuis l’application grâce à un téléchargement annulable et à un programme d’installation pour Windows et macOS. Si nécessaire, vous pouvez aussi accéder à la page des versions.",
+    "La recherche de plug-ins masque désormais les dépôts archivés, pour vous éviter d’installer des plug-ins qui ne peuvent plus recevoir de mises à jour."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Wygodniejszy podgląd tekstu i łatwiejsze aktualizacje",
+  "notes": [
+    "Wyświetlaj pliki JSON i XML z automatycznym formatowaniem i kolorowaniem składni. Przełączaj się między tekstem sformatowanym a oryginalnym za pomocą poleceń.",
+    "Gdy system Windows nie może otworzyć pliku, fman wyjaśnia teraz przyczynę i wyświetla okno dialogowe „Otwórz za pomocą”, które pozwala naprawić skojarzenie pliku.",
+    "Aktualizuj fman bezpośrednio z aplikacji — w systemach Windows i macOS możesz anulować pobieranie i instalator. W razie potrzeby dostępna jest też strona z wydaniami.",
+    "Wyszukiwarka wtyczek ukrywa teraz zarchiwizowane repozytoria, dzięki czemu unikniesz instalowania wtyczek, które nie otrzymują już aktualizacji."
+  ]
+}

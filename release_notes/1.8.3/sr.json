@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Pregledanje teksta je jednostavnije, a ažuriranje lakše",
+  "notes": [
+    "Pregledajte JSON i XML datoteke uz automatsko formatiranje i isticanje sintakse, pomoću komandi za prebacivanje između formatiranog i izvornog teksta.",
+    "Kada Windows ne može da otvori datoteku, fman sada objašnjava problem i nudi dijalog „Otvori pomoću” da biste popravili povezanost datoteke.",
+    "Ažurirajte fman direktno iz aplikacije: preuzimanje i instalacioni program mogu da se otkažu na Windowsu i macOS-u, a po potrebi je dostupna i rezervna opcija sa stranicom izdanja.",
+    "Pretraga dodataka sada skriva arhivirane repozitorijume, pa ćete lakše izbeći instaliranje dodataka koji više ne mogu da dobijaju ažuriranja."
+  ]
+}

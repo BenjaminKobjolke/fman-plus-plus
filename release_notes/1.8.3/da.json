@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "En mere smidig tekstvisning og nemmere opdateringer",
+  "notes": [
+    "Se JSON- og XML-filer med automatisk formatering og syntaksfarver, og brug kommandoer til at skifte mellem formateret og original tekst.",
+    "Når Windows ikke kan åbne en fil, forklarer fman nu problemet og tilbyder dialogboksen Åbn med, så du kan rette filtilknytningen.",
+    "Opdater fman direkte fra appen med mulighed for at annullere download og installation på Windows og macOS. Hvis det er nødvendigt, kan du i stedet bruge udgivelsessiden.",
+    "Pluginsøgningen skjuler nu arkiverede repositories, så du undgår at installere plugins, der ikke længere modtager opdateringer."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Sklandesnė teksto peržiūra ir paprastesni atnaujinimai",
+  "notes": [
+    "Peržiūrėkite JSON ir XML failus – jie automatiškai suformatuojami ir nuspalvinama jų sintaksė. Komandomis galite perjungti suformatuotą ir pradinį tekstą.",
+    "Kai „Windows“ negali atidaryti failo, „fman“ paaiškina problemą ir pasiūlo dialogo langą „Atidaryti naudojant“, kad galėtumėte pataisyti failo susiejimą.",
+    "Atnaujinkite „fman“ tiesiog programoje: atsisiuntimą ir diegimo programą galima bet kada atšaukti. Tai veikia „Windows“ ir „macOS“, o prireikus galima apsilankyti leidimo puslapyje.",
+    "Ieškant įskiepių, dabar slepiamos archyvuotos saugyklos, todėl lengviau išvengti įskiepių, kurie nebegali gauti atnaujinimų."
+  ]
+}

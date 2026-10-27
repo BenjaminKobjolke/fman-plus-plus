@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Boljši pregledovalnik besedila in preprostejše posodobitve",
+  "notes": [
+    "Datoteke JSON in XML si oglejte s samodejnim oblikovanjem in barvnim označevanjem sintakse. Z ukazi lahko preklapljate med oblikovanim in izvirnim besedilom.",
+    "Če Windows ne more odpreti datoteke, fman zdaj pojasni težavo in ponudi pogovorno okno »Odpri z«, da lahko popravite povezavo datotek.",
+    "Posodobite fman neposredno v aplikaciji: v sistemih Windows in macOS lahko prenesete namestitveni program, prenos pa lahko kadar koli prekličete. Če je treba, je na voljo tudi povezava do strani z izdajo.",
+    "Iskanje vtičnikov zdaj skrije arhivirane repozitorije, zato se lažje izognete nameščanju vtičnikov, ki ne prejemajo več posodobitev."
+  ]
+}

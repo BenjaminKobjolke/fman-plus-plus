@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Um visualizador de texto mais fluido e atualizações mais simples",
+  "notes": [
+    "Veja ficheiros JSON e XML com formatação automática e cores de sintaxe, usando comandos para alternar entre o texto formatado e o original.",
+    "Quando o Windows não consegue abrir um ficheiro, o fman explica agora o problema e apresenta a caixa de diálogo «Abrir com» para corrigir a associação do ficheiro.",
+    "Atualize o fman diretamente a partir da aplicação, com uma transferência cancelável e um instalador no Windows e no macOS; se necessário, pode recorrer à página da versão.",
+    "A pesquisa de plugins oculta agora os repositórios arquivados, ajudando a evitar a instalação de plugins que já não recebem atualizações."
+  ]
+}

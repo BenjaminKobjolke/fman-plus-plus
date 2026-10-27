@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Een soepelere tekstviewer en eenvoudigere updates",
+  "notes": [
+    "Bekijk JSON- en XML-bestanden met automatische opmaak en syntaxkleuren. Met opdrachten schakel je tussen de opgemaakte en de oorspronkelijke tekst.",
+    "Wanneer Windows een bestand niet kan openen, legt fman nu uit wat het probleem is en biedt het dialoogvenster ‘Openen met’ aan om de bestandskoppeling te herstellen.",
+    "Werk fman rechtstreeks vanuit de app bij met een annuleerbare download en installatieprogramma op Windows en macOS. Als dat nodig is, kun je terugvallen op de releasepagina.",
+    "Bij het zoeken naar plug-ins worden gearchiveerde repositories nu verborgen, zodat je geen plug-ins installeert die geen updates meer ontvangen."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Ein besserer Textbetrachter und einfachere Updates",
+  "notes": [
+    "JSON- und XML-Dateien mit automatischer Formatierung und Syntaxhervorhebung anzeigen. Über Befehle können Sie zwischen der formatierten und der ursprünglichen Ansicht wechseln.",
+    "Wenn Windows eine Datei nicht öffnen kann, erklärt fman das Problem und bietet den Dialog „Öffnen mit“ an, damit Sie die Dateizuordnung reparieren können.",
+    "Aktualisieren Sie fman direkt in der App – mit abbrechbarem Download und Installationsprogramm unter Windows und macOS. Falls nötig, können Sie stattdessen die Release-Seite nutzen.",
+    "Bei der Pluginsuche werden archivierte Repositories jetzt ausgeblendet. So vermeiden Sie die Installation von Plugins, die keine Updates mehr erhalten können."
+  ]
+}

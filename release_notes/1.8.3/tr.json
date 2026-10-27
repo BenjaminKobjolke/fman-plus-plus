@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Daha akıcı bir metin görüntüleyici ve daha kolay güncellemeler",
+  "notes": [
+    "JSON ve XML dosyalarını otomatik biçimlendirme ve sözdizimi renklendirmesiyle görüntüleyin; biçimlendirilmiş ve özgün metin arasında geçiş yapmak için komutları kullanın.",
+    "Windows bir dosyayı açamadığında fman artık sorunu açıklıyor ve dosya ilişkilendirmesini düzeltmeniz için Birlikte aç iletişim kutusunu sunuyor.",
+    "Windows ve macOS’ta iptal edilebilir indirme ve yükleyiciyle fman’ı doğrudan uygulamadan güncelleyin; gerektiğinde sürüm sayfasına yönlendirme seçeneği de sunulur.",
+    "Eklenti araması artık arşivlenmiş depoları gizleyerek artık güncelleme alamayacak eklentileri yüklemekten kaçınmanıza yardımcı oluyor."
+  ]
+}

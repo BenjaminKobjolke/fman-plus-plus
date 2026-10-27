@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Ērtāks teksta skatītājs un vienkāršāka atjaunināšana",
+  "notes": [
+    "Skatiet JSON un XML failus ar automātisku formatēšanu un sintakses iekrāsošanu, kā arī pārslēdzieties starp formatētu un sākotnējo tekstu, izmantojot komandas.",
+    "Ja Windows nevar atvērt failu, fman tagad paskaidro problēmu un piedāvā dialogu “Atvērt ar”, lai labotu faila saistījumu.",
+    "Atjauniniet fman tieši lietotnē, izmantojot atceļamu lejupielādi un instalētāju operētājsistēmās Windows un macOS; ja nepieciešams, varat atvērt arī laidiena lapu.",
+    "Meklējot spraudņus, tagad tiek paslēptas arhivētas krātuves, lai jūs nejauši neinstalētu spraudņus, kas vairs nesaņems atjauninājumus."
+  ]
+}

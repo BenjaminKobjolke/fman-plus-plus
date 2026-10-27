@@ -1,0 +1,11 @@
+{
+  "version": "1.8.3",
+  "date": "2026-10-27",
+  "title": "Un vizualizator de text mai intuitiv și actualizări mai ușoare",
+  "notes": [
+    "Vizualizați fișiere JSON și XML cu formatare automată și evidențierea sintaxei, folosind comenzile pentru a comuta între textul formatat și cel original.",
+    "Când Windows nu poate deschide un fișier, fman explică acum problema și oferă dialogul „Deschidere cu” pentru a repara asocierea fișierului.",
+    "Actualizați fman direct din aplicație, cu o descărcare anulabilă și un program de instalare pentru Windows și macOS; dacă este necesar, puteți accesa pagina versiunii.",
+    "Căutarea pluginurilor ascunde acum depozitele arhivate, ajutându-vă să evitați instalarea pluginurilor care nu mai pot primi actualizări."
+  ]
+}
