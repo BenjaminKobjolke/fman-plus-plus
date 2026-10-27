@@ -1,5 +1,6 @@
 from core.commands.goto import _shrink_visited_paths, _with_well_known_dirs, \
-	SuggestLocations, GoToListener
+	GoToListener
+from core.suggest_locations import SuggestLocations
 from core.util import filenotfounderror
 from fman import PLATFORM
 from fman.impl import incognito

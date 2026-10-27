@@ -9,11 +9,19 @@ from unittest.mock import patch
 from fman import PLATFORM
 from fman.url import as_url
 
-from core.fs.local import CopyFile, LocalFileSystem, MoveByCopying
+from core.fs.local import LocalFileSystem
 from core.fs.local import locks
+from core.fs.local.transfers import CopyFile, LocalTransfers, MoveByCopying
 
 
 class LockedFileCheckTest(TestCase):
+	def test_local_filesystem_resolves_transfer_methods_through_mixin(self):
+		for method in ('copy', 'move', 'prepare_copy', 'prepare_move'):
+			with self.subTest(method=method):
+				self.assertIs(
+					getattr(LocalFileSystem, method), getattr(LocalTransfers, method)
+				)
+
 	def test_setting_defaults_to_enabled(self):
 		with patch.object(locks, 'get_setting', return_value=True) as get_setting:
 			self.assertTrue(locks.is_enabled())
