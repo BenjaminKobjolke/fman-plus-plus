@@ -57,19 +57,28 @@ implementation is found, say so in one line in the plan's Context and plan as us
 For other plugins, use `projectsList` to match the project by name; no match means the plugin has
 no project.
 
-## Planning questions: offer a setting for taste or performance
+## Planning questions: offer a setting for taste, performance, access or safety
 
 For `/tickets:plan` design questions about how an fman behavior should work, check whether the
-answer is a matter of taste or of performance: refresh timers and intervals, where a message is
-shown, live vs. snapshot views, switching a visual cue on or off. When it is, always add the
-option `setting (default: <X>)`, where `<X>` is one of the other options. Picking it means the
-user chooses the behavior in a settings file and the plan names the default value, the key and
-the file:
+answer is a matter of taste or of performance (refresh timers and intervals, where a message is
+shown, live vs. snapshot views, switching a visual cue on or off) or an access or safety choice
+(which computers may connect, what a script may do, extra safety checks before file
+operations). When it is, always add the option `setting (default: <X>)`, where `<X>` is one of
+the other options; for access and safety choices `<X>` is the safest option. Picking it means
+the user chooses the behavior in a settings file and the plan names the default value, the key
+and the file:
 
 - `Core Settings.json` for Core plugin behavior, read through `get_setting` in
   `core/settings.py` (as `drive_space_refresh_seconds` and `dim_hidden_files` do);
-- `%APPDATA%/fman/Local/Settings.json` for app-level window state (as `theme` and
-  `status_bar_visible` do).
+- `%APPDATA%/fman/Local/Settings.json` for app-level behavior and window state (as `theme`,
+  `status_bar_visible` and `scripting_api` do).
+
+When the setting is an on/off switch the user may want to change while fman runs, the option
+also names a command palette toggle next to the key, so the plan does not need a later change
+for it: an `ApplicationCommand` with a `Toggle ...` alias. For an app-level setting it goes in
+`src/main/python/fman/impl/plugins/builtin.py` (as `ToggleStatusBar` and `ToggleScriptingApi`
+do); for a Core setting it goes in `core/commands/` and saves the value with `save_setting` (as
+`ToggleLockedFileCheck` does for `check_locked_files`).
 
 Keep the question's own default as it is; the setting option does not have to be the default.
 When the plan prefers one fixed behavior, the question or the plan's Context says in one
