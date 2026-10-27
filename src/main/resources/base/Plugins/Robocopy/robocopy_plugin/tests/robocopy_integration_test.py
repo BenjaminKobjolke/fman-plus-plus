@@ -2,43 +2,16 @@
 manual check."""
 
 import ctypes
-from ctypes import wintypes
 import os
 from pathlib import Path
-import subprocess
-from tempfile import TemporaryDirectory
-from unittest import TestCase, skipUnless
-
-from fman.url import as_url
+from unittest import skipUnless
 
 from robocopy_plugin import jobs, logs, planner, settings, windows
+from robocopy_integration_base import RobocopyFixture
 
 
 @skipUnless(os.name == 'nt', 'robocopy.exe is Windows-only')
-class RobocopyEngineIT(TestCase):
-	def setUp(self):
-		self.root = Path(self.enterContext(TemporaryDirectory())).resolve()
-		self.source, self.destination = self.root / 'source', self.root / 'destination'
-		self.source.mkdir()
-		self.executable = windows.executable()
-
-	def plan(self, names, move=False, options=None, log=None):
-		return planner.prepare(as_url(self.source),
-			tuple(as_url(self.source / name) for name in names), str(self.destination),
-			self.executable, options or settings.Settings(retries=0), move, log)
-
-	def run_plan(self, plan, log=None):
-		codes = []
-		for job in plan.jobs:
-			planner.recheck(plan, job)
-			code, output = windows.run(
-				job.arguments(self.executable, plan.settings, plan.move, log),
-				timeout=15
-			)
-			self.assertLess(code, 8, output)
-			codes.append(code)
-		return codes
-
+class RobocopyEngineIT(RobocopyFixture):
 	def test_loopback_unc_loose_files_copy_and_move(self):
 		local_source = self.source
 		unc = Path(
@@ -195,54 +168,6 @@ class RobocopyEngineIT(TestCase):
 			planner.recheck(plan, plan.jobs[0])
 		self.assertFalse(self.destination.exists())
 
-	def junction(self, link, target):
-		result = subprocess.run(
-			[
-				os.path.join(os.environ['WINDIR'], 'System32', 'cmd.exe'),
-				'/d', '/c', 'mklink', '/J', str(link), str(target)
-			],
-			capture_output=True, timeout=10
-		)
-		self.assertEqual(0, result.returncode, repr(result.stdout + result.stderr))
-
-	def test_nested_source_junction_exclusion_and_selected_junction_refusal(self):
-		folder = self.source / 'Folder'
-		folder.mkdir()
-		outside = self.root / 'outside'
-		outside.mkdir()
-		(outside / 'keep.txt').write_bytes(b'outside')
-		self.junction(folder / 'excluded', outside)
-		self.junction(self.source / 'selected', outside)
-		with self.assertRaisesRegex(ValueError, 'junctions'):
-			self.plan(('selected',))
-		plan = self.plan(('Folder',), move=True)
-		self.run_plan(plan)
-		self.assertFalse((self.destination / 'Folder' / 'excluded').exists())
-		self.assertEqual(b'outside', (outside / 'keep.txt').read_bytes())
-		self.assertEqual(1, planner.remaining(plan.jobs[0].entries)[0])
-
-	def test_selected_symlink_refused_and_nested_source_symlinks_excluded(self):
-		(self.source / 'Folder').mkdir()
-		outside = self.root / 'outside'
-		outside.mkdir()
-		(outside / 'file.txt').write_bytes(b'outside')
-		try:
-			os.symlink(
-				outside, self.source / 'Folder' / 'directory-link',
-				target_is_directory=True
-			)
-			os.symlink(outside / 'file.txt', self.source / 'Folder' / 'file-link.txt')
-			os.symlink(outside, self.source / 'selected-link', target_is_directory=True)
-		except OSError as error:
-			if getattr(error, 'winerror', None) == 1314:
-				self.skipTest('Windows symlink privilege unavailable')
-			raise
-		with self.assertRaisesRegex(ValueError, 'links'):
-			self.plan(('selected-link',))
-		self.run_plan(self.plan(('Folder',), move=True))
-		self.assertEqual([], list((self.destination / 'Folder').iterdir()))
-		self.assertEqual(b'outside', (outside / 'file.txt').read_bytes())
-		self.assertTrue((self.source / 'Folder').exists())
 
 	def test_failed_native_move_overwrite_preserves_source(self):
 		self.destination.mkdir()
@@ -265,53 +190,3 @@ class RobocopyEngineIT(TestCase):
 		self.assertEqual(b'source data', (self.source / 'locked.txt').read_bytes())
 		self.assertEqual(b'keep', (self.destination / 'locked.txt').read_bytes())
 		self.assertEqual(1, planner.remaining(plan.jobs[0].entries)[0])
-
-	def test_native_short_alias_refused(self):
-		path = self.source / 'long selected filename.txt'
-		path.write_bytes(b'keep')
-		library = ctypes.WinDLL('kernel32', use_last_error=True)
-		library.GetShortPathNameW.argtypes = [
-			wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD
-		]
-		library.GetShortPathNameW.restype = wintypes.DWORD
-		buffer = ctypes.create_unicode_buffer(32768)
-		if not library.GetShortPathNameW(str(path), buffer, len(buffer)):
-			raise ctypes.WinError(ctypes.get_last_error())
-		alias = Path(buffer.value).name
-		if alias == path.name:
-			self.skipTest('8.3 aliases are disabled for this temporary volume')
-		with self.assertRaisesRegex(ValueError, '8.3 alias'):
-			self.plan((alias,))
-		self.assertFalse(self.destination.exists())
-
-	def test_native_case_sensitive_directory_refused(self):
-		library = ctypes.WinDLL('kernel32', use_last_error=True)
-		library.SetFileInformationByHandle.argtypes = [
-			wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD
-		]
-		library.SetFileInformationByHandle.restype = wintypes.BOOL
-		api = windows.api()
-		handle = api.CreateFileW(
-			str(self.source), 0xc0000000, 7, None, 3, 0x02000000, None
-		)
-		self.assertNotEqual(ctypes.c_void_p(-1).value, handle)
-		try:
-			flags = wintypes.DWORD(1)
-			if not library.SetFileInformationByHandle(
-				handle, 23, ctypes.byref(flags), ctypes.sizeof(flags)
-			):
-				code = ctypes.get_last_error()
-				if code in (1, 5, 50, 87, 1314):
-					self.skipTest(
-						'Native case-sensitive directory setup unavailable '
-						'(Windows error %d)' % code
-					)
-				raise ctypes.WinError(code)
-		finally:
-			api.CloseHandle(handle)
-		(self.source / 'File.txt').write_bytes(b'upper')
-		(self.source / 'file.txt').write_bytes(b'lower')
-		self.assertEqual(2, len(list(self.source.iterdir())))
-		with self.assertRaisesRegex(ValueError, 'case-sensitive'):
-			self.plan(('File.txt', 'file.txt'))
-		self.assertFalse(self.destination.exists())
