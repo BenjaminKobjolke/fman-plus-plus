@@ -278,8 +278,23 @@ config at a local fman++ checkout.
 Needed on Linux and for developing fman++ itself. fman++ currently uses
 Python 3.14.
 
+fman++ uses the [fman build system](https://build-system.fman.io/) (fbs).
 Dependencies are managed with [uv](https://docs.astral.sh/uv/) (`pyproject.toml`
-+ `uv.lock`). Create the `.venv`:
++ `uv.lock`). uv also installs Python 3.14 if your machine does not have it.
+Install uv first ([other methods](https://docs.astral.sh/uv/getting-started/installation/)):
+
+    # Windows (PowerShell)
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+    # macOS / Linux
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+Get the source:
+
+    git clone https://github.com/BenjaminKobjolke/fman-plus-plus.git
+    cd fman-plus-plus
+
+Create the `.venv`:
 
     install.bat     # Windows: fetch fbs Pro, uv sync, then the unit tests
 
@@ -299,7 +314,6 @@ The Linux Docker images (`build.py buildvm <distro>`) still install with pip fro
 `requirements/*.txt`. Those files are generated, not committed: run
 `uv run python build.py requirements` before `buildvm`. For uv, fbs Pro is
 downloaded into `vendor/` (see [vendor/README.md](vendor/README.md)).
-This uses the [fman build system](https://build-system.fman.io/).
 
 The video viewer needs the native `libmpv` library. On Windows fman++ downloads
 it on first use; on macOS install it with `brew install mpv`, on Debian/Ubuntu
