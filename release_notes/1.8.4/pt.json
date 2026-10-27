@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Os plug-ins funcionam de imediato",
+  "notes": [
+    "Os plug-ins que dependem de informações do processo, como o ProcessFS, funcionam agora sem exigir a instalação de uma dependência separada."
+  ]
+}

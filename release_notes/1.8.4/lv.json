@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Spraudņi darbojas uzreiz pēc instalēšanas",
+  "notes": [
+    "Spraudņi, kas izmanto informāciju par procesiem, piemēram, ProcessFS, tagad darbojas bez nepieciešamības atsevišķi instalēt atkarības."
+  ]
+}

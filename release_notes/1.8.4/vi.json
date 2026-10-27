@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Các plugin hoạt động ngay khi cài đặt",
+  "notes": [
+    "Các plugin phụ thuộc vào thông tin tiến trình, chẳng hạn như ProcessFS, giờ đây hoạt động mà không cần cài đặt thêm phần phụ thuộc riêng."
+  ]
+}

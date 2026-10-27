@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Los complementos funcionan desde el primer momento",
+  "notes": [
+    "Los complementos que dependen de información de procesos, como ProcessFS, ahora funcionan sin necesidad de instalar dependencias por separado."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Les plugins fonctionnent dès l’installation",
+  "notes": [
+    "Les plugins qui s’appuient sur les informations de processus, comme ProcessFS, fonctionnent désormais sans nécessiter l’installation d’une dépendance distincte."
+  ]
+}

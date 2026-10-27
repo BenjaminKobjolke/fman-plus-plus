@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Papildiniai veikia iš karto",
+  "notes": [
+    "Papildiniai, kuriems reikalinga proceso informacija, pavyzdžiui, „ProcessFS“, dabar veikia nereikalaujant atskirai įdiegti priklausomybių."
+  ]
+}

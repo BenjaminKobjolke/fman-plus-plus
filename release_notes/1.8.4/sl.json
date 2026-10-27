@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Vtičniki delujejo takoj po namestitvi",
+  "notes": [
+    "Vtičniki, ki so odvisni od informacij o procesih, kot je ProcessFS, zdaj delujejo, ne da bi bilo treba posebej namestiti odvisnost."
+  ]
+}

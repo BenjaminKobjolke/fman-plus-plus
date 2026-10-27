@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Eklentiler ek bir ayar gerektirmeden çalışıyor",
+  "notes": [
+    "ProcessFS gibi süreç bilgilerine dayanan eklentiler artık ayrı bir bağımlılık kurulumu gerektirmeden çalışıyor."
+  ]
+}

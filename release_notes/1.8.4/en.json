@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Plugins work out of the box",
+  "notes": [
+    "Plugins that rely on process information, such as ProcessFS, now work without requiring a separate dependency installation."
+  ]
+}

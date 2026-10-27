@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Pluginad töötavad kohe pärast paigaldamist",
+  "notes": [
+    "Protsessiteabele tuginevad pluginad, näiteks ProcessFS, töötavad nüüd ilma sõltuvusi eraldi installimata."
+  ]
+}

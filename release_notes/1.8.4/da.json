@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Plugins fungerer med det samme",
+  "notes": [
+    "Plugins, der er afhængige af procesinformation, såsom ProcessFS, fungerer nu uden at kræve en separat installation af afhængigheder."
+  ]
+}

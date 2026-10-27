@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Dodaci rade odmah po instalaciji",
+  "notes": [
+    "Dodaci koji se oslanjaju na informacije o procesima, kao što je ProcessFS, sada rade bez potrebe za zasebnom instalacijom zavisnosti."
+  ]
+}

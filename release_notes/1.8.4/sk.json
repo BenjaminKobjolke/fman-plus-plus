@@ -1,0 +1,8 @@
+{
+  "version": "1.8.4",
+  "date": "2026-10-27",
+  "title": "Pluginy fungujú hneď po inštalácii",
+  "notes": [
+    "Pluginy, ktoré využívajú informácie o procesoch, napríklad ProcessFS, teraz fungujú bez potreby samostatnej inštalácie závislostí."
+  ]
+}
