@@ -11,16 +11,50 @@ tools\\run_progress_dialog_tests.bat.
 from dataclasses import dataclass
 from fman.impl.widgets import MainWindow
 from fman.impl.progress_dialog import ProgressDialog
+from fman.impl.tool_windows import ToolWindowOptions, ToolWindows
 from fman.impl.workers_label import elide_lines, WorkersLabel
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette
 from PyQt5.QtTest import QTest
 from fman.impl.view import ProxyStyle
-from PyQt5.QtWidgets import QApplication, QLabel, QStyle, QStyleFactory, \
-	QWidget
+from PyQt5.QtWidgets import QApplication, QLabel, QStatusBar, QStyle, \
+	QStyleFactory, QPushButton, QToolButton, QWidget
 from unittest import TestCase
 
 class WorkersLabelTest(TestCase):
+	def test_default_options_keep_the_non_modal_dialog_without_minimize(self):
+		dialog = self._dialog()
+		self.assertEqual(Qt.NonModal, dialog.windowModality())
+		self.assertIsNone(dialog.findChild(QPushButton, 'tool-window-minimize'))
+		self.assertFalse(dialog._event_filter_installed)
+	def test_default_dialog_does_not_open_palette_without_workers(self):
+		parent = _PaletteParent(None)
+		dialog = self._dialog(parent)
+		self._open_palette(dialog)
+		self.assertIsNone(parent.palette._get_items)
+
+	def test_keeps_focus_is_modal_and_wins_over_minimizable(self):
+		dialog = self._dialog(options=ToolWindowOptions(True, True, None))
+		self.assertEqual(Qt.WindowModal, dialog.windowModality())
+		self.assertIsNone(dialog.findChild(QPushButton, 'tool-window-minimize'))
+
+	def test_minimize_button_hides_dialog_and_cancel_removes_status_button(self):
+		status_bar = QStatusBar()
+		tool_windows = ToolWindows(status_bar)
+		dialog = self._dialog(
+			options=ToolWindowOptions(False, True, None),
+			tool_windows=tool_windows
+		)
+		button = dialog.findChild(QPushButton, 'tool-window-minimize')
+		self.assertIsNotNone(button)
+		self.assertTrue(dialog._event_filter_installed)
+		button.click()
+		self.assertFalse(dialog.isVisible())
+		self.assertEqual(1, len(status_bar.findChildren(QToolButton)))
+		dialog.cancel()
+		self.assertEqual([], tool_windows.minimized())
+		self.assertEqual([], status_bar.findChildren(QToolButton))
+
 	def test_dialog_matches_hidden_main_window_title_bar(self):
 		dialog = QWidget()
 		MainWindow._match_title_bar(_FakeMainWindow(False), dialog)
@@ -127,23 +161,21 @@ class WorkersLabelTest(TestCase):
 		)
 	def test_palette_lists_actions_with_their_shortcuts(self):
 		workers = _FakeWorkers(_Worker(1), _Worker(2))
-		palette = _FakePalette('Add thread')
-		WorkersLabel(workers).open_palette(palette.show, lambda: None)
+		actions = WorkersLabel(workers).palette_actions(lambda: None)
 		self.assertEqual(
 			[
 				('Add thread', '+ / Up'), ('Remove thread', '- / Down'),
 				('Cancel', 'Esc')
 			],
-			palette.rows('')
+			[(title, hint) for title, hint, _ in actions]
 		)
-		self.assertEqual([('Cancel', 'Esc')], palette.rows('CANC'))
+		actions[0][2]()
 		self.assertEqual(['add'], workers.calls)
 	def test_palette_leaves_out_what_workers_do_not_allow(self):
 		workers = _FakeWorkers(_Worker(1))
 		workers.removable = False
-		palette = _FakePalette(None)
-		WorkersLabel(workers).open_palette(palette.show, lambda: None)
-		self.assertNotIn('Remove thread', [t for t, _ in palette.rows('')])
+		actions = WorkersLabel(workers).palette_actions(lambda: None)
+		self.assertNotIn('Remove thread', [title for title, _, _ in actions])
 		self.assertEqual([], workers.calls)
 	def test_palette_key_opens_the_palette_in_the_dialog(self):
 		parent = _PaletteParent('Cancel')
@@ -154,6 +186,31 @@ class WorkersLabelTest(TestCase):
 			Qt.ControlModifier | Qt.ShiftModifier
 		)
 		self.assertTrue(dialog.was_canceled())
+	def test_minimizable_palette_has_minimize_and_no_thread_actions(self):
+		parent = _PaletteParent(None)
+		dialog = self._dialog(
+			parent, ToolWindowOptions(False, True, None)
+		)
+		self._open_palette(dialog)
+		self.assertEqual(
+			['Minimize', 'Cancel'],
+			[title for title, _ in parent.palette.rows('')]
+		)
+	def test_minimizable_palette_includes_thread_actions_when_workers_are_shown(self):
+		parent = _PaletteParent(None)
+		dialog = self._dialog(
+			parent, ToolWindowOptions(False, True, None)
+		)
+		dialog.show_workers(_FakeWorkers(_Worker(1), _Worker(2)))
+		self._open_palette(dialog)
+		self.assertEqual(
+			['Add thread', 'Remove thread', 'Minimize', 'Cancel'],
+			[title for title, _ in parent.palette.rows('')]
+		)
+	def _open_palette(self, dialog):
+		QTest.keyClick(
+			dialog, Qt.Key_P, Qt.ControlModifier | Qt.ShiftModifier
+		)
 	def test_buttons_follow_what_workers_allow(self):
 		workers = _FakeWorkers(_Worker(1))
 		workers.removable = False
@@ -179,8 +236,12 @@ class WorkersLabelTest(TestCase):
 		self.assertFalse(dialog._cancel_button.isEnabled())
 		self.assertTrue(dialog._workers_label._add.isEnabled())
 		self.assertTrue(dialog._workers_label._remove.isEnabled())
-	def _dialog(self, parent=None):
-		return ProgressDialog(parent, 'Copying', 100, QPalette())
+	def _dialog(self, parent=None, options=None, tool_windows=None):
+		return ProgressDialog(
+			parent, 'Copying', 100, QPalette(),
+			options or ToolWindowOptions(False, False, None),
+			tool_windows or ToolWindows(QStatusBar())
+		)
 	def _label(self, *workers):
 		result = WorkersLabel(_FakeWorkers(*workers))
 		result.refresh('')
@@ -237,7 +298,8 @@ class _PaletteParent(QWidget):
 	# ProgressDialog asks its parent - the main window - for the palette.
 	def __init__(self, choice):
 		super().__init__()
-		self.show_quicksearch = _FakePalette(choice).show
+		self.palette = _FakePalette(choice)
+		self.show_quicksearch = self.palette.show
 
 class _FakeMainWindow:
 	def __init__(self, title_bar_visible):

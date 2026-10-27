@@ -16,6 +16,8 @@ import os.path
 import stat
 
 class FileTreeOperationAT:
+	def test_core_file_operations_are_minimizable(self):
+		self.assertTrue(self.operation.minimizable)
 
 	if PLATFORM == 'Windows':
 		_NO_SUCH_FILE_MSG = 'the system cannot find the file specified'
