@@ -55,7 +55,7 @@
 			]
 		}
 	},
-	"hidden_imports": ["requests", "mpv", "PyQt5.QtSvg", "pygments", "xml.dom", "xml.dom.minidom"],
+	"hidden_imports": ["requests", "mpv", "PyQt5.QtSvg", "pygments", "xml.dom", "xml.dom.minidom", "psutil"],
 	"extra_pyinstaller_args": [
 		"--exclude-module", "boto3",
 		"--exclude-module", "botocore",
