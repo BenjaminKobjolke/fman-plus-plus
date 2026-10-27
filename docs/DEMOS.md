@@ -304,7 +304,7 @@ composing stale inputs.
 
 Go to (`Ctrl+P`) suggests **real folders from the recording machine**, so this
 is the one chapter that can put private directory names on camera.
-`SuggestLocations` (`core/commands/goto.py`) draws them from two places:
+`SuggestLocations` (`core/suggest_locations.py`) draws them from two places:
 
 | source | when | what it would show |
 |--------|------|--------------------|

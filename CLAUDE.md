@@ -161,7 +161,7 @@ powershell -Command "cd 'D:\GIT\BenjaminKobjolke\fman'; cmd /c '.\tools\run_mess
 
 If you touched the progress dialog's worker rows
 (`src/main/python/fman/impl/workers_label.py`, or `ProgressDialog` in
-`widgets.py`), run:
+`src/main/python/fman/impl/progress_dialog.py`), run:
 
 ```bash
 powershell -Command "cd 'D:\GIT\BenjaminKobjolke\fman'; cmd /c '.\tools\run_progress_dialog_tests.bat'"
@@ -198,8 +198,8 @@ When `windows.py`, `planner.py` or `jobs.py` changed, also run:
 powershell -Command "cd 'D:\GIT\BenjaminKobjolke\fman'; cmd /c '.\tools\run_robocopy_integration_tests.bat'"
 ```
 
-The integration runner spawns real `robocopy.exe`, so its `*_test.py` file is
-excluded from the unit-test pattern, like the zip tests.
+The integration runner spawns real `robocopy.exe`, so its `*integration_test.py`
+files are excluded from the unit-test pattern, like the zip tests.
 
 ## Code Analysis
 

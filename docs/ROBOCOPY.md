@@ -70,4 +70,5 @@ default.
 The plug-in modules divide work among `settings`, `paths`, `jobs`, `planner`,
 `logs`, `windows`, `transfer`, and `__init__`. Run `tools\run_robocopy_tests.bat`
 for unit tests. `tools\run_robocopy_integration_tests.bat` runs tests that spawn
-the real Windows `robocopy.exe` and is Windows-only.
+the real Windows `robocopy.exe` from both `*integration_test.py` files and is
+Windows-only.

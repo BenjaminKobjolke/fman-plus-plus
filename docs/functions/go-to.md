@@ -150,9 +150,10 @@ Bind any of them to a key in `Key Bindings.json` like any other command
 
 - Destination commands: `Plugins/Core/core/commands/places.py`
   (`_GoToDirectory` and its subclasses)
-- GoTo prompt and its suggestion engine:
-  `Plugins/Core/core/commands/goto.py` (`GoTo`, `SuggestLocations`,
-  `GoToListener`, `_with_well_known_dirs`)
+- GoTo prompt and listener: `Plugins/Core/core/commands/goto.py`
+  (`GoTo`, `GoToListener`, `_with_well_known_dirs`)
+- Suggestion engine: `Plugins/Core/core/suggest_locations.py`
+  (`SuggestLocations`, `unexpand_user`)
 - Where the everyday four actually live, and their names (registry-backed):
   `Plugins/Core/core/commands/util.py` (`get_well_known_dirs`,
   `shell_folder`) — shared by GoTo and the palette commands

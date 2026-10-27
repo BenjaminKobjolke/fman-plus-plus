@@ -166,11 +166,12 @@ TourStep(
   from where the user is to the folder they picked, and `_navigate()` rewrites
   the current step's text after each one.
 - `src/main/python/fman/impl/onboarding/cleanup_guide.py` — the cleanup tour.
-- `src/main/python/fman/impl/widgets.py` — `Overlay` (the bubble: buttons,
-  focus, arrow keys) and `MainWindow._position_overlay` / `_overlay_pos(...)`
-  / `_dialog_rect()` (where it goes). `_overlay_pos(...)` is a free function
-  over plain sizes and rects, so the placement rules are testable without a
-  window.
+- `src/main/python/fman/impl/overlay.py` — `Overlay` (the bubble: buttons,
+  focus, arrow keys).
+- `src/main/python/fman/impl/widgets.py` — `MainWindow._position_overlay` /
+  `_overlay_pos(...)` / `_dialog_rect()` (where it goes). `_overlay_pos(...)`
+  is a free function over plain sizes and rects, so the placement rules are
+  testable without a window.
 - `src/main/python/fman/impl/plugins/builtin.py` — registers the `Tutorial` and
   `CleanupGuide` pane commands, which is what puts them in the Command Palette.
 - `src/main/python/fman/impl/application_context.py` — `tutorial_factory`,

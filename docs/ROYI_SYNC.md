@@ -176,7 +176,7 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | 0.1.0 | Windows tests that do not need symlink privileges | pending | |
 | 0.1.0 | Faster sorting of large directories and pane resizing | pending | includes the later "painting failed after resize" fix |
 | 0.1.0 | Faster natural name sorting | pending | |
-| 0.1.0 | Larger local file copy buffer | pending | easy — `core/fs/local/__init__.py` uses 16 KiB; Royi uses 1 MiB |
+| 0.1.0 | Larger local file copy buffer | pending | easy — `core/fs/local/transfers.py` uses 16 KiB; Royi uses 1 MiB |
 | 0.1.0 | Skip unused Gnome icon provider detection on Windows | pending | |
 | 0.1.0 | F1 opens searchable keyboard shortcut guide | pending | adapt — F1 opens web help; palette already shows shortcuts |
 | 0.1.0 | 1280x800 default window, Reset Window Geometry command | pending | easy — first run maximizes; only `CenterWindow` exists; read `docs/bugs/WINDOW_RESIZE_BUG.md` first |

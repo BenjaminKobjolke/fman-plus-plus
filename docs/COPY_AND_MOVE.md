@@ -5,8 +5,9 @@ transfer them, why the two run at the same time, and how a file system such as
 FTP gets several files transferred at once.
 
 Both commands are `FileTreeOperation` subclasses (`CopyFiles`, `MoveFiles`) in
-`src/main/resources/base/Plugins/Core/core/fileoperations.py`. The robocopy
-variants are separate and described in [ROBOCOPY.md](ROBOCOPY.md).
+`src/main/resources/base/Plugins/Core/core/fileoperations.py`; the tree
+gathering methods are in `core/file_tree_gathering.py`. The robocopy variants
+are separate and described in [ROBOCOPY.md](ROBOCOPY.md).
 
 ## Two threads: gathering and transferring
 
@@ -163,9 +164,10 @@ def _prepare_copy(self, src_url, dst_url):
 		yield from self._prepare_copy(join(src_url, name), join(dst_url, name))
 ```
 
-`LocalFileSystem` (`core/fs/local/__init__.py`) and the FTP plugin both work
-this way. A plugin that returns a list still works, just without streaming
-for that folder. The same goes for `prepare_move(...)`.
+`LocalFileSystem` (`core/fs/local/__init__.py`) uses the transfer methods in
+`core/fs/local/transfers.py`; the FTP plugin also works this way. A plugin that
+returns a list still works, just without streaming for that folder. The same
+goes for `prepare_move(...)`.
 
 To have its transfers run on several workers, a plugin also:
 
@@ -203,12 +205,14 @@ dialog.
 ## Tests
 
 `core/tests/test_fileoperations.py` covers overwrite and error prompts, abort
-and move-to-self. `StreamingTransferTest` checks that a transfer starts while
-gathering is still running: its file system's `iterdir(...)` waits until a
-copy has started, and gives up after 5 seconds, so a sequential version fails
-the test instead of hanging the run. `ParallelTransferTest` does the same for
-workers: each copy or move waits until all of them have started. It also
-checks that Move's emptied-folder task waits for the earlier tasks.
+and move-to-self. `core/tests/test_parallel_transfers.py` contains
+`StreamingTransferTest` and `ParallelTransferTest`. `StreamingTransferTest`
+checks that a transfer starts while gathering is still running: its file
+system's `iterdir(...)` waits until a copy has started, and gives up after
+5 seconds, so a sequential version fails the test instead of hanging the run.
+`ParallelTransferTest` does the same for workers: each copy or move waits until
+all of them have started. It also checks that Move's emptied-folder task waits
+for the earlier tasks.
 `core/tests/test_transfer_workers.py` covers adding, removing, aborting,
 errors, and the two ordering flags. A barrier task starts only after the
 earlier tasks end. A blocking task starts without waiting for earlier ones,
