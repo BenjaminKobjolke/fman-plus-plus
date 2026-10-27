@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest import TestCase
 from unittest import main
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, patch
 from urllib.error import URLError
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'fman_ui'))
@@ -15,6 +15,17 @@ import fman_ui
 
 
 class FmanUiTest(TestCase):
+	def _write_session(self, temp):
+		root = Path(temp) / 'fman-ui'
+		session = {'session_id': 'x', 'pid': 1, 'port': 1,
+			'token_path': str(root / 'profile' / 'token'),
+			'profile': str(Path(temp) / 'profile'),
+			'left': 'L', 'right': 'R'}
+		Path(session['token_path']).parent.mkdir(parents=True)
+		Path(session['token_path']).write_text('token')
+		root.mkdir(exist_ok=True)
+		(root / 'current.json').write_text(json.dumps(session))
+
 	def test_close_reports_the_number_of_removed_recycle_bin_entries(self):
 		with TemporaryDirectory() as temp:
 			session_root = Path(temp) / 'session'
@@ -140,15 +151,7 @@ class FmanUiTest(TestCase):
 
 	def test_bare_file_name_is_resolved_against_selected_pane(self):
 		with TemporaryDirectory() as temp:
-			root = Path(temp) / 'fman-ui'
-			session = {'session_id': 'x', 'pid': 1, 'port': 1,
-				'token_path': str(root / 'profile' / 'token'),
-				'profile': str(Path(temp) / 'profile'),
-				'left': 'L', 'right': 'R'}
-			Path(session['token_path']).parent.mkdir(parents=True)
-			Path(session['token_path']).write_text('token')
-			root.mkdir(exist_ok=True)
-			(root / 'current.json').write_text(json.dumps(session))
+			self._write_session(temp)
 			with patch.dict(os.environ, {'TEMP': temp}), \
 				patch.object(fman_ui, '_api', side_effect=[
 					{'panes': [{'path': 'file:///C:/fixture'}]}, {'ok': True},
@@ -162,15 +165,7 @@ class FmanUiTest(TestCase):
 
 	def test_bracketed_and_spaced_file_names_remain_unencoded(self):
 		with TemporaryDirectory() as temp:
-			root = Path(temp) / 'fman-ui'
-			session = {'session_id': 'x', 'pid': 1, 'port': 1,
-				'token_path': str(root / 'profile' / 'token'),
-				'profile': str(Path(temp) / 'profile'),
-				'left': 'L', 'right': 'R'}
-			Path(session['token_path']).parent.mkdir(parents=True)
-			Path(session['token_path']).write_text('token')
-			root.mkdir(exist_ok=True)
-			(root / 'current.json').write_text(json.dumps(session))
+			self._write_session(temp)
 			for name in ('[--brackets--]/visible.txt', 'file name.txt'):
 				with self.subTest(name=name), \
 					patch.dict(os.environ, {'TEMP': temp}), \
