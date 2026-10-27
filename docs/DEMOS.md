@@ -162,14 +162,16 @@ wrong is the tell. Nothing clears the desktop when you run
 
 ## Install (once)
 
-Demo mode needs the app-side connector library. It is **not** in the normal
-requirements — it lives in a dev-only file so it never enters a release build.
-From the repo root:
+Demo mode needs the app-side connector library. It is **not** a normal
+dependency — it is in the `demos` dependency group of `pyproject.toml`, so it
+never enters a release build. From the repo root:
 
-    pip install -r requirements/windows-debug.txt
+    uv sync --group demos
 
 This installs [automated-screenshot-connector](https://github.com/BenjaminKobjolke/automated-application-screenshots-python-connector)
-(expected as a sibling checkout: `../automated-application-screenshots-python-connector`).
+from GitHub. To work on a local checkout of it instead:
+`uv pip install -e ../automated-application-screenshots-python-connector`
+(a later plain `uv sync` removes it again).
 
 The recording tool itself is a separate checkout and runs with
 [uv](https://docs.astral.sh/uv/). Expected at
@@ -190,15 +192,11 @@ that ships with its `imageio-ffmpeg` dependency.
 compose step). Without it on `PATH` the build prints a note and ships a larger
 file.
 
-**The interpreter matters.** fman's dependencies (PyQt5, fbs_runtime) are a
-`pip --user` install, and the connector is an editable `.pth` install — both
-live in that interpreter's user site-packages, so another `python` on `PATH`
-(msys2's, a venv) will fail with `ModuleNotFoundError: fbs_runtime`. Point
-`FMAN_PYTHON` at the right `python.exe` if plain `python` isn't it:
-
-    set FMAN_PYTHON=C:\Program Files\Python314\python.exe
-
-(The launcher already drops the tool's own `uv` virtualenv from `PATH`.)
+**The interpreter matters.** fman's dependencies (PyQt5, fbs_runtime) and the
+connector live in the project's `.venv`, and the launcher uses
+`.venv\Scripts\python.exe` (`tools\find_build_python.bat`). Set `FMAN_PYTHON`
+only to override it. (The launcher also drops the tool's own `uv` virtualenv
+from `PATH`.)
 
 ## Recording checklist
 

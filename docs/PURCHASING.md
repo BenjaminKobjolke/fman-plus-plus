@@ -37,7 +37,7 @@ machinery outright rather than leaving it dormant:
   call is gone with the code around it.
 
 The `rsa` dependency went with the validator and is no longer in
-`requirements/base.txt`.
+`pyproject.toml`.
 
 ## Leftover files in your data directory
 

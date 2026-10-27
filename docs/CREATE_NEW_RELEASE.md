@@ -35,9 +35,9 @@ remain the manual path:
 5. Runs `tools\build_release.bat`: `python build.py release_build`, i.e. clean +
    release profile + freeze, sign, installer, sign the installer. On success it
    records the label in `target\release_version.txt`, next to the installer. The
-   build bats use the first `python` on `PATH` that can import `fbs`
-   (`tools\find_build_python.bat`), skipping venvs in front of it, such as those
-   stacked when started from the Tickets Watcher.
+   build bats use the project's uv venv, `.venv\Scripts\python.exe`
+   (`tools\find_build_python.bat`; run `install.bat` once), whatever venv the
+   Tickets Watcher puts in front of it.
 6. **Asks** `Commit, tag and push <label>?` — `git add -A`, commit
    `RELEASE (fman): <label>`, tag `<label>`, push both.
 7. **Asks** `Create GitHub Release <label>?` — only offered if 6 ran. Uploads
@@ -81,8 +81,8 @@ tools\build_increment.bat   :: calculate and write the next version
 tools\build_decrement.bat   :: restore the version from the current Git commit
 ```
 
-These are thin wrappers over `tools\release\build_number.py` (plain `python`, no
-`uv` — this project uses `requirements/*.txt`). The helper updates the `version` in
+These are thin wrappers over `tools\release\build_number.py` (stdlib only, run with
+the `.venv` python from `tools\find_build_python.bat`). The helper updates the `version` in
 `src/build/settings/base.json`; no separate counter or manual version bump is needed.
 The current version is the newer of `base.json` and the highest plain `X.Y.Z` Git tag.
 If a version bump is lost (reverted or never committed), the next release continues after the
@@ -289,7 +289,7 @@ one renders that release's notes read-only in the pane's text viewer
 (`is_visible()`) when no `release_notes/` folder is bundled.
 
 Locale is detected via `python_localization.detection.detect_system_language`
-(the `python-localization` dependency in `requirements/base.txt`), falling
+(the `python-localization` dependency in `pyproject.toml`), falling
 back to `en.json` when a release has no translation for the detected locale,
 or when the library itself is missing (defensive `ImportError` catch — Core's
 other commands must still load even if this one dependency is broken).

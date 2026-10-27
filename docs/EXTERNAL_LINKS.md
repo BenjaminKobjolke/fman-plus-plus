@@ -52,5 +52,5 @@ it — they are build/infra config, not links a fork rebrands via the UI:
 
 - Build/release config (`src/build/settings/*.json`, `release.json`)
 - Telemetry (`sentry_dsn`, `bin/post-commit`)
-- Package/repo infra (`requirements/*.txt`, `src/repo/`, Dockerfiles)
+- Package/repo infra (`FBS_URL` in `tools/fbs_pro.py`, `src/repo/`, Dockerfiles)
 - The QSettings organization domain `fman.io` (storage path, not a link)

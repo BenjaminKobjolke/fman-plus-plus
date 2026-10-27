@@ -95,27 +95,27 @@ the setting option applies to the detail round that follows.
 For fman UI behavior checks, see `docs/UI_AUTOMATION.md` and use
 `tools\fman_ui.bat` to launch and drive a throwaway instance.
 
-After touching `tools/fman_ui/**`, run `python tools/test_fman_ui.py`.
+After touching `tools/fman_ui/**`, run `uv run python tools/test_fman_ui.py`.
 After touching `src/main/python/fman/impl/scripting/automation.py` or
 `src/main/python/fman/impl/util/qt/key_events.py`, run
 `tools\run_automation_tests.bat`.
 
-`tools\run_tests.bat` runs all of `fman_unittest` offscreen (~5 s). The `run_*_tests.bat` watcher commands use `tools\unittest_with_timeout.bat`, which drops the watcher's venv and stops a test after 120 s. `python build.py test` is not a usable check because fbs ignores the result and always exits 0.
+`tools\run_tests.bat` runs all of `fman_unittest` offscreen (~5 s). The `run_*_tests.bat` watcher commands use `tools\unittest_with_timeout.bat`, which drops the watcher's venv, runs the project's `.venv` python (`tools\find_build_python.bat`) and stops a test after 120 s. `python build.py test` is not a usable check because fbs ignores the result and always exits 0.
 
-For one Core test module, run `tools\run_core_tests.bat core.tests.fs.test_drives`. Never run bare `python` or `pytest` on a test file: watcher runs use the watcher's venv, which reports `fbs_runtime` missing even though it is installed in the system Python.
+For one Core test module, run `tools\run_core_tests.bat core.tests.fs.test_drives`. Never run bare `python` or `pytest` on a test file: fman's dependencies live only in the project's uv `.venv` (`install.bat` creates it), so bare `python` reports `fbs_runtime` missing. Use the bats or `uv run python`.
 
 After touching `tools/close_running_fman.ps1` or `tools/build_windows.bat`, run
-`python tools/test_close_running_fman.py`.
+`uv run python tools/test_close_running_fman.py`.
 
 After touching `tools/release/build_number.py`, run
-`python tools/test_build_number.py`.
+`uv run python tools/test_build_number.py`.
 
 After touching `tools/create_media/build_app_icons.py`, run
-`python tools/test_build_app_icons.py`.
+`uv run python tools/test_build_app_icons.py`.
 
 After touching `src/build/python/build_impl/mac.py`, `tools/sign_mac.sh`,
 `tools/build_mac.sh` or `tools/github_release_mac.sh`, run
-`python tools/test_build_mac.py`.
+`uv run python tools/test_build_mac.py`.
 
 The script asks a running fman to close via the registered window message
 `fman.CloseForBuild`; fman (`src/main/python/fman/impl/build_shutdown.py`)
@@ -125,7 +125,7 @@ answers with an Esc-cancelable countdown. After touching that module, run
 without showing it).
 
 After touching `fman/impl/update_check.py`, run
-`python -m unittest fman_unittest.impl.test_update_check` with `PYTHONPATH` set
+`uv run python -m unittest fman_unittest.impl.test_update_check` with `PYTHONPATH` set
 to `src\main\python;src\unittest\python`. The Core update check and command
 are covered by `run_core_tests.bat`.
 

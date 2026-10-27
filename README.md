@@ -278,26 +278,35 @@ config at a local fman++ checkout.
 Needed on Linux and for developing fman++ itself. fman++ currently uses
 Python 3.14.
 
-Install the requirements for your operating system:
+Dependencies are managed with [uv](https://docs.astral.sh/uv/) (`pyproject.toml`
++ `uv.lock`). Create the `.venv`:
 
-    pip install -Ur requirements/mac.txt       # macOS (release builds)
-    pip install -Ur requirements/ubuntu.txt    # Ubuntu/Debian
-    pip install -Ur requirements/arch.txt      # Arch Linux
-    pip install -Ur requirements/fedora.txt    # Fedora
-    pip install -Ur requirements/windows.txt   # Windows
+    install.bat     # Windows: fetch fbs Pro, uv sync, then the unit tests
+
+    # macOS / Linux
+    uv run --no-project python tools/fbs_pro.py
+    uv sync
 
 Then run it:
 
-    python build.py run
+    start.bat                    # Windows
+    uv run python build.py run   # any OS
 
-Call `python build.py` without arguments to see a list of available commands.
+`update.bat` re-resolves `uv.lock` and syncs. Call `uv run python build.py`
+without arguments to see a list of available commands.
+
+The Linux Docker images (`build.py buildvm <distro>`) still install with pip from
+`requirements/*.txt`. Those files are generated, not committed: run
+`uv run python build.py requirements` before `buildvm`. For uv, fbs Pro is
+downloaded into `vendor/` (see [vendor/README.md](vendor/README.md)).
 This uses the [fman build system](https://build-system.fman.io/).
 
 The video viewer needs the native `libmpv` library. On Windows fman++ downloads
 it on first use; on macOS install it with `brew install mpv`, on Debian/Ubuntu
 with `apt install libmpv2`.
 
-Run the automated tests with `python build.py test`. On Windows this requires
+Run the automated tests with `tools\run_tests.bat` (Windows) or
+`uv run python build.py test`. On Windows this requires
 Developer Mode (Settings -> System -> Advanced) to be enabled, or some tests
 related to symlinks will fail.
 

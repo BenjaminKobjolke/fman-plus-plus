@@ -5,11 +5,14 @@ The Mac release is an arm64 build made on Apple Silicon. It uses the same plain 
 ## One-time setup
 
 1. Install Xcode Command Line Tools.
-2. Install the Mac build requirements from the fman checkout:
+2. Install [uv](https://docs.astral.sh/uv/) and create the build venv from the fman checkout:
 
    ```sh
-   pip3 install -Ur requirements/mac.txt
+   uv run --no-project python tools/fbs_pro.py
+   uv sync
    ```
+
+   `tools/build_mac.sh` uses `.venv/bin/python` unless `FMAN_PYTHON` is set.
 
 3. Install and authenticate the GitHub CLI with `gh auth login`.
 4. Check out [release-tool](https://github.com/BenjaminKobjolke/release-tool) and run `uv sync`. By default the scripts expect it at `$HOME/GIT/BenjaminKobjolke/release-tool`; set `RELEASE_TOOL_DIR` if it is elsewhere.

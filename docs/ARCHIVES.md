@@ -48,7 +48,7 @@ Consequences:
 - Extraction and packing run at full speed (~6x faster than the ConPTY path on
   the measurement above), and the progress bar updates while they run.
 - **pywinpty is no longer a dependency.** It is gone from
-  `requirements/windows.txt`, from the PyInstaller hidden imports in
+  `pyproject.toml`, from the PyInstaller hidden imports in
   `src/build/settings/windows.json`, and the build no longer copies any winpty
   helper into the frozen output.
 - The zip tests no longer spawn a real console, so the AV/EDR hang they used to

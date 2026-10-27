@@ -115,7 +115,7 @@ without depending on whatever codecs happen to be installed on the OS.
 - **Requires the native `libmpv` binary** (`libmpv-2.dll`/`mpv-2.dll`/
   `mpv-1.dll` on Windows; `libmpv.so`/`.dylib` elsewhere) discoverable at
   runtime. This is separate from the `python-mpv` pip package (in
-  `requirements/base.txt`), which is just the Python binding.
+  `pyproject.toml`), which is just the Python binding.
   - **Windows: auto-downloaded on first use, no manual setup.**
     `core/libmpv.py::ensure_libmpv_on_path()` checks
     `DATA_DIRECTORY/Local/libmpv/libmpv-2.dll`; if missing, it downloads a
@@ -281,7 +281,7 @@ The video viewer reuses the identical pane-mounting glue
   `command_names` whose configured shortcut matches, else `None`. Shared by
   all three viewers' `_bindable_commands()` (see their own docs for the
   image/text lists).
-- `requirements/base.txt` — `python-mpv==1.0.8`.
+- `pyproject.toml` — `python-mpv==1.0.8`.
 - Tests:
   - `core/tests/test_videoviewer.py` — `is_video()`'s extension matching
     (case-insensitive, non-video/no-extension rejected), `format_time()`'s
