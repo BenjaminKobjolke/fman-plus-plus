@@ -304,7 +304,7 @@ class ThemeController:
 		self._ctxt.app.setPalette(build_palette(colors))
 		main_window = self._ctxt.main_window
 		main_window.setPalette(build_main_window_palette(colors))
-		# Re-read for each new ProgressDialog (widgets.py), so the next one
+		# Re-read for each new ProgressDialog (progress_dialog.py), so the next one
 		# picks the new colors up without restarting fman:
 		main_window.set_progress_bar_palette(
 			build_progress_bar_palette(colors)

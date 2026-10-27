@@ -9,7 +9,8 @@ tools\\run_progress_dialog_tests.bat.
 """
 
 from dataclasses import dataclass
-from fman.impl.widgets import MainWindow, ProgressDialog
+from fman.impl.widgets import MainWindow
+from fman.impl.progress_dialog import ProgressDialog
 from fman.impl.workers_label import elide_lines, WorkersLabel
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette

@@ -8,7 +8,7 @@ state is what makes that suite hang (see CLAUDE.md). Run it via
 tools\\run_overlay_focus_tests.bat.
 """
 
-from fman.impl.widgets import Overlay
+from fman.impl.overlay import Overlay
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtTest import QTest
