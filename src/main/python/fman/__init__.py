@@ -539,6 +539,9 @@ class Task:
 	# can set them on an instance and still load in an older fman.
 	waits_for_earlier_tasks = False
 	blocks_later_tasks = False
+	keeps_focus = False
+	minimizable = False
+	icon = None
 
 	def __init__(self, title, size=0, fn=lambda: None, args=(), kwargs=None):
 		if kwargs is None:
@@ -589,7 +592,11 @@ class Task:
 		return self._title
 
 def submit_task(task):
-	dialog = _get_ui().create_progress_dialog(task.get_title(), task.get_size())
+	from fman.impl.tool_windows import ToolWindowOptions
+	options = ToolWindowOptions.of(task)
+	dialog = _get_ui().create_progress_dialog(
+		task.get_title(), task.get_size(), options
+	)
 	dialog_before = task._dialog
 	task._dialog = dialog
 	try:

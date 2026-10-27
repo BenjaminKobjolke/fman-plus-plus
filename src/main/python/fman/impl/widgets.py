@@ -6,6 +6,7 @@ from fman.impl.incognito import MARKER_TEXT
 from fman.impl.model import SortedFileSystemModel
 from fman.impl.pane_status import PaneStatusLine, PaneStatusMode
 from fman.impl.progress_dialog import ProgressDialog
+from fman.impl.tool_windows import ToolWindows
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.util.qt import disable_window_animations_mac, Key_Escape, \
 	NoFocus, Key_Backspace, DisplayRole
@@ -407,6 +408,7 @@ class MainWindow(QMainWindow):
 		self._incognito_marker = QLabel(MARKER_TEXT, self._status_bar)
 		self._incognito_marker.hide()
 		self._status_bar.addPermanentWidget(self._incognito_marker)
+		self._tool_windows = ToolWindows(self._status_bar)
 		self._status_bar.setSizeGripEnabled(False)
 		self.setStatusBar(self._status_bar)
 		self._timer = QTimer(self)
@@ -530,12 +532,15 @@ class MainWindow(QMainWindow):
 				not dialog.windowFlags() & Qt.FramelessWindowHint:
 			make_frameless(dialog)
 	@run_in_main_thread
-	def create_progress_dialog(self, title, task_size):
+	def create_progress_dialog(self, title, task_size, options):
 		dialog = ProgressDialog(
-			self, title, task_size, self._progress_bar_palette
+			self, title, task_size, self._progress_bar_palette, options,
+			self._tool_windows
 		)
 		self._match_title_bar(dialog)
 		return dialog
+	def get_tool_windows(self):
+		return self._tool_windows
 	@run_in_main_thread
 	def exec_dialog(self, dialog):
 		self._dialog = dialog

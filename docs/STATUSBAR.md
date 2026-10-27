@@ -37,6 +37,12 @@ replace it. Turning incognito on or off also shows `Incognito on.` or
 status bar is hidden. See [Incognito mode](functions/go-to.md#incognito-mode)
 for what the mode keeps out of saved history and session locations.
 
+Each minimized progress dialog adds a permanent icon beside the Incognito
+marker. Its tooltip shows the task title; click it to restore that dialog.
+The **Resume tool window** palette command restores the only minimized dialog
+directly, or lets you choose by title when there are several. **Minimize tool
+window** minimizes the most recently shown eligible dialog.
+
 ## Turning it off
 
 Press **`Ctrl+Shift+P`** and run **"Toggle status bar"**. The bar disappears
@@ -47,6 +53,8 @@ size on screen. Running the command again brings it back.
 |----------------------|--------------------|-----------|----------------------|
 | `toggle_status_bar`  | Toggle status bar  | all       | none (palette only)  |
 | `toggle_incognito` | Toggle incognito mode | all | none (palette only) |
+| `resume_tool_window` | Resume tool window | all | none (palette only) |
+| `minimize_tool_window` | Minimize tool window | all | none (palette only) |
 
 *statusbar*, *hide status bar*, *message bar*, *bottom bar* and *chrome* also
 find the row — hidden keywords, so it still reads "Toggle status bar". See

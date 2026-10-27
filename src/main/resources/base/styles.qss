@@ -262,3 +262,9 @@ ProgressDialog {
 	 */
 	max-width: 30em;
 }
+
+QPushButton#tool-window-minimize {
+	color: $bright_fg;
+	background: transparent;
+	border: none;
+}

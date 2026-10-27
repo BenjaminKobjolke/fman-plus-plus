@@ -1,4 +1,4 @@
-from fman import ApplicationCommand, DirectoryPaneCommand
+from fman import ApplicationCommand, DirectoryPaneCommand, QuicksearchItem
 from fman.fs import FileSystem, Column
 from fman.impl import incognito
 from fman.impl.incognito import OFF_MESSAGE, ON_INCOGNITO_CHANGED, ON_MESSAGE
@@ -7,6 +7,10 @@ from fman.impl.util import filenotfounderror
 from fman.impl.util.qt.thread import run_in_main_thread
 from fbs_runtime.platform import is_mac
 from PyQt5.QtCore import Qt
+
+NO_MINIMIZED_TOOL_WINDOWS = 'No minimized tool windows.'
+NO_TOOL_WINDOW_TO_MINIMIZE = 'No tool window to minimize.'
+TOOL_WINDOW_MESSAGE_TIMEOUT_SECONDS = 3
 
 class BuiltinPlugin(Plugin):
 	def __init__(
@@ -39,6 +43,44 @@ class BuiltinPlugin(Plugin):
 			aliases = ('Toggle status bar',)
 			def __call__(self):
 				window_chrome.toggle_status_bar(self.window._widget)
+
+		class ResumeToolWindow(ApplicationCommand):
+			aliases = ('Resume tool window',)
+			def __call__(self):
+				window = self.window._widget
+				tool_windows = window.get_tool_windows()
+				minimized = tool_windows.minimized()
+				if not minimized:
+					window.show_status_message(
+						NO_MINIMIZED_TOOL_WINDOWS,
+						TOOL_WINDOW_MESSAGE_TIMEOUT_SECONDS
+					)
+					return
+				if len(minimized) == 1:
+					tool_windows.restore(minimized[0][0])
+					return
+				def suggest(query):
+					return [
+						QuicksearchItem(dialog, title)
+						for dialog, title in minimized
+						if query.lower() in title.lower()
+					]
+				result = window.show_quicksearch(suggest)
+				if result and result[1]:
+					tool_windows.restore(result[1])
+
+		class MinimizeToolWindow(ApplicationCommand):
+			aliases = ('Minimize tool window',)
+			def __call__(self):
+				window = self.window._widget
+				dialog = window.get_tool_windows().visible_minimizable()
+				if dialog is None:
+					window.show_status_message(
+						NO_TOOL_WINDOW_TO_MINIMIZE,
+						TOOL_WINDOW_MESSAGE_TIMEOUT_SECONDS
+					)
+					return
+				dialog.minimize()
 
 		class ToggleIncognito(ApplicationCommand):
 			aliases = ('Toggle incognito mode',)
@@ -93,6 +135,8 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(ToggleTitleBar)
 		self._register_application_command(ToggleStatusBar)
 		self._register_application_command(ToggleIncognito)
+		self._register_application_command(ResumeToolWindow)
+		self._register_application_command(MinimizeToolWindow)
 		self._register_application_command(ToggleScriptingApi)
 		self._register_application_command(TogglePaneStatusLines)
 		self._register_application_command(TogglePaneMessagesInStatusBar)

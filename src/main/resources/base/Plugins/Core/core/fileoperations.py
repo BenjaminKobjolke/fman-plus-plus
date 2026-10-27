@@ -9,6 +9,8 @@ from core.move_rollback import MoveRollback
 import fman.fs
 
 class FileTreeOperation(FileTreeGathering, Task):
+	minimizable = True
+
 	def __init__(
 		self, descr_verb, files, dest_dir, dest_name=None, fs=fman.fs
 	):

@@ -8,7 +8,6 @@ everything else ProgressDialog does: the delayed show, cancel and alerts. Lives
 outside widgets.py, which is close to the analyzer's line limit.
 """
 
-from fman import QuicksearchItem
 from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import QPainter
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout
@@ -85,25 +84,14 @@ class WorkersLabel(QLabel):
 		else:
 			return False
 		return True
-	def open_palette(self, show_quicksearch, on_cancel):
-		# The dialog's own palette, like the viewers': fman's global one only
-		# opens from a pane, and it would not list these actions anyway.
+	def palette_actions(self, on_cancel):
 		actions = []
 		if self._workers.can_add():
 			actions.append(('Add thread', '+ / Up', self._workers.add))
 		if self._workers.can_remove():
 			actions.append(('Remove thread', '- / Down', self._workers.remove))
 		actions.append(('Cancel', 'Esc', on_cancel))
-		def suggest(query):
-			# ponytail: plain substring filter; three rows need no fuzzy match.
-			return [
-				QuicksearchItem(action, title, hint=hint)
-				for title, hint, action in actions
-				if query.lower() in title.lower()
-			]
-		result = show_quicksearch(suggest)
-		if result and result[1]:
-			result[1]()
+		return actions
 	def place_file_count(self, bar, cancel):
 		# Under the bar's left side, beside the Cancel button.
 		self._files.setGeometry(QRect(

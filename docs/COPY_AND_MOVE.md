@@ -9,6 +9,9 @@ Both commands are `FileTreeOperation` subclasses (`CopyFiles`, `MoveFiles`) in
 gathering methods are in `core/file_tree_gathering.py`. The robocopy variants
 are separate and described in [ROBOCOPY.md](ROBOCOPY.md).
 
+Core copy and move progress dialogs can be minimized with `–` and restored
+from their status bar icon.
+
 ## Two threads: gathering and transferring
 
 Copying a folder means walking the tree first: which files are there, does the

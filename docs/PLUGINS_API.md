@@ -348,6 +348,22 @@ on (creating a folder), and `task.waits_for_earlier_tasks = True` on one that
 depends on all earlier ones (deleting an emptied folder). See
 [Copy and Move](COPY_AND_MOVE.md#parallel-workers).
 
+Task subclasses can also set three class attributes to control their progress
+window: `keeps_focus = True` makes it modal, `minimizable = True` adds a
+minimize button, and `icon` supplies the optional `QIcon` shown in the status
+bar while minimized. When no icon is set, fman uses its default icon. A task
+that keeps focus cannot be minimized; tasks with neither option keep the
+existing non-modal behavior.
+
+```python
+from fman import Task
+from PyQt5.QtGui import QIcon
+
+class DownloadTask(Task):
+	minimizable = True
+	icon = QIcon(':/my_plugin/download.png')
+```
+
 `show_quicksearch` returns `(query, value)`, or `None` if the user pressed
 Escape. Pass `alt_accept=True` to also accept on **Shift+Enter**: the result is
 then always a triple, `(query, value, alt)`, with `alt` telling the two apart.

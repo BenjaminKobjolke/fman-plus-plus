@@ -1,6 +1,7 @@
 """Progress dialog for long-running file operations."""
 
 from fbs_runtime.platform import is_windows
+from fman import QuicksearchItem
 from fman.impl.util.qt.thread import run_in_main_thread
 from fman.impl.workers_label import WorkersLabel
 from PyQt5.QtCore import QTimer, Qt, QEvent
@@ -20,18 +21,34 @@ class ProgressDialog(QProgressDialog):
 	_UPDATE_INTERVAL_MS = 100
 
 	@run_in_main_thread
-	def __init__(self, parent, title, size, progress_bar_palette):
+	def __init__(
+		self, parent, title, size, progress_bar_palette, options, tool_windows
+	):
 		# Would like the dialog to be non-resizable on all platforms, but only
 		# Windows supports it as a flag. On other platforms, we use
 		# setFixedSize(...). See #resizeEvent(...) below.
 		args = (Qt.MSWindowsFixedSizeDialogHint,) if is_windows() else ()
 		super().__init__(parent, *args)
+		self._options = options
+		self._tool_windows = tool_windows
+		self._tool_windows.register(
+			self, options.minimizable and not options.keeps_focus
+		)
+		if options.keeps_focus:
+			self.setWindowModality(Qt.WindowModal)
+		self._minimize_button = None
+		if options.minimizable and not options.keeps_focus:
+			self._minimize_button = QPushButton('–', self)
+			self._minimize_button.setObjectName('tool-window-minimize')
+			self._minimize_button.setFocusPolicy(Qt.NoFocus)
+			self._minimize_button.clicked.connect(self.minimize)
 		self._title = title
 		self._size = self.maximum()
 		self._text = ''
 		self._progress = 0
 		self._was_canceled = False
 		self._workers_label = None
+		self._event_filter_installed = False
 		self._bar = self.findChild(QProgressBar)
 		self._bar.setPalette(progress_bar_palette)
 		# Looked up now: the workers label adds buttons of its own later.
@@ -42,6 +59,8 @@ class ProgressDialog(QProgressDialog):
 		self.set_task_size(size)
 		self.canceled.disconnect(super().cancel)
 		self.canceled.connect(self.request_cancel)
+		if options.minimizable and not options.keeps_focus:
+			self._install_event_filter()
 		self._update_timer = QTimer(self)
 		self._update_timer.timeout.connect(self._update)
 		# Ensure the progress dialog appears in 1 sec starting *now*:
@@ -62,6 +81,12 @@ class ProgressDialog(QProgressDialog):
 	@run_in_main_thread
 	def cancel(self):
 		super().cancel()
+		self._tool_windows.remove(self)
+	def minimize(self):
+		if self._options.minimizable and not self._options.keeps_focus:
+			self._tool_windows.minimize(
+				self, self._title, self._options.icon
+			)
 	@run_in_main_thread
 	def request_cancel(self):
 		self.set_text('Canceling...')
@@ -81,20 +106,43 @@ class ProgressDialog(QProgressDialog):
 	def show_workers(self, workers):
 		self._workers_label = WorkersLabel(workers, self)
 		self.setLabel(self._workers_label)
+		self._install_event_filter()
+	def _install_event_filter(self):
+		if self._event_filter_installed:
+			return
 		self.installEventFilter(self)
 		self._cancel_button.installEventFilter(self)
+		self._event_filter_installed = True
 	def eventFilter(self, obj, e):
 		# Filters the focused Cancel button too: it uses Up / Down itself.
 		if e.type() != QEvent.KeyPress:
 			return False
 		if e.key() == Qt.Key_P and e.modifiers() & Qt.ControlModifier and \
 				e.modifiers() & Qt.ShiftModifier:
-			self._workers_label.open_palette(
-				self.parent().show_quicksearch, self.request_cancel
-			)
+			self._open_palette()
 			return True
-		return self._workers_label.handle_key(e.key())
+		return self._workers_label is not None and \
+			self._workers_label.handle_key(e.key())
+	def _open_palette(self):
+		actions = self._workers_label.palette_actions(
+			self.request_cancel
+		) if self._workers_label is not None else [
+			('Cancel', 'Esc', self.request_cancel)
+		]
+		if self._options.minimizable and not self._options.keeps_focus:
+			actions.insert(len(actions) - 1, ('Minimize', '–', self.minimize))
+		def suggest(query):
+			# The dialog palette only needs a substring filter for its few actions.
+			return [
+				QuicksearchItem(action, title, hint=hint)
+				for title, hint, action in actions
+				if query.lower() in title.lower()
+			]
+		result = self.parent().show_quicksearch(suggest)
+		if result and result[1]:
+			result[1]()
 	def showEvent(self, e):
+		self._tool_windows.shown(self)
 		self._update()
 		self._update_timer.start(self._UPDATE_INTERVAL_MS)
 		super().showEvent(e)
@@ -109,6 +157,10 @@ class ProgressDialog(QProgressDialog):
 		if self._workers_label is not None:
 			self._workers_label.place_file_count(
 				self._bar, self._cancel_button
+			)
+		if self._minimize_button is not None:
+			self._minimize_button.move(
+				self.width() - self._minimize_button.sizeHint().width() - 8, 4
 			)
 	def _update(self):
 		if self.wasCanceled():
