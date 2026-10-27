@@ -8,6 +8,5 @@ REM Offscreen, so no window appears.
 setlocal
 set ROOT=%~dp0..
 set PYTHONPATH=%ROOT%\src\main\python;%ROOT%\src\unittest\python
-set QT_QPA_PLATFORM=offscreen
-python -m unittest -v fman_unittest.impl.view.uniform_row_heights_test fman_unittest.impl.view.selection_test
+call "%~dp0unittest_with_timeout.bat" -v fman_unittest.impl.view.uniform_row_heights_test fman_unittest.impl.view.selection_test
 exit /b %ERRORLEVEL%

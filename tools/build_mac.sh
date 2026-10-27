@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$ROOT_DIR"
 
-PYTHON=${FMAN_PYTHON:-python3}
+PYTHON=${FMAN_PYTHON:-.venv/bin/python}
 LABEL=$("$PYTHON" tools/release/build_number.py label)
 if ! TAG_COMMIT=$(git rev-parse "$LABEL^{commit}" 2>/dev/null) || \
 	[[ "$TAG_COMMIT" != "$(git rev-parse HEAD)" ]]; then

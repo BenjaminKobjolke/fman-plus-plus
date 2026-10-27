@@ -6,7 +6,7 @@ REM
 REM Every argument passes straight through to the tool, so this one file covers
 REM recording, composing and inspecting.
 REM
-REM Prereq (once): pip install -r requirements/windows-debug.txt
+REM Prereq (once): uv sync --group demos
 REM   and, for the tour only, npm install in <tool-repo>\composer
 REM
 REM Usage: tools\demos_record.bat                        (records every demo)

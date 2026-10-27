@@ -1,6 +1,0 @@
-# Dev-only extras for recording demo screenshots/GIFs (see
-# tools/create_media/). NOT part of base.txt/windows.txt, so it never enters a
-# frozen release build. Install manually from the repo root:
-#     pip install -r requirements/windows-debug.txt
--r windows.txt
--e ../automated-application-screenshots-python-connector

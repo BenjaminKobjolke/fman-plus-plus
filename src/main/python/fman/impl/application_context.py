@@ -106,7 +106,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 		except ImportError:
 			log.error(
 				'Demo mode needs the automated-screenshot-connector. Install '
-				'it with: pip install -r requirements/windows-debug.txt'
+				'it with: uv sync --group demos'
 			)
 			return 1
 		options, leftover = parse_demo_args(sys.argv[1:])

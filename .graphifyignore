@@ -17,3 +17,4 @@ media/
 examples/
 src/main/resources/base/Icons/
 src/main/resources/base/Plugins/Core/Fonts/
+.venv/

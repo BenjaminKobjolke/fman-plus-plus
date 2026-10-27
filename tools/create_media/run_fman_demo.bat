@@ -5,14 +5,14 @@ REM `python build.py run` (fbs) does not forward CLI args, so we launch the
 REM main module directly the way fbs run does: PYTHONPATH=src\main\python.
 REM
 REM The tool starts this via `uv run`, which puts ITS virtualenv first on PATH
-REM (that venv has neither fbs_runtime nor PyQt5). Drop that venv so `python`
-REM falls back to the base install fman actually runs on. Override with
-REM FMAN_PYTHON if your fman interpreter isn't the one on PATH.
+REM (that venv has neither fbs_runtime nor PyQt5). Drop it and run fman's own
+REM .venv (tools\find_build_python.bat). Override with FMAN_PYTHON.
 REM Args from the tool: %1=demo id  %2=port  %3=width  %4=height
 setlocal enabledelayedexpansion
 if defined VIRTUAL_ENV call set "PATH=%%PATH:%VIRTUAL_ENV%\Scripts;=%%"
 set "VIRTUAL_ENV="
-if not defined FMAN_PYTHON set "FMAN_PYTHON=python"
+call "%~dp0..\find_build_python.bat"
+if errorlevel 1 exit /b 1
 cd /d "%~dp0..\.."
 set "PYTHONPATH=%CD%\src\main\python"
 

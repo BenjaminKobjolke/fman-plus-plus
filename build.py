@@ -1,6 +1,7 @@
 from os.path import dirname, join
 import sys
 sys.path.append(join(dirname(__file__), *'src/build/python'.split('/')))
+sys.path.append(join(dirname(__file__), 'tools'))
 
 from build_impl import git, record_release_on_server, upload_core_to_github, \
 	git_has_changes
@@ -8,9 +9,12 @@ from build_impl.aws import create_cloudfront_invalidation
 from fbs import path, activate_profile, SETTINGS
 from fbs.builtin_commands import clean
 from fbs.cmdline import command
+from fbs_pro import FBS_URL
 from fbs_runtime.platform import is_windows, is_mac, is_linux, is_ubuntu, \
 	is_fedora, is_arch_linux, linux_distribution
+from os import makedirs
 from os.path import dirname
+from subprocess import run, PIPE
 
 import fbs.cmdline
 import re
@@ -160,6 +164,27 @@ def post_release():
 	record_release_on_server()
 	upload_core_to_github()
 	git('checkout', 'master')
+
+@command
+def requirements():
+	"""
+	Write requirements/*.txt from uv.lock for the Linux Docker images
+	(fbs buildvm needs base.txt; the Dockerfiles pip-install <distro>.txt).
+	"""
+	exported = run(
+		['uv', 'export', '--frozen', '--no-hashes', '--no-emit-project',
+		 '--no-emit-package', 'fbs'],
+		check=True, stdout=PIPE, text=True, cwd=path('.')
+	).stdout
+	makedirs(path('requirements'), exist_ok=True)
+	_write_requirements('base.txt', 'fbs[sentry] @ %s\n%s' % (FBS_URL, exported))
+	for distro in ('ubuntu', 'arch', 'fedora'):
+		_write_requirements(distro + '.txt', '-r base.txt\n')
+
+def _write_requirements(name, contents):
+	# newline='\n': the files are read inside Linux containers.
+	with open(path('requirements/' + name), 'w', newline='\n') as f:
+		f.write(contents)
 
 def _prompt_for_next_version(release_version):
 	next_version = _get_suggested_next_version(release_version)

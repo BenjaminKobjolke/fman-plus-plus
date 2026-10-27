@@ -1,9 +1,0 @@
-fbs[sentry] @ http://build-system.fman.io/pro/b5aab865-bd29-4f23-992c-0eb4f3a24f33/1.2.7
-PyQt5==5.15.11
-PyInstaller==6.19.0
-python-mpv==1.0.8
-tinycss==0.4
-boto3==1.35.99
-requests==2.32.3
-python-localization @ git+https://github.com/BenjaminKobjolke/python-localization.git
-Pygments==2.19.2

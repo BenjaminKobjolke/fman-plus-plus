@@ -1,0 +1,42 @@
+[project]
+name = "fman"
+# The real version lives in src/build/settings/base.json.
+version = "0.0.0"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "fbs[sentry]==1.2.7",
+    "PyQt5==5.15.11",
+    "PyInstaller==6.19.0",
+    "python-mpv==1.0.8",
+    "tinycss==0.4",
+    "boto3==1.35.99",
+    "requests==2.32.3",
+    "python-localization",
+    "Pygments==2.19.2",
+    # Send2Trash 1.5.0 has no effect on Windows.
+    "Send2Trash==1.8.3; sys_platform != 'darwin'",
+    # adodbapi is bundled with pywin32, so we don't depend on it separately.
+    "pywin32==312; sys_platform == 'win32'",
+    "distro==1.9.0; sys_platform == 'linux'",
+    "pgi; sys_platform == 'linux'",
+    "osxtrash==1.6; sys_platform == 'darwin'",
+    "pyobjc-core==12.1; sys_platform == 'darwin'",
+]
+
+[dependency-groups]
+# Recording demo screenshots/GIFs (tools/create_media/). Never part of a release build.
+demos = ["automated-screenshot-connector"]
+
+[tool.uv]
+package = false
+# PyQt5-Qt5 after 5.15.2 ships no Windows wheels; make the lock pick one that has them.
+required-environments = ["sys_platform == 'win32' and platform_machine == 'AMD64'"]
+
+[tool.uv.sources]
+# Downloaded by tools/fbs_pro.py: uv rejects the fbs Pro URL; see vendor/README.md.
+fbs = { path = "vendor/fbs-1.2.7.tar.gz" }
+python-localization = { git = "https://github.com/BenjaminKobjolke/python-localization.git" }
+# Fork of pgi==0.0.11.1 that works on Python 3.14+ (upstream is unmaintained).
+pgi = { url = "https://github.com/mherrmann/pgi/archive/b29b5a4a8581dd72b05fdff3ebeab6efb4ce5240.tar.gz" }
+# For local edits: uv pip install -e ../automated-application-screenshots-python-connector
+automated-screenshot-connector = { git = "https://github.com/BenjaminKobjolke/automated-application-screenshots-python-connector.git" }

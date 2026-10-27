@@ -86,6 +86,14 @@ def check_release_version():
         fake_site = root / "fake_site"
         (fake_site / "fbs").mkdir(parents=True)
         (fake_site / "fbs" / "__init__.py").write_text("")
+        # find_build_python.bat uses <root>\.venv; point it at the real
+        # interpreter (a junction needs no admin rights, unlike a symlink).
+        (root / ".venv").mkdir()
+        subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(root / ".venv" / "Scripts"),
+             str(Path(sys._base_executable).parent)],
+            check=True, stdout=subprocess.DEVNULL,
+        )
 
         previous_path = os.environ.get("PATH", "")
         previous_pythonpath = os.environ.get("PYTHONPATH")
@@ -113,7 +121,7 @@ def check_release_version():
             assert not record.exists(), "A stopped build must invalidate its record"
             (root / "fman_running").unlink()
 
-            # The watcher and uv venv can both precede the system interpreter.
+            # The watcher and uv venv can both precede the project .venv on PATH.
             watcher_venv = root / "watcher_venv" / "Scripts"
             uv_venv = root / "uv_venv" / "Scripts"
             for scripts_dir in (watcher_venv, uv_venv):
@@ -126,7 +134,7 @@ def check_release_version():
             os.environ["VIRTUAL_ENV"] = str(uv_venv.parent)
             result = run_batch(build)
             assert result.returncode == 0, (
-                "Build must skip stacked venvs whose python lacks fbs: "
+                "Build must use the project .venv, not stacked PATH venvs: "
                 + result.stdout + result.stderr
             )
             assert record.read_text().strip() == "1.0.0"

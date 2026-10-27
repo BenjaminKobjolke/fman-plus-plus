@@ -10,7 +10,7 @@ REM set or color actually reach the panes (table.py, Row#__eq__).
 setlocal
 set ROOT=%~dp0..
 set PYTHONPATH=%ROOT%\src\main\python;%ROOT%\src\unittest\python
-python -m unittest -v ^
+call "%~dp0unittest_with_timeout.bat" -v ^
 	fman_unittest.impl.model.test_icon_set ^
 	fman_unittest.impl.model.test_icon_provider ^
 	fman_unittest.impl.model.test_icon_tint ^

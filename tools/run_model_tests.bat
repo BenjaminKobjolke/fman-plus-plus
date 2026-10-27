@@ -7,7 +7,7 @@ REM where an added / renamed / changed row is inserted into it.
 setlocal
 set ROOT=%~dp0..
 set PYTHONPATH=%ROOT%\src\main\python;%ROOT%\src\unittest\python
-python -m unittest -v ^
+call "%~dp0unittest_with_timeout.bat" -v ^
 	fman_unittest.impl.model.test_model ^
 	fman_unittest.impl.model.test_record_files ^
 	fman_unittest.impl.model.test_table ^

@@ -7,7 +7,7 @@ the tool can record a GIF/MP4 plus PNG stills.
 
 The reusable step model, socket client and CLI parser come from the stdlib-only
 core of the ``automated_screenshot_connector`` library (installed via
-requirements/windows-debug.txt). The library also ships a Qt player, but it
+the ``demos`` group in pyproject.toml). The library also ships a Qt player, but it
 hard-imports PySide6 while fman is a PyQt5 app, so ``DemoPlayer`` below is a
 PyQt5 port of the library's ``KeyEventDemoPlayer``: it posts real key events to
 the focused widget, which also reaches fman's modal Quicksearch dialog (command

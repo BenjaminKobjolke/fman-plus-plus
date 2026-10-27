@@ -8,7 +8,7 @@ REM CLAUDE.md. Fast feedback when touching colors, styles.qss or Theme.css.
 setlocal
 set ROOT=%~dp0..
 set PYTHONPATH=%ROOT%\src\main\python;%ROOT%\src\unittest\python
-python -m unittest -v ^
+call "%~dp0unittest_with_timeout.bat" -v ^
 	fman_unittest.impl.test_themes fman_unittest.impl.test_theme ^
 	fman_unittest.impl.test_fonts fman_unittest.impl.test_background
 exit /b %ERRORLEVEL%
