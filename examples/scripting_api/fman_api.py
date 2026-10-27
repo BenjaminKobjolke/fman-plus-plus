@@ -62,7 +62,9 @@ def main():
 	except json.JSONDecodeError as error:
 		sys.exit(f'args is not a JSON object: {error}')
 	except FileNotFoundError:
-		sys.exit(f'No token file at {TOKEN_FILE}. Run "Toggle scripting API" in fman first.')
+		sys.exit(
+			f'No token file at {TOKEN_FILE}. '
+			'Run "Toggle scripting API" in fman first.')
 	except HTTPError as error:
 		sys.exit(f'HTTP {error.code}: {error.read().decode("utf-8")}')
 	except URLError as error:
