@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Bezbednije premeštanje datoteka i jednostavnija automatizacija",
+  "notes": [
+    "Ako prekinete ili otkažete lokalno premeštanje datoteka, već premeštene datoteke se sada vraćaju na prethodnu lokaciju, čime se održava usklađenost izvornih i odredišnih fascikli.",
+    "Uključite ili isključite prikaz skrivenih datoteka i Windows atributa za skrivanje iz palete komandi, a datoteke birajte pomoću novih prečica na numeričkoj tastaturi u stilu programa Total Commander.",
+    "Brzo otvorite fasciklu sa dodacima za fman++, otvorite fascikle iz komandne linije i sačuvajte lokacije panela pri izlasku iz anonimnog režima.",
+    "Lokalni API za automatizaciju zaštićen tokenom omogućava skriptama da bezbedno upravljaju programom fman. Dostupni su primeri za Python, PowerShell, batch i AutoHotkey koje možete odmah pokrenuti."
+  ]
+}

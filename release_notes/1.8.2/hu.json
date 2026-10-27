@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Biztonságosabb fájláthelyezés és egyszerűbb automatizálás",
+  "notes": [
+    "Ha megszakítod vagy leállítod a helyi fájláthelyezést, a program most visszaállítja a már áthelyezett fájlokat, így a forrás- és célmappák tartalma összhangban marad.",
+    "A parancspalettáról be- és kikapcsolhatod a rejtett fájlok megjelenítését, valamint a Windows rejtett attribútumait, és új, Total Commander-stílusú billentyűzetes gyorsbillentyűkkel jelölhetsz ki fájlokat.",
+    "Ugorj az fman++ bővítménymappájába, nyiss meg mappákat a parancssorból, és a panelek helye is visszaáll, amikor kilépsz az inkognitómódból.",
+    "A tokennel védett helyi automatizálási API lehetővé teszi, hogy a szkriptek biztonságosan vezéreljék az fmant. Azonnal futtatható Python-, PowerShell-, kötegfájl- és AutoHotkey-példákat is tartalmaz."
+  ]
+}

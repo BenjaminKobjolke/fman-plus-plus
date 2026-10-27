@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Varnejše premikanje datotek in preprostejša avtomatizacija",
+  "notes": [
+    "Če prekličete ali prekinete lokalno premikanje, se zdaj že premaknjene datoteke premaknejo nazaj, kar pomaga ohranjati skladnost izvorne in ciljne mape.",
+    "V ukazni paleti lahko vklopite ali izklopite prikaz skritih datotek in skritih atributov v sistemu Windows, datoteke pa lahko izbirate tudi z novimi bližnjicami na številski tipkovnici v slogu Total Commanderja.",
+    "Odprite mapo z vtičniki programa fman++, odpirajte mape iz ukazne vrstice in ob izhodu iz načina brez beleženja zgodovine obnovite lokacije podoken.",
+    "Lokalni API za avtomatizacijo, zaščiten z žetonom, omogoča skriptom varno upravljanje programa fman. Na voljo so primeri za Python, PowerShell, paketne datoteke in AutoHotkey, ki jih lahko takoj zaženete."
+  ]
+}

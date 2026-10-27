@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Drošāka failu pārvietošana un vienkāršāka automatizācija",
+  "notes": [
+    "Ja vietējā failu pārvietošana tiek pārtraukta, atceļot vai apturot darbību, pabeigtie faili tagad tiek pārvietoti atpakaļ, tādējādi palīdzot saglabāt avota un mērķa mapju saskaņotību.",
+    "Komandu paletē ieslēdziet vai izslēdziet slēpto failu un Windows slēpto atribūtu rādīšanu, kā arī izmantojiet jaunos Total Commander stilā veidotos cipartastatūras īsinājumtaustiņus failu atlasīšanai.",
+    "Atveriet fman++ spraudņu mapi, atveriet mapes no komandrindas un, izejot no inkognito režīma, atjaunojiet paneļu atrašanās vietas.",
+    "Ar tokenu aizsargāta vietējā automatizācijas API ļauj skriptiem droši vadīt fman; pieejami arī uzreiz palaižami Python, PowerShell, pakešfailu un AutoHotkey piemēri."
+  ]
+}

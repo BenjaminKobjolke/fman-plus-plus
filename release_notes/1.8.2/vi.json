@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Di chuyển tệp an toàn hơn, tự động hóa dễ dàng hơn",
+  "notes": [
+    "Các thao tác di chuyển tệp cục bộ bị gián đoạn giờ đây sẽ hoàn tác những tệp đã di chuyển xong khi bạn hủy hoặc dừng thao tác, giúp giữ cho thư mục nguồn và đích nhất quán.",
+    "Bật/tắt hiển thị tệp ẩn và thuộc tính ẩn của Windows từ bảng lệnh, đồng thời dùng các phím tắt bàn phím kiểu Total Commander mới để chọn tệp.",
+    "Truy cập nhanh thư mục plugin của fman++, mở thư mục từ dòng lệnh và khôi phục vị trí các khung khi bạn thoát chế độ ẩn danh.",
+    "API tự động hóa cục bộ được bảo vệ bằng token cho phép tập lệnh điều khiển fman an toàn, kèm các ví dụ Python, PowerShell, batch và AutoHotkey có thể chạy ngay."
+  ]
+}

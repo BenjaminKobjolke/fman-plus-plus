@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Spostamento dei file più sicuro e automazione più semplice",
+  "notes": [
+    "Se annulli o interrompi uno spostamento locale, i file già completati vengono ora ripristinati, aiutandoti a mantenere coerenti le cartelle di origine e di destinazione.",
+    "Attiva o disattiva la visualizzazione dei file nascosti e degli attributi di file nascosti di Windows dalla palette dei comandi e usa le nuove scorciatoie del tastierino numerico in stile Total Commander per selezionare i file.",
+    "Vai alla cartella dei plugin di fman++, apri le cartelle dalla riga di comando e ripristina le posizioni dei riquadri quando esci dalla modalità di navigazione in incognito.",
+    "Un'API locale per l'automazione, protetta da token, consente agli script di controllare fman in sicurezza. Sono inclusi esempi pronti all'uso per Python, PowerShell, batch e AutoHotkey."
+  ]
+}

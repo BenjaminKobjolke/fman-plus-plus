@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Movimientos de archivos más seguros y automatización más sencilla",
+  "notes": [
+    "Si cancelas o interrumpes un movimiento local, ahora se revierten los archivos que ya se habían movido para ayudar a mantener sincronizadas las carpetas de origen y destino.",
+    "Activa o desactiva la visualización de archivos ocultos y los atributos de oculto de Windows desde la paleta de comandos, y usa los nuevos atajos del teclado numérico al estilo de Total Commander para seleccionar archivos.",
+    "Accede a la carpeta de plugins de fman++, abre carpetas desde la línea de comandos y conserva las ubicaciones de los paneles al salir del modo incógnito.",
+    "Una API local de automatización protegida por token permite que los scripts controlen fman de forma segura, con ejemplos listos para ejecutar en Python, PowerShell, batch y AutoHotkey."
+  ]
+}

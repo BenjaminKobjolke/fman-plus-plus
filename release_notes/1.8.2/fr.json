@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Déplacements de fichiers plus sûrs et automatisation simplifiée",
+  "notes": [
+    "En cas d’annulation ou d’interruption, les déplacements locaux interrompus restaurent désormais les fichiers déjà déplacés, afin de préserver la cohérence des dossiers source et de destination.",
+    "Activez ou désactivez l’affichage des fichiers masqués et des attributs « masqué » de Windows depuis la palette de commandes, et utilisez les nouveaux raccourcis du pavé numérique, inspirés de Total Commander, pour sélectionner des fichiers.",
+    "Accédez directement au dossier des plugins de fman++, ouvrez des dossiers depuis la ligne de commande et retrouvez l’emplacement de vos panneaux lorsque vous quittez le mode navigation privée.",
+    "Une API d’automatisation locale protégée par jeton permet aux scripts de contrôler fman en toute sécurité. Des exemples Python, PowerShell, batch et AutoHotkey sont prêts à l’emploi."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Sicherere Dateiübertragungen und einfachere Automatisierung",
+  "notes": [
+    "Unterbrochene lokale Verschiebungen machen bereits abgeschlossene Dateiübertragungen jetzt rückgängig, wenn du den Vorgang abbrichst oder beendest. So bleiben Quell- und Zielordner konsistent.",
+    "Blende versteckte Dateien ein oder aus und ändere Windows-Attribute für versteckte Dateien über die Befehlspalette. Mit den neuen, an Total Commander angelehnten Tastenkombinationen des Ziffernblocks kannst du außerdem Dateien auswählen.",
+    "Wechsle direkt zum Plugin-Ordner von fman++, öffne Ordner über die Kommandozeile und lasse die Positionen der Bereiche wiederherstellen, wenn du den Inkognito-Modus verlässt.",
+    "Eine durch ein Token geschützte lokale Automatisierungs-API ermöglicht es Skripten, fman sicher zu steuern. Beispiele für Python, PowerShell, Batch und AutoHotkey sind sofort einsatzbereit."
+  ]
+}

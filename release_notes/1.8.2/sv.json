@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Säkrare filflyttar och enklare automatisering",
+  "notes": [
+    "Avbrutna lokala flyttar återställer nu redan flyttade filer när du avbryter eller avslutar åtgärden, så att käll- och målmappen hålls synkroniserade.",
+    "Växla visning av dolda filer och Windows-attributet Dold från kommandopaletten, och använd nya genvägar i Total Commander-stil på det numeriska tangentbordet för att markera filer.",
+    "Gå till fman++s pluginmapp, öppna mappar från kommandoraden och få panelernas platser återställda när du lämnar inkognitoläget.",
+    "Ett lokalt automatiserings-API som skyddas med en token låter skript styra fman på ett säkert sätt. Här finns färdiga exempel för Python, PowerShell, batch och AutoHotkey."
+  ]
+}

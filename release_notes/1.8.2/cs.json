@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Bezpečnější přesouvání souborů a snazší automatizace",
+  "notes": [
+    "Přerušené místní přesuny nyní při zrušení nebo přerušení vrátí již přesunuté soubory zpět, takže zdrojové a cílové složky zůstanou ve vzájemném souladu.",
+    "Skryté soubory a skryté atributy Windows můžete přepínat z palety příkazů. Soubory lze také vybírat pomocí nových klávesových zkratek ve stylu Total Commanderu pro numerickou klávesnici.",
+    "Přejděte do složky s pluginy fman++, otevřete složky z příkazového řádku a po opuštění anonymního režimu obnovte umístění panelů.",
+    "Místní automatizační API chráněné tokenem umožňuje skriptům bezpečně ovládat fman. K dispozici jsou také připravené příklady pro Python, PowerShell, dávkové soubory a AutoHotkey."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Ohutumad failide teisaldamised ja lihtsam automatiseerimine",
+  "notes": [
+    "Katkestatud kohalike failiteisaldamiste korral pööratakse tühistamise või katkestamise järel tehtud teisaldamised nüüd tagasi, et lähte- ja sihtkaustad püsiksid kooskõlas.",
+    "Lülita peidetud failid ja Windowsi peidetud atribuudid käsupaletist sisse või välja ning vali faile uute Total Commanderi stiilis klahvistiku otseteede abil.",
+    "Ava fman++-i pluginate kaust, ava kaustu käsurealt ning taasta paneelide asukohad inkognito-režiimist väljumisel.",
+    "Tokeniga kaitstud kohalik automatiseerimis-API võimaldab skriptidel fmani turvaliselt juhtida. Kaasas on kohe käivitatavad näited Pythonis, PowerShellis, batchis ja AutoHotkeys."
+  ]
+}

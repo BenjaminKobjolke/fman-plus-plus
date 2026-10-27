@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Safer file moves and easier automation",
+  "notes": [
+    "Interrupted local moves now roll back completed files when you cancel or abort, helping keep your source and destination folders consistent.",
+    "Toggle hidden files and Windows hidden attributes from the command palette, and use new Total Commander-style keypad shortcuts to select files.",
+    "Jump to fman++'s plugins folder, open folders from the command line, and have pane locations restored when you leave incognito mode.",
+    "A token-protected local automation API lets scripts control fman safely, with ready-to-run Python, PowerShell, batch, and AutoHotkey examples."
+  ]
+}

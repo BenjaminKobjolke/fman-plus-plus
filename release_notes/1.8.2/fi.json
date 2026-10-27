@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Turvallisempia tiedostojen siirtoja ja helpompaa automatisointia",
+  "notes": [
+    "Keskeytyneet paikalliset siirrot palauttavat nyt jo siirretyt tiedostot alkuperäiseen paikkaansa, kun peruutat tai keskeytät siirron. Näin lähde- ja kohdekansiot pysyvät yhdenmukaisina.",
+    "Näytä tai piilota piilotetut tiedostot ja Windowsin piilotusmääritteet komentopaletista. Valitse tiedostoja uusilla Total Commander -tyylisillä numeronäppäimistön pikanäppäimillä.",
+    "Siirry fman++:n lisäosakansioon, avaa kansioita komentoriviltä ja palauta paneelien sijainnit poistuessasi incognito-tilasta.",
+    "Tunnisteella suojatun paikallisen automaatio-API:n avulla komentosarjat voivat ohjata fmania turvallisesti. Mukana on valmiita Python-, PowerShell-, komentojono- ja AutoHotkey-esimerkkejä."
+  ]
+}

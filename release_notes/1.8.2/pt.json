@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Movimentação de ficheiros mais segura e automatização mais simples",
+  "notes": [
+    "As movimentações locais interrompidas revertem agora os ficheiros já concluídos quando cancela ou aborta a operação, ajudando a manter as pastas de origem e de destino consistentes.",
+    "Alterne entre ficheiros ocultos e atributos de ocultação do Windows a partir da paleta de comandos e use os novos atalhos de teclado numérico ao estilo do Total Commander para selecionar ficheiros.",
+    "Aceda à pasta de plug-ins do fman++, abra pastas a partir da linha de comandos e mantenha as localizações dos painéis ao sair do modo incógnito.",
+    "Uma API local de automatização protegida por token permite que os scripts controlem o fman em segurança, com exemplos prontos a executar em Python, PowerShell, batch e AutoHotkey."
+  ]
+}

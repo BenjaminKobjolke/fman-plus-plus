@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Veiliger bestanden verplaatsen en eenvoudiger automatiseren",
+  "notes": [
+    "Onderbroken lokale verplaatsingen draaien voltooide bestandsverplaatsingen nu terug wanneer je annuleert of afbreekt. Zo blijven je bron- en doelmappen consistent.",
+    "Schakel verborgen bestanden en verborgen Windows-kenmerken in of uit vanuit het opdrachtpalet, en gebruik nieuwe sneltoetsen voor het numerieke toetsenbord in de stijl van Total Commander om bestanden te selecteren.",
+    "Ga rechtstreeks naar de plug-inmap van fman++, open mappen vanaf de opdrachtregel en laat de locaties van deelvensters herstellen wanneer je de incognitomodus verlaat.",
+    "Met een token beveiligde lokale API voor automatisering laat scripts fman veilig bedienen. Er zijn kant-en-klare voorbeelden voor Python, PowerShell, batch en AutoHotkey."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Sigurnije premještanje datoteka i jednostavnija automatizacija",
+  "notes": [
+    "Ako otkažete ili prekinete lokalno premještanje, već premještene datoteke sada se vraćaju na izvorno mjesto, čime se pomaže održati dosljednost izvorne i odredišne mape.",
+    "Skrivene datoteke i Windowsove atribute skrivenih datoteka možete uključivati i isključivati iz palete naredbi, a datoteke možete odabirati novim tipkovničkim prečacima u stilu Total Commandera.",
+    "Otvorite mapu dodataka za fman++, otvarajte mape iz naredbenog retka i vratite lokacije okana nakon izlaska iz anonimnog načina rada.",
+    "Lokalni API za automatizaciju zaštićen tokenom omogućuje skriptama sigurno upravljanje programom fman, a dostupni su primjeri za Python, PowerShell, batch i AutoHotkey koje možete odmah pokrenuti."
+  ]
+}

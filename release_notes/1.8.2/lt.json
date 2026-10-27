@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Saugesnis failų perkėlimas ir paprastesnis automatizavimas",
+  "notes": [
+    "Atšaukus arba nutraukus vietinį perkėlimą, jau perkelti failai grąžinami į pradinę vietą, kad šaltinio ir paskirties aplankai išliktų nuoseklūs.",
+    "Komandų paletėje įjunkite arba išjunkite paslėptų failų rodymą ir „Windows“ paslėptumo atributus. Failams pasirinkti naudokite naujus, „Total Commander“ būdingus skaitinės klaviatūros sparčiuosius klavišus.",
+    "Pereikite į „fman++“ papildinių aplanką, atidarykite aplankus iš komandinės eilutės, o išėjus iš inkognito režimo bus atkurtos skydelių vietos.",
+    "Prieigos raktu apsaugota vietinė automatizavimo API leidžia scenarijams saugiai valdyti „fman“. Pateikiami iškart paleidžiami „Python“, „PowerShell“, paketinių failų ir „AutoHotkey“ pavyzdžiai."
+  ]
+}

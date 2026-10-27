@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Bezpečnejšie presúvanie súborov a jednoduchšia automatizácia",
+  "notes": [
+    "Pri zrušení alebo prerušení lokálneho presúvania sa teraz dokončené presuny vrátia späť, aby sa zachovala konzistentnosť zdrojových a cieľových priečinkov.",
+    "V palete príkazov môžete zapínať a vypínať zobrazovanie skrytých súborov aj atribút skrytia v systéme Windows. Na výber súborov môžete použiť aj nové klávesové skratky v štýle Total Commanderu pre numerickú klávesnicu.",
+    "Prejdite do priečinka s doplnkami fman++, otvárajte priečinky z príkazového riadka a po opustení režimu inkognito obnovte umiestnenia panelov.",
+    "Lokálne API na automatizáciu chránené tokenom umožňuje skriptom bezpečne ovládať fman. K dispozícii sú aj príklady pre Python, PowerShell, dávkové súbory a AutoHotkey, ktoré môžete ihneď spustiť."
+  ]
+}

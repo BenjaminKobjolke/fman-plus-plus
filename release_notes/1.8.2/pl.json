@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Bezpieczniejsze przenoszenie plików i łatwiejsza automatyzacja",
+  "notes": [
+    "Jeśli przerwiesz lub anulujesz przenoszenie plików lokalnie, ukończone operacje zostaną teraz cofnięte, co pomaga zachować spójność folderów źródłowego i docelowego.",
+    "Włączaj i wyłączaj widoczność ukrytych plików oraz atrybuty ukrycia w systemie Windows za pomocą palety poleceń. Możesz też używać nowych skrótów klawiaturowych w stylu Total Commandera do zaznaczania plików.",
+    "Przechodź bezpośrednio do folderu wtyczek fman++, otwieraj foldery z wiersza poleceń i przywracaj lokalizacje paneli po wyjściu z trybu incognito.",
+    "Lokalne API automatyzacji chronione tokenem pozwala skryptom bezpiecznie sterować fmanem. Znajdziesz w nim gotowe do uruchomienia przykłady w Pythonie, PowerShellu, plikach wsadowych i AutoHotkey."
+  ]
+}

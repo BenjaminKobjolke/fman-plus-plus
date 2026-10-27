@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Tryggere filflytting og enklere automatisering",
+  "notes": [
+    "Avbrutte lokale filflyttinger ruller nå tilbake filer som allerede er flyttet, når du avbryter eller avslutter operasjonen. Dette bidrar til å holde kilde- og målmappene synkronisert.",
+    "Slå skjulte filer og skjulte attributter i Windows av eller på fra kommandopaletten, og bruk nye tastatursnarveier inspirert av Total Commander for å velge filer.",
+    "Gå til mappen for fman++-tillegg, åpne mapper fra kommandolinjen, og få plasseringene i panelene gjenopprettet når du avslutter inkognitomodus.",
+    "Et lokalt API for automatisering, beskyttet med et token, lar skript styre fman på en sikker måte. Her finner du eksempler som er klare til bruk i Python, PowerShell, batch og AutoHotkey."
+  ]
+}

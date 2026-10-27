@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Daha güvenli dosya taşıma ve daha kolay otomasyon",
+  "notes": [
+    "İptal ettiğinizde veya işlemi durdurduğunuzda, yarıda kesilen yerel taşıma işlemleri tamamlanmış dosyaları artık geri alıyor. Böylece kaynak ve hedef klasörlerinizin tutarlı kalmasına yardımcı oluyor.",
+    "Gizli dosyaları ve Windows gizli özniteliklerini komut paletinden açıp kapatın; dosya seçmek için Total Commander tarzı yeni sayısal tuş takımı kısayollarını kullanın.",
+    "fman++ eklentiler klasörüne gidin, komut satırından klasörleri açın ve gizli moddan çıktığınızda bölme konumlarının geri yüklenmesini sağlayın.",
+    "Belirteç korumalı yerel otomasyon API'si, betiklerin fman'ı güvenli bir şekilde denetlemesini sağlar. Python, PowerShell, toplu iş dosyası ve AutoHotkey için hemen çalıştırılabilir örnekler de içerir."
+  ]
+}

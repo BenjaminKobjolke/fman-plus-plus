@@ -1,0 +1,11 @@
+{
+  "version": "1.8.2",
+  "date": "2026-10-27",
+  "title": "Mutări de fișiere mai sigure și automatizare mai ușoară",
+  "notes": [
+    "Dacă întrerupi sau anulezi o mutare locală, fișierele deja mutate sunt acum readuse la locația inițială, pentru a păstra coerența dintre folderele sursă și destinație.",
+    "Activează sau dezactivează afișarea fișierelor ascunse și a atributelor Windows pentru fișiere ascunse din paleta de comenzi și folosește noile scurtături de la tastatura numerică, în stilul Total Commander, pentru a selecta fișiere.",
+    "Accesează folderul de pluginuri fman++, deschide foldere din linia de comandă și păstrează locațiile panourilor când ieși din modul incognito.",
+    "Un API local de automatizare protejat prin token le permite scripturilor să controleze fman în siguranță. Sunt incluse exemple gata de rulat în Python, PowerShell, batch și AutoHotkey."
+  ]
+}
