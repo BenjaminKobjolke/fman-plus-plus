@@ -2,6 +2,7 @@
 
 The version lives in ``src/build/settings/base.json``. Each release increments
 its patch number, rolling over to the next minor version after patch 10.
+The newest plain release tag is a floor when a settings version bump is lost.
 
 Usage: ``python build_number.py [get|increment|decrement|label]``
 """
@@ -20,6 +21,7 @@ _FALLBACK_VERSION = "0.0.0"
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _SETTINGS_FILE = _PROJECT_ROOT / "src" / "build" / "settings" / "base.json"
 _VERSION_PATTERN = re.compile(r'("version"\s*:\s*")[^"]*(")')
+_RELEASE_TAG_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
 
 
 def next_version(version: str) -> str:
@@ -37,11 +39,45 @@ def next_version(version: str) -> str:
     return ".".join(str(number) for number in numbers)
 
 
-def version() -> str:
+def _settings_version() -> str:
     if not _SETTINGS_FILE.exists():
         return _FALLBACK_VERSION
     data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
     return str(data.get("version", _FALLBACK_VERSION))
+
+
+def _git_tags() -> list[str]:
+    # Some callers (including the release workflow's isolated checks) copy this
+    # script into a temporary directory without the repository metadata.
+    if not (_PROJECT_ROOT / ".git").exists():
+        return []
+    return subprocess.check_output(
+        ["git", "tag", "--list"],
+        cwd=_PROJECT_ROOT,
+        text=True,
+    ).split()
+
+
+def _version_key(value: str) -> tuple[int, ...]:
+    return tuple(int(segment) for segment in value.split("."))
+
+
+def released_version() -> str | None:
+    # Releases are tagged in this checkout; fetch tags if releases move elsewhere.
+    versions = [tag for tag in _git_tags() if _RELEASE_TAG_PATTERN.fullmatch(tag)]
+    return max(versions, key=_version_key) if versions else None
+
+
+def version() -> str:
+    settings_version = _settings_version()
+    tag_version = released_version()
+    # A lost settings bump must not make the release reuse a shipped tag.
+    if (
+        tag_version is not None
+        and _version_key(tag_version) > _version_key(settings_version)
+    ):
+        return tag_version
+    return settings_version
 
 
 def _write_version(value: str) -> None:
