@@ -107,6 +107,8 @@ After touching `src/main/python/fman/impl/scripting/automation.py` or
 
 For one Core test module, run `tools\run_core_tests.bat core.tests.fs.test_drives`. Never run bare `python` or `pytest` on a test file: fman's dependencies live only in the project's uv `.venv` (`install.bat` creates it), so bare `python` reports `fbs_runtime` missing. Use the bats or `uv run python`.
 
+After touching `src/main/python/fman/impl/prompt_completion.py` or `Prompt` in `src/main/python/fman/impl/widgets.py`, run `tools\run_prompt_completion_tests.bat`.
+
 After touching `tools/close_running_fman.ps1` or `tools/build_windows.bat`, run
 `uv run python tools/test_close_running_fman.py`.
 
