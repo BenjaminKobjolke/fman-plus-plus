@@ -16,12 +16,14 @@ class CheckForUpdatesTest(TestCase):
 			'check_for_update', 'show_alert', 'load_json', 'save_json',
 			'QDesktopServices', 'show_status_message', 'clear_status_message',
 			'submit_task', 'Popen', 'sys', 'PLATFORM', 'net.download',
+			'portable_app_dir', 'extract_update', 'start_swap',
 		):
 			p = patch('core.commands.updates.' + name, 'Linux') \
 				if name == 'PLATFORM' else patch('core.commands.updates.' + name)
 			self.patches[name] = p.start()
 			self.addCleanup(p.stop)
 		self.patches['load_json'].return_value = {}
+		self.patches['portable_app_dir'].return_value = None
 		self.patches['check_for_update'].return_value = UpdateStatus(
 			'1.7.13', '1.8.0'
 		)
@@ -50,6 +52,45 @@ class CheckForUpdatesTest(TestCase):
 			[path], cwd=os.path.dirname(path), stdout=DEVNULL, stderr=DEVNULL
 		)
 		self.patches['sys'].exit.assert_called_once_with(0)
+		self.patches['extract_update'].assert_not_called()
+		self.patches['start_swap'].assert_not_called()
+
+	def test_manual_yes_on_portable_windows_downloads_and_starts_swap(self):
+		app_dir = 'portable-app'
+		self.patches['portable_app_dir'].return_value = app_dir
+		self.patches['extract_update'].return_value = 'extracted/fman++'
+		self._download_update('Windows', self._write_download)
+
+		url = self.patches['net.download'].call_args.args[0]
+		path = self.patches['net.download'].call_args.args[1]
+		self.assertTrue(url.endswith('/fmanPortable.zip'))
+		self.assertEqual('fmanPortable.zip', os.path.basename(path))
+		self.assertIn(
+			'replace this portable copy',
+			self.patches['show_alert'].call_args.args[0]
+		)
+		self.patches['extract_update'].assert_called_once_with(
+			path, os.path.join(os.path.dirname(path), 'fman-portable-update')
+		)
+		self.patches['start_swap'].assert_called_once_with(
+			'extracted/fman++', app_dir
+		)
+		self.patches['Popen'].assert_not_called()
+		self.patches['sys'].exit.assert_called_once_with(0)
+
+	def test_invalid_portable_archive_reports_error_and_opens_releases(self):
+		self.patches['portable_app_dir'].return_value = 'portable-app'
+		self.patches['extract_update'].side_effect = ValueError('invalid archive')
+		self._download_update('Windows', self._write_download)
+
+		self.assertTrue(any(
+			'Could not download the update' in call.args[0]
+			for call in self.patches['show_alert'].call_args_list[1:]
+		))
+		url = self.patches['QDesktopServices'].openUrl.call_args.args[0]
+		self.assertEqual(links.RELEASES, url.toString())
+		self.patches['start_swap'].assert_not_called()
+		self.patches['sys'].exit.assert_not_called()
 
 	def test_manual_yes_on_mac_opens_downloaded_dmg(self):
 		self._download_update('Mac', self._write_download)

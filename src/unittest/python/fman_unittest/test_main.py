@@ -1,7 +1,9 @@
 import unittest
 from unittest.mock import Mock, patch
 
+import fman
 from fman import main
+from fman.impl import portable
 
 
 class SkipInterpreterTeardownTest(unittest.TestCase):
@@ -42,3 +44,46 @@ class SkipInterpreterTeardownTest(unittest.TestCase):
 		finally:
 			main._skip_interpreter_teardown.exit_code = original_code
 		return exit_mock, shutdown_mock
+
+
+class PortableStartupTest(unittest.TestCase):
+	def test_unwritable_portable_data_shows_error_and_exits_before_startup(self):
+		data_dir = 'portable-data'
+		with patch('atexit.register'), \
+		 patch(
+			 'fman.impl.application_context.get_application_context'
+		 ) as get_context, \
+			 patch.object(fman, 'DATA_DIRECTORY', data_dir), \
+			 patch.object(portable, 'portable_data_directory', return_value=data_dir), \
+		 patch.object(
+			 portable, 'check_writable', return_value=PermissionError('denied')
+		 ), \
+			 patch('ctypes.windll', create=True) as windll, \
+			 patch.object(main.sys, 'exit') as exit_mock:
+			main.main()
+
+		windll.user32.MessageBoxW.assert_called_once()
+		self.assertIn(data_dir, windll.user32.MessageBoxW.call_args.args[1])
+		self.assertEqual(fman.APP_NAME, windll.user32.MessageBoxW.call_args.args[2])
+		self.assertEqual(0x10, windll.user32.MessageBoxW.call_args.args[3])
+		get_context.assert_not_called()
+		exit_mock.assert_called_once_with(1)
+
+	def test_writable_portable_data_allows_startup(self):
+		data_dir = 'portable-data'
+		app_context = Mock()
+		app_context.run.return_value = 0
+		with patch('atexit.register'), \
+		 patch(
+			 'fman.impl.application_context.get_application_context',
+			 return_value=app_context,
+		 ) as get_context, \
+			 patch.object(fman, 'DATA_DIRECTORY', data_dir), \
+			 patch.object(portable, 'portable_data_directory', return_value=data_dir), \
+			 patch.object(portable, 'check_writable', return_value=None), \
+			 patch.object(main.sys, 'exit') as exit_mock:
+			main.main()
+
+		get_context.assert_called_once_with()
+		app_context.run.assert_called_once_with()
+		exit_mock.assert_called_once_with(0)

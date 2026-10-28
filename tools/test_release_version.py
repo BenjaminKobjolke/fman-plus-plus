@@ -30,6 +30,8 @@ shutil.rmtree(root / "target", ignore_errors=True)
 (root / "target").mkdir()
 if not (root / "no_installer").exists():
     (root / "target" / "fmanSetup.exe").write_text("installer")
+if not (root / "no_portable_archive").exists():
+    (root / "target" / "fmanPortable.zip").write_text("portable archive")
 """
 
 
@@ -190,6 +192,11 @@ def check_release_version():
             result = run_batch(build)
             assert result.returncode == 1, "A build without an installer must fail"
             assert not record.exists(), "No installer, no record"
+
+            (root / "no_portable_archive").touch()
+            result = run_batch(build)
+            assert result.returncode == 1, "A build without a portable archive must fail"
+            assert not record.exists(), "No portable archive, no record"
 
             result = run_batch(scripts / "release_create.bat", "--dry-run")
             assert result.returncode == UPLOAD_EXIT, (
