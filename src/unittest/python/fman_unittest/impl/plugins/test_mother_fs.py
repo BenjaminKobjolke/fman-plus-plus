@@ -205,6 +205,17 @@ class MotherFileSystemTest(TestCase):
 		self.assertEqual(
 			3, mother_fs.get_parallel_transfers('par://a', 'stub://b')
 		)
+	def test_connection_count_defaults_to_none(self):
+		mother_fs = self._create_mother_fs(StubFileSystem({}))
+		self.assertIsNone(mother_fs.get_connection_count('stub://a'))
+	def test_connection_count_gets_the_path(self):
+		fs = CountingFileSystem()
+		mother_fs = self._create_mother_fs(fs)
+		self.assertEqual(4, mother_fs.get_connection_count('cnt://host/a'))
+		self.assertEqual('host/a', fs.path)
+	def test_connection_count_error_is_none(self):
+		mother_fs = self._create_mother_fs(RaisingConnectionCountFileSystem())
+		self.assertIsNone(mother_fs.get_connection_count('raisecc://a'))
 	def _create_mother_fs(self, fs):
 		result = MotherFileSystem(None)
 		result.add_child(fs.scheme, fs)
@@ -244,6 +255,17 @@ class ParallelFileSystem(FileSystem):
 
 	def get_parallel_transfers(self, src_url, dst_url):
 		return 3
+
+class CountingFileSystem(FileSystem):
+	scheme = 'cnt://'
+	def get_connection_count(self, path):
+		self.path = path
+		return 4
+
+class RaisingConnectionCountFileSystem(FileSystem):
+	scheme = 'raisecc://'
+	def get_connection_count(self, path):
+		raise RuntimeError(path)
 
 class FileSystemRaisingError(FileSystem):
 

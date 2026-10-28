@@ -137,6 +137,19 @@ class WorkersLabelTest(TestCase):
 			'Copying a\nCopying b  (finishing)', label._titles.text()
 		)
 		self.assertEqual('Threads: 1', label._count.text())
+	def test_count_shows_threads_only_without_connection_count(self):
+		label = self._label(_Worker(1), _Worker(2))
+		self.assertEqual('Threads: 2', label._count.text())
+	def test_count_shows_connections_when_known(self):
+		workers = _FakeWorkersWithConnectionCount(
+			_Worker(1), _Worker(2), connections=5
+		)
+		label = WorkersLabel(workers)
+		label.refresh('')
+		self.assertEqual('Threads: 2 · Connections: 5', label._count.text())
+		workers.connections = None
+		label.refresh('')
+		self.assertEqual('Threads: 2', label._count.text())
 	def test_shows_file_count(self):
 		workers = _FakeWorkers(_Worker(1))
 		workers.file_counts = (3, 5)
@@ -277,6 +290,13 @@ class _FakeWorkers:
 		return self.removable
 	def counts(self):
 		return self.file_counts
+
+class _FakeWorkersWithConnectionCount(_FakeWorkers):
+	def __init__(self, *workers, connections=None):
+		super().__init__(*workers)
+		self.connections = connections
+	def connection_count(self):
+		return self.connections
 
 class _FakePalette:
 	"""

@@ -115,6 +115,43 @@ class ParallelTransferTest(TestCase):
 			self.assertIsNotNone(dialog.workers, 'Workers must be shown.')
 			return set(fs.iterdir(src))
 
+class ConnectionCountTest(TestCase):
+	def test_same_server_is_asked_once(self):
+		fs = _ConnectionCountFS({'ftp://h': 5})
+		self.assertEqual(
+			5, CopyFiles(['ftp://h/a'], 'ftp://h/b', fs=fs)._get_connection_count()
+		)
+		self.assertEqual(1, len(fs.asked))
+		self.assertIn(fs.asked[0], ('ftp://h/a', 'ftp://h/b'))
+	def test_different_servers_are_summed(self):
+		fs = _ConnectionCountFS({'ftp://h': 3, 'ftp://k': 2})
+		self.assertEqual(
+			5, CopyFiles(['ftp://h/a'], 'ftp://k/b', fs=fs)._get_connection_count()
+		)
+		self.assertEqual({'ftp://h/a', 'ftp://k/b'}, set(fs.asked))
+	def test_local_none_and_ftp_count_returns_ftp_count(self):
+		fs = _ConnectionCountFS({'file:///': None, 'ftp://h': 4})
+		self.assertEqual(
+			4, CopyFiles(['file:///a'], 'ftp://h/b', fs=fs)._get_connection_count()
+		)
+	def test_all_unknown_counts_return_none(self):
+		fs = _ConnectionCountFS({'file:///': None})
+		self.assertIsNone(
+			CopyFiles(['file:///a'], 'file:///b', fs=fs)._get_connection_count()
+		)
+
+class _ConnectionCountFS(StubFS):
+	def __init__(self, answers):
+		super().__init__()
+		self.answers = answers
+		self.asked = []
+	def get_connection_count(self, url):
+		self.asked.append(url)
+		return next(
+			count for prefix, count in self.answers.items()
+			if url.startswith(prefix)
+		)
+
 class _ParallelStubFS(StubFS):
 	def __init__(self, backend, parallel_transfers):
 		super().__init__(backend)
