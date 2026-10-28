@@ -10,9 +10,9 @@ dependencies = [
     "python-mpv==1.0.8",
     "tinycss==0.4",
     "boto3==1.35.99",
-    "requests==2.32.3",
+    "requests==2.33.0",
     "python-localization",
-    "Pygments==2.19.2",
+    "Pygments==2.20.0",
     # Not used by fman itself: plugins such as ProcessFS import it.
     "psutil==7.2.2",
     # Send2Trash 1.5.0 has no effect on Windows.
