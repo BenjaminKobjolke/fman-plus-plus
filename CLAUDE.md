@@ -90,6 +90,9 @@ the setting option applies to the detail round that follows.
 
 ## Testing
 
+After touching `src/build/python/build_impl/windows.py`'s
+`write_portable_zip()`, run `uv run python tools/test_build_portable_zip.py`.
+
 ### Checking UI behavior
 
 For fman UI behavior checks, see `docs/UI_AUTOMATION.md` and use

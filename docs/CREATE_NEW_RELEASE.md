@@ -33,15 +33,17 @@ remain the manual path:
    the build fails, it runs `tools\build_decrement.bat` to roll it back.
 4. Runs `tools\translate_release_notes.bat` (step 3).
 5. Runs `tools\build_release.bat`: `python build.py release_build`, i.e. clean +
-   release profile + freeze, sign, installer, sign the installer. On success it
-   records the label in `target\release_version.txt`, next to the installer. The
+   release profile + freeze, sign, installer, sign the installer, and build
+   `target\fmanPortable.zip` from the signed frozen app. On success it records
+   the label in `target\release_version.txt`, next to the installer. The
    build bats use the project's uv venv, `.venv\Scripts\python.exe`
    (`tools\find_build_python.bat`; run `install.bat` once), whatever venv the
    Tickets Watcher puts in front of it.
 6. **Asks** `Commit, tag and push <label>?` — `git add -A`, commit
    `RELEASE (fman): <label>`, tag `<label>`, push both.
 7. **Asks** `Create GitHub Release <label>?` — only offered if 6 ran. Uploads
-   `target\fmanSetup.exe` with the notes from `en.json`, titled `fman++ <label>`.
+   `target\fmanSetup.exe` and `target\fmanPortable.zip` with the notes from
+   `en.json`, titled `fman++ <label>`.
 
 Both questions default to no; declining leaves a finished, signed build in `target\`.
 
@@ -186,7 +188,11 @@ in `-SNAPSHOT`:
   `tools\build_release.bat` does), so pass the version to step 4.5 explicitly.
 
 `publish()` on Windows runs `freeze` → `sign` → `installer` → `sign_installer` →
-`upload`. The project owns `src/installer/windows/Installer.nsi`; its visible
+`portable_zip` → `upload`. The portable archive contains the signed app under
+`fman++\` with its `portable.txt` marker; it excludes any frozen `Data` folder.
+The release scripts require both `fmanSetup.exe` and `fmanPortable.zip`, and the
+GitHub release uploads both assets. See [PORTABLE.md](PORTABLE.md) for the user
+workflow. The project owns `src/installer/windows/Installer.nsi`; its visible
 names come from the `display_name` build setting. Keep `app_name` as `fman`:
 it names the executable, install directory and uninstall key, so existing
 installs update in place. **`upload()` is a no-op for this fork** —
@@ -251,7 +257,7 @@ signing-handshake repo as `sign_exe.bat`, see
 [`GITHUB_RELEASE_COMMAND.md`](https://github.com/BenjaminKobjolke/release-tool/blob/main/docs/GITHUB_RELEASE_COMMAND.md))
 to create a GitHub Release tagged `<version>` at
 [github.com/BenjaminKobjolke/fman/releases](https://github.com/BenjaminKobjolke/fman/releases),
-attach `target\fmanSetup.exe`, and set the body from
+attach `target\fmanSetup.exe` and `target\fmanPortable.zip`, and set the body from
 `release_notes\<version>\en.json`. See "Publishing an existing build again" above
 for what it checks first.
 

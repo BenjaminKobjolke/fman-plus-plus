@@ -20,8 +20,17 @@ internal: it changes without notice.
 | `%APPDATA%\fman\Plugins\User` | Your own. `User\Settings` always loads **last**, so its JSON wins. |
 
 On macOS and Linux, `%APPDATA%\fman` is
-`~/Library/Application Support/fman` and `~/.config/fman`. The path is
-`fman.DATA_DIRECTORY` (`FMAN_DATA_DIRECTORY` overrides it).
+`~/Library/Application Support/fman` and `~/.config/fman`. `fman.DATA_DIRECTORY`
+selects the profile directory in this order:
+
+1. `FMAN_DATA_DIRECTORY`, when set.
+2. For a frozen Windows portable copy marked by `portable.txt`, the `Data` folder
+   beside `fman.exe`.
+3. The platform's default user data directory (`%APPDATA%\fman` on Windows,
+   `~/Library/Application Support/fman` on macOS, or `~/.config/fman` on Linux).
+
+The portable marker ships in the portable zip, not in the installer. See
+[`PORTABLE.md`](PORTABLE.md) for details.
 
 `fman.APP_NAME` is the user-visible app name (`fman++`). `fman.FMAN_VERSION`
 is the current app version.
