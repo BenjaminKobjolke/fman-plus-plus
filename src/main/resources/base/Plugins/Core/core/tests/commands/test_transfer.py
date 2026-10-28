@@ -38,6 +38,13 @@ class ConfirmTreeOperationTest(TestCase):
 				url2 = url2.lower()
 			return url1 == url2
 
+		def iterdir(self, url):
+			prefix = url.rstrip('/') + '/'
+			return [
+				path[len(prefix):] for path in self._files
+				if path.startswith(prefix) and '/' not in path[len(prefix):]
+			]
+
 		def _get(self, url):
 			dict_ = self._files
 			if not self._case_sensitive:
@@ -48,6 +55,15 @@ class ConfirmTreeOperationTest(TestCase):
 	def test_no_files(self):
 		self._expect_alert(('No file is selected!',), answer=OK)
 		self._check([], None)
+	def test_completion_lists_the_destination_directory(self):
+		self._fs._files[join(self._dest, 'alpha')] = {'is_dir': True}
+		class UI:
+			def show_prompt(_, *args, **kwargs):
+				self.completion = kwargs['get_completions']
+				return 'a', False
+		ui = UI()
+		Move._confirm_tree_operation([self._a_txt], self._dest, ui, self._fs)
+		self.assertEqual(['alpha' + os.sep], self.completion('a'))
 	def test_one_file(self):
 		self._expect_prompt(self._prompt('a.txt', 0, 1), ('a.txt', True))
 		self._check([self._a_txt], (self._dest, 'a.txt'))
