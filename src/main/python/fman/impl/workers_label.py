@@ -23,7 +23,7 @@ class WorkersLabel(QLabel):
 		# if the percentages prove too coarse.
 		self._ids = QLabel()
 		self._percents = QLabel()
-		self._titles = _ElidingLabel()
+		self._titles = ElidingLabel()
 		self._rows = QHBoxLayout()
 		for column in (self._ids, self._percents, self._titles):
 			column.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -116,7 +116,7 @@ class WorkersLabel(QLabel):
 		result.clicked.connect(on_click)
 		return result
 
-class _ElidingLabel(QLabel):
+class ElidingLabel(QLabel):
 	"""
 	Asks for the width of its whole text, so the dialog grows up to its
 	max-width in styles.qss, but may get narrower: then each line is cut in the

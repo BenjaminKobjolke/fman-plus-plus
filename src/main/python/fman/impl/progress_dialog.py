@@ -3,9 +3,9 @@
 from fbs_runtime.platform import is_windows
 from fman import QuicksearchItem
 from fman.impl.util.qt.thread import run_in_main_thread
-from fman.impl.workers_label import WorkersLabel
-from PyQt5.QtCore import QTimer, Qt, QEvent
-from PyQt5.QtWidgets import QProgressDialog, QProgressBar, QPushButton
+from fman.impl.workers_label import ElidingLabel, WorkersLabel
+from PyQt5.QtCore import QTimer, Qt, QEvent, QSize
+from PyQt5.QtWidgets import QProgressDialog, QProgressBar, QPushButton, QLabel
 
 class ProgressDialog(QProgressDialog):
 
@@ -53,6 +53,10 @@ class ProgressDialog(QProgressDialog):
 		self._bar.setPalette(progress_bar_palette)
 		# Looked up now: the workers label adds buttons of its own later.
 		self._cancel_button = self.findChild(QPushButton)
+		label = _FixedWidthLabel()
+		# setLabel(...) does not re-apply the style's label alignment.
+		label.setAlignment(self.findChild(QLabel).alignment())
+		self.setLabel(label)
 		self.setMinimumDuration(self._MINIMUM_DURATION_MS)
 		self.setAutoReset(False)
 		self.setWindowTitle(title)
@@ -179,3 +183,11 @@ class ProgressDialog(QProgressDialog):
 			# pass a larger number, it would overflow to a negative value.
 			progress = self._MAX_C_INT * progress // self._size
 		self.setValue(progress)
+
+class _FixedWidthLabel(ElidingLabel):
+	"""
+	Asks for no width of its own, so a long file name does not widen the
+	dialog with each file: the name is cut in the middle instead.
+	"""
+	def sizeHint(self):
+		return QSize(0, super().sizeHint().height())

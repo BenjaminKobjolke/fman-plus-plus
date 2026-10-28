@@ -242,6 +242,14 @@ class WorkersLabelTest(TestCase):
 		dialog.set_text('Copying 3 files')
 		dialog._update()
 		self.assertEqual('Copying 3 files', dialog._workers_label._text.text())
+	def test_long_file_name_does_not_widen_the_dialog(self):
+		dialog = self._dialog()
+		dialog.set_text('Deleting a.png')
+		dialog._update()
+		width = dialog.width()
+		dialog.set_text('Deleting ' + 'x' * 300 + '.png')
+		dialog._update()
+		self.assertEqual(width, dialog.width())
 	def test_cancel_disables_the_cancel_button_not_the_worker_buttons(self):
 		dialog = self._dialog()
 		dialog.show_workers(_FakeWorkers(_Worker(1), _Worker(2)))
