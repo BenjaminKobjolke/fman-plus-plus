@@ -2,13 +2,16 @@
 import os
 import sys
 import tempfile
+import zipfile
 from subprocess import DEVNULL, Popen
 
 from core import net
+from core.portable_update import PORTABLE_ASSET, extract_update, start_swap
 from core.updates import check_for_update
 from fman import APP_NAME, ApplicationCommand, NO, PLATFORM, Task, YES, \
 	clear_status_message, links, load_json, save_json, show_alert, \
 	show_status_message, submit_task
+from fman.impl.portable import portable_app_dir
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QDesktopServices
 from urllib.error import HTTPError, URLError
@@ -24,9 +27,14 @@ INSTALL_MESSAGE = (
 	APP_NAME + ' %s is available (installed: %s). '
 	'Download and install it now?'
 )
+PORTABLE_INSTALL_MESSAGE = (
+	APP_NAME + ' %s is available (installed: %s). '
+	'Download it and replace this portable copy now?'
+)
 DOWNLOAD_ERROR = 'Could not download the update: %s'
 CURRENT_MESSAGE = APP_NAME + ' %s is up to date.'
 ERROR_MESSAGE = 'Could not check for updates: %s'
+PORTABLE_UPDATE_DIR = 'fman-portable-update'
 
 
 class CheckForUpdates(ApplicationCommand):
@@ -51,22 +59,29 @@ class CheckForUpdates(ApplicationCommand):
 				return
 			settings['announced'] = status.latest
 			save_json(UPDATE_CHECK_FILE)
-			message = (
-				INSTALL_MESSAGE if PLATFORM in INSTALLER_ASSETS else UPDATE_MESSAGE
+			portable_dir = (
+				portable_app_dir() if PLATFORM == 'Windows' else None
 			)
+			if portable_dir is not None:
+				message = PORTABLE_INSTALL_MESSAGE
+			elif PLATFORM in INSTALLER_ASSETS:
+				message = INSTALL_MESSAGE
+			else:
+				message = UPDATE_MESSAGE
 			answer = show_alert(
 				message % (status.latest, status.installed),
 				YES | NO, YES
 			)
 			if answer & YES:
-				_install(status.latest)
+				_install(status.latest, portable_dir)
 		finally:
 			if not silent:
 				clear_status_message()
 
 
-def _install(latest):
-	asset = INSTALLER_ASSETS.get(PLATFORM)
+def _install(latest, portable_dir=None):
+	asset = PORTABLE_ASSET if portable_dir is not None else \
+		INSTALLER_ASSETS.get(PLATFORM)
 	if asset is None:
 		QDesktopServices.openUrl(QUrl(links.RELEASES))
 		return
@@ -92,6 +107,20 @@ def _install(latest):
 		QDesktopServices.openUrl(QUrl(links.RELEASES))
 		return
 	if not os.path.exists(path):
+		return
+
+	if portable_dir is not None:
+		try:
+			source_dir = extract_update(
+				path,
+				os.path.join(tempfile.gettempdir(), PORTABLE_UPDATE_DIR)
+			)
+			start_swap(source_dir, portable_dir)
+		except (OSError, ValueError, zipfile.BadZipFile) as e:
+			show_alert(DOWNLOAD_ERROR % e)
+			QDesktopServices.openUrl(QUrl(links.RELEASES))
+			return
+		sys.exit(0)
 		return
 
 	if PLATFORM == 'Windows':
