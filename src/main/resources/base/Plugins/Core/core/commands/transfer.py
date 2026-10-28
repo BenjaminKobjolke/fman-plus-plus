@@ -13,6 +13,7 @@ from core.commands.editor import _find_extension_start
 from core.commands.util import get_opposite_pane, is_file_url, \
 	CANNOT_READ, NO_SELECTION
 from core.fileoperations import CopyFiles, MoveFiles
+from core.path_completion import complete_path
 from core.util import is_parent
 from core.undo_history import CopyRecord, MoveRecord, record_transfer
 from fman import DirectoryPaneCommand, DirectoryPaneListener, NO, YES, \
@@ -24,6 +25,7 @@ from fman.url import as_human_readable, join, splitscheme
 # shadowed the URL one for the whole file).
 from os.path import basename
 from pathlib import PurePath
+from functools import partial
 
 import fman
 import fman.fs
@@ -92,7 +94,12 @@ class _TreeCommand(DirectoryPaneCommand):
 		else:
 			message = '%s %d files to' % (verb, len(files))
 			suggested_dst = dest_path
-		dest, ok = ui.show_prompt(message, suggested_dst, 0, selection_end)
+		dest, ok = ui.show_prompt(
+			message, suggested_dst, 0, selection_end,
+			get_completions=partial(
+				complete_path, dest_dir=dest_dir, src_dir=None, fs=fs
+			)
+		)
 		if dest and ok:
 			dest_url = _from_human_readable(dest, dest_dir, None)
 			if fs.exists(dest_url):

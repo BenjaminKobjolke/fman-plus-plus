@@ -332,8 +332,13 @@ def show_alert(text, buttons=OK, default_button=OK):
 def log(*args):
 	get_console_log().append(format_log_args(*args))
 
-def show_prompt(text, default='', selection_start=0, selection_end=None):
-	return _get_ui().show_prompt(text, default, selection_start, selection_end)
+def show_prompt(
+		text, default='', selection_start=0, selection_end=None,
+		get_completions=None):
+	return _get_ui().show_prompt(
+		text, default, selection_start, selection_end,
+		get_completions=get_completions
+	)
 
 def show_status_message(text, timeout_secs=None):
 	return _get_ui().show_status_message(text, timeout_secs)

@@ -7,6 +7,7 @@ and a suffix nobody registered is refused before any file is read.
 """
 from core.commands.archives import _get_handler_for_archive
 from core.commands.deletion import _describe
+from core.path_completion import complete_path
 from core.commands.transfer import _from_human_readable, get_dest_suggestion
 from core.commands.util import chosen_files, get_opposite_pane
 from fman import DirectoryPaneCommand, NO, Task, YES, show_alert, \
@@ -16,7 +17,9 @@ from fman.url import join, splitscheme
 # os.path.basename, not fman.url's - see core/commands/transfer.py.
 from os.path import basename
 from pathlib import PurePath
+from functools import partial
 
+import fman.fs
 import re
 
 __all__ = ['Pack']
@@ -43,7 +46,11 @@ class Pack(DirectoryPaneCommand):
 			get_dest_suggestion(dest_url)
 		dest, ok = show_prompt(
 			'Pack %s to (.zip, .7z, .tar):' % _describe(files), suggested_dst,
-			selection_start, selection_end
+			selection_start, selection_end,
+			get_completions=partial(
+				complete_path, dest_dir=dest_dir,
+				src_dir=self.pane.get_path(), fs=fman.fs
+			)
 		)
 		if dest and ok:
 			dest = _from_human_readable(dest, dest_dir, self.pane.get_path())

@@ -8,6 +8,7 @@ from fman.impl.pane_status import PaneStatusLine, PaneStatusMode
 from fman.impl.progress_dialog import ProgressDialog
 from fman.impl.tool_windows import ToolWindows
 from fman.impl.quicksearch import Quicksearch
+from fman.impl.prompt_completion import PromptTabCompletion
 from fman.impl.util.qt import disable_window_animations_mac, Key_Escape, \
 	NoFocus, Key_Backspace, DisplayRole
 from fman.impl.util.qt.thread import run_in_main_thread
@@ -502,12 +503,14 @@ class MainWindow(QMainWindow):
 		)[0]
 	@run_in_main_thread
 	def show_prompt(
-		self, text, default='', selection_start=0, selection_end=None
+		self, text, default='', selection_start=0, selection_end=None,
+		get_completions=None
 	):
 		# Let API users pass arbitrary objects by converting str(text):
 		text_str = str(text)
 		dialog = Prompt(
-			self, APP_NAME, text_str, default, selection_start, selection_end
+			self, APP_NAME, text_str, default, selection_start, selection_end,
+			get_completions=get_completions
 		)
 		dialog.setTextValue(default)
 		result = self.exec_dialog(dialog)
@@ -864,7 +867,7 @@ class Prompt(QInputDialog):
 
 	def __init__(
 		self, parent, title, text, default='', selection_start=0,
-		selection_end=None
+		selection_end=None, get_completions=None
 	):
 		super().__init__(parent)
 		self.setWindowTitle(title)
@@ -876,6 +879,11 @@ class Prompt(QInputDialog):
 		self.setTextEchoMode(QLineEdit.Normal)
 		self._request_immediate_repaint = False
 		self._is_second_paint = False
+		self._prompt_tab_completion = None
+		if get_completions is not None:
+			self._prompt_tab_completion = PromptTabCompletion(
+				self._get_line_edit(), get_completions
+			)
 	def setVisible(self, visible):
 		"""
 		Unfortunately, our double call to paintEvent(...) leads to flickering
