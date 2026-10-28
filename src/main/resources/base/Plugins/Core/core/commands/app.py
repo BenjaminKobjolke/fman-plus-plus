@@ -17,9 +17,16 @@ __all__ = [
 	'none'
 ]
 
+MAINTAINER = 'Benjamin Kobjolke'
+ORIGINAL_AUTHOR = 'Michael Herrmann'
+
 class About(ApplicationCommand):
 	def __call__(self):
-		show_alert(APP_NAME + " version: " + FMAN_VERSION)
+		show_alert(
+			APP_NAME + " version: " + FMAN_VERSION + "\n"
+			+ "Maintained by " + MAINTAINER + ".\n"
+			+ "Based on fman by " + ORIGINAL_AUTHOR + "."
+		)
 
 class Help(ApplicationCommand):
 
