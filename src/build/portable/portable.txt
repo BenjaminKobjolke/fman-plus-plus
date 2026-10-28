@@ -1,0 +1,1 @@
+This file makes fman++ keep its settings and plugins in the Data folder next to fman.exe. Delete it to use %APPDATA%\fman instead.

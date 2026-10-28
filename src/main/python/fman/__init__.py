@@ -3,6 +3,7 @@ from .url import dirname
 from .impl.task import StubProgressDialog, ChildProgressDialog
 from .impl.console_log import format_log_args, get_console_log
 from .impl.incognito import is_incognito
+from .impl.portable import portable_data_directory
 from .impl.view.pane_mount import get_colors, mount_widget, unmount_widget
 from contextlib import contextmanager
 from fbs_runtime import platform
@@ -58,8 +59,13 @@ elif PLATFORM == 'Linux':
 # profile. Demo recordings use it for a throwaway one, so a run neither loads
 # the developer's third-party plugins (their key bindings would win over
 # Core's, and their commands would change what the palette resolves a query to)
-# nor writes viewer zoom/volume back into the real profile.
-DATA_DIRECTORY = getenv('FMAN_DATA_DIRECTORY') or _DEFAULT_DATA_DIRECTORY
+# nor writes viewer zoom/volume back into the real profile. A marked portable
+# build otherwise keeps its profile beside the executable.
+DATA_DIRECTORY = (
+	getenv('FMAN_DATA_DIRECTORY')
+	or portable_data_directory()
+	or _DEFAULT_DATA_DIRECTORY
+)
 
 class ApplicationCommand:
 	def __init__(self, window):

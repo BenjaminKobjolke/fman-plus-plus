@@ -5,6 +5,7 @@ from fbs.freeze import windows as fbs_windows
 from shutil import rmtree
 from subprocess import run
 from build_impl.version_info import brand_version_info
+from zipfile import ZIP_DEFLATED, ZipFile
 
 
 _create_version_info = fbs_windows._create_version_info
@@ -63,6 +64,25 @@ def sign_installer():
 
 def _sign_exe(exe_path):
 	run([path('tools/sign_exe.bat'), exe_path], shell=True, check=True)
+
+@command
+def portable_zip():
+	# Keep the asset name in sync with core/portable_update.py, release_create.ini,
+	# github_release.bat and build_release.bat.
+	write_portable_zip(
+		path('${freeze_dir}'), path('src/build/portable/portable.txt'),
+		path('target/fmanPortable.zip')
+	)
+
+def write_portable_zip(freeze_dir, marker_path, zip_path):
+	with ZipFile(zip_path, 'w', ZIP_DEFLATED) as archive:
+		for source_path in freeze_dir.rglob('*'):
+			relative_path = source_path.relative_to(freeze_dir)
+			if relative_path.parts[0] == 'Data' or relative_path.name == 'portable.txt':
+				continue
+			if source_path.is_file():
+				archive.write(source_path, 'fman++/' + relative_path.as_posix())
+		archive.write(marker_path, 'fman++/portable.txt')
 
 @command
 def upload():

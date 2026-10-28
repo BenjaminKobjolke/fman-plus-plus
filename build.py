@@ -20,7 +20,7 @@ import fbs.cmdline
 import re
 
 if is_windows():
-	from build_impl.windows import freeze, upload, sign, sign_installer
+	from build_impl.windows import freeze, upload, sign, sign_installer, portable_zip
 	from fbs.builtin_commands import installer
 elif is_mac():
 	from build_impl.mac import freeze, sign, sign_installer, upload
@@ -45,6 +45,7 @@ def publish():
 		sign()
 		installer()
 		sign_installer()
+		portable_zip()
 		upload()
 	elif is_mac():
 		freeze()
