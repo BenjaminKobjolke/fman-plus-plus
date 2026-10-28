@@ -152,5 +152,6 @@
     "uv run python tools\\test_unittest_with_timeout.py": "test",
     "uv run python tools\\test_fman_ui.py": "test",
     "tools\\run_automation_tests.bat": "test"
-  }
+  },
+  "project_id": 251
 }
