@@ -347,6 +347,8 @@ font; see [Fonts](FONTS.md).
 `show_alert`, `show_prompt`, `show_status_message`, `clear_status_message`,
 `show_file_open_dialog`, `show_quicksearch` (with `QuicksearchItem`), and
 `submit_task(Task(...))` for anything long enough to need a progress dialog.
+`show_prompt(..., get_completions=f)` makes Tab cycle through `f(text)`; the
+callback runs off the GUI thread.
 
 A `FileSystem` can return more than 1 from
 `get_parallel_transfers(src_url, dst_url)` to have Copy and Move transfer that
