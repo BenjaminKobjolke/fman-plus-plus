@@ -22,10 +22,15 @@ if not defined LABEL (
 )
 
 for %%I in ("%ROOT%\target\fmanSetup.exe") do set "ASSET=%%~fI"
+for %%I in ("%ROOT%\target\fmanPortable.zip") do set "PORTABLE_ASSET=%%~fI"
 for %%I in ("%ROOT%\release_notes\%LABEL%\en.json") do set "NOTES=%%~fI"
 
 if not exist "%ASSET%" (
     echo ERROR: signed installer not found: %ASSET%
+    exit /b 1
+)
+if not exist "%PORTABLE_ASSET%" (
+    echo ERROR: portable archive not found: %PORTABLE_ASSET%
     exit /b 1
 )
 if not exist "%NOTES%" (
@@ -46,7 +51,7 @@ REM --repo is mandatory: cwd is release-tool's checkout, so gh would otherwise
 REM infer release-tool's own remote instead of fman's.
 REM The title mirrors title_format in release_create.ini - keep the two in sync.
 cd /d D:\GIT\BenjaminKobjolke\release-tool
-call uv run python -m release_tool github-release "%LABEL%" "%ASSET%" --repo BenjaminKobjolke/fman --notes-json "%NOTES%" --title "fman++ %LABEL%"
+call uv run python -m release_tool github-release "%LABEL%" "%ASSET%" "%PORTABLE_ASSET%" --repo BenjaminKobjolke/fman --notes-json "%NOTES%" --title "fman++ %LABEL%"
 set "RESULT=%ERRORLEVEL%"
 cd /d "%~dp0"
 if "%RESULT%"=="0" (

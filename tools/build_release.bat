@@ -33,6 +33,12 @@ if not exist "target\fmanSetup.exe" (
     goto :done
 )
 
+if not exist "target\fmanPortable.zip" (
+    echo ERROR: build reported success but target\fmanPortable.zip is missing.
+    set "RESULT=1"
+    goto :done
+)
+
 REM Recorded only now: github_release.bat publishes this label, not whatever
 REM base.json holds by the time it runs.
 "%FMAN_PYTHON%" tools\release\build_number.py label > "%RECORD%"
