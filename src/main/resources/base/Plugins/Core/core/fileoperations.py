@@ -4,6 +4,7 @@ from fman import Task
 from fman.url import basename, dirname, as_human_readable
 from queue import Queue
 from threading import Lock, Thread
+from urllib.parse import urlparse
 from core.move_rollback import MoveRollback
 
 import fman.fs
@@ -55,6 +56,17 @@ class FileTreeOperation(FileTreeGathering, Task):
 		return self._fs.get_parallel_transfers(
 			self._files[0], self._get_dest_dir_url()
 		)
+	def _get_connection_count(self):
+		# A filesystem hook counts a whole server, so do not ask twice for one.
+		urls = {
+			urlparse(url)[:2]: url
+			for url in (self._files[0], self._get_dest_dir_url())
+		}
+		counts = [
+			self._fs.get_connection_count(url) for url in urls.values()
+		]
+		counts = [count for count in counts if count is not None]
+		return sum(counts) if counts else None
 	def __call__(self):
 		# Gathering walks the whole tree first, which on a remote file system
 		# takes long. So it runs on its own thread while the workers already
@@ -82,7 +94,8 @@ class FileTreeOperation(FileTreeGathering, Task):
 		self._worker_count = self._get_worker_count()
 		workers = TransferWorkers(
 			self._worker_count, self._queue, self._run_one,
-			should_stop=lambda: self._gather_aborted
+			should_stop=lambda: self._gather_aborted,
+			connection_count=self._get_connection_count
 		)
 		if self._worker_count > 1:
 			# The worker rows show the files, so this keeps the overall title.

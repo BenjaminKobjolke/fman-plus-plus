@@ -51,6 +51,9 @@ def prepare_copy(src_url, dst_url):
 def get_parallel_transfers(src_url, dst_url):
 	return _get_mother_fs().get_parallel_transfers(src_url, dst_url)
 
+def get_connection_count(url):
+	return _get_mother_fs().get_connection_count(url)
+
 def iterdir(url):
 	return _get_mother_fs().iterdir(url)
 
@@ -167,6 +170,14 @@ class FileSystem:
 		# How many files a copy or move transfers at once. More than 1 pays
 		# off for transports with a high cost per file, like FTP.
 		return 1
+	def get_connection_count(self, path):
+		"""
+		How many connections this file system holds open to the server behind
+		`path` right now, or None when it has no such notion. This is shown in
+		the progress dialog of a multi-worker copy on every refresh, so this
+		method must not do network IO.
+		"""
+		return None
 	def move(self, src_url, dst_url):
 		raise self._operation_not_implemented()
 	def prepare_move(self, src_url, dst_url):

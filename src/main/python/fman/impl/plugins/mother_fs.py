@@ -159,6 +159,13 @@ class MotherFileSystem:
 			src_fs.get_parallel_transfers(src_url, dst_url),
 			dst_fs.get_parallel_transfers(src_url, dst_url)
 		)
+	def get_connection_count(self, url):
+		try:
+			child, path = self._split(url)
+			return child.get_connection_count(path)
+		except Exception:
+			# This runs on every dialog refresh; plugin errors must not break it.
+			return None
 	def add_file_changed_callback(self, url, callback):
 		child, path = self._split(url)
 		child._add_file_changed_callback(path, callback)

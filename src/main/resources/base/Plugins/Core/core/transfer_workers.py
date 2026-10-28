@@ -2,6 +2,7 @@
 Runs the tasks a FileTreeOperation gathers on one or more worker threads. Slow
 per-file transports (FTP) gain from several. The progress dialog polls
 snapshot() and calls add() / remove() while the workers run.
+It also polls connection_count() for the transfer dialog's connection label.
 """
 from dataclasses import dataclass, replace
 from fman.impl.task import ChildProgressDialog
@@ -21,15 +22,21 @@ class WorkerState:
 	retiring: bool = False
 
 class TransferWorkers:
-	def __init__(self, count, queue, run_task, should_stop=lambda: False):
+	def __init__(
+		self, count, queue, run_task, should_stop=lambda: False,
+		connection_count=lambda: None
+	):
 		"""
 		run_task(worker, task, is_last) runs one task and returns False to
 		stop all workers. should_stop() is checked before each task.
+		connection_count() returns the current count shown beside the thread
+		count, or None when it is unknown.
 		"""
 		self._count = count
 		self._queue = queue
 		self._run_task = run_task
 		self._should_stop = should_stop
+		self._connection_count = connection_count
 		self._lock = Condition()
 		# Ticket -> whether later tasks wait for it. Holds the tasks taken off
 		# the queue that have not ended yet. See Task#waits_for_earlier_tasks.
@@ -99,6 +106,8 @@ class TransferWorkers:
 			with self._lock:
 				taken = self._next_ticket - 1
 				return taken - len(self._unfinished), taken + queued
+	def connection_count(self):
+		return self._connection_count()
 	def _can_add(self):
 		return not (self._finished or self._aborted) and \
 			len(self._workers) < _MAX_WORKERS

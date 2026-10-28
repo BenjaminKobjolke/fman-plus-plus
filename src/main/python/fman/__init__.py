@@ -585,7 +585,9 @@ class Task:
 		"""
 		Lists the parallel workers in the progress dialog, with buttons to add
 		and remove them. `workers` provides snapshot(), add(), remove(),
-		can_add() and can_remove(), like core's TransferWorkers.
+		can_add() and can_remove(), like core's TransferWorkers. It may also
+		provide connection_count(), the number shown beside the thread count,
+		or None when the count is unknown.
 		"""
 		self._dialog.show_workers(workers)
 	def __str__(self):

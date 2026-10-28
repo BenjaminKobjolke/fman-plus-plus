@@ -343,7 +343,12 @@ A `FileSystem` can return more than 1 from
 `get_parallel_transfers(src_url, dst_url)` to have Copy and Move transfer that
 many files at once. The progress dialog then lists the workers, and the user
 can add or remove them; `Task.show_workers(workers)` is how Copy asks for that
-view. Set `task.blocks_later_tasks = True` on a task that later ones depend
+view. A file system may also implement `get_connection_count(path)`, returning
+the open connections it holds to the server behind that path, or `None` (the
+default) when it has no such count. The multi-worker progress dialog then shows
+`Threads: N · Connections: M`. This hook runs on the GUI thread on every
+refresh and must only read in-memory state; an exception is treated as `None`.
+Set `task.blocks_later_tasks = True` on a task that later ones depend
 on (creating a folder), and `task.waits_for_earlier_tasks = True` on one that
 depends on all earlier ones (deleting an emptied folder). See
 [Copy and Move](COPY_AND_MOVE.md#parallel-workers).

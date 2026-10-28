@@ -108,6 +108,11 @@ three files at once, each on its own connection. Its moves go file by file:
 each source file is deleted right after its own copy, and an emptied source
 folder last.
 
+The progress dialog shows the worker count and, when available, the total
+connection count for the source and destination servers. It asks a server only
+once when both URLs point to it, and shows `Threads: N` alone when every
+connection count is unknown.
+
 `TransferWorkers` (`core/transfer_workers.py`) runs the queue:
 
 - **One worker runs on the command's thread**, exactly as before. Several
@@ -175,6 +180,7 @@ goes for `prepare_move(...)`.
 To have its transfers run on several workers, a plugin also:
 
 - returns more than 1 from `get_parallel_transfers(src_url, dst_url)`;
+- may return its open connections from `get_connection_count(path)`;
 - marks a task that later tasks depend on, typically creating a folder, with
   `task.blocks_later_tasks = True`;
 - marks a task that depends on all earlier ones, typically deleting a folder a

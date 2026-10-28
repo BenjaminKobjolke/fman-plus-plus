@@ -66,7 +66,14 @@ class WorkersLabel(QLabel):
 		self._rows.invalidate()
 		self._files.setText('%d / %d' % self._workers.counts())
 		active = sum(1 for worker in workers if not worker.retiring)
-		self._count.setText('Threads: %d' % active)
+		text = 'Threads: %d' % active
+		# Plugin workers passed to Task#show_workers may predate this method.
+		connections = getattr(
+			self._workers, 'connection_count', lambda: None
+		)()
+		if connections is not None:
+			text += ' · Connections: %d' % connections
+		self._count.setText(text)
 		self._remove.setEnabled(self._workers.can_remove())
 		self._add.setEnabled(self._workers.can_add())
 		changed = self._row_count is not None and \
