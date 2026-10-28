@@ -14,7 +14,7 @@ VIProductVersion "${VERSION}"
 VIAddVersionKey "ProductName" "${display_name}"
 VIAddVersionKey "FileVersion" "${VERSION}"
 VIAddVersionKey "ProductVersion" "${VERSION}"
-VIAddVersionKey "LegalCopyright" "(C) Michael Herrmann"
+VIAddVersionKey "LegalCopyright" "(C) ${author}. Based on fman (C) Michael Herrmann"
 VIAddVersionKey "FileDescription" "${display_name}"
 
 ;--------------------------------
@@ -148,7 +148,7 @@ Section
     "$\"$InstDir\uninstall.exe$\" /$MultiUser.InstallMode"
   WriteRegStr SHCTX "${UNINST_KEY}" "QuietUninstallString" \
     "$\"$InstDir\uninstall.exe$\" /$MultiUser.InstallMode /S"
-  WriteRegStr SHCTX "${UNINST_KEY}" "Publisher" "Michael Herrmann"
+  WriteRegStr SHCTX "${UNINST_KEY}" "Publisher" "${author}"
   WriteRegStr SHCTX "${UNINST_KEY}" "DisplayIcon" "$InstDir\uninstall.exe"
   ${GetSize} "$InstDir" "/S=0K" $0 $1 $2
   IntFmt $0 "0x%08X" $0
