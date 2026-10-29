@@ -1,15 +1,50 @@
 from core.commands.goto import _shrink_visited_paths, _with_well_known_dirs, \
-	GoToListener
+	GoTo, GoToListener
 from core.suggest_locations import SuggestLocations
 from core.util import filenotfounderror
 from fman import PLATFORM
 from fman.impl import incognito
-from fman.url import as_human_readable
+from fman.url import as_human_readable, as_url
 from os.path import normpath
 from unittest import TestCase, skipIf
 from unittest.mock import patch, Mock
 
 import os
+
+
+@skipIf(PLATFORM != 'Windows', 'SMB addresses only exist on Windows')
+class GoToShareTest(TestCase):
+	def test_smb_share_and_server_addresses_resolve(self):
+		command = GoTo(Mock())
+		self.assertEqual(
+			as_url(r'\\srv\share\a'),
+			command._get_target_location('smb://srv/share/a', None)
+		)
+		self.assertEqual(
+			'network://srv', command._get_target_location('smb://srv', None)
+		)
+
+	def test_cancelled_login_keeps_path_in_visited_paths(self):
+		from core.commands.network_shares import ShareLogin
+
+		visited = {'\\\\server\\share': 1}
+		pane = Mock()
+		command = GoTo(pane)
+		with patch.object(command, '_get_visited_paths', return_value=visited), \
+				patch('core.commands.goto.SuggestLocations'), \
+				patch(
+					'core.commands.goto.show_quicksearch',
+					return_value=('smb://server/share', None)
+				), \
+				patch('core.commands.goto.exists', return_value=False), \
+				patch(
+					'core.commands.network_shares.log_in_to_share',
+					return_value=ShareLogin.CANCELLED
+				), \
+				patch('core.commands.goto._remove_from_visited_paths') as remove:
+			command()
+		remove.assert_not_called()
+		pane.run_command.assert_not_called()
 
 
 class GoToListenerIncognitoTest(TestCase):

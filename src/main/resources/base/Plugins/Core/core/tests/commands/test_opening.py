@@ -1,5 +1,6 @@
-from core.commands.opening import OpenOrView, ViewFile, ViewFileInOtherPane, \
-	_open_local_files_win
+from core.commands.opening import (
+	OpenDirectory, OpenOrView, ViewFile, ViewFileInOtherPane, _open_local_files_win,
+)
 from core.tests.commands import FakePane, FakeWindow
 from fman import PLATFORM
 from fman.url import as_url
@@ -17,6 +18,50 @@ def _write_temp_file(test_case, data):
 		f.close()
 	test_case.addCleanup(os.remove, f.name)
 	return f.name
+
+
+@skipUnless(PLATFORM == 'Windows', 'SMB login is a Windows feature')
+class OpenDirectoryShareTest(TestCase):
+	def test_permission_error_connects_and_retries_once(self):
+		from core.commands.network_shares import ShareLogin
+
+		pane = MagicMock()
+		pane.set_path.side_effect = [PermissionError(), None]
+		with patch('core.commands.opening.is_dir', return_value=True), \
+				patch(
+					'core.commands.network_shares.log_in_to_share',
+					return_value=ShareLogin.CONNECTED
+				), \
+				patch('core.commands.opening.show_alert') as alert:
+			OpenDirectory(pane)('file:////server/share')
+		self.assertEqual(2, pane.set_path.call_count)
+		alert.assert_not_called()
+
+	def test_permission_error_while_checking_share_offers_login(self):
+		from core.commands.network_shares import ShareLogin
+		pane = MagicMock()
+		with patch(
+				'core.commands.opening.is_dir',
+				side_effect=[PermissionError(), True]
+		), patch(
+				'core.commands.network_shares.log_in_to_share',
+				return_value=ShareLogin.CONNECTED
+		) as login:
+			OpenDirectory(pane)('file:////server/share')
+		login.assert_called_once_with('file:////server/share')
+		pane.set_path.assert_called_once_with('file:////server/share', onerror=None)
+
+	def test_local_permission_error_keeps_access_denied_alert(self):
+		from core.commands.network_shares import ShareLogin
+		pane = MagicMock()
+		with patch('core.commands.opening.is_dir', side_effect=PermissionError()), \
+				patch(
+					'core.commands.network_shares.log_in_to_share',
+					return_value=ShareLogin.NOT_A_SHARE
+				), \
+				patch('core.commands.opening.show_alert') as alert:
+			OpenDirectory(pane)('file:///C:/private')
+		alert.assert_called_once()
 
 class OpenOrViewTest(TestCase):
 	def test_dispatches_by_cursor_target(self):
