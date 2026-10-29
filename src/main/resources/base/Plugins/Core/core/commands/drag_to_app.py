@@ -26,7 +26,7 @@ _Window = namedtuple(
 	'hwnd pid title visible minimized tool_window cloaked topmost'
 )
 _WINDROP_SETTING = 'windrop_path'
-# Vendored by tools/update_windrop.bat, next to 7za.exe (see core/fs/zip.py).
+# Vendored by tools/update_windrop.bat, next to 7z.exe (see core/fs/zip.py).
 _BUNDLED_WINDROP = os.path.join(
 	os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
 	'bin', 'windows', 'windrop.exe'

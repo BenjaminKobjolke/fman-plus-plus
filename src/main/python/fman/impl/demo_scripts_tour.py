@@ -156,7 +156,7 @@ TOUR_CHAPTERS = {
 			# so extracting it into the empty right pane can't hit a conflict.
 			PressKey('Ctrl+A'), Pause(0.5),
 			TypeText('images.zip'), Pause(1.0),
-			PressKey('Return'), Pause(3.5),   # 7za builds it
+			PressKey('Return'), Pause(3.5),   # 7-Zip builds it
 			# The pane doesn't re-list itself once the archive appears, so the
 			# filter below would find nothing without this reload.
 			PressKey('Ctrl+R'), Pause(1.5),
