@@ -3,6 +3,7 @@ from .url import dirname
 from .impl.task import StubProgressDialog, ChildProgressDialog
 from .impl.console_log import format_log_args, get_console_log
 from .impl.incognito import is_incognito
+from .localization import translate
 from .impl.portable import portable_data_directory
 from .impl.view.pane_mount import get_colors, mount_widget, unmount_widget
 from contextlib import contextmanager
@@ -25,6 +26,8 @@ __all__ = [
 	'get_application_command_aliases', 'load_plugin', 'unload_plugin',
 	'is_incognito',
 	'get_themes', 'get_theme', 'set_theme',
+	'get_language', 'get_languages', 'set_language',
+	'translate',
 	'get_window_opacity', 'set_window_opacity',
 	'clipboard',
 	'submit_task', 'Task',
@@ -415,6 +418,18 @@ def set_theme(name):
 	restarts. An unknown name falls back to fman's default colors.
 	"""
 	return _get_app_ctxt().theme_controller.set_theme(name)
+
+def get_language():
+	"""The saved app language override, or None to follow the system."""
+	return _get_app_ctxt().get_language_override()
+
+def get_languages():
+	"""The language codes with built-in catalogs."""
+	return _get_app_ctxt().get_languages()
+
+def set_language(locale):
+	"""Save an app language code; pass None to follow the system language."""
+	return _get_app_ctxt().set_language(locale)
 
 def get_window_opacity():
 	"""

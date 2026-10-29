@@ -3,6 +3,8 @@ from fman import DirectoryPaneCommand, DirectoryPaneListener, \
 from fman.fs import FileSystem, Column
 from fman.impl.font_database import FontError
 from fman.impl.incognito import ON_INCOGNITO_CHANGED
+from fman.localization import register_plugin_catalog, \
+	unregister_plugin_catalog
 from fman.impl.util import listdir_absolute
 from glob import glob
 from importlib.machinery import SourceFileLoader
@@ -153,6 +155,8 @@ class ExternalPlugin(Plugin):
 			return False
 		return True
 	def _load(self):
+		if register_plugin_catalog(self.name, self._path):
+			self._add_unload_action(unregister_plugin_catalog, self.name)
 		self._register_plugin_dir()
 		self._load_config()
 		# Recursive so a plugin can group its fonts (and their licences)

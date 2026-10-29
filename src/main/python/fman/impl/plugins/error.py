@@ -7,6 +7,8 @@ from traceback import StackSummary, extract_tb, TracebackException, \
 	print_exception
 
 import fman
+from fman.localization_keys import ERROR_COPIED, ERROR_COPY, ERROR_DISMISS, \
+	ERROR_OPEN_CONSOLE
 import sys
 from PyQt5.QtWidgets import QMessageBox
 from fman.impl.console_log import get_console_log
@@ -61,9 +63,9 @@ class PluginErrorHandler(ExceptionHandler):
 		result = self._main_window.show_alert(
 			headline, buttons=buttons, default_button=QMessageBox.Cancel,
 			button_texts={
-				QMessageBox.Cancel: 'Dismiss',
-				QMessageBox.Open: 'Open in console',
-				QMessageBox.Save: 'Copy error',
+				QMessageBox.Cancel: fman.translate(ERROR_DISMISS),
+				QMessageBox.Open: fman.translate(ERROR_OPEN_CONSOLE),
+				QMessageBox.Save: fman.translate(ERROR_COPY),
 			}
 		)
 		if result == QMessageBox.Open:
@@ -71,7 +73,7 @@ class PluginErrorHandler(ExceptionHandler):
 		elif result == QMessageBox.Save:
 			fman.clipboard.set_text(details)
 			self._main_window.show_status_message(
-				'Error copied to clipboard.', timeout_secs=3
+				fman.translate(ERROR_COPIED), timeout_secs=3
 			)
 	def handle_system_exit(self, code=0):
 		self._app.exit(code)

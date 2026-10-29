@@ -22,7 +22,8 @@ import core
 import inspect
 
 EXPECTED = frozenset({
-	'About', 'AddPane', 'ArchiveOpenListener', 'CenterWindow', 'CheckForUpdates',
+	'About', 'AddPane', 'ArchiveOpenListener', 'CenterWindow', 'ChangeLanguage',
+	'CheckForUpdates',
 	'ClearHiddenAttribute',
 	'CommandPalette', 'CompareDirectories', 'Copy', 'CopyFileName', 'CopyFilePath',
 	'CopyPathsToClipboard', 'ConnectNetworkShare',

@@ -335,6 +335,46 @@ from core.settings import get_setting, save_setting
 save_setting('My Settings.json', 'key', value)   # value=None clears the key
 ```
 
+## Translations
+
+Plugins can provide translations for their own commands, dialogs, and other
+user-facing text. Add a `Translations` directory at the plugin root with one
+JSON catalog per language:
+
+```
+My Plugin/
+    Translations/
+        en.json
+        ru.json
+```
+
+Nested JSON keys use dot notation when looked up. The English catalog is the
+fallback for a missing language or key. A translated catalog may omit a key
+that exists in `en.json`:
+
+```json
+{
+  "menu": {
+    "open": "Open"
+  }
+}
+```
+
+The presence of at least one JSON file in `Translations` opts the plugin in;
+fman discovers and unregisters its catalogs with the plugin lifecycle. Catalogs
+are isolated by plugin name, which is the plugin directory's name. Use the
+public `fman.translate(key, plugin_name)` function to look up plugin text:
+
+```python
+import fman
+
+label = fman.translate('menu.open', 'My Plugin')
+```
+
+Built-in text can be looked up with `fman.translate(key)` and uses the selected
+language with English fallback. A missing key is returned unchanged when neither
+the plugin nor built-in English catalog defines it.
+
 ## Fonts
 
 Any `*.ttf` in a plugin's root directory is loaded into Qt's font database when

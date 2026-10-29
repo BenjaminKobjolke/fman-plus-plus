@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from fman.impl.plugins.plugin import ReportExceptions
+from fman.localization import translate_text
 from threading import Thread, get_ident
 from weakref import WeakKeyDictionary
 
@@ -51,9 +52,10 @@ class ApplicationCommandRegistry(CommandRegistry):
 	def get_command_aliases(self, name):
 		command = self._commands[name]
 		try:
-			return command.aliases
+			aliases = command.aliases
 		except AttributeError:
-			return _get_default_aliases(command.__class__)
+			aliases = _get_default_aliases(command.__class__)
+		return _translate_command_aliases(command.__class__, aliases)
 	def is_command_visible(self, name):
 		command = self._commands[name]
 		return command.is_visible()
@@ -113,9 +115,10 @@ class PaneCommandRegistry(CommandRegistry):
 	def get_command_aliases(self, name):
 		command_class = self._command_classes[name]
 		try:
-			return command_class.aliases
+			aliases = command_class.aliases
 		except AttributeError:
-			return _get_default_aliases(command_class)
+			aliases = _get_default_aliases(command_class)
+		return _translate_command_aliases(command_class, aliases)
 	def is_command_visible(self, name, pane, file_under_cursor=_DEFAULT):
 		command = self._get_command(pane, name)
 		if command is None:
@@ -165,3 +168,9 @@ class PaneCommandRegistry(CommandRegistry):
 def _get_default_aliases(cmd_class):
 	return re.sub(r'([a-z])([A-Z])', r'\1 \2', cmd_class.__name__)\
 			   .lower().capitalize(),
+
+def _translate_command_aliases(command_class, aliases):
+	module = command_class.__module__
+	if module.startswith('core.') or module == 'fman.impl.plugins.builtin':
+		return tuple(translate_text(alias) for alias in aliases)
+	return aliases

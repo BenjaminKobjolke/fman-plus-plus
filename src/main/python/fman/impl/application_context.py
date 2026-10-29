@@ -35,6 +35,7 @@ from fman.impl.single_instance import SingleInstance, server_name_for, \
 	open_paths_in_running_instance
 from fman.impl.theme import Theme
 from fman.impl.theme_controller import ThemeController
+from fman.impl.language import LanguageSettings
 from fman.impl.window_chrome import WindowChrome
 from fman.impl.themes import DEFAULT_THEME, THEME_SETTING, \
 	build_main_window_palette, build_palette, \
@@ -206,6 +207,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 			self.metrics_backend.flush(log_file_path)
 	@cached_property
 	def app(self):
+		# Locale-dependent application and widget text must be ready before Qt
+		# creates the first window or palette.
+		_ = self.selected_language
 		result = Application([sys.argv[0]])
 		result.setOrganizationName('fman.io')
 		result.setOrganizationDomain('fman.io')
@@ -478,6 +482,21 @@ class DevelopmentApplicationContext(ApplicationContext):
 		# fman.load_json) exists. One shared instance, so that flushing the
 		# theme cannot drop another setting read from the same file.
 		return Settings(self._get_local_data_file('Settings.json'))
+	@property
+	def language_settings(self):
+		return LanguageSettings(
+			self.local_settings,
+			join(self.get_resource('Plugins'), 'Core', 'Translations')
+		)
+	@cached_property
+	def selected_language(self):
+		return self.language_settings.initialize()
+	def get_language_override(self):
+		return self.language_settings.get_override()
+	def get_languages(self):
+		return self.language_settings.get_languages()
+	def set_language(self, locale):
+		self.language_settings.set_language(locale)
 	@cached_property
 	def bundled_theme_dirs(self):
 		# Separate from theme_dirs because the themes demo records *these*

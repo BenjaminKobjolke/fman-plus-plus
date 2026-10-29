@@ -10,7 +10,8 @@ exposed as DirectoryPane.mount_widget/unmount_widget) so plugins can mount
 their own widgets too. mount_view/close_view below are shims kept for the
 callers — and any plugin — that already use them.
 """
-from fman import show_alert, YES, NO, CANCEL
+from fman import show_alert, YES, NO, CANCEL, translate
+from fman.localization_keys import SAVE_CHANGES_BEFORE_CLOSING
 from fman.impl.view.pane_mount import unmount_widget
 
 # Once the app-wide Theme.css ("* { font-size: ...pt; }", applied via
@@ -46,7 +47,9 @@ def confirm_close(view):
 	"""
 	if not (getattr(view, '_editing', False) and view.document().isModified()):
 		return True
-	answer = show_alert('Save changes before closing?', YES | NO | CANCEL, YES)
+	answer = show_alert(
+		translate(SAVE_CHANGES_BEFORE_CLOSING), YES | NO | CANCEL, YES
+	)
 	if answer & CANCEL:
 		return False
 	if answer & YES:

@@ -8,6 +8,10 @@ implement `prepare_trash` - the user asked for a recoverable delete.
 """
 from fman import DirectoryPaneCommand, PLATFORM, show_alert, submit_task, \
 	Task, NO, YES, YES_TO_ALL
+from fman import translate
+from fman.localization_keys import (
+	DELETE_CONFIRM, TRASH_CONFIRM, TRASH_LABEL_RECYCLE_BIN, TRASH_LABEL_TRASH,
+)
 from fman.fs import exists, prepare_delete, prepare_trash
 from core import elevation
 from core.commands.util import NO_SELECTION
@@ -51,18 +55,18 @@ def confirm_trash(urls):
 	description = _describe(urls, 'these %d files')
 	trash_name = _trash_name()
 	msg = \
-		"Do you really want to move %s to the %s?" % (description, trash_name)
+	translate(TRASH_CONFIRM) % (description, trash_name)
 	return bool(show_alert(msg, YES | NO, YES) & YES)
 
 def confirm_delete(urls):
 	description = _describe(urls, 'these %d items')
 	message = \
-		"Do you really want to PERMANENTLY delete %s? This action cannot " \
-		"be undone!" % description
+	translate(DELETE_CONFIRM) % description
 	return bool(show_alert(message, YES | NO, YES) & YES)
 
 def _trash_name():
-	return 'Recycle Bin' if PLATFORM == 'Windows' else 'Trash'
+	key = TRASH_LABEL_RECYCLE_BIN if PLATFORM == 'Windows' else TRASH_LABEL_TRASH
+	return translate(key)
 
 def trash(urls, undoable=True):
 	if not elevation.delete(urls, to_trash=True):

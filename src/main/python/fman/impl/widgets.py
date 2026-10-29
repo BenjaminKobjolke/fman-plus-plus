@@ -1,5 +1,7 @@
 from fbs_runtime.platform import is_mac
 from fman import APP_NAME, OK
+from fman import translate
+from fman.localization_keys import READY
 from fman.impl.background import chrome_is_transparent, for_window
 from fman.impl.frameless_dialog import make_frameless
 from fman.impl.incognito import MARKER_TEXT
@@ -583,7 +585,7 @@ class MainWindow(QMainWindow):
 		self._incognito_marker.setVisible(visible)
 	@run_in_main_thread
 	def clear_status_message(self):
-		self.show_status_message('Ready.')
+		self.show_status_message(translate(READY))
 	@run_in_main_thread
 	def set_pane_status_mode(self, mode):
 		self._pane_status_mode = mode
@@ -810,7 +812,10 @@ class MessageBox(QMessageBox):
 			layout.addWidget(scroll_area, row, column, row_span, column_span)
 		screen = self.screen() or QApplication.primaryScreen()
 		scroll_area.setMaximumHeight(
-			int(screen.availableGeometry().height() * self._MAX_TEXT_HEIGHT_SCREEN_SHARE)
+			int(
+				screen.availableGeometry().height()
+				* self._MAX_TEXT_HEIGHT_SCREEN_SHARE
+			)
 		)
 	def _fit_buttons(self):
 		"""Qt's updateSize caps the box width, which can squeeze its buttons."""

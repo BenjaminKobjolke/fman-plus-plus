@@ -1,5 +1,11 @@
 from core import elevation
-from fman import PLATFORM, show_alert
+from fman import PLATFORM, show_alert, translate
+from fman.localization_keys import (
+	COULD_NOT_CREATE as COULD_NOT_CREATE_KEY,
+	COULD_NOT_READ as COULD_NOT_READ_KEY,
+	NO_SELECTION as NO_SELECTION_KEY,
+	SHORTCUT_TARGET_MISSING as SHORTCUT_TARGET_MISSING_KEY,
+)
 from fman.fs import is_dir
 from fman.url import as_human_readable, splitscheme
 from getpass import getuser
@@ -11,10 +17,10 @@ import os
 # The two messages several unrelated commands answer with. They are one
 # string each rather than one literal per command so the wording cannot
 # drift between the command that deletes and the command that packs.
-NO_SELECTION = 'No file is selected!'
-CANNOT_READ = 'Could not read from %s (%s)'
-CANNOT_CREATE = 'Could not create %s (%s)'
-SHORTCUT_TARGET_MISSING = 'The destination of %s does not exist.'
+NO_SELECTION = translate(NO_SELECTION_KEY)
+CANNOT_READ = translate(COULD_NOT_READ_KEY)
+CANNOT_CREATE = translate(COULD_NOT_CREATE_KEY)
+SHORTCUT_TARGET_MISSING = translate(SHORTCUT_TARGET_MISSING_KEY)
 
 SHORTCUT_SUFFIX = '.lnk'
 

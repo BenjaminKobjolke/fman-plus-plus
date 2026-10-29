@@ -7,6 +7,8 @@ from fman.url import basename, join
 from fnmatch import fnmatchcase
 from pathlib import PurePath
 from dataclasses import dataclass
+from fman import translate
+from fman.localization_keys import NO_FILE_FOR_EXTENSION
 
 __all__ = [
 	'DeselectGroup', 'DeselectSameExtension', 'SelectGroup',
@@ -16,7 +18,7 @@ __all__ = [
 MASK_HISTORY_KEY = 'selection_mask_history'
 MASK_HISTORY_LIMIT = 20
 ALL_FILES_MASK = '*.*'
-_NO_FILE_MESSAGE = 'Put the cursor on a file to use its extension.'
+_NO_FILE_MESSAGE = NO_FILE_FOR_EXTENSION
 
 
 @dataclass(frozen=True)
@@ -149,14 +151,14 @@ class _SameExtensionCommand(DirectoryPaneCommand):
 	def __call__(self):
 		cursor_file = self.pane.get_file_under_cursor()
 		if not cursor_file:
-			show_status_message(_NO_FILE_MESSAGE, timeout_secs=3)
+			show_status_message(translate(_NO_FILE_MESSAGE), timeout_secs=3)
 			return
 		try:
 			if is_dir(cursor_file):
-				show_status_message(_NO_FILE_MESSAGE, timeout_secs=3)
+				show_status_message(translate(_NO_FILE_MESSAGE), timeout_secs=3)
 				return
 		except OSError:
-			show_status_message(_NO_FILE_MESSAGE, timeout_secs=3)
+			show_status_message(translate(_NO_FILE_MESSAGE), timeout_secs=3)
 			return
 		suffix = PurePath(basename(cursor_file)).suffix.lower()
 		urls = _matching_urls(

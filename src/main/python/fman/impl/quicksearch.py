@@ -1,4 +1,6 @@
 from fbs_runtime.platform import is_mac
+from fman import translate
+from fman.localization_keys import QUICKSEARCH_TITLE
 from fman.impl.util.qt import Key_Tab, Key_Down, Key_Up, Key_PageDown, \
 	Key_Home, Key_End, Key_PageUp, Key_Return, Key_Enter, ShiftModifier, \
 	UserRole, AlignRight, AlignVCenter, NoFocus, FramelessWindowHint, \
@@ -22,7 +24,7 @@ class Quicksearch(QDialog):
 			get_tab_completion = lambda q, i: None
 		super().__init__(parent, FramelessWindowHint)
 		# For accessibility / screen readers:
-		self.setWindowTitle('Quicksearch')
+		self.setWindowTitle(translate(QUICKSEARCH_TITLE))
 		self._app = app
 		self._css = css
 		self._get_items = get_items
