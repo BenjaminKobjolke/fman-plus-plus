@@ -1,7 +1,8 @@
 from errno import ENOENT
-from core.fs.zip import ZipFileSystem
+from core.fs.zip import ZipFileSystem, SevenZipFileSystem
+import core.fs.zip as zip_module
 from core.tests import StubFS
-from datetime import date
+from datetime import date, datetime
 from fman.url import as_url, join, as_human_readable, splitscheme
 from os import listdir
 from pathlib import Path
@@ -15,6 +16,38 @@ import os
 import os.path
 
 class ZipFileSystemTest(TestCase):
+	def test_7z_fractional_modified_timestamp(self):
+		with TemporaryDirectory() as tmp_dir:
+			zip_path = os.path.join(tmp_dir, 'test.7z')
+			file_path = os.path.join(tmp_dir, 'file.txt')
+			Path(file_path).write_text('contents')
+			mtime = datetime.now().replace(microsecond=123456)
+			os.utime(file_path, (mtime.timestamp(), mtime.timestamp()))
+			zip_module._run_7zip(['a', zip_path, file_path])
+			fs = SevenZipFileSystem(StubFS(), {'.7z'})
+			self.assertEqual(
+				date.today(), fs.modified_datetime(zip_path + '/file.txt').date()
+			)
+	def test_7z_follows_symlink_when_adding_on_non_windows(self):
+		if os.name == 'nt':
+			self.skipTest('This checks the non-Windows 7-Zip command line.')
+		with TemporaryDirectory() as tmp_dir:
+			zip_path = os.path.join(tmp_dir, 'test.7z')
+			archive_file = zip_path + '/linked.txt'
+			target = Path(tmp_dir, 'target.txt')
+			target.write_text('target contents')
+			link = Path(tmp_dir, 'link.txt')
+			link.symlink_to(target)
+			fs = SevenZipFileSystem(StubFS(), {'.7z'})
+			fs.copy(as_url(link), as_url(archive_file, '7z://'))
+			with TemporaryDirectory() as extract_dir:
+				fs.copy(as_url(archive_file, '7z://'), as_url(
+					os.path.join(extract_dir, 'linked.txt')
+				))
+				self.assertEqual(
+					'target contents',
+					Path(extract_dir, 'linked.txt').read_text()
+				)
 	def test_iterdir(self):
 		self._expect_iterdir_result('', {'ZipFileTest'})
 		self._expect_iterdir_result(

@@ -1,6 +1,7 @@
 from core.libmpv import (
 	LIBMPV_DLL_NAME, _DownloadLibmpv, cache_dir, ensure_libmpv_on_path,
 )
+import core.libmpv
 from fman import DATA_DIRECTORY
 from os.path import join
 from unittest import TestCase
@@ -9,6 +10,16 @@ from unittest.mock import MagicMock, patch
 import os
 import requests
 import tempfile
+
+class ExtractTest(TestCase):
+	def test_uses_shared_seven_zip_binary(self):
+		with tempfile.TemporaryDirectory() as tmp:
+			with patch('core.libmpv.cache_dir', return_value=tmp), \
+					patch('core.libmpv.run') as run, \
+					patch('core.fs.zip.SEVEN_ZIP_BINARY', 'shared-7zip'):
+				run.return_value.returncode = 0
+				core.libmpv._extract(b'archive')
+		self.assertEqual('shared-7zip', run.call_args.args[0][0])
 
 class CacheDirTest(TestCase):
 	def test_returns_data_directory_local_libmpv(self):

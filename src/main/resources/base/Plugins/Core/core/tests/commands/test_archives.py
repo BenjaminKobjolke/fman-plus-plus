@@ -1,4 +1,6 @@
-from core.commands.archives import _get_handler_for_archive
+from core.commands.archives import ArchiveOpenListener, _get_handler_for_archive
+from json import load
+from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -14,6 +16,7 @@ class GetHandlerForArchiveTest(TestCase):
 		'.zip': 'zip://',
 		'.gz': 'gz://',
 		'.tar.gz': 'tar.gz://',
+		'.rar': 'rar://',
 	}
 
 	def test_matches_a_registered_suffix(self):
@@ -22,6 +25,19 @@ class GetHandlerForArchiveTest(TestCase):
 		self.assertEqual('tar.gz://', self._handler('archive.tar.gz'))
 	def test_is_case_insensitive(self):
 		self.assertEqual('zip://', self._handler('ARCHIVE.ZIP'))
+	def test_enter_on_rar_opens_rar_filesystem(self):
+		with open(Path(__file__).parents[3] / 'Core Settings.json') as settings_file:
+			settings = load(settings_file)
+		with patch(
+			'core.commands.archives.load_json',
+			return_value=settings
+		), patch('core.commands.archives.is_dir', return_value=False):
+			result = ArchiveOpenListener(None).on_command(
+				'open_file', {'url': 'file://C:/archives/x.RAR'}
+			)
+		self.assertEqual(
+			('open_directory', {'url': 'rar://C:/archives/x.RAR'}), result
+		)
 	def test_unknown_suffix_has_no_handler(self):
 		self.assertIsNone(self._handler('notes.txt'))
 	def test_no_handlers_configured(self):
