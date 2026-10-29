@@ -39,7 +39,7 @@ def freeze():
 		path('${freeze_dir}/Contents/Frameworks')
 	)
 	move(
-		path('${core_plugin_in_freeze_dir}/bin/mac/7za'),
+		path('${core_plugin_in_freeze_dir}/bin/mac/7zz'),
 		path('${freeze_dir}/Contents/MacOS')
 	)
 

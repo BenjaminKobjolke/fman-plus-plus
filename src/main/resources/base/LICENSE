@@ -286,13 +286,17 @@ osxtrash (Mac version of fman only)
 URL: https://github.com/mherrmann/osxtrash
 Version: 1.6
 
-7-Zip (Windows version of fman only)
-====================================
-URL: http://www.7-zip.org/
-Version: 16.04
+7-Zip (all platforms)
+=====================
+Version: 26.00
+Source: https://www.7-zip.org/a/7z2600-src.7z
 
-Used under the terms of the GNU Lesser General Public License version 2.1.
-A copy of the license is available at http://www.gnu.org/.
+7-Zip is used under the terms of the GNU Lesser General Public License version 2.1,
+with BSD-licensed components and the unRAR restriction. The binary license notices
+are shipped beside each platform binary:
+- Windows: src/main/resources/base/Plugins/Core/bin/windows/License.txt
+- Mac: src/main/resources/base/Plugins/Core/bin/mac/License.txt
+- Linux: src/main/resources/base/Plugins/Core/bin/linux/License.txt
 
 windrop (Windows version of fman only)
 ======================================
@@ -320,11 +324,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-p7zip (Linux and Mac versions of fman)
-======================================
-URL: http://p7zip.sourceforge.net/
-Version: 16.02
-
-Used under the terms of the GNU Lesser General Public License version 2.0.
-A copy of the license is available at http://www.gnu.org/.

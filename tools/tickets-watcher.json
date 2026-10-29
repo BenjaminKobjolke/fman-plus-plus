@@ -97,6 +97,7 @@
     "sign_exe.bat",
     "translate_release_notes.bat",
     "unittest_with_timeout.bat",
+    "update_7zip.bat",
     "update_windrop.bat",
     "version_get.bat"
   ],
