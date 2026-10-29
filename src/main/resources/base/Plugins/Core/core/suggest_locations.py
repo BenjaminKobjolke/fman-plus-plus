@@ -158,12 +158,19 @@ class SuggestLocations:
 	def _filter_matching(self, dirs, query):
 		use_tilde = \
 			not query.startswith(os.path.dirname(self.fs.expanduser('~')))
+		has_parent_segment = '..' in re.split(r'[\\/]+', query)
+		matching_query = query
+		if has_parent_segment:
+			normalized_query = self._normalize_query(query)
+			matching_query = self._unexpand_user(normalized_query) \
+				if use_tilde else normalized_query
+		matchers = self._MATCHERS[:1] if has_parent_segment else self._MATCHERS
 		result = [[] for _ in self._MATCHERS]
 		for dir_ in dirs:
 			title = self._unexpand_user(dir_) if use_tilde else dir_
 			label = self.labels.get(dir_, '')
-			for i, matcher in enumerate(self._MATCHERS):
-				match = matcher(title.lower(), query.lower())
+			for i, matcher in enumerate(matchers):
+				match = matcher(title.lower(), matching_query.lower())
 				if match is not None:
 					result[i].append(QuicksearchItem(
 						dir_, title, highlight=match, hint=label
@@ -175,8 +182,9 @@ class SuggestLocations:
 				# 'home'. Ranked by the same matchers, so an exact name hit
 				# still beats a loose path hit. Nothing in the title to
 				# highlight, as with a command-palette keyword match.
-				for i, matcher in enumerate(self._MATCHERS):
-					if label and matcher(label.lower(), query.lower()) is not None:
+				for i, matcher in enumerate(matchers):
+					if label and matcher(label.lower(), matching_query.lower()) \
+							is not None:
 						result[i].append(QuicksearchItem(dir_, title, hint=label))
 						break
 		return list(chain.from_iterable(result))

@@ -224,6 +224,10 @@ class SuggestLocationsTest(TestCase):
 		self._check_query_returns(
 			'~/Unvisited', ['~/Unvisited', '~/Unvisited/Dir']
 		)
+	def test_subdirectories_of_paths_containing_parent_segments(self):
+		self._check_query_returns(
+			'~/Dropbox/../Do', ['~/Downloads'], [[0, 1, 2, 3]]
+		)
 	@skipIf(PLATFORM == 'Linux', 'Case-insensitive file systems only')
 	def test_existing_path_wrong_case(self):
 		self._check_query_returns(
