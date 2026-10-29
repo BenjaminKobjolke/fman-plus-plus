@@ -1,7 +1,7 @@
 from importlib import import_module as _import_module
 
 __all__ = []
-for _module_name in ('local', 'zip'):
+for _module_name in ('local', 'zip', 'rar'):
 	_module = _import_module('.' + _module_name, __name__)
 	_module_names = getattr(
 		_module, '__all__',

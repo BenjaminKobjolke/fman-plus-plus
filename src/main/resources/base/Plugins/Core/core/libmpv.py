@@ -55,12 +55,6 @@ DYLD_LIBRARY_PATH_SEPARATOR = ':'
 def cache_dir():
 	return join(DATA_DIRECTORY, 'Local', 'libmpv')
 
-def _sevenzip_binary():
-	# Mirrors core/fs/zip.py's platform resolution for the bundled 7za.
-	return join(
-		os.path.dirname(os.path.dirname(__file__)), 'bin', 'windows', '7za.exe'
-	)
-
 def ensure_libmpv_on_path():
 	"""
 	Blocks (on the calling background thread - see module docstring) until
@@ -123,6 +117,8 @@ class _DownloadLibmpv(Task):
 		_extract(b''.join(chunks))
 
 def _extract(archive):
+	# Import lazily to avoid loading the archive filesystem until extraction.
+	from core.fs.zip import SEVEN_ZIP_BINARY
 	os.makedirs(cache_dir(), exist_ok=True)
 	with tempfile.NamedTemporaryFile(suffix='.7z', delete=False) as f:
 		f.write(archive)
@@ -130,14 +126,14 @@ def _extract(archive):
 	try:
 		result = run(
 			[
-				_sevenzip_binary(), 'e', archive_path, LIBMPV_DLL_NAME,
+				SEVEN_ZIP_BINARY, 'e', archive_path, LIBMPV_DLL_NAME,
 				'-o' + cache_dir(), '-y',
 			],
 			capture_output=True, text=True,
 		)
 		if result.returncode != 0:
 			raise RuntimeError(
-				'7za extraction of %s failed: %s'
+				'7-Zip extraction of %s failed: %s'
 				% (LIBMPV_DLL_NAME, result.stderr)
 			)
 	finally:

@@ -22,15 +22,17 @@ import sys
 __all__ = ['ZipFileSystem', 'SevenZipFileSystem', 'TarFileSystem']
 
 if is_arch():
-	_7ZIP_BINARY = '/usr/bin/7za'
+	SEVEN_ZIP_BINARY = '/usr/bin/7za'
 elif is_mac() and getattr(sys, 'frozen', False):
-	_7ZIP_BINARY = join(dirname(sys.executable), '7za')
+	SEVEN_ZIP_BINARY = join(dirname(sys.executable), '7zz')
 else:
-	_7ZIP_BINARY = join(
-		dirname(dirname(dirname(__file__))), 'bin', PLATFORM.lower(), '7za'
-	)
 	if PLATFORM == 'Windows':
-		_7ZIP_BINARY += '.exe'
+		binary = '7z.exe'
+	else:
+		binary = '7zz'
+	SEVEN_ZIP_BINARY = join(
+		dirname(dirname(dirname(__file__))), 'bin', PLATFORM.lower(), binary
+	)
 
 class _7ZipFileSystem(FileSystem):
 	def __init__(self, fs=fman.fs, suffixes=None):
@@ -257,7 +259,8 @@ class _7ZipFileSystem(FileSystem):
 			elif line.startswith('Modified = '):
 				mtime_str = line[len('Modified = '):]
 				if mtime_str:
-					mtime = datetime.strptime(mtime_str, '%Y-%m-%d %H:%M:%S')
+					# 7-Zip 26 adds fractional seconds, which older parsing rejected.
+					mtime = datetime.strptime(mtime_str[:19], '%Y-%m-%d %H:%M:%S')
 			elif line.startswith('Attributes = '):
 				attributes = line[len('Attributes = '):]
 				is_dir = is_dir or attributes.startswith('D')
@@ -314,8 +317,6 @@ class AddToArchive(_7zipTaskWithProgress):
 				# We need to incur the cost of physically copying the file:
 				self._fman_fs.copy(as_url(src), as_url(dest))
 			args = ['a', self._zip_path, self._path_in_zip]
-			if PLATFORM != 'Windows':
-				args.insert(1, '-l')
 			self.run_7zip_with_progress(args, cwd=tmp_dir)
 			dest_path = self._zip_path + '/' + self._path_in_zip
 			self._zip_fs.notify_file_added(dest_path)
@@ -503,7 +504,7 @@ class Popen7Zip:
 		# 	OSError: [WinError 6] The handle is invalid
 		# This is likely caused by https://bugs.python.org/issue3905.
 		self._process = Popen(
-			[_7ZIP_BINARY] + args, stdout=PIPE, stderr=DEVNULL, stdin=DEVNULL,
+			[SEVEN_ZIP_BINARY] + args, stdout=PIPE, stderr=DEVNULL, stdin=DEVNULL,
 			cwd=cwd, env=env, **kwargs
 		)
 		self.stdout = SourceClosingTextIOWrapper(self._process.stdout, encoding)
@@ -515,7 +516,10 @@ class Popen7Zip:
 class Popen7ZipWindows(Popen7Zip):
 	def __init__(self, args, cwd):
 		args = _get_7zip_args_windows(args)
-		super().__init__(args, cwd, env=None, startupinfo=self._get_startupinfo())
+		super().__init__(
+			args, cwd, env=None, encoding='utf-8',
+			startupinfo=self._get_startupinfo()
+		)
 	def _get_startupinfo(self):
 		from subprocess import STARTF_USESHOWWINDOW, SW_HIDE, STARTUPINFO
 		result = STARTUPINFO()
@@ -524,8 +528,9 @@ class Popen7ZipWindows(Popen7Zip):
 		return result
 
 def _get_7zip_args_windows(args):
-	# Force an output encoding that works with TextIOWrapper(...):
-	return ['-sccWIN'] + args
+	# UTF-8 preserves archive names that are not representable in the Windows
+	# system code page.
+	return ['-sccUTF-8'] + args
 
 class Popen7ZipUnix(Popen7Zip):
 	def __init__(self, args, cwd):
@@ -596,7 +601,7 @@ class Run7ZipViaPty:
 
 	def __init__(self, args, cwd):
 		env, encoding = _get_7zip_env_encoding_unix()
-		self._pid, fd = self._spawn([_7ZIP_BINARY] + args, cwd, env)
+		self._pid, fd = self._spawn([SEVEN_ZIP_BINARY] + args, cwd, env)
 		self.stdout = self.Stdout(fd, encoding=encoding)
 	def kill(self):
 		os.kill(self._pid, signal.SIGTERM)
