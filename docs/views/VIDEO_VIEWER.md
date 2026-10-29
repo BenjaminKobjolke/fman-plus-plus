@@ -124,7 +124,7 @@ without depending on whatever codecs happen to be installed on the OS.
     (deliberately not the more common
     [`shinchiro/mpv-winbuild-cmake`](https://github.com/shinchiro/mpv-winbuild-cmake)
     builds, which are GPL-2.0-or-later by default), verifies it by SHA-256,
-    and extracts just the DLL with the project's bundled `7za.exe`. The DLL
+    and extracts just the DLL with the project's bundled `7z.exe`. The DLL
     is never committed to the repo — only fetched from upstream, once, into
     the user data dir.
   - **Real progress dialog, not a status-bar message.** The download runs

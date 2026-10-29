@@ -1,10 +1,15 @@
 # Archives (7-Zip)
 
 fman browses and edits `.zip`, `.7z` and `.tar` archives as if they were
-folders. Everything behind that — listing, extracting, packing, renaming inside
-an archive — is the bundled `7za` binary
-(`src/main/resources/base/Plugins/Core/bin/<platform>/`), driven by
-`core/fs/zip.py`.
+folders. `.rar` archives also open like folders and can be browsed and copied
+out of; RAR is read-only, so changes inside an archive are refused. The archive
+filesystems run 7-Zip through `core/fs/zip.py` and `core/fs/rar.py`.
+
+The bundled binary is `7z.exe` plus `7z.dll` on Windows and `7zz` on Mac and
+Linux, under `src/main/resources/base/Plugins/Core/bin/<platform>/`. Arch uses
+the system binary `/usr/bin/7za`. Each bundled platform binary has its own
+`License.txt` beside it. The Mac and Linux binaries are downloaded and staged
+by `tools/update_7zip.bat`; run that script before the next Mac or Linux build.
 
 Long-running operations show a progress bar. On Windows that progress used to
 cost more than the work itself.
@@ -12,7 +17,7 @@ cost more than the work itself.
 ## Why extraction used to be slow, and the bar never moved
 
 7-Zip only prints progress when it believes it is talking to a terminal. To get
-those lines, fman used to spawn `7za.exe` through a pseudo-terminal
+those lines, fman used to spawn `7z.exe` through a pseudo-terminal
 ([pywinpty](https://pypi.org/project/pywinpty/)) whenever a task wanted
 progress. Three problems came with it:
 
@@ -25,13 +30,13 @@ progress. Three problems came with it:
 3. **It needed extra files next to the frozen app.** ConPTY is implemented by
    `conpty.dll`, which launches `OpenConsole.exe` from its own directory.
    PyInstaller bundles DLL dependencies but not that companion executable, so
-   released builds had a pseudo-console with no console host: `7za.exe` died
+   released builds had a pseudo-console with no console host: `7z.exe` died
    instantly with `STATUS_CONTROL_C_EXIT` (`0xC000013A`) and no output, and
    every extract-with-progress failed.
 
 ## What fman does now
 
-`7za` is started with **`-bsp1`**, which redirects its progress stream to
+7-Zip is started with **`-bsp1`**, which redirects its progress stream to
 stdout. No terminal is involved, so a plain `Popen` pipe is enough:
 
 ```
@@ -54,15 +59,30 @@ Consequences:
 - The zip tests no longer spawn a real console, so the AV/EDR hang they used to
   risk is gone.
 
-Unix keeps its own `pty.fork()`-based runner (`Run7ZipViaPty`). It is cheap
-there, and the bundled p7zip builds are not all new enough to be trusted with
-`-bsp1`.
+Unix keeps its own `pty.fork()`-based progress runner
+(`Run7ZipViaPty`) and invokes its platform binary through that runner.
+
+## 7-Zip 26 compatibility
+
+7-Zip 26 adds fractional seconds to some `Modified` values in its technical
+listing output; the filesystem parses the date and time portion so these
+entries remain browseable. On Mac and Linux, 7-Zip 26 follows symlinks by
+default and rejects the old p7zip `-l` switch, so fman omits that switch while
+keeping the same follow-symlinks behavior.
+
+The vendor script downloads the official Windows, Mac and Linux binaries,
+places each binary and its license in the platform folder, removes the old
+`7za` files, stages the changed binaries, and marks Mac/Linux `7zz` executable.
+When changing `SEVEN_ZIP_VERSION` in `tools/update_7zip.bat`, also update the
+version and its matching source URL in `src/main/resources/base/LICENSE`.
+The shipped 7-Zip 26.00 source is published at
+<https://www.7-zip.org/a/7z2600-src.7z>.
 
 ## Canceling
 
 Canceling used to send `Ctrl+C` into the pseudo-terminal, which gave 7-Zip the
 chance to tidy up after itself. Without a terminal, fman kills the process
-instead — and a killed `7za` leaves its work file behind.
+instead — and a killed 7-Zip process leaves its work file behind.
 
 While updating an existing archive, 7-Zip writes a sibling `<archive>.tmp` and
 renames it when it is done. So after a canceled run, `remove_7zip_temp_archive()`
@@ -76,7 +96,7 @@ Covered by `core/tests/fs/test_zip_temp_archive.py`.
 
 | Where | What |
 |---|---|
-| `core/fs/zip.py` → `_7zip` | Context manager around one `7za` run: picks the runner, exposes `stdout_lines`, raises `_7zipError` on a non-zero exit |
+| `core/fs/zip.py` → `_7zip` | Context manager around one 7-Zip run: picks the runner, exposes `stdout_lines`, raises `_7zipError` on a non-zero exit |
 | `core/fs/zip.py` → `Popen7ZipWindows` | Plain run, no progress (listing, deleting, extraction) |
 | `core/fs/zip.py` → `Popen7ZipWindowsWithProgress` | Adds `-bsp1`; used whenever a task shows a progress bar |
 | `core/fs/zip.py` → `Run7ZipViaPty` | The Unix pseudo-terminal runner |
@@ -86,7 +106,7 @@ Covered by `core/tests/fs/test_zip_temp_archive.py`.
 ## Running the tests
 
 The archive tests are excluded from `run_core_tests.bat` (their filename does
-not match `test*.py`) because they spawn `7za` for real:
+not match `test*.py`) because they spawn 7-Zip for real:
 
 ```bash
 powershell -Command "cd 'D:\GIT\BenjaminKobjolke\fman'; cmd /c '.\tools\run_zip_tests.bat'"

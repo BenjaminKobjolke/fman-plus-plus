@@ -21,7 +21,7 @@ starts the drag with the real mouse, which every drop target accepts.
 ## Bundling
 
 `windrop.exe` is committed at `src/main/resources/base/Plugins/Core/bin/windows/`, next to
-`7za.exe`. `fbs freeze` copies it like any other resource, so `python build.py freeze` alone
+`7z.exe`. `fbs freeze` copies it like any other resource, so `python build.py freeze` alone
 does not need Visual Studio.
 
 `tools\build_windows.bat` runs `tools\update_windrop.bat` before it freezes, so a release build

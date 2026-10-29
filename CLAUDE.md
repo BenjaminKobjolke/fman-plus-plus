@@ -147,15 +147,15 @@ which have a known intermittent hang (Qt/thread state leaking from
 `fman_integrationtest.test_qt` into a later widget test — unrelated to Core plugin
 changes, not yet root-caused).
 
-If you touched the zip/7-Zip filesystem code (`core/fs/zip.py` or
-`core/tests/fs/zip_test.py`), also run:
+If you touched the zip/7-Zip filesystem code (`core/fs/zip.py`,
+`core/tests/fs/zip_test.py` or `core/tests/fs/rar_test.py`), also run:
 
 ```bash
 powershell -Command "cd 'D:\GIT\BenjaminKobjolke\fman'; cmd /c '.\tools\run_zip_tests.bat'"
 ```
 
 These are excluded from `run_core_tests.bat` (filename doesn't match `test*.py`)
-because they spawn `7za.exe` as a real subprocess and can hang under
+because they spawn `7z.exe` as a real subprocess and can hang under
 AV/EDR interference.
 
 If you touched the pane model (`src/main/python/fman/impl/model/**` — sorting,

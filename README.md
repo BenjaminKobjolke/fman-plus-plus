@@ -61,10 +61,11 @@ follows a growing log**. Images zoom; video seeks and remembers its volume.
 ![Tail mode: the text viewer following a log while it grows](media/demos/features/tail.gif)
 
 **Archives are folders.** `.zip`, `.7z` and `.tar` open with `Enter`, and you
-copy in and out of them like any directory. A bundled `7za` ships for Windows,
-macOS and Linux — nothing to install. On Windows this is **~6× faster than it
-was**, with a progress bar that actually moves: a 62 MB, 992-file zip went from
-9.8 s to 1.7 s. → [ARCHIVES.md](docs/ARCHIVES.md)
+can copy in and out of them like any directory. `.rar` files also open for
+browsing and copying files out; they are read-only. fman bundles 7-Zip 26.00
+(`7z.exe` on Windows, `7zz` on macOS and Linux; Arch uses the system binary).
+On Windows this is **~6× faster than it was**, with a progress bar that actually
+moves: a 62 MB, 992-file zip went from 9.8 s to 1.7 s. → [ARCHIVES.md](docs/ARCHIVES.md)
 
 **Make it yours.** 11 bundled themes, switched live from the palette, no
 restart. Your own theme is one small JSON file of colors; fonts and padding
@@ -239,7 +240,7 @@ These are the ones maintained on this account.
 
 | Doc | Topic |
 |---|---|
-| [ARCHIVES.md](docs/ARCHIVES.md) | `.zip`, `.7z`, `.tar` browsed like folders, backed by a bundled `7za` |
+| [ARCHIVES.md](docs/ARCHIVES.md) | `.zip`, `.7z`, `.tar` and read-only `.rar` archives browsed like folders with 7-Zip 26.00 |
 | [COPY_AND_MOVE.md](docs/COPY_AND_MOVE.md) | Copy and Move: gathering and transferring at the same time, parallel workers |
 | [COMMAND_PALLETTE.md](docs/COMMAND_PALLETTE.md) | The `Ctrl+Shift+P` palette |
 | [COMMAND_PALETTE_KEYBINDINGS.md](docs/COMMAND_PALETTE_KEYBINDINGS.md) | Rebinding a shortcut from the palette with `Shift+Enter` |
