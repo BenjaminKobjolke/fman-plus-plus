@@ -195,7 +195,9 @@ def check_release_version():
 
             (root / "no_portable_archive").touch()
             result = run_batch(build)
-            assert result.returncode == 1, "A build without a portable archive must fail"
+            assert result.returncode == 1, (
+                "A build without a portable archive must fail"
+            )
             assert not record.exists(), "No portable archive, no record"
 
             result = run_batch(scripts / "release_create.bat", "--dry-run")
