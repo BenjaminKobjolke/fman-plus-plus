@@ -38,6 +38,11 @@ class GetHandlerForArchiveTest(TestCase):
 		self.assertEqual(
 			('open_directory', {'url': 'rar://C:/archives/x.RAR'}), result
 		)
+	def test_xz_files_use_the_7zip_filesystem(self):
+		with open(Path(__file__).parents[3] / 'Core Settings.json') as settings_file:
+			settings = load(settings_file)
+		with patch('core.commands.archives.load_json', return_value=settings):
+			self.assertEqual('7z://', _get_handler_for_archive('archive.xz'))
 	def test_unknown_suffix_has_no_handler(self):
 		self.assertIsNone(self._handler('notes.txt'))
 	def test_no_handlers_configured(self):
