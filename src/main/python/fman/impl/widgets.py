@@ -22,7 +22,7 @@ from PyQt5.QtGui import QKeySequence, QPainter
 from PyQt5.QtWidgets import QWidget, QMainWindow, QSplitter, QStatusBar, \
 	QMessageBox, QInputDialog, QLineEdit, QFileDialog, QLabel, QDialog, \
 	QVBoxLayout, QSplitterHandle, QApplication, QFrame, QAction, QSizePolicy, \
-	QDialogButtonBox, QSpacerItem
+	QDialogButtonBox, QSpacerItem, QScrollArea
 from collections import namedtuple
 from time import time
 
@@ -743,6 +743,7 @@ class MessageBox(QMessageBox):
 	# Never claim more than this share of the screen, so the floor cannot push
 	# the box off-screen under a large theme font.
 	_MAX_SCREEN_SHARE = .5
+	_MAX_TEXT_HEIGHT_SCREEN_SHARE = .5
 
 	def __init__(self, parent, allow_escape=True):
 		super().__init__(parent)
@@ -779,6 +780,7 @@ class MessageBox(QMessageBox):
 			label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 		else:
 			label.setAlignment(Qt.AlignCenter)
+		self._make_text_scrollable(label)
 		if self._width_floor_applied:
 			return
 		self._width_floor_applied = True
@@ -792,6 +794,23 @@ class MessageBox(QMessageBox):
 		layout.addItem(
 			QSpacerItem(width, 0, QSizePolicy.Minimum, QSizePolicy.Fixed),
 			layout.rowCount(), 0, 1, layout.columnCount()
+		)
+	def _make_text_scrollable(self, label):
+		layout = self.layout()
+		if isinstance(label.parentWidget(), QScrollArea):
+			scroll_area = label.parentWidget()
+		else:
+			index = layout.indexOf(label)
+			row, column, row_span, column_span = layout.getItemPosition(index)
+			scroll_area = QScrollArea(self)
+			scroll_area.setFrameShape(QFrame.NoFrame)
+			scroll_area.setWidgetResizable(True)
+			layout.removeWidget(label)
+			scroll_area.setWidget(label)
+			layout.addWidget(scroll_area, row, column, row_span, column_span)
+		screen = self.screen() or QApplication.primaryScreen()
+		scroll_area.setMaximumHeight(
+			int(screen.availableGeometry().height() * self._MAX_TEXT_HEIGHT_SCREEN_SHARE)
 		)
 	def _fit_buttons(self):
 		"""Qt's updateSize caps the box width, which can squeeze its buttons."""

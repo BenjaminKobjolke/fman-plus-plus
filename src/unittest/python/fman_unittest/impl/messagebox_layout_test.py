@@ -17,7 +17,8 @@ tools\\run_messagebox_tests.bat.
 from fman.impl.widgets import MessageBox
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QApplication, QDialogButtonBox, QLabel, QMessageBox
+from PyQt5.QtWidgets import QApplication, QDialogButtonBox, QLabel, QMessageBox, \
+	QScrollArea
 from unittest import TestCase
 
 ONE_LINE = 'Everything has no index loaded.'
@@ -40,6 +41,12 @@ class MessageBoxLayoutTest(TestCase):
 		# The width floor must be a floor, not a fixed width. A stylesheet
 		# min-width pinned the box and cut long messages off instead.
 		self.assertEqual(LONG, self._label_of(LONG).text())
+	def test_long_text_is_scrollable(self):
+		box = self._box('\n'.join(['A long alert message.'] * 100))
+		label = box.findChild(QLabel, 'qt_msgbox_label')
+		scroll_area = label.parentWidget().parentWidget()
+		self.assertIsInstance(scroll_area, QScrollArea)
+		self.assertGreater(scroll_area.verticalScrollBar().maximum(), 0)
 	def test_a_short_message_still_gets_a_minimum_width(self):
 		narrow = self._box('Done.')
 		self.assertGreater(narrow.width(), 0)
