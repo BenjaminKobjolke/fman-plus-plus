@@ -28,6 +28,14 @@ class GoTo(DirectoryPaneCommand):
 			if exists(url):
 				# Use OpenDirectory because it handles errors gracefully:
 				self.pane.run_command('open_directory', {'url': url})
+			elif PLATFORM == 'Windows':
+				from core.commands.network_shares import ShareLogin, log_in_to_share
+				result = log_in_to_share(url)
+				if result == ShareLogin.CONNECTED and exists(url):
+					self.pane.run_command('open_directory', {'url': url})
+				elif result == ShareLogin.NOT_A_SHARE:
+					path = as_human_readable(url)
+					_remove_from_visited_paths(visited_paths, path)
 			else:
 				path = as_human_readable(url)
 				_remove_from_visited_paths(visited_paths, path)
@@ -36,6 +44,11 @@ class GoTo(DirectoryPaneCommand):
 			# The suggested_dir is for instance set when the user clicks on it
 			# with the mouse. If set, it always takes precedence. So return it:
 			return as_url(suggested_dir)
+		if PLATFORM == 'Windows':
+			from core.fs.local.windows.shares import parse_share_address
+			address = parse_share_address(query)
+			if address is not None:
+				return address.as_fman_url()
 		url = as_url(expanduser(query.rstrip()))
 		if PLATFORM == 'Windows' and re.match(r'\\[^\\]', query):
 			# Resolve '\Some\dir' to 'C:\Some\dir'.

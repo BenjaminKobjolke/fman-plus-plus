@@ -4,7 +4,7 @@
 instead of doing the work itself, so a plugin can override the default open
 behaviour through DirectoryPaneListener#on_command(...).
 """
-from core.commands.util import get_opposite_pane, is_dir_checked, \
+from core.commands.util import CANNOT_READ, get_opposite_pane, is_dir_checked, \
 	is_file_url, is_shortcut, require_file_url, shortcut_target, NO_SELECTION
 from core.viewers import viewer_for
 from fman import APP_NAME, DirectoryPaneCommand, DirectoryPaneListener, \
@@ -60,16 +60,49 @@ class OpenListener(DirectoryPaneListener):
 
 class OpenDirectory(DirectoryPaneCommand):
 	def __call__(self, url):
-		url_is_dir = is_dir_checked(url)
-		if url_is_dir is None:
-			return
+		if PLATFORM == 'Windows':
+			try:
+				url_is_dir = is_dir(url)
+			except PermissionError:
+				from core.commands.network_shares import ShareLogin, log_in_to_share
+				result = log_in_to_share(url)
+				if result == ShareLogin.CONNECTED:
+					try:
+						url_is_dir = is_dir(url)
+					except PermissionError:
+						_show_access_denied(url)
+						return
+					except OSError as error:
+						show_alert(CANNOT_READ % (as_human_readable(url), error))
+						return
+				elif result == ShareLogin.NOT_A_SHARE:
+					_show_access_denied(url)
+					return
+				else:
+					return
+			except OSError as error:
+				show_alert(CANNOT_READ % (as_human_readable(url), error))
+				return
+		else:
+			url_is_dir = is_dir_checked(url)
+			if url_is_dir is None:
+				return
 		if url_is_dir:
 			try:
 				self.pane.set_path(url, onerror=None)
 			except PermissionError:
-				show_alert(
-					'Access to "%s" was denied.' % as_human_readable(url)
-				)
+				if PLATFORM == 'Windows':
+					from core.commands.network_shares import ShareLogin, log_in_to_share
+					result = log_in_to_share(url)
+					if result == ShareLogin.CONNECTED:
+						try:
+							self.pane.set_path(url, onerror=None)
+						except PermissionError:
+							_show_access_denied(url)
+					elif result == ShareLogin.NOT_A_SHARE:
+						_show_access_denied(url)
+				else:
+					_show_access_denied(url)
 		else:
 			def callback():
 				try:
@@ -79,6 +112,9 @@ class OpenDirectory(DirectoryPaneCommand):
 			self.pane.set_path(dirname(url), callback=callback, onerror=None)
 	def is_visible(self):
 		return False
+
+def _show_access_denied(url):
+	show_alert('Access to "%s" was denied.' % as_human_readable(url))
 
 class OpenFile(DirectoryPaneCommand):
 	def __call__(self, url):

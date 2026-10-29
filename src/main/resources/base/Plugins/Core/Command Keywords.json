@@ -1,4 +1,6 @@
 {
+	"connect_network_share": ["smb", "samba", "mount", "map network drive", "net use", "unc"],
+	"disconnect_network_share": ["smb", "samba", "unmount", "unmap network drive", "eject"],
 	"center_window": [
 		"center window on screen", "move window to center", "middle",
 		"position", "recenter"
