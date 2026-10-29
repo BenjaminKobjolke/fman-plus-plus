@@ -122,6 +122,26 @@ SMB share mounted there is an ordinary `file://` path (`/Volumes/...`,
 fixes above, row streaming is platform-independent; the browse-list pruning is
 Windows-only because that code is.
 
+## Connecting to a share
+
+On Windows, enter `smb://server/share` in **Go To** to open a share. The
+`\\server\share` and `//server/share` forms work there too. Entering only
+`smb://server` opens that server's share list. fman asks Windows to make the
+connection, so the share remains a normal `file://` path and copying, Robocopy,
+and the network-drive performance improvements continue to work.
+
+When Windows needs credentials, its own login window appears above fman. The
+**Remember** checkbox stores credentials in Windows Credential Manager; fman
+does not see or store the password. Cancel leaves the address available in
+Visited Paths without navigating.
+
+The command palette has **Connect to network share** and **Disconnect network
+share**. Connect accepts an optional drive letter such as `Z:`. A mapped drive
+letter is saved by Windows and returns after restart; a connection without a
+letter lasts only until sign-out or restart. Disconnect refuses while files on
+the share are open and shows Windows' error so you can close them and try again.
+These commands and SMB address handling are Windows-only.
+
 ## Known remaining slow paths
 
 Neither freezes the UI, but both are worth knowing about:
