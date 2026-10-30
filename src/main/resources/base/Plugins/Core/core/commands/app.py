@@ -25,6 +25,7 @@ class About(ApplicationCommand):
 		show_alert(
 			APP_NAME + " version: " + FMAN_VERSION + "\n"
 			+ "Maintained by " + MAINTAINER + ".\n"
+			+ "\n"
 			+ "Based on fman by " + ORIGINAL_AUTHOR + "."
 		)
 

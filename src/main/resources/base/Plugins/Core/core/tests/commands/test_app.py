@@ -11,5 +11,7 @@ class AboutTest(TestCase):
 
 		message = show_alert.call_args.args[0]
 		self.assertIn(APP_NAME + ' version: ' + FMAN_VERSION, message)
-		self.assertIn('Benjamin Kobjolke', message)
-		self.assertIn('Michael Herrmann', message)
+		self.assertIn(
+			'Maintained by Benjamin Kobjolke.\n\nBased on fman by Michael Herrmann.',
+			message
+		)
