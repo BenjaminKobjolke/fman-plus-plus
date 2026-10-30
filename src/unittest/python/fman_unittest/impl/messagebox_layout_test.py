@@ -18,7 +18,7 @@ from fman.impl.widgets import MessageBox
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QApplication, QDialogButtonBox, QLabel, QMessageBox, \
-	QScrollArea
+	QMainWindow, QScrollArea
 from unittest import TestCase
 
 ONE_LINE = 'Everything has no index loaded.'
@@ -47,6 +47,53 @@ class MessageBoxLayoutTest(TestCase):
 		scroll_area = label.parentWidget().parentWidget()
 		self.assertIsInstance(scroll_area, QScrollArea)
 		self.assertGreater(scroll_area.verticalScrollBar().maximum(), 0)
+	def test_four_line_message_viewport_fits_without_a_scrollbar(self):
+		text = '\n'.join(['A short line.'] * 4)
+		box = self._box(text)
+		label = box.findChild(QLabel, 'qt_msgbox_label')
+		scroll_area = self._scroll_area_of(label)
+		scroll_area.setGeometry(0, 0, 400, scroll_area.minimumHeight())
+		QApplication.processEvents()
+		required_height = label.heightForWidth(scroll_area.viewport().width()) \
+			if label.hasHeightForWidth() else label.sizeHint().height()
+		self.assertGreaterEqual(scroll_area.viewport().height(), required_height)
+	def test_long_text_height_is_capped_by_parent_and_screen(self):
+		parent = QMainWindow()
+		parent.resize(600, 300)
+		self.addCleanup(parent.deleteLater)
+		box = self._box('\n'.join(['A long alert message.'] * 100), parent)
+		label = box.findChild(QLabel, 'qt_msgbox_label')
+		scroll_area = self._scroll_area_of(label)
+		screen_height = QApplication.primaryScreen().availableGeometry().height()
+		cap = int(min(parent.height(), screen_height) * .8)
+		self.assertEqual(cap, scroll_area.maximumHeight())
+		self.assertEqual(cap, scroll_area.minimumHeight())
+	def test_repeated_layout_updates_height_and_reuses_layout_items(self):
+		parent = QMainWindow()
+		parent.resize(600, 500)
+		self.addCleanup(parent.deleteLater)
+		box = self._box('\n'.join(['A long alert message.'] * 100), parent)
+		label = box.findChild(QLabel, 'qt_msgbox_label')
+		scroll_area = self._scroll_area_of(label)
+		parent.resize(600, 260)
+		box.setText('One short line.')
+		box._apply_layout_fixes()
+		screen_height = QApplication.primaryScreen().availableGeometry().height()
+		cap = int(min(parent.height(), screen_height) * .8)
+		self.assertEqual(cap, scroll_area.maximumHeight())
+		self.assertLess(scroll_area.minimumHeight(), cap)
+		self.assertEqual([scroll_area], box.findChildren(QScrollArea))
+		char_width = label.fontMetrics().horizontalAdvance('0')
+		floor_width = min(
+			char_width * MessageBox._MIN_TEXT_CHARS,
+			int(QApplication.primaryScreen().availableGeometry().width() *
+				MessageBox._MAX_SCREEN_SHARE)
+		)
+		spacers = [box.layout().itemAt(i).spacerItem()
+			for i in range(box.layout().count())
+			if box.layout().itemAt(i).spacerItem() is not None and
+			box.layout().itemAt(i).spacerItem().sizeHint().width() >= floor_width]
+		self.assertEqual(1, len(spacers))
 	def test_a_short_message_still_gets_a_minimum_width(self):
 		narrow = self._box('Done.')
 		self.assertGreater(narrow.width(), 0)
@@ -82,8 +129,13 @@ class MessageBoxLayoutTest(TestCase):
 		self.assertGreaterEqual(box.width(), min(needed, screen))
 	def _label_of(self, text):
 		return self._box(text).findChild(QLabel, 'qt_msgbox_label')
-	def _box(self, text):
-		box = MessageBox(None)
+	def _scroll_area_of(self, label):
+		parent = label.parentWidget()
+		if isinstance(parent, QScrollArea):
+			return parent
+		return parent.parentWidget()
+	def _box(self, text, parent=None):
+		box = MessageBox(parent)
 		box.setText(text)
 		box.setStandardButtons(QMessageBox.Ok)
 		# Qt polishes in setVisible() before delivering showEvent, so this is the
@@ -92,6 +144,8 @@ class MessageBoxLayoutTest(TestCase):
 		box.ensurePolished()
 		box._apply_layout_fixes()
 		box.adjustSize()
+		box.layout().activate()
+		box.layout().setGeometry(box.rect())
 		self.addCleanup(box.deleteLater)
 		return box
 	@classmethod

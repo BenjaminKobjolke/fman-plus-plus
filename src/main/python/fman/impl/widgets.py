@@ -745,7 +745,7 @@ class MessageBox(QMessageBox):
 	# Never claim more than this share of the screen, so the floor cannot push
 	# the box off-screen under a large theme font.
 	_MAX_SCREEN_SHARE = .5
-	_MAX_TEXT_HEIGHT_SCREEN_SHARE = .5
+	_MAX_TEXT_HEIGHT_SCREEN_SHARE = .8
 
 	def __init__(self, parent, allow_escape=True):
 		super().__init__(parent)
@@ -782,25 +782,28 @@ class MessageBox(QMessageBox):
 			label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 		else:
 			label.setAlignment(Qt.AlignCenter)
+		if not self._width_floor_applied:
+			self._width_floor_applied = True
+			char_width = label.fontMetrics().horizontalAdvance('0')
+			screen = self.screen() or QApplication.primaryScreen()
+			width = min(
+				char_width * self._MIN_TEXT_CHARS,
+				int(screen.availableGeometry().width() * self._MAX_SCREEN_SHARE)
+			)
+			layout = self.layout()
+			layout.addItem(
+				QSpacerItem(width, 0, QSizePolicy.Minimum, QSizePolicy.Fixed),
+				layout.rowCount(), 0, 1, layout.columnCount()
+			)
 		self._make_text_scrollable(label)
-		if self._width_floor_applied:
-			return
-		self._width_floor_applied = True
-		char_width = label.fontMetrics().horizontalAdvance('0')
-		screen = self.screen() or QApplication.primaryScreen()
-		width = min(
-			char_width * self._MIN_TEXT_CHARS,
-			int(screen.availableGeometry().width() * self._MAX_SCREEN_SHARE)
-		)
-		layout = self.layout()
-		layout.addItem(
-			QSpacerItem(width, 0, QSizePolicy.Minimum, QSizePolicy.Fixed),
-			layout.rowCount(), 0, 1, layout.columnCount()
-		)
 	def _make_text_scrollable(self, label):
 		layout = self.layout()
-		if isinstance(label.parentWidget(), QScrollArea):
-			scroll_area = label.parentWidget()
+		parent = label.parentWidget()
+		while parent is not None and parent is not self:
+			if isinstance(parent, QScrollArea):
+				scroll_area = parent
+				break
+			parent = parent.parentWidget()
 		else:
 			index = layout.indexOf(label)
 			row, column, row_span, column_span = layout.getItemPosition(index)
@@ -811,12 +814,39 @@ class MessageBox(QMessageBox):
 			scroll_area.setWidget(label)
 			layout.addWidget(scroll_area, row, column, row_span, column_span)
 		screen = self.screen() or QApplication.primaryScreen()
+		available_height = screen.availableGeometry().height()
+		parent = self.parentWidget()
+		main_window = parent.window() if parent is not None else None
+		if isinstance(main_window, QMainWindow) and main_window.height() > 0:
+			available_height = min(available_height, main_window.height())
 		scroll_area.setMaximumHeight(
-			int(
-				screen.availableGeometry().height()
-				* self._MAX_TEXT_HEIGHT_SCREEN_SHARE
-			)
+			int(available_height * self._MAX_TEXT_HEIGHT_SCREEN_SHARE)
 		)
+		# QScrollArea does not give QMessageBox height-for-width, so its tiny
+		# minimum would otherwise clip even short messages.
+		cap = scroll_area.maximumHeight()
+		char_width = label.fontMetrics().horizontalAdvance('0')
+		width_floor = min(
+			char_width * self._MIN_TEXT_CHARS,
+			int(screen.availableGeometry().width() * self._MAX_SCREEN_SHARE)
+		)
+		label_width = max(
+			width_floor, label.width(), scroll_area.viewport().width()
+		)
+		if label.hasHeightForWidth():
+			content_height = label.heightForWidth(label_width)
+		else:
+			content_height = label.sizeHint().height()
+		margins = (
+			scroll_area.contentsMargins(),
+			scroll_area.viewport().contentsMargins(),
+			label.contentsMargins()
+		)
+		content_height += sum(margins_item.top() + margins_item.bottom()
+			for margins_item in margins) + 2 * scroll_area.frameWidth()
+		if scroll_area.horizontalScrollBarPolicy() != Qt.ScrollBarAlwaysOff:
+			content_height += scroll_area.horizontalScrollBar().sizeHint().height()
+		scroll_area.setMinimumHeight(min(content_height, cap))
 	def _fit_buttons(self):
 		"""Qt's updateSize caps the box width, which can squeeze its buttons."""
 		button_box = self.findChild(QDialogButtonBox)
