@@ -10,7 +10,7 @@ core/commands/pack.py.
 # off the name it suggests, the same way the editor's "New file" prompt does.
 from core import elevation
 from core.commands.editor import _find_extension_start
-from core.commands.util import get_opposite_pane, is_file_url, \
+from core.commands.util import get_opposite_pane, \
 	CANNOT_READ, NO_SELECTION
 from core.commands.deselect_after_transfer import is_enabled as \
 	deselect_after_transfer_enabled
@@ -19,8 +19,8 @@ from core.path_completion import complete_path
 from core.util import is_parent
 from core.undo_history import CopyRecord, MoveRecord, record_transfer
 from fman import DirectoryPaneCommand, DirectoryPaneListener, NO, YES, \
-	YES_TO_ALL, show_alert, submit_task
-from fman.fs import makedirs, notify_file_added
+	submit_task
+from fman.fs import makedirs
 from fman.url import as_human_readable, join, splitscheme
 # os.path.basename, not fman.url's: this is what core/commands/__init__.py
 # used before this module existed (its later `from os.path import basename`
@@ -28,6 +28,7 @@ from fman.url import as_human_readable, join, splitscheme
 from os.path import basename
 from pathlib import PurePath
 from functools import partial
+from typing import TYPE_CHECKING
 
 import fman
 import fman.fs
@@ -36,6 +37,15 @@ import re
 
 __all__ = ['Copy', 'DragAndDropListener', 'Move', 'Symlink',
            'get_dest_suggestion']
+
+if TYPE_CHECKING:
+	from core.commands.symlink import Symlink
+
+def __getattr__(name):
+	if name == 'Symlink':
+		from core.commands.symlink import Symlink
+		return Symlink
+	raise AttributeError(name)
 
 class _TreeCommand(DirectoryPaneCommand):
 	# Copy, Move and Symlink all operate on the viewed file.
@@ -251,59 +261,3 @@ class DragAndDropListener(DirectoryPaneListener):
 			# Zip file. Respect this:
 			is_copy_not_move = True
 		return 'copy' if is_copy_not_move else 'move'
-
-class Symlink(_TreeCommand):
-
-	aliases = ('Symlink',)
-
-	def is_visible(self):
-		if not super().is_visible():
-			return False
-		return is_file_url(self.pane.get_path()) and \
-			   is_file_url(get_opposite_pane(self.pane).get_path())
-
-	def __call__(self):
-		src_url = self.pane.get_path()
-		if not is_file_url(src_url):
-			self._refuse()
-			return
-		dest_url = get_opposite_pane(self.pane).get_path()
-		if not is_file_url(dest_url):
-			self._refuse()
-			return
-		super().__call__()
-
-	def _call(self, files, dest_dir, dest_name=None):
-		ignore_exists = False
-		for i, f_url in enumerate(files):
-			dest_url = join(dest_dir, dest_name or basename(f_url))
-			if not is_file_url(f_url) or not is_file_url(dest_url):
-				self._refuse()
-				return
-			f_path = as_human_readable(f_url)
-			dest_path = as_human_readable(dest_url)
-			try:
-				os.symlink(f_path, dest_path, fman.fs.is_dir(f_url))
-			except FileExistsError:
-				if ignore_exists:
-					continue
-				has_more = i < len(files) - 1
-				if has_more:
-					answer = show_alert(
-						"%s exists and cannot be symlinked. Continue?"
-						% basename(f_url),
-						YES | NO | YES_TO_ALL, YES
-					)
-					if answer & YES_TO_ALL:
-						ignore_exists = True
-					elif answer & NO:
-						break
-				else:
-					show_alert(
-						"%s exists and cannot be symlinked." % basename(f_url)
-					)
-			else:
-				notify_file_added(dest_url)
-
-	def _refuse(self):
-		show_alert('Sorry, can only create symlinks between local files.')

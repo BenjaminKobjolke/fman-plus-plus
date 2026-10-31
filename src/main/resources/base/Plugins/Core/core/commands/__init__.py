@@ -29,7 +29,8 @@ _COMMAND_MODULES = (
 	'locked_files',
 	'navigation', 'network_shares', 'open_with', 'opening', 'pack', 'palette',
 	'pane_view',
-	'places', 'plugins', 'release_notes', 'rename', 'selection', 'theme', 'transfer',
+	'places', 'plugins', 'release_notes', 'rename', 'selection',
+	'symlink', 'theme', 'transfer',
 	'undo', 'updates', 'window'
 )
 __all__ = []
