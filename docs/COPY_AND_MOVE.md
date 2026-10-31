@@ -67,6 +67,26 @@ _gather_files()                        _run_gathered_tasks()
   yet. Files transferred before that point stay transferred, the same as an
   Abort on an error prompt mid-copy.
 
+## Overwrite prompts
+
+When a file destination already exists, Copy and Move show its size and modified
+date beside the incoming file's values. On local `.exe` and `.dll` files on
+Windows, the dialog also shows available program versions. It marks the newer
+date with `(newer)` and the larger size with `(larger)`; equal values are not
+marked. Missing or unreadable details are left blank.
+
+The dialog uses two button rows to keep all choices visible: **Overwrite**,
+**Overwrite all**, **Rename**, and **Rename all** on the first row; **Skip**,
+**Skip all**, and **Abort** on the second. Overwrite is the default choice.
+
+**Rename** keeps both files and asks for a new name, prefilled with an available
+name such as `report (2).txt`. **Rename all** uses the same numbered naming
+pattern automatically for later file conflicts in that operation. Existing
+files and names already chosen during the operation count as taken, so the
+number increases until a free name is found. Folder conflicts continue to merge
+their contents without prompting. Undo also tracks renamed top-level files, so
+undoing a copy or move removes the renamed destination.
+
 ## When a move stops halfway
 
 Core automatically moves completed local files back to their original
@@ -97,6 +117,11 @@ right before each file so large folder operations do not need a slow up-front
 scan. The check is on by default on Windows; use the **Toggle locked file
 check** command to turn it off or back on. Its setting key is
 `check_locked_files` in `Core Settings.json`. Other platforms skip the check.
+
+Overwrite details are shown by default. Set `show_overwrite_details` in
+`Core Settings.json` to `false` to show only the overwrite question and buttons;
+use the **Toggle overwrite details** command in the command palette to switch
+details off or back on.
 
 ## Selection after a copy
 

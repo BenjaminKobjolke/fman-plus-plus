@@ -177,6 +177,13 @@ If you touched dialog widgets (`src/main/python/fman/impl/widgets.py` —
 powershell -Command "cd 'D:\GIT\BenjaminKobjolke\fman'; cmd /c '.\tools\run_messagebox_tests.bat'"
 ```
 
+After touching the overwrite dialog in
+`src/main/python/fman/impl/overwrite_dialog.py`, run:
+
+```bash
+powershell -Command "cd 'D:\GIT\BenjaminKobjolke\fman'; cmd /c '.\tools\run_overwrite_dialog_tests.bat'"
+```
+
 If you touched the progress dialog's worker rows
 (`src/main/python/fman/impl/workers_label.py`, or `ProgressDialog` in
 `src/main/python/fman/impl/progress_dialog.py`), run:
