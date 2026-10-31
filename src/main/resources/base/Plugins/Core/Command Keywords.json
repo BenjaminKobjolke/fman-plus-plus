@@ -65,6 +65,7 @@
 	"minimize_to_tray": ["minimize to system tray", "notification area"],
 	"open_or_view": ["open (internal viewer for files)"],
 	"open_terminal": ["shell", "open terminal", "open shell", "console"],
+	"open_with_system_default": ["system default", "default app", "windows default", "file type action"],
 	"open_with_editor": ["editor", "modify"],
 	"pack": [
 		"compress...", "zip", "7z", "tar", "compress", "pack", "archive"

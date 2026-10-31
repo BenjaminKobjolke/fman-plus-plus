@@ -9,6 +9,7 @@ from core.commands.util import CANNOT_READ, get_opposite_pane, is_dir_checked, \
 from core.commands.open_files_unix import (
 	_open_local_files_linux, _open_local_files_mac,
 )
+from core.file_type_actions import run_file_type_actions
 from core.viewers import viewer_for
 from fman import APP_NAME, DirectoryPaneCommand, DirectoryPaneListener, \
 	NO, PLATFORM, YES, load_json, save_json, show_alert
@@ -124,7 +125,7 @@ class OpenFile(DirectoryPaneCommand):
 	def is_visible(self):
 		return False
 
-def _open_files(urls, pane):
+def _open_files(urls, pane, use_file_type_actions=True):
 	local_file_paths = []
 	for url in urls:
 		# On Windows, CMD can handle mapped drives Z:\ but not UNC paths
@@ -147,7 +148,10 @@ def _open_files(urls, pane):
 		# Use as_human_readable(...) instead of the result from splitscheme(...)
 		# above to get backslashes on Windows:
 		local_file_paths.append(as_human_readable(url))
-	_open_local_files(local_file_paths, pane)
+	if use_file_type_actions:
+		local_file_paths = run_file_type_actions(local_file_paths, pane)
+	if local_file_paths:
+		_open_local_files(local_file_paths, pane)
 
 def _open_local_files(paths, pane):
 	if PLATFORM == 'Windows':

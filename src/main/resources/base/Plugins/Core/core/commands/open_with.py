@@ -9,10 +9,14 @@ list - most-used app for this suffix first, then everything else.
 from core.commands.editor import _PLATFORM_APPLICATIONS_FILTER, \
 	_show_app_open_dialog
 from core.commands.util import is_file_url, NO_SELECTION
+from core.commands.file_types import ChooseFileTypeAction
+from core.file_type_actions import (
+	action_for_exact_suffix, remove_action, rename_app, suffix_of,
+)
 from core.os_ import get_popen_kwargs_for_opening
 from core.quicksearch_screen import QuicksearchScreen
 from fman import DirectoryPaneCommand, PLATFORM, load_json, save_json, \
-	show_alert, show_file_open_dialog, show_prompt
+	show_alert, show_file_open_dialog, show_prompt, show_status_message
 from fman.fs import resolve
 from fman.url import as_human_readable, splitscheme
 from subprocess import Popen
@@ -71,10 +75,7 @@ def _open_files_with_app(files, app):
 	associations = _load_file_associations()
 	for file_path in files:
 		file_name = os.path.basename(file_path)
-		try:
-			extension = file_name[file_name.rindex('.'):]
-		except ValueError:
-			extension = ''
+		extension = suffix_of(file_name)
 		ext_assocs = associations.setdefault(extension, {})
 		ext_assocs[app] = ext_assocs.get(app, 0) + 1
 	_save_file_associations()
@@ -185,6 +186,7 @@ class Configure(QuicksearchScreen):
 		yield self._ADD_APP
 		yield self._EDIT_APP
 		yield self._REMOVE_APP
+		yield from self._file_type_action_handlers()
 	def on_selected(self, option):
 		if option == self._ADD_APP:
 			app = _add_app()
@@ -194,6 +196,31 @@ class Configure(QuicksearchScreen):
 			EditApp(self._files).show()
 		elif option == self._REMOVE_APP:
 			RemoveApp(self._files).show()
+		else:
+			handler = self._file_type_action_handlers().get(option)
+			if handler:
+				handler()
+	def _file_type_action_handlers(self):
+		suffixes = sorted({
+			suffix_of(os.path.basename(file_path)).lower()
+			for file_path in self._files
+			if suffix_of(os.path.basename(file_path))
+		})
+		handlers = {}
+		for suffix in suffixes:
+			handlers['Always open %s files with...' % suffix] = \
+				lambda suffix=suffix: ChooseFileTypeAction(
+					suffix, _load_apps(),
+					lambda: Configure(self._files).show()
+				).show()
+			action = action_for_exact_suffix(suffix)
+			if action:
+				label = 'Stop always opening %s files with %s' % (
+					suffix, action.label()
+				)
+				handlers[label] = lambda suffix=suffix, label=label: \
+					_remove_file_type_action(suffix, label)
+		return handlers
 	def on_cancelled(self):
 		ShowAppsForOpening(self._files).show()
 
@@ -222,6 +249,7 @@ class EditApp(QuicksearchScreen):
 		apps[new_name] = new_path
 		_save_apps()
 		_remap_app_associations(app, new_name)
+		rename_app(app, new_name, new_path)
 		show_alert('%s was updated.' % new_name)
 	def on_cancelled(self):
 		Configure(self._files).show()
@@ -237,3 +265,10 @@ class RemoveApp(QuicksearchScreen):
 		show_alert('%s was removed from your favorite apps.' % app)
 	def on_cancelled(self):
 		Configure(self._files).show()
+
+def _remove_file_type_action(suffix, label):
+	remove_action(suffix)
+	show_status_message(
+		'%s was removed; Enter now uses the system default.' % label,
+		timeout_secs=3
+	)

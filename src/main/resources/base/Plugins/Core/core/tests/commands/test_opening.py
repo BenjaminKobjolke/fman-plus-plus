@@ -1,5 +1,6 @@
 from core.commands.opening import (
-	OpenDirectory, OpenOrView, ViewFile, ViewFileInOtherPane, _open_local_files_win,
+	OpenDirectory, OpenOrView, ViewFile, ViewFileInOtherPane, _open_files,
+	_open_local_files_win,
 )
 from core.tests.commands import FakePane, FakeWindow
 from fman import PLATFORM
@@ -105,6 +106,44 @@ class OpenOrViewTest(TestCase):
 		), patch('core.commands.opening._is_viewable', return_value=True):
 			OpenOrView(pane)()
 		self.assertEqual([], pane.commands_run)
+
+class OpenFileTypeActionsTest(TestCase):
+	def test_only_fallback_paths_are_opened_by_the_os(self):
+		with patch('core.commands.opening.is_file_url', return_value=True), \
+				patch('core.commands.opening.require_file_url', return_value=True), \
+				patch(
+					'core.commands.opening.as_human_readable',
+					side_effect=lambda url: url
+				), \
+				patch('core.commands.opening.run_file_type_actions',
+					  return_value=['ordinary.txt']) as runner, \
+				patch('core.commands.opening._open_local_files') as opener:
+			_open_files(['file:///a.md', 'file:///b.txt'], MagicMock())
+		self.assertEqual(['file:///a.md', 'file:///b.txt'], runner.call_args.args[0])
+		opener.assert_called_once_with(['ordinary.txt'], runner.call_args.args[1])
+
+	def test_does_not_call_os_opener_when_every_path_was_handled(self):
+		with patch('core.commands.opening.is_file_url', return_value=True), \
+				patch('core.commands.opening.require_file_url', return_value=True), \
+				patch(
+					'core.commands.opening.as_human_readable', return_value='file.md'
+				), \
+				patch('core.commands.opening.run_file_type_actions', return_value=[]), \
+				patch('core.commands.opening._open_local_files') as opener:
+			_open_files(['file:///a.md'], MagicMock())
+		opener.assert_not_called()
+
+	def test_can_bypass_file_type_actions(self):
+		with patch('core.commands.opening.is_file_url', return_value=True), \
+				patch('core.commands.opening.require_file_url', return_value=True), \
+				patch(
+					'core.commands.opening.as_human_readable', return_value='file.md'
+				), \
+				patch('core.commands.opening.run_file_type_actions') as runner, \
+				patch('core.commands.opening._open_local_files') as opener:
+			_open_files(['file:///a.md'], MagicMock(), use_file_type_actions=False)
+		runner.assert_not_called()
+		opener.assert_called_once_with(['file.md'], opener.call_args.args[1])
 
 @skipUnless(PLATFORM == 'Windows', '.lnk shortcuts are a Windows concept')
 class OpenShortcutTest(TestCase):
