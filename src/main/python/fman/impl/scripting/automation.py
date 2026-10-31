@@ -64,7 +64,8 @@ class AutomationActions:
 
 	@run_in_main_thread
 	def get_dialog(self):
-		dialog = QApplication.activeModalWidget()
+		dialog = QApplication.activeModalWidget() or \
+			self._main_window.get_open_dialog()
 		if dialog is None:
 			return None
 		if not isinstance(dialog, QMessageBox):

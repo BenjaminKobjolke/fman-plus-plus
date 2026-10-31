@@ -4,7 +4,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from PyQt5.QtCore import QEvent
-from PyQt5.QtWidgets import QApplication, QMessageBox, QWidget
+from PyQt5.QtWidgets import QApplication, QDialog, QMessageBox, QWidget
 
 from fman.impl.scripting.automation import AutomationActions, UnknownFile
 from fman.impl.scripting.actions import InvalidPane
@@ -45,6 +45,19 @@ class ScriptingAutomationTest(TestCase):
 		with patch('fman.impl.scripting.automation.QApplication.activeModalWidget',
 				return_value=None):
 			self.assertIsNone(actions.get_dialog())
+
+	def test_get_dialog_returns_open_embedded_dialog(self):
+		dialog = QDialog()
+		dialog.setWindowTitle('Quicksearch')
+		actions = AutomationActions(_WindowWithDialog(dialog), None)
+		with patch('fman.impl.scripting.automation.QApplication.activeModalWidget',
+				return_value=None):
+			self.assertEqual({
+				'type': 'QDialog',
+				'title': 'Quicksearch',
+				'text': '',
+				'buttons': [],
+			}, actions.get_dialog())
 
 	def test_get_dialog_returns_message_box_details(self):
 		parent = QWidget()
@@ -189,6 +202,16 @@ class _Window:
 	@staticmethod
 	def focusWidget():
 		return None
+	@staticmethod
+	def get_open_dialog():
+		return None
+
+
+class _WindowWithDialog(_Window):
+	def __init__(self, dialog):
+		self._dialog = dialog
+	def get_open_dialog(self):
+		return self._dialog
 
 
 class _MouseCapture(QWidget):

@@ -35,16 +35,16 @@ class Quicksearch(QDialog):
 		self._curr_items = []
 		self._result = None
 		self._init_ui()
-	def exec(self):
 		self._update_items(self._initial_query)
 		self._place_cursor_at_item(self._initial_item)
-		if super().exec():
-			return self._result
+	def get_result(self):
+		return self._result
 	def showEvent(self, event):
 		super().showEvent(event)
 		self.shown.emit()
 	def _init_ui(self):
 		self._query = LineEdit(self._initial_query, self)
+		self.setFocusProxy(self._query)
 		self._query.keyPressEventFilter = self._on_key_pressed
 		self._query.textChanged.connect(self._on_text_changed)
 		self._query.returnPressed.connect(self._on_return_pressed)

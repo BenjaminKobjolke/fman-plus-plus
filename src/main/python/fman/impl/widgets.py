@@ -5,6 +5,7 @@ from fman.localization_keys import READY
 from fman.impl.background import chrome_is_transparent, for_window
 from fman.impl.frameless_dialog import make_frameless
 from fman.impl.incognito import MARKER_TEXT
+from fman.impl.in_window_dialog import Scrim, exec_in_window
 from fman.impl.model import SortedFileSystemModel
 from fman.impl.pane_status import PaneStatusLine, PaneStatusMode
 from fman.impl.progress_dialog import ProgressDialog
@@ -515,7 +516,7 @@ class MainWindow(QMainWindow):
 			get_completions=get_completions
 		)
 		dialog.setTextValue(default)
-		result = self.exec_dialog(dialog)
+		result = self.exec_dialog(dialog, in_window=True)
 		if result:
 			return dialog.textValue(), True
 		return '', False
@@ -529,8 +530,8 @@ class MainWindow(QMainWindow):
 			self, self._app, css, get_items, get_tab_completion, query, item,
 			alt_accept
 		)
-		result = self.exec_dialog(dialog)
-		return result
+		self.exec_dialog(dialog, in_window=True)
+		return dialog.get_result()
 	def _match_title_bar(self, dialog):
 		# Dialogs that are always frameless, e.g. Quicksearch, keep their look.
 		if not self.is_title_bar_visible() and \
@@ -546,32 +547,34 @@ class MainWindow(QMainWindow):
 		return dialog
 	def get_tool_windows(self):
 		return self._tool_windows
+	def get_open_dialog(self):
+		return self._dialog
 	@run_in_main_thread
-	def exec_dialog(self, dialog):
+	def exec_dialog(self, dialog, in_window=False):
 		self._dialog = dialog
-		self.before_dialog.emit(dialog)
-		dialog.moveToThread(self._app.thread())
-		dialog.setParent(self)
-		self._match_title_bar(dialog)
-		# No setWindowOpacity here on purpose: dialogs are top-level windows
-		# of their own (Quicksearch is a QDialog; FramelessWindowHint is only
-		# a hint), so the main window's opacity does not reach them and they
-		# stay fully opaque - which is what keeps the command palette, prompts
-		# and progress dialogs readable over a faded window.
-		if is_mac():
-			disable_window_animations_mac(dialog)
-		# ProgressDialog is excluded: a copy can run for minutes, and dimming
-		# the window for that long is worse than the contrast it buys.
-		scrim = None if isinstance(dialog, ProgressDialog) else Scrim(self)
-		if scrim:
-			scrim.show()
 		try:
-			result = dialog.exec()
-		finally:
+			self.before_dialog.emit(dialog)
+			dialog.moveToThread(self._app.thread())
+			if in_window and QApplication.activeModalWidget() is None:
+				return exec_in_window(dialog, self)
+			dialog.setParent(self)
+			self._match_title_bar(dialog)
+			# Embedded dialogs share the window's opacity. Top-level dialogs
+			# remain fully opaque to keep prompts and progress readable.
+			if is_mac():
+				disable_window_animations_mac(dialog)
+			# ProgressDialog is excluded: a copy can run for minutes, and dimming
+			# the window for that long is worse than the contrast it buys.
+			scrim = None if isinstance(dialog, ProgressDialog) else Scrim(self)
 			if scrim:
-				scrim.close()
-		self._dialog = None
-		return result
+				scrim.show()
+			try:
+				return dialog.exec()
+			finally:
+				if scrim:
+					scrim.close()
+		finally:
+			self._dialog = None
 	@run_in_main_thread
 	def show_status_message(self, text, timeout_secs=None):
 		self._status_bar_text.setText(text)
@@ -695,6 +698,8 @@ class MainWindow(QMainWindow):
 		# placed correctly over the center of the window.
 		QTimer(self).singleShot(50, self.shown.emit)
 	def closeEvent(self, _):
+		if self._dialog is not None and not self._dialog.isWindow():
+			self._dialog.reject()
 		self.closed.emit()
 	@run_in_main_thread
 	def show_overlay(self, overlay):
@@ -717,6 +722,8 @@ class MainWindow(QMainWindow):
 		"""
 		if self._dialog is None:
 			return None
+		if not self._dialog.isWindow():
+			return self._dialog.geometry()
 		geometry = self._dialog.frameGeometry()
 		return QRect(self.mapFromGlobal(geometry.topLeft()), geometry.size())
 	def saveState(self, version=0):
@@ -931,6 +938,7 @@ class Prompt(QInputDialog):
 		if default:
 			self.setTextValue(default)
 		self.setTextEchoMode(QLineEdit.Normal)
+		self.setFocusProxy(self._get_line_edit())
 		self._request_immediate_repaint = False
 		self._is_second_paint = False
 		self._prompt_tab_completion = None
@@ -988,20 +996,3 @@ class Splitter(QSplitter):
 		width_increment = self.width() // self.count()
 		for i in range(1, self.count()):
 			self.moveSplitter(i * width_increment - handle_width // 2, i)
-
-class Scrim(QFrame):
-
-	"""
-	Dims the main window while a modal dialog is open, so the dialog reads
-	against the file list instead of competing with it. Its color - and thus
-	how strong the dim is, in the alpha byte - is the theme's `scrim_bg`.
-	"""
-
-	def __init__(self, parent):
-		super().__init__(parent)
-		# Like Overlay: never take focus away from the directory pane.
-		self.setFocusPolicy(Qt.NoFocus)
-		self.setGeometry(parent.rect())
-		self.raise_()
-	def close(self):
-		self.setParent(None)
