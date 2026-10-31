@@ -27,7 +27,7 @@ class SessionManager:
 		self._fs = fs
 		self._error_handler = error_handler
 		self._fman_version = fman_version
-	def show_main_window(self, window):
+	def show_main_window(self, window, hidden=False):
 		main_window = window._widget
 		self._restore_window_geometry(main_window)
 		pane_infos = self._settings.get('panes', None)
@@ -40,13 +40,14 @@ class SessionManager:
 		panes = [window.add_pane() for _ in range(len(pane_infos))]
 		self._show_startup_messages(main_window)
 		is_first_run = not self._settings
-		if is_first_run:
-			main_window.showMaximized()
-		else:
-			# In this case, we assume that _restore_window_geometry restored the
-			# window to its previous size/location. We don't want to overwrite
-			# these, so call show() instead of showMaximized():
-			main_window.show()
+		if not hidden:
+			if is_first_run:
+				main_window.showMaximized()
+			else:
+				# In this case, we assume that _restore_window_geometry restored the
+				# window to its previous size/location. We don't want to overwrite
+				# these, so call show() instead of showMaximized():
+				main_window.show()
 		thread_args = (panes, pane_infos, sys.argv[1:])
 		Thread(target=self._init_panes, args=thread_args).start()
 	def _restore_window_geometry(self, main_window):

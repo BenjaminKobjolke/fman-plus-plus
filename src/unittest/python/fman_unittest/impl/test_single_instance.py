@@ -1,7 +1,9 @@
 from fman.impl.session import SessionManager
-from fman.impl.single_instance import SingleInstance, panes_active_first
+from fman.impl.single_instance import (
+	SingleInstance, bring_to_front, panes_active_first
+)
 from os import getpid
-from PyQt5.QtCore import QEventLoop
+from PyQt5.QtCore import QEventLoop, Qt
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 
@@ -71,6 +73,15 @@ class PanesActiveFirstTest(TestCase):
 		panes = panes_active_first(plugin_support, _FakeMainWindow(None))
 		self.assertEqual([left, right], panes)
 
+class BringToFrontTest(TestCase):
+	def test_restores_minimized_window_without_clearing_maximized_state(self):
+		window = _WindowState(Qt.WindowMinimized | Qt.WindowMaximized)
+
+		bring_to_front(window)
+
+		self.assertEqual(Qt.WindowMaximized, window.state)
+		self.assertEqual(['show', 'raise', 'activate'], window.calls)
+
 class _FakeWidget:
 	def __init__(self):
 		self._children = set()
@@ -93,6 +104,21 @@ class _FakeMainWindow:
 		self._focus_widget = focus_widget
 	def focusWidget(self):
 		return self._focus_widget
+
+class _WindowState:
+	def __init__(self, state):
+		self.state = state
+		self.calls = []
+	def windowState(self):
+		return self.state
+	def setWindowState(self, state):
+		self.state = state
+	def show(self):
+		self.calls.append('show')
+	def raise_(self):
+		self.calls.append('raise')
+	def activateWindow(self):
+		self.calls.append('activate')
 
 class _FakeFs:
 	def __init__(self, dirs=(), files=()):

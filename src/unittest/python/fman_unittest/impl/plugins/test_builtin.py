@@ -23,7 +23,8 @@ class ToggleIncognitoTest(TestCase):
 			patch.object(BuiltinPlugin, '_register_file_system'), \
 			patch.object(BuiltinPlugin, '_register_column'), \
 			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
-			BuiltinPlugin(None, None, None, window_chrome, scripting_control, *args)
+			BuiltinPlugin(None, None, None, window_chrome, scripting_control,
+				None, *args)
 
 		by_name = {command.__name__: command for command in commands}
 		self.assertIn('ToggleIncognito', by_name)
@@ -82,7 +83,8 @@ class ToggleIncognitoTest(TestCase):
 			patch.object(BuiltinPlugin, '_register_file_system'), \
 			patch.object(BuiltinPlugin, '_register_column'), \
 			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
-			BuiltinPlugin(None, None, None, window_chrome, scripting_control, *args)
+			BuiltinPlugin(None, None, None, window_chrome, scripting_control,
+				None, *args)
 
 		by_name = {command.__name__: command for command in commands}
 		command_class = by_name['ToggleScriptingApi']

@@ -61,6 +61,8 @@
 	"move_to_trash": [
 		"move to trash", "move to recycle bin", "remove", "erase"
 	],
+	"minimize": ["minimize to taskbar", "taskbar"],
+	"minimize_to_tray": ["minimize to system tray", "notification area"],
 	"open_or_view": ["open (internal viewer for files)"],
 	"open_terminal": ["shell", "open terminal", "open shell", "console"],
 	"open_with_editor": ["editor", "modify"],
@@ -129,8 +131,14 @@
 		"incognito", "privacy", "private", "folder", "history",
 		"folder history", "visit history"
 	],
+	"toggle_minimize_to_tray": [
+		"minimize to tray", "hide to tray", "system tray"
+	],
 	"toggle_menu_bar": [
 		"menu bar", "help menu", "hide menu", "show menu", "chrome"
+	],
+	"toggle_start_with_windows": [
+		"start at sign in", "startup", "launch on login", "autostart"
 	],
 	"toggle_modified_column": ["show / hide modified column", "date column"],
 	"toggle_network_icons": ["show real icons on network drives"],

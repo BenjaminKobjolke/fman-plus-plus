@@ -1,4 +1,5 @@
 from hashlib import md5
+from PyQt5.QtCore import Qt
 from PyQt5.QtNetwork import QLocalServer, QLocalSocket
 
 import json
@@ -19,10 +20,7 @@ def open_paths_in_running_instance(
 ):
 	# Handle a forwarded launch inside the already-running primary instance:
 	# raise its window and open the paths, first one in the active pane.
-	if main_window.isMinimized():
-		main_window.showNormal()
-	main_window.raise_()
-	main_window.activateWindow()
+	bring_to_front(main_window)
 	if not abs_paths:
 		return
 	panes = panes_active_first(plugin_support, main_window)
@@ -30,6 +28,15 @@ def open_paths_in_running_instance(
 		session_manager.open_path_in_pane(pane, path)
 	if panes:
 		panes[0].focus()
+
+def bring_to_front(main_window):
+	# showNormal() would also clear WindowMaximized, losing the saved window size.
+	main_window.setWindowState(
+		main_window.windowState() & ~Qt.WindowMinimized
+	)
+	main_window.show()
+	main_window.raise_()
+	main_window.activateWindow()
 
 def panes_active_first(plugin_support, main_window):
 	all_panes = plugin_support.get_panes()

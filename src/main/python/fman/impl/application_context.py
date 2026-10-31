@@ -74,6 +74,12 @@ class DevelopmentApplicationContext(ApplicationContext):
 		self._demo_mode = False
 	def run(self):
 		self.init_logging()
+		self._start_hidden = False
+		if PLATFORM == 'Windows':
+			from fman.impl.autostart import TRAY_ARG, apply
+			self._start_hidden = TRAY_ARG in sys.argv
+			sys.argv[:] = [arg for arg in sys.argv if arg != TRAY_ARG]
+			apply(self.local_settings)
 		if '--automation-demo' in sys.argv:
 			return self._run_demo()
 		if self.single_instance_enabled:
@@ -91,7 +97,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 			except OSError:
 				# The control logged the bind failure; fman remains usable.
 				pass
-		self.session_manager.show_main_window(self.window)
+		self.session_manager.show_main_window(
+			self.window, hidden=self._start_hidden)
+		_ = self.global_hotkey
 		return self.app.exec_()
 	def _run_demo(self):
 		# Play a scripted demo for the automated-application-screenshots tool
@@ -199,6 +207,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 	def on_main_window_close(self):
 		self.session_manager.on_close(self.main_window)
 	def on_quit(self):
+		hotkey = self.__dict__.get('global_hotkey')
+		if hotkey is not None:
+			hotkey.unregister()
 		self.scripting_control.stop()
 		self.config.on_quit()
 		if self.metrics_logging_enabled:
@@ -320,11 +331,36 @@ class DevelopmentApplicationContext(ApplicationContext):
 			self.tour_controller, self.tutorial_factory,
 			self.cleanupguide_factory, self.window_chrome,
 			self.scripting_control,
+			self.tray,
 			self.plugin_error_handler,
 			self.application_command_registry, self.pane_command_registry,
 			self.key_bindings, self.mother_fs, self.viewer_registry,
 			self.window
 		)
+	@cached_property
+	def tray(self):
+		if PLATFORM != 'Windows':
+			return None
+		from fman.impl.tray import Tray
+		return Tray(self.app, self.main_window, self.local_settings)
+	@cached_property
+	def global_hotkey(self):
+		if PLATFORM != 'Windows':
+			return None
+		from fman.impl.global_hotkey import GlobalHotkey, SETTING
+		hotkey = GlobalHotkey(
+			self._on_global_hotkey,
+			lambda message: self.main_window.show_status_message(message)
+		)
+		self.app.installNativeEventFilter(hotkey)
+		hotkey.register(self.local_settings.get(SETTING, ''))
+		return hotkey
+	def _on_global_hotkey(self):
+		if self.main_window.isActiveWindow():
+			# WindowStateChange lets Tray hide it only when that setting is on.
+			self.main_window.showMinimized()
+		else:
+			self.tray.show()
 	@cached_property
 	def viewer_registry(self):
 		return ViewerRegistry()

@@ -12,10 +12,15 @@ NO_MINIMIZED_TOOL_WINDOWS = 'No minimized tool windows.'
 NO_TOOL_WINDOW_TO_MINIMIZE = 'No tool window to minimize.'
 TOOL_WINDOW_MESSAGE_TIMEOUT_SECONDS = 3
 
+def toggle_start_with_windows(settings):
+	# Keep winreg out of imports on platforms where tray commands are absent.
+	from fman.impl.autostart import toggle
+	return toggle(settings)
+
 class BuiltinPlugin(Plugin):
 	def __init__(
 		self, tour_controller, tutorial_factory, cleanupguide_factory,
-		window_chrome, scripting_control, *super_args
+		window_chrome, scripting_control, tray, *super_args
 	):
 		super().__init__(*super_args)
 
@@ -124,6 +129,24 @@ class BuiltinPlugin(Plugin):
 				window_chrome.pane_status.toggle_in_status_bar(
 					self.window._widget)
 
+		if tray is not None:
+			class MinimizeToTray(ApplicationCommand):
+				aliases = ('Minimize to system tray',)
+				def __call__(self):
+					tray.hide()
+
+			class ToggleMinimizeToTray(ApplicationCommand):
+				aliases = ('Toggle minimize to tray',)
+				def __call__(self):
+					self.window._widget.show_status_message(
+						tray.toggle_minimize_to_tray())
+
+			class ToggleStartWithWindows(ApplicationCommand):
+				aliases = ('Toggle start with Windows',)
+				def __call__(self):
+					self.window._widget.show_status_message(
+						toggle_start_with_windows(tray.settings))
+
 		class ToggleMenuBar(ApplicationCommand):
 			aliases = ('Toggle menu bar',)
 			def __call__(self):
@@ -140,6 +163,10 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(ToggleScriptingApi)
 		self._register_application_command(TogglePaneStatusLines)
 		self._register_application_command(TogglePaneMessagesInStatusBar)
+		if tray is not None:
+			self._register_application_command(MinimizeToTray)
+			self._register_application_command(ToggleMinimizeToTray)
+			self._register_application_command(ToggleStartWithWindows)
 		# Only Mac has a menu bar to toggle: MainWindow._init_help_menu builds
 		# the Help menu from ApplicationContext.help_menu_actions, which is
 		# empty everywhere else. Registering it off Mac would put a row in the

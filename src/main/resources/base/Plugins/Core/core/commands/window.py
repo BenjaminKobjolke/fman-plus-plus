@@ -55,6 +55,8 @@ class UpdateWindowTitle(DirectoryPaneListener):
 		_refresh_window_title(self.pane.window)
 
 class Minimize(ApplicationCommand):
+	aliases = ('Minimize to taskbar',)
+
 	def __call__(self):
 		self.window.minimize()
 

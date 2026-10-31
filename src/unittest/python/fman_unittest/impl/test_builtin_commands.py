@@ -20,7 +20,8 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 			patch.object(BuiltinPlugin, '_register_file_system'), \
 			patch.object(BuiltinPlugin, '_register_column'), \
 			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
-			BuiltinPlugin(None, None, None, window_chrome, scripting_control, *args)
+			BuiltinPlugin(None, None, None, window_chrome, scripting_control,
+				None, *args)
 
 		by_name = {command.__name__: command for command in commands}
 		self.assertIn('TogglePaneStatusLines', by_name)
@@ -81,6 +82,40 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 			('No tool window to minimize.', 3),
 		], window.messages)
 
+	def test_tray_commands_are_registered_only_when_tray_is_available(self):
+		without_tray = self._application_commands()
+		self.assertNotIn('MinimizeToTray', without_tray)
+		self.assertNotIn('ToggleMinimizeToTray', without_tray)
+		self.assertNotIn('ToggleStartWithWindows', without_tray)
+
+		tray = MagicMock()
+		with_tray = self._application_commands(tray)
+		self.assertIn('MinimizeToTray', with_tray)
+		self.assertIn('ToggleMinimizeToTray', with_tray)
+		self.assertIn('ToggleStartWithWindows', with_tray)
+
+		window = SimpleNamespace(_widget=MagicMock())
+		with_tray['MinimizeToTray'](window)()
+		tray.hide.assert_called_once_with()
+
+		tray.toggle_minimize_to_tray.return_value = 'Minimize to tray is on.'
+		with_tray['ToggleMinimizeToTray'](window)()
+		window._widget.show_status_message.assert_called_once_with(
+			'Minimize to tray is on.')
+
+	@patch('fman.impl.plugins.builtin.toggle_start_with_windows')
+	def test_start_with_windows_command_uses_tray_settings(self, toggle):
+		tray = MagicMock()
+		commands = self._application_commands(tray)
+		window = SimpleNamespace(_widget=MagicMock())
+		toggle.return_value = 'fman will start with Windows'
+
+		commands['ToggleStartWithWindows'](window)()
+
+		toggle.assert_called_once_with(tray.settings)
+		window._widget.show_status_message.assert_called_once_with(
+			'fman will start with Windows')
+
 	def test_minimize_command_minimizes_the_latest_visible_dialog(self):
 		commands = self._application_commands()
 		dialog = _FakeMinimizableDialog()
@@ -90,7 +125,7 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 		)()
 		self.assertEqual(1, dialog.minimize_count)
 
-	def _application_commands(self):
+	def _application_commands(self, tray=None):
 		registered = []
 		args = [MagicMock() for _ in range(7)]
 		with patch.object(
@@ -100,7 +135,7 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 			patch.object(BuiltinPlugin, '_register_file_system'), \
 			patch.object(BuiltinPlugin, '_register_column'), \
 			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
-			BuiltinPlugin(None, None, None, MagicMock(), MagicMock(), *args)
+			BuiltinPlugin(None, None, None, MagicMock(), MagicMock(), tray, *args)
 		return {command.__name__: command for command in registered}
 
 

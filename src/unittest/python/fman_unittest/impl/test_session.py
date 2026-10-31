@@ -1,5 +1,6 @@
 from fman.impl import incognito
 from fman.impl.session import SessionManager
+from unittest.mock import patch
 from unittest import TestCase
 
 
@@ -50,6 +51,21 @@ class SessionManagerCloseTest(TestCase):
 		self.assertEqual('1.2.3', self.settings['fman_version'])
 		self.assertEqual(1, self.settings.flush_count)
 
+class SessionManagerShowTest(TestCase):
+	def test_hidden_startup_initializes_panes_without_showing_window(self):
+		settings = _Settings({'window_geometry': 'Z2VvbWV0cnk='})
+		manager = SessionManager(settings, None, None, '1.2.3')
+		window = _StartupWindow()
+		thread = _Thread()
+
+		with patch('fman.impl.session.Thread', return_value=thread) as thread_type:
+			manager.show_main_window(window, hidden=True)
+
+		self.assertEqual(['restore'], window._widget.calls)
+		self.assertEqual(2, len(window.panes))
+		thread_type.assert_called_once()
+		self.assertTrue(thread.started)
+
 
 class _Settings(dict):
 	def __init__(self, *args, **kwargs):
@@ -78,3 +94,30 @@ class _Pane:
 		return self._location
 	def get_column_widths(self):
 		return self._col_widths
+
+class _StartupWindow:
+	def __init__(self):
+		self._widget = _StartupWidget()
+		self.panes = []
+	def add_pane(self):
+		pane = object()
+		self.panes.append(pane)
+		return pane
+
+class _StartupWidget:
+	def __init__(self):
+		self.calls = []
+	def restoreGeometry(self, geometry):
+		self.calls.append('restore')
+	def show_status_message(self, message, timeout_secs):
+		pass
+	def show(self):
+		self.calls.append('show')
+	def showMaximized(self):
+		self.calls.append('maximize')
+
+class _Thread:
+	def __init__(self):
+		self.started = False
+	def start(self):
+		self.started = True
