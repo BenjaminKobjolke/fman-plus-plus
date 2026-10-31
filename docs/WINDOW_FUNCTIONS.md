@@ -47,7 +47,9 @@ is hidden — is [WINDOW_TITLE_AND_BARS.md](WINDOW_TITLE_AND_BARS.md).
 
 `set_window_opacity` offers **Theme default**, then `100%` down to `70%`. The
 whole window fades, text included; fman does not do background-only
-translucency, and dialogs are separate windows that stay opaque.
+translucency. The command palette, pick lists and text prompts are drawn
+inside the window and follow its opacity; alerts and progress dialogs remain
+separate windows and stay opaque.
 
 **Theme default** is the way back to letting the theme decide — not `100%`,
 which pins the window opaque under every theme, including one that ships
@@ -57,20 +59,21 @@ theme switch.
 
 ## Dimming behind dialogs
 
-While a modal dialog is open — the [command palette](COMMAND_PALLETTE.md),
-prompts, alerts, the file-open dialog — fman lays a **scrim** over the main
-window. The dialog then reads against the file list instead of competing with
-it.
+While the [command palette](COMMAND_PALLETTE.md), another pick list or a text
+prompt is open, fman lays a **scrim** over the main window. These dialogs are
+drawn inside the window, which stays movable and resizable; clicking the scrim
+closes the dialog like Esc. Alerts and the file-open dialog remain separate
+modal windows.
 
-This works *because* of how opacity does not: dialogs are top-level windows of
-their own, so nothing applied to the main window reaches them. Dim the main
-window and the dialog keeps its full contrast.
+Because embedded dialogs follow the window's opacity, the scrim keeps the
+underlying file list distinct while the palette or prompt is open.
 
 - It is the `scrim_bg` color token, and its **alpha byte is the strength**.
   `#80000000` (the default) is 50% black, `#40000000` a quarter,
   `#00000000` no dim at all.
 - The **progress dialog is excluded**. A copy can run for minutes, and a
-  window dimmed that long costs more than the contrast is worth.
+  window dimmed that long costs more than the contrast is worth. Its palette
+  stays modal too.
 - There is no command and no setting: a theme owns it, like any other color.
   See [Dimming behind dialogs](THEMES.md#dimming-behind-dialogs).
 
@@ -99,8 +102,10 @@ Bind it like any other command
   `CenterWindow`, `Minimize` and the chrome toggles;
   `src/main/resources/base/Plugins/Core/core/commands/theme.py` — the
   opacity picker (`SetWindowOpacity`).
-- `src/main/python/fman/impl/widgets.py` — `MainWindow` and `Scrim`; the
-  scrim is applied in `exec_dialog`, which is also where the comment lives
-  explaining why dialogs never inherit the window's opacity.
+- `src/main/python/fman/impl/widgets.py` — `MainWindow`; `exec_dialog` chooses
+  embedded or modal behavior, and the opacity comment explains why embedded
+  dialogs follow the window while separate dialogs stay opaque.
+- `src/main/python/fman/impl/in_window_dialog.py` — the embedded dialog loop,
+  resize handling and `Scrim`.
 - `src/main/resources/base/styles.qss` — the `Scrim` rule that gives it its
   `$scrim_bg` color.

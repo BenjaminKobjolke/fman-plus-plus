@@ -149,10 +149,12 @@ hidden-file icons remain gray.
 
 ### Dimming behind dialogs
 
-While a modal dialog is open, fman lays a **scrim** over the main window so the
-dialog reads against the file list instead of competing with it. That is not a
-separate theme key — it is the `scrim_bg` color token, with its alpha byte
-carrying the strength:
+While the command palette, pick lists or text prompts are open, fman draws them
+inside the movable, resizable main window and lays a **scrim** over the file
+list. Clicking the scrim closes them like Esc. Alerts and the progress dialog
+remain separate windows; the progress dialog's palette stays modal. The scrim
+is not a separate theme key — it is the `scrim_bg` color token, with its alpha
+byte carrying the strength:
 
 ```json
 {
@@ -160,12 +162,12 @@ carrying the strength:
 }
 ```
 
-- The scrim covers the **main window only**. Dialogs are top-level windows of
-  their own, so the dim never touches the dialog itself — that is exactly what
-  buys the contrast.
-- It is drawn behind the command palette, prompts, alerts and the file-open
-  dialog. **Not** behind the progress dialog: a copy can run for minutes, and a
-  window dimmed that long costs more than the contrast is worth.
+- The scrim covers the **main window only**. Embedded palettes and prompts
+  follow the window's opacity; separate alerts, file-open and progress dialogs
+  stay opaque.
+- It is drawn behind the command palette, pick lists and prompts. **Not** behind
+  the progress dialog: a copy can run for minutes, and a window dimmed that
+  long costs more than the contrast is worth.
 - `#00000000` is a fully transparent scrim, i.e. the pre-scrim look. A theme
   that wants no dim at all says that.
 - Unlike [opacity](#opacity) below, this is a plain color token, so it lives
@@ -189,7 +191,8 @@ in a theme file that are *not* colors, so it sits beside `colors`, not in it:
   outside that range, or one that is not a number, is ignored like any other
   typo — the theme just doesn't change the opacity.
 - The whole window fades, text included. fman does not do background-only
-  translucency. Dialogs are separate windows and stay opaque.
+  translucency. Embedded palettes and prompts follow that opacity; separate
+  alerts and progress dialogs stay opaque.
 - Leaving the key out means "don't touch it", which resolves to fully
   opaque — not "inherit from the previous theme". Switching themes therefore
   always sets the opacity, back to 1.0 included.

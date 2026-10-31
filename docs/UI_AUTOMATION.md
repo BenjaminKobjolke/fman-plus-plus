@@ -95,10 +95,12 @@ attrib -h "%TEMP%\fman-ui\<session-id>\left\hidden.txt"
 tools\fman_ui.bat close
 ```
 
-The screenshot is the current main window (or the active modal or popup). The
-fixture's hidden attribute is set when `launch` creates it; the `attrib` line
-shows how to reset it if a check toggled it. Run `close` even when the check
-fails so the process and temporary session are removed.
+The `dialog` command also reports the in-window palette or prompt. A screenshot
+then shows the main window with that dialog over it (separate modal dialogs and
+popups are still captured on their own). The fixture's hidden attribute is set
+when `launch` creates it; the `attrib` line shows how to reset it if a check
+toggled it. Run `close` even when the check fails so the process and temporary
+session are removed.
 
 ## Example: undo a file from the Recycle Bin
 

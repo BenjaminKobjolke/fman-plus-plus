@@ -27,8 +27,8 @@ one of its hidden keywords, below), pick from the filtered list, press Enter.
   factor it scales the panes and their icons by, and **Reset font size** puts
   it back. The palette's base size is the theme's, in `Theme.css` — see
   [`docs/THEMES.md`](THEMES.md#themecss-fonts-padding-and-user-overrides).
-- **The window dims behind it:** the palette is a window of its own, so it
-  keeps full contrast while the file list behind it is covered by a scrim.
+- **The window dims behind it:** the palette is drawn inside the main window,
+  which stays movable and resizable; clicking the scrim closes it like Esc.
   How dark that scrim is, is the theme's `scrim_bg` — see
   [`docs/THEMES.md`](THEMES.md#dimming-behind-dialogs).
 
