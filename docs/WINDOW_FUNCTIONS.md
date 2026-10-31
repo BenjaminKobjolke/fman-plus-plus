@@ -18,7 +18,10 @@ except *Center window* are remembered across restarts.
 | `toggle_pane_messages_in_status_bar` | Copies pane messages to the window status bar | [STATUSBAR.md](STATUSBAR.md#pane-status-lines) |
 | `set_window_opacity` | Makes the whole window see-through | [window-opacity.md](functions/window-opacity.md) |
 | `center_window` | Puts the window back in the middle of its screen | [below](#center-window) |
-| `minimize` | Minimizes the window | — |
+| `minimize` | Minimizes the window to the taskbar | [System tray](SYSTEM_TRAY.md) |
+
+On Windows, use **Minimize to taskbar** for the normal taskbar behavior. The
+optional tray behavior and its commands are described in [System tray](SYSTEM_TRAY.md).
 
 The **dim behind dialogs** is the odd one out: it has no command, because it
 is not something you switch on. It is a theme color — see
