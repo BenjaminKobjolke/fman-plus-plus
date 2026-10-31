@@ -47,34 +47,40 @@ class FileTreeGathering:
 			return False
 		for i, src in enumerate(self._iter(self._files)):
 			is_last = i == len(self._files) - 1
-			dest = self._get_dest_url(src)
-			if src in samefile_renames:
-				self._enqueue(self._prepare_transfer(src, dest))
-				continue
-			try:
-				is_dir = self._fs.is_dir(src)
-			except OSError as e:
-				error_message = 'Could not %s %s' % \
-								(self._descr_verb, as_human_readable(src))
-				if self._handle_exception(error_message, is_last, e):
-					continue
+			self._completion.begin_item(src)
+			if not self._gather_item(src, is_last, samefile_renames):
 				return False
-			if is_dir:
-				if self._fs.exists(dest):
-					if not self._merge_directory(src):
-						return False
+			self._completion.end_item()
+		return True
+	def _gather_item(self, src, is_last, samefile_renames):
+		dest = self._get_dest_url(src)
+		if src in samefile_renames:
+			self._enqueue(self._prepare_transfer(src, dest))
+			return True
+		try:
+			is_dir = self._fs.is_dir(src)
+		except OSError as e:
+			error_message = 'Could not %s %s' % \
+							(self._descr_verb, as_human_readable(src))
+			if self._handle_exception(error_message, is_last, e):
+				self._completion.mark_incomplete()
+				return True
+			return False
+		if is_dir:
+			if self._fs.exists(dest):
+				return self._merge_directory(src)
+			self._enqueue(self._prepare_transfer(src, dest))
+		else:
+			if self._fs.exists(dest):
+				should_overwrite = self._should_overwrite(dest)
+				if should_overwrite == NO:
+					self._completion.mark_incomplete()
+					return True
+				elif should_overwrite == ABORT:
+					return False
 				else:
-					self._enqueue(self._prepare_transfer(src, dest))
-			else:
-				if self._fs.exists(dest):
-					should_overwrite = self._should_overwrite(dest)
-					if should_overwrite == NO:
-						continue
-					elif should_overwrite == ABORT:
-						return False
-					else:
-						assert should_overwrite == YES, should_overwrite
-				self._enqueue(self._prepare_transfer(src, dest))
+					assert should_overwrite == YES, should_overwrite
+			self._enqueue(self._prepare_transfer(src, dest))
 		return True
 	def _merge_directory(self, src):
 		for file_name in self._fs.iterdir(src):
@@ -98,6 +104,7 @@ class FileTreeGathering:
 				if self._fs.exists(dst):
 					should_overwrite = self._should_overwrite(dst)
 					if should_overwrite == NO:
+						self._completion.mark_incomplete()
 						continue
 					elif should_overwrite == ABORT:
 						return False
@@ -135,6 +142,7 @@ class FileTreeGathering:
 		# Iterated lazily: a file system's prepare_copy(...) may walk a whole
 		# tree, and each task must reach the transferring thread when found.
 		for task in self._iter(tasks):
+			self._completion.add_task(task)
 			self._queue.put(task)
 	def _handle_exception(self, message, is_last, exc):
 		with self._alert_lock:

@@ -12,6 +12,8 @@ from core import elevation
 from core.commands.editor import _find_extension_start
 from core.commands.util import get_opposite_pane, is_file_url, \
 	CANNOT_READ, NO_SELECTION
+from core.commands.deselect_after_transfer import is_enabled as \
+	deselect_after_transfer_enabled
 from core.fileoperations import CopyFiles, MoveFiles
 from core.path_completion import complete_path
 from core.util import is_parent
@@ -38,8 +40,10 @@ __all__ = ['Copy', 'DragAndDropListener', 'Move', 'Symlink',
 class _TreeCommand(DirectoryPaneCommand):
 	# Copy, Move and Symlink all operate on the viewed file.
 	usable_in_viewer = True
+	_files_from_selection = False
 
 	def __call__(self, files=None, dest_dir=None):
+		self._files_from_selection = files is None
 		if files is None:
 			files = self.get_chosen_files()
 		if dest_dir is None:
@@ -203,7 +207,14 @@ def _split(url):
 
 class Copy(_TreeCommand):
 	def _call(self, files, dest_dir, dest_name=None):
-		submit_task(CopyFiles(files, dest_dir, dest_name))
+		on_file_done = self._deselect if \
+			self._files_from_selection and deselect_after_transfer_enabled() \
+			else None
+		submit_task(CopyFiles(
+			files, dest_dir, dest_name, on_file_done=on_file_done
+		))
+	def _deselect(self, url):
+		self.pane.deselect([url])
 	def _call_elevated(self, files, dest_dir, dest_name):
 		return elevation.copy(files, dest_dir, dest_name)
 	def _record_operation(self, transfers, destinations_that_existed):

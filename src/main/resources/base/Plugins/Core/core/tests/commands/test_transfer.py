@@ -206,6 +206,52 @@ class TransferRecordingTest(TestCase):
 			command(files=[self._SRC], dest_dir='file:///dest')
 		self.assertIsNone(history.pop())
 
+	def test_copy_from_selection_deselects_completed_item_when_enabled(self):
+		pane = Mock()
+		command = Copy(pane)
+		command.get_chosen_files = Mock(return_value=[self._SRC])
+		command._confirm_tree_operation = Mock(
+			return_value=('file:///dest', None)
+		)
+		with (
+			patch('core.commands.transfer.fman.fs.exists', return_value=False),
+			patch('core.commands.transfer.makedirs'),
+			patch('core.commands.transfer.elevation.copy', return_value=False),
+			patch('core.commands.transfer.deselect_after_transfer_enabled',
+				  return_value=True),
+			patch('core.commands.transfer.CopyFiles') as copy_files,
+			patch('core.commands.transfer.submit_task'),
+		):
+			command(dest_dir='file:///dest')
+		callback = copy_files.call_args.kwargs['on_file_done']
+		callback(self._SRC)
+		pane.deselect.assert_called_once_with([self._SRC])
+
+	def test_explicit_files_do_not_deselect_selection(self):
+		self._assert_copy_callback_is_none(files=[self._SRC], enabled=True)
+
+	def test_disabled_setting_does_not_deselect_selection(self):
+		self._assert_copy_callback_is_none(files=None, enabled=False)
+
+	def _assert_copy_callback_is_none(self, files, enabled):
+		pane = Mock()
+		command = Copy(pane)
+		command.get_chosen_files = Mock(return_value=[self._SRC])
+		command._confirm_tree_operation = Mock(
+			return_value=('file:///dest', None)
+		)
+		with (
+			patch('core.commands.transfer.fman.fs.exists', return_value=False),
+			patch('core.commands.transfer.makedirs'),
+			patch('core.commands.transfer.elevation.copy', return_value=False),
+			patch('core.commands.transfer.deselect_after_transfer_enabled',
+				  return_value=enabled),
+			patch('core.commands.transfer.CopyFiles') as copy_files,
+			patch('core.commands.transfer.submit_task'),
+		):
+			command(files=files, dest_dir='file:///dest')
+		self.assertIsNone(copy_files.call_args.kwargs['on_file_done'])
+
 	def test_symlink_operations_are_not_recorded(self):
 		Symlink(Mock())._record_operation(
 			((self._SRC, self._DEST),), set()

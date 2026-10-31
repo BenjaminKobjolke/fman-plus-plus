@@ -406,6 +406,90 @@ class CopyFilesTest(FileTreeOperationAT, TestCase):
 		self.assertTrue(self._fs.exists(join(self.dest, 'first.txt')))
 		self.assertFalse(self._fs.exists(join(self.dest, 'second.txt')))
 		self.assertFalse(self._fs.exists(join(self.dest, 'third.txt')))
+	def test_reports_file_and_directory_after_they_are_copied(self):
+		file_url = join(self.src, 'file.txt')
+		dir_url = join(self.src, 'dir')
+		self._touch(file_url)
+		self._touch(join(dir_url, 'inside.txt'))
+		reported = []
+		task = CopyFiles([file_url, dir_url], self.dest, fs=self._fs,
+					 on_file_done=reported.append)
+		task._dialog = self._progress_dialog
+
+		task()
+
+		self.assertCountEqual([file_url, dir_url], reported)
+	def test_reports_only_completed_items_after_abort(self):
+		first, second, third = self._make_copy_sources()
+		self._expect_alert(
+			('Error copying second.txt (permission denied). Do you want to continue?',
+			 YES | YES_TO_ALL | ABORT, YES), answer=ABORT
+		)
+		backend = next(iter(self._fs._backends.values()))
+		copy = backend.copy
+		def copy_or_fail(src_url, dst_url):
+			if src_url == second:
+				raise OSError(13, 'permission denied')
+			copy(src_url, dst_url)
+		reported = []
+		with patch.object(backend, 'copy', side_effect=copy_or_fail):
+			task = CopyFiles([first, second, third], self.dest, fs=self._fs,
+						 on_file_done=reported.append)
+			task._dialog = self._progress_dialog
+			task()
+		self._progress_dialog.verify_expected_dialogs_were_shown()
+		self.assertEqual([first], reported)
+	def test_error_continued_reports_later_items_but_not_failed_item(self):
+		first, second, third = self._make_copy_sources()
+		self._expect_alert(
+			('Error copying second.txt (permission denied). Do you want to continue?',
+			 YES | YES_TO_ALL | ABORT, YES), answer=YES
+		)
+		backend = next(iter(self._fs._backends.values()))
+		copy = backend.copy
+		def copy_or_fail(src_url, dst_url):
+			if src_url == second:
+				raise OSError(13, 'permission denied')
+			copy(src_url, dst_url)
+		reported = []
+		with patch.object(backend, 'copy', side_effect=copy_or_fail):
+			task = CopyFiles([first, second, third], self.dest, fs=self._fs,
+						 on_file_done=reported.append)
+			task._dialog = self._progress_dialog
+			task()
+		self._progress_dialog.verify_expected_dialogs_were_shown()
+		self.assertCountEqual([first, third], reported)
+	def test_overwrite_no_reports_only_the_other_item(self):
+		first, second, _ = self._make_copy_sources()
+		self._touch(join(self.dest, 'second.txt'))
+		self._expect_alert(
+			('second.txt exists. Do you want to overwrite it?',
+			 YES | NO | YES_TO_ALL | NO_TO_ALL | ABORT, YES), answer=NO
+		)
+		reported = []
+		task = CopyFiles([first, second], self.dest, fs=self._fs,
+					 on_file_done=reported.append)
+		task._dialog = self._progress_dialog
+		task()
+		self._progress_dialog.verify_expected_dialogs_were_shown()
+		self.assertEqual([first], reported)
+	def test_merged_folder_with_skipped_file_is_not_reported(self):
+		src_dir = join(self.src, 'dir')
+		dest_dir = join(self.dest, 'dir')
+		src_file = join(src_dir, 'inside.txt')
+		self._touch(src_file)
+		self._touch(join(dest_dir, 'inside.txt'))
+		self._expect_alert(
+			('inside.txt exists. Do you want to overwrite it?',
+			 YES | NO | YES_TO_ALL | NO_TO_ALL | ABORT, YES), answer=NO
+		)
+		reported = []
+		task = CopyFiles([src_dir], self.dest, fs=self._fs,
+					 on_file_done=reported.append)
+		task._dialog = self._progress_dialog
+		task()
+		self._progress_dialog.verify_expected_dialogs_were_shown()
+		self.assertEqual([], reported)
 	def _make_copy_sources(self):
 		files = [join(self.src, name + '.txt') for name in ('first', 'second', 'third')]
 		for name, file_url in zip(('first', 'second', 'third'), files):

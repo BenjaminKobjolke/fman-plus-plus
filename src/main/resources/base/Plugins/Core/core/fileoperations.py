@@ -6,6 +6,7 @@ from queue import Queue
 from threading import Lock, Thread
 from urllib.parse import urlparse
 from core.move_rollback import MoveRollback
+from core.transfer_completion import TransferCompletion
 
 import fman.fs
 
@@ -13,7 +14,8 @@ class FileTreeOperation(FileTreeGathering, Task):
 	minimizable = True
 
 	def __init__(
-		self, descr_verb, files, dest_dir, dest_name=None, fs=fman.fs
+		self, descr_verb, files, dest_dir, dest_name=None, fs=fman.fs,
+		on_file_done=None
 	):
 		if dest_name and len(files) > 1:
 			raise ValueError(
@@ -42,6 +44,9 @@ class FileTreeOperation(FileTreeGathering, Task):
 		self._cannot_move_to_self_shown = False
 		self._override_all = None
 		self._ignore_exceptions = False
+		self._completion = TransferCompletion(
+			on_file_done or (lambda url: None)
+		)
 	def _transfer(self, src, dest):
 		raise NotImplementedError()
 	def _prepare_transfer(self, src, dest):
@@ -128,12 +133,14 @@ class FileTreeOperation(FileTreeGathering, Task):
 		try:
 			self._run_with_dialog(task, progress)
 		except (OSError, IOError) as e:
+			self._completion.task_finished(task, False)
 			title = task.get_title()
 			message = 'Error ' + (title[0].lower() + title[1:])
 			if not self._handle_exception(message, is_last, e):
 				return False
 			progress.set_progress(size)
 		else:
+			self._completion.task_finished(task, True)
 			self._on_task_done(task)
 		finally:
 			worker.title = ''
