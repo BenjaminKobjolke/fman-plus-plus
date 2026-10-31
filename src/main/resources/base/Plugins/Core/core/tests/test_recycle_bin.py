@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from glob import glob
 from os.path import exists, join
 import os
 from tempfile import TemporaryDirectory, NamedTemporaryFile
@@ -8,7 +9,7 @@ from unittest.mock import patch
 from core.trash import move_to_trash
 from core.recycle_bin import (
 	RecycleBinEntry, find_entry, iter_entries, parse_entry, remove_entry,
-	restore_entry,
+	restore_entry, get_current_user_sid, _recycle_bin_directory,
 )
 from fman import PLATFORM
 
@@ -245,8 +246,13 @@ class WindowsTrashRestoreIntegrationTest(TestCase):
 			file.write(b'restored')
 			path = file.name
 		try:
+			bin_directory = _recycle_bin_directory(
+				path, get_current_user_sid())
+			existing_entries = set(glob(join(bin_directory, '$I*')))
 			move_to_trash(path)
-			entry = find_entry(path)
+			new_entries = set(glob(join(bin_directory, '$I*'))) - existing_entries
+			with patch('core.recycle_bin.glob', return_value=list(new_entries)):
+				entry = find_entry(path)
 			self.assertIsNotNone(entry)
 			restore_entry(entry)
 			with open(path, 'rb') as file:
