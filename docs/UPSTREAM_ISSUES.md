@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#146](https://github.com/mherrmann/fman/issues/146) | Let user configure all filetypes, use system's default as fallback | enhancement | deferred | 2026-10-31 | A persistent per-filetype action model and its precedence over system associations need a defined design; the current Open with command is per-file selection and no installed plugin provides the requested behavior. |
+| [#146](https://github.com/mherrmann/fman/issues/146) | Let user configure all filetypes, use system's default as fallback | enhancement | fixed | 2026-10-31 | Configure persistent file type actions in Open with; see [FILE_TYPE_ACTIONS.md](FILE_TYPE_ACTIONS.md). |
 | [#144](https://github.com/mherrmann/fman/issues/144) | Minimize to system tray | enhancement, windows, 6 votes | fixed | 2026-10-31 | Windows tray commands, configurable global hotkey and sign-in startup; see [SYSTEM_TRAY.md](SYSTEM_TRAY.md). |
 | [#137](https://github.com/mherrmann/fman/issues/137) | Suggestion/discussion: improve overwrite dialog | enhancement, 1 vote | deferred | 2026-10-31 | Metadata, rename-on-conflict, and a compact button layout need a defined dialog design before this broader overwrite workflow can be changed safely. |
 | [#132](https://github.com/mherrmann/fman/issues/132) | fman crashed when cancelling Move (F6) | bug, mac | skipped | 2026-10-31 | The report is a macOS Qt crash and cannot be reproduced or tested on this Windows fork. |

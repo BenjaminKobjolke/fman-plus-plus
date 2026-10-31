@@ -247,6 +247,7 @@ These are the ones maintained on this account.
 | [COMMAND_PALETTE_KEYWORDS.md](docs/COMMAND_PALETTE_KEYWORDS.md) | Hidden search keywords, and editing them with `Shift+Enter` |
 | [DEMOS.md](docs/DEMOS.md) | How the demo recordings are made |
 | [DRAG_TO_APP.md](docs/DRAG_TO_APP.md) | Pick from the last 5 apps with Enter or cancel with Esc before dragging via `windrop` |
+| [FILE_TYPE_ACTIONS.md](docs/FILE_TYPE_ACTIONS.md) | Set a persistent file type action and fall back to the system default |
 | [DEMOS_PLUGINS.md](docs/DEMOS_PLUGINS.md) | Recording a demo of a third-party plugin |
 | [FONTS.md](docs/FONTS.md) | The bundled font families, picking one, adding your own |
 | [ICONS.md](docs/ICONS.md) | File icon sets, icon size, writing your own |
