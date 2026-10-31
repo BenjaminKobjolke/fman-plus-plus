@@ -47,6 +47,17 @@ class GoToShareTest(TestCase):
 		pane.run_command.assert_not_called()
 
 
+@skipIf(PLATFORM != 'Windows', 'Windows environment variables use %NAME%')
+class GoToEnvironmentVariablesTest(TestCase):
+	def test_expands_environment_variables_in_typed_paths(self):
+		path = r'C:\Users\test\AppData\Local'
+		with patch.dict(os.environ, {'FMAN_GOTO_TEST_DIR': path}):
+			result = GoTo(Mock())._get_target_location(
+				'%FMAN_GOTO_TEST_DIR%', None
+			)
+		self.assertEqual(as_url(path), result)
+
+
 class GoToListenerIncognitoTest(TestCase):
 	def setUp(self):
 		self.addCleanup(incognito.set_incognito, False)

@@ -5,7 +5,7 @@ from fman import DirectoryPaneCommand, show_quicksearch, PLATFORM, load_json, \
 from fman.fs import exists, resolve
 from fman.url import as_url, splitscheme, as_human_readable
 from itertools import islice
-from os.path import expanduser, islink
+from os.path import expanduser, expandvars, islink
 from pathlib import Path, PurePath
 from random import shuffle
 from time import time
@@ -49,7 +49,7 @@ class GoTo(DirectoryPaneCommand):
 			address = parse_share_address(query)
 			if address is not None:
 				return address.as_fman_url()
-		url = as_url(expanduser(query.rstrip()))
+		url = as_url(expandvars(expanduser(query.rstrip())))
 		if PLATFORM == 'Windows' and re.match(r'\\[^\\]', query):
 			# Resolve '\Some\dir' to 'C:\Some\dir'.
 			try:
