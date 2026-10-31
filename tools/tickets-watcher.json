@@ -86,6 +86,7 @@
     "run_messagebox_tests.bat",
     "run_model_tests.bat",
     "run_overlay_focus_tests.bat",
+    "run_overwrite_dialog_tests.bat",
     "run_progress_dialog_tests.bat",
     "run_prompt_completion_tests.bat",
     "run_robocopy_integration_tests.bat",
