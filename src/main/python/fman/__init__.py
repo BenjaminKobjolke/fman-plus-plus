@@ -607,6 +607,10 @@ class Task:
 		subtask.set_progress(subtask.get_size())
 	def show_alert(self, *args, **kwargs):
 		return self._dialog.show_alert(*args, **kwargs)
+	def show_overwrite_dialog(self, *args, **kwargs):
+		return self._dialog.show_overwrite_dialog(*args, **kwargs)
+	def show_prompt(self, *args, **kwargs):
+		return self._dialog.show_prompt(*args, **kwargs)
 	def show_workers(self, workers):
 		"""
 		Lists the parallel workers in the progress dialog, with buttons to add

@@ -2,7 +2,8 @@ from core.fileoperations import CopyFiles, MoveFiles
 from core.transfer_workers import DONE
 from core.fs.local import LocalFileSystem
 from core.tests import StubFS
-from fman import YES, NO, OK, YES_TO_ALL, NO_TO_ALL, ABORT, PLATFORM, Task
+from fman import YES, OK, YES_TO_ALL, ABORT, PLATFORM, Task
+from fman.impl.overwrite_dialog import OverwriteChoice
 from fman.url import join, dirname, as_url, as_human_readable
 from os.path import exists
 from tempfile import TemporaryDirectory
@@ -71,7 +72,8 @@ class FileTreeOperationAT:
 	def test_directory_several_files_dest_dir_does_not_exist(self):
 		self.test_directory_several_files(dest_dir=join(self.dest, 'subdir'))
 	def test_overwrite_files(
-		self, answers=(YES, YES), expect_overrides=(True, True),
+		self, answers=(OverwriteChoice.OVERWRITE, OverwriteChoice.OVERWRITE),
+		expect_overrides=(True, True),
 		files=('a.txt', 'b.txt'), perform_on_files=None
 	):
 		if perform_on_files is None:
@@ -87,11 +89,7 @@ class FileTreeOperationAT:
 			self._touch(dest_file_path)
 		for i, answer in enumerate(answers):
 			file_name = os.path.basename(files[i])
-			self._expect_alert(
-				('%s exists. Do you want to overwrite it?' % file_name,
-				 YES | NO | YES_TO_ALL | NO_TO_ALL | ABORT, YES),
-				answer=answer
-			)
+			self._expect_overwrite(file_name, answer)
 		self._perform_on(*[join(self.src, fname) for fname in perform_on_files])
 		for i, expect_override in enumerate(expect_overrides):
 			dest_file = dest_files[i]
@@ -107,22 +105,124 @@ class FileTreeOperationAT:
 				)
 		return src_files
 	def test_overwrite_files_no_yes(self):
-		self.test_overwrite_files((NO, YES), (False, True))
+		self.test_overwrite_files(
+			(OverwriteChoice.SKIP, OverwriteChoice.OVERWRITE), (False, True)
+		)
 	def test_overwrite_files_yes_all(self):
-		self.test_overwrite_files((YES_TO_ALL,), (True, True))
+		self.test_overwrite_files((OverwriteChoice.OVERWRITE_ALL,), (True, True))
 	def test_overwrite_files_no_all(self):
-		self.test_overwrite_files((NO_TO_ALL,), (False, False))
+		self.test_overwrite_files((OverwriteChoice.SKIP_ALL,), (False, False))
 	def test_overwrite_files_yes_no_all(self):
-		self.test_overwrite_files((YES, NO_TO_ALL), (True, False))
+		self.test_overwrite_files(
+			(OverwriteChoice.OVERWRITE, OverwriteChoice.SKIP_ALL), (True, False)
+		)
 	def test_overwrite_files_abort(self):
-		self.test_overwrite_files((ABORT,), (False, False))
+		self.test_overwrite_files((OverwriteChoice.ABORT,), (False, False))
+	def test_rename_keeps_both_files(self):
+		src = join(self.src, 'test.txt')
+		dest = join(self.dest, 'test.txt')
+		self._touch(src, 'incoming')
+		self._touch(dest, 'existing')
+		self._expect_overwrite('test.txt', OverwriteChoice.RENAME)
+		self._progress_dialog.expect_prompt(
+			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
+			('chosen.txt', True)
+		)
+		operation = self._perform_on(src)
+		self.assertEqual(
+			{dest: join(self.dest, 'chosen.txt')}, operation.renamed_dests
+		)
+		self._assert_file_contents_equal(dest, 'existing')
+		self._assert_file_contents_equal(join(self.dest, 'chosen.txt'), 'incoming')
+		if self.operation_descr_verb == 'move':
+			self.assertFalse(self._fs.exists(src))
+	def test_rename_all_uses_one_dialog(self):
+		for name in ('a.txt', 'b.txt'):
+			self._touch(join(self.src, name), 'incoming ' + name)
+			self._touch(join(self.dest, name), 'existing ' + name)
+		self._expect_overwrite('a.txt', OverwriteChoice.RENAME_ALL)
+		self._perform_on(join(self.src, 'a.txt'), join(self.src, 'b.txt'))
+		self._assert_file_contents_equal(join(self.dest, 'a (2).txt'), 'incoming a.txt')
+		self._assert_file_contents_equal(join(self.dest, 'b (2).txt'), 'incoming b.txt')
+	def test_rename_skips_taken_number(self):
+		self._touch(join(self.src, 'report.txt'), 'incoming')
+		self._touch(join(self.dest, 'report.txt'), 'existing')
+		self._touch(join(self.dest, 'report (2).txt'), 'occupied')
+		self._expect_overwrite('report.txt', OverwriteChoice.RENAME_ALL)
+		self._perform_on(join(self.src, 'report.txt'))
+		self._assert_file_contents_equal(join(self.dest, 'report (3).txt'), 'incoming')
+	def test_taken_rename_name_alerts_and_reprompts(self):
+		self._touch(join(self.src, 'test.txt'), 'incoming')
+		self._touch(join(self.dest, 'test.txt'), 'existing')
+		self._touch(join(self.dest, 'taken.txt'), 'occupied')
+		self._expect_overwrite('test.txt', OverwriteChoice.RENAME)
+		self._progress_dialog.expect_prompt(
+			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
+			('..', True)
+		)
+		self._progress_dialog.expect_alert(
+			('Please enter a valid file name.',), None
+		)
+		self._progress_dialog.expect_prompt(
+			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
+			('taken.txt', True)
+		)
+		self._progress_dialog.expect_alert(('taken.txt already exists.',), None)
+		self._progress_dialog.expect_prompt(
+			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
+			('chosen.txt', True)
+		)
+		self._perform_on(join(self.src, 'test.txt'))
+		self.assertTrue(self._fs.exists(join(self.dest, 'chosen.txt')))
+	def test_cancel_name_prompt_returns_to_overwrite_dialog(self):
+		self._touch(join(self.src, 'test.txt'), 'incoming')
+		self._touch(join(self.dest, 'test.txt'), 'existing')
+		self._expect_overwrite('test.txt', OverwriteChoice.RENAME)
+		self._progress_dialog.expect_prompt(
+			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
+			('', False)
+		)
+		self._expect_overwrite('test.txt', OverwriteChoice.SKIP)
+		self._perform_on(join(self.src, 'test.txt'))
+		self._assert_file_contents_equal(join(self.dest, 'test.txt'), 'existing')
+	def test_rename_all_reserves_names_for_later_source_files(self):
+		self._touch(join(self.src, 'report.txt'), 'one')
+		self._touch(join(self.src, 'report (2).txt'), 'two')
+		self._touch(join(self.dest, 'report.txt'), 'existing')
+		self._expect_overwrite('report.txt', OverwriteChoice.RENAME_ALL)
+		self._perform_on(
+			join(self.src, 'report.txt'), join(self.src, 'report (2).txt')
+		)
+		self._assert_file_contents_equal(join(self.dest, 'report (2).txt'), 'one')
+		self._assert_file_contents_equal(join(self.dest, 'report (2) (2).txt'), 'two')
+	def test_move_abort_after_rename_rolls_back(self):
+		if self.operation_descr_verb != 'move':
+			self.skipTest('Move rollback only applies to MoveFiles.')
+		first = join(self.src, 'first.txt')
+		second = join(self.src, 'second.txt')
+		self._touch(first, 'first incoming')
+		self._touch(second, 'second incoming')
+		self._touch(join(self.dest, 'first.txt'), 'first existing')
+		self._touch(join(self.dest, 'second.txt'), 'second existing')
+		self._expect_overwrite('first.txt', OverwriteChoice.RENAME)
+		self._progress_dialog.expect_prompt(
+			('Enter a new name for first.txt:', 'first (2).txt', 0, 9),
+			('first (2).txt', True)
+		)
+		self._expect_overwrite('second.txt', OverwriteChoice.ABORT)
+		self._perform_on(first, second)
+		self.assertTrue(self._fs.exists(first))
+		self.assertTrue(self._fs.exists(second))
+		self._assert_file_contents_equal(join(self.dest, 'first.txt'), 'first existing')
+		self.assertFalse(self._fs.exists(join(self.dest, 'first (2).txt')))
 	def test_overwrite_files_in_directory(self):
 		self.test_overwrite_files(
 			files=('dir/a.txt', 'b.txt'), perform_on_files=('dir', 'b.txt')
 		)
 	def test_overwrite_directory_abort(self):
 		self.test_overwrite_files(
-			(ABORT,), (False, False,), files=('dir/a/a.txt', 'dir/b/b.txt'),
+			(OverwriteChoice.ABORT,), (False, False,),
+			files=('dir/a/a.txt', 'dir/b/b.txt'),
 			perform_on_files=('dir',)
 		)
 	def test_move_to_self(self):
@@ -308,6 +408,7 @@ class FileTreeOperationAT:
 		op._dialog = self._progress_dialog
 		op()
 		self._progress_dialog.verify_expected_dialogs_were_shown()
+		return op
 	def _assert_file_contents_equal(self, url, expected_contents):
 		with self._open(url, 'r') as f:
 			self.assertEqual(expected_contents, f.read())
@@ -335,6 +436,10 @@ class FileTreeOperationAT:
 		return as_url(os.readlink(as_human_readable(link_url)))
 	def _expect_alert(self, args, answer):
 		self._progress_dialog.expect_alert(args, answer)
+	def _expect_overwrite(self, name, answer):
+		self._progress_dialog.expect_overwrite(
+			'%s exists. Do you want to overwrite it?' % name, answer
+		)
 	def _expect_files(self, files, in_dir=None):
 		if in_dir is None:
 			in_dir = self.dest
@@ -367,10 +472,7 @@ class CopyFilesTest(FileTreeOperationAT, TestCase):
 		self._touch(locked_dest_file)
 		self._chmod(locked_dest_file, 0o444)
 		try:
-			self._expect_alert(
-				('foo.txt exists. Do you want to overwrite it?',
-				 YES | NO | YES_TO_ALL | NO_TO_ALL | ABORT, YES), answer=YES
-			)
+			self._expect_overwrite('foo.txt', OverwriteChoice.OVERWRITE)
 			self._expect_alert(
 				('Error copying foo.txt (%s).' % (
 					'access is denied' if PLATFORM == 'Windows'
@@ -419,53 +521,35 @@ class CopyFilesTest(FileTreeOperationAT, TestCase):
 		task()
 
 		self.assertCountEqual([file_url, dir_url], reported)
+	def _assert_reported_after_second_copy_fails(self, answer):
+		first, second, third = self._make_copy_sources()
+		self._expect_alert(
+			('Error copying second.txt (permission denied). Do you want to continue?',
+			 YES | YES_TO_ALL | ABORT, YES), answer=answer
+		)
+		backend = next(iter(self._fs._backends.values()))
+		copy = backend.copy
+		def copy_or_fail(src_url, dst_url):
+			if src_url == second:
+				raise OSError(13, 'permission denied')
+			copy(src_url, dst_url)
+		reported = []
+		with patch.object(backend, 'copy', side_effect=copy_or_fail):
+			task = CopyFiles([first, second, third], self.dest, fs=self._fs,
+						 on_file_done=reported.append)
+			task._dialog = self._progress_dialog
+			task()
+		self._progress_dialog.verify_expected_dialogs_were_shown()
+		expected = [first] if answer == ABORT else [first, third]
+		self.assertCountEqual(expected, reported)
 	def test_reports_only_completed_items_after_abort(self):
-		first, second, third = self._make_copy_sources()
-		self._expect_alert(
-			('Error copying second.txt (permission denied). Do you want to continue?',
-			 YES | YES_TO_ALL | ABORT, YES), answer=ABORT
-		)
-		backend = next(iter(self._fs._backends.values()))
-		copy = backend.copy
-		def copy_or_fail(src_url, dst_url):
-			if src_url == second:
-				raise OSError(13, 'permission denied')
-			copy(src_url, dst_url)
-		reported = []
-		with patch.object(backend, 'copy', side_effect=copy_or_fail):
-			task = CopyFiles([first, second, third], self.dest, fs=self._fs,
-						 on_file_done=reported.append)
-			task._dialog = self._progress_dialog
-			task()
-		self._progress_dialog.verify_expected_dialogs_were_shown()
-		self.assertEqual([first], reported)
+		self._assert_reported_after_second_copy_fails(ABORT)
 	def test_error_continued_reports_later_items_but_not_failed_item(self):
-		first, second, third = self._make_copy_sources()
-		self._expect_alert(
-			('Error copying second.txt (permission denied). Do you want to continue?',
-			 YES | YES_TO_ALL | ABORT, YES), answer=YES
-		)
-		backend = next(iter(self._fs._backends.values()))
-		copy = backend.copy
-		def copy_or_fail(src_url, dst_url):
-			if src_url == second:
-				raise OSError(13, 'permission denied')
-			copy(src_url, dst_url)
-		reported = []
-		with patch.object(backend, 'copy', side_effect=copy_or_fail):
-			task = CopyFiles([first, second, third], self.dest, fs=self._fs,
-						 on_file_done=reported.append)
-			task._dialog = self._progress_dialog
-			task()
-		self._progress_dialog.verify_expected_dialogs_were_shown()
-		self.assertCountEqual([first, third], reported)
+		self._assert_reported_after_second_copy_fails(YES)
 	def test_overwrite_no_reports_only_the_other_item(self):
 		first, second, _ = self._make_copy_sources()
 		self._touch(join(self.dest, 'second.txt'))
-		self._expect_alert(
-			('second.txt exists. Do you want to overwrite it?',
-			 YES | NO | YES_TO_ALL | NO_TO_ALL | ABORT, YES), answer=NO
-		)
+		self._expect_overwrite('second.txt', OverwriteChoice.SKIP)
 		reported = []
 		task = CopyFiles([first, second], self.dest, fs=self._fs,
 					 on_file_done=reported.append)
@@ -479,10 +563,7 @@ class CopyFilesTest(FileTreeOperationAT, TestCase):
 		src_file = join(src_dir, 'inside.txt')
 		self._touch(src_file)
 		self._touch(join(dest_dir, 'inside.txt'))
-		self._expect_alert(
-			('inside.txt exists. Do you want to overwrite it?',
-			 YES | NO | YES_TO_ALL | NO_TO_ALL | ABORT, YES), answer=NO
-		)
+		self._expect_overwrite('inside.txt', OverwriteChoice.SKIP)
 		reported = []
 		task = CopyFiles([src_dir], self.dest, fs=self._fs,
 					 on_file_done=reported.append)
@@ -515,7 +596,8 @@ class MoveFilesTest(FileTreeOperationAT, TestCase):
 		for file_ in src_files:
 			self.assertFalse(exists(file_))
 	def test_overwrite_files(
-		self, answers=(YES, YES), expect_overrides=(True, True),
+		self, answers=(OverwriteChoice.OVERWRITE, OverwriteChoice.OVERWRITE),
+		expect_overrides=(True, True),
 		files=('a.txt', 'b.txt'), perform_on_files=None
 	):
 		src_files = super().test_overwrite_files(
@@ -551,11 +633,7 @@ class MoveFilesTest(FileTreeOperationAT, TestCase):
 		self._makedirs(dest_dir)
 		dest_file = join(dest_dir, 'test.txt')
 		self._touch(dest_file, 'dest contents')
-		self._expect_alert(
-			('test.txt exists. Do you want to overwrite it?',
-			 YES | NO | YES_TO_ALL | NO_TO_ALL | ABORT, YES),
-			answer=NO
-		)
+		self._expect_overwrite('test.txt', OverwriteChoice.SKIP)
 		self._perform_on(src_dir)
 		self.assertTrue(
 			self._fs.exists(src_file),
@@ -585,10 +663,7 @@ class MoveFilesTest(FileTreeOperationAT, TestCase):
 		first, second, third = self._make_move_sources()
 		dest_second = join(self.dest, 'second.txt')
 		self._touch(dest_second, 'old destination')
-		self._expect_alert(
-			('second.txt exists. Do you want to overwrite it?',
-			 YES | NO | YES_TO_ALL | NO_TO_ALL | ABORT, YES), answer=ABORT
-		)
+		self._expect_overwrite('second.txt', OverwriteChoice.ABORT)
 		self._run_move()
 		self.assertTrue(self._fs.exists(first))
 		self.assertFalse(self._fs.exists(join(self.dest, 'first.txt')))
@@ -707,6 +782,8 @@ class MockProgressDialog:
 		self._test_case = test_case
 		self._progress = 0
 		self._expected_alerts = []
+		self._expected_overwrites = []
+		self._expected_prompts = []
 		self.workers = None
 		self.canceled = False
 	def expect_alert(self, args, answer):
@@ -715,6 +792,31 @@ class MockProgressDialog:
 		self._test_case.assertEqual(
 			[], self._expected_alerts, 'Did not receive all expected alerts.'
 		)
+		self._test_case.assertEqual(
+			[], self._expected_overwrites,
+			'Did not receive all expected overwrite dialogs.'
+		)
+		self._test_case.assertEqual(
+			[], self._expected_prompts, 'Did not receive all expected prompts.'
+		)
+	def expect_overwrite(self, text, answer):
+		self._expected_overwrites.append((text, answer))
+	def expect_prompt(self, args, answer):
+		self._expected_prompts.append((args, answer))
+	def show_overwrite_dialog(self, text, details):
+		if not self._expected_overwrites:
+			self._test_case.fail('Unexpected overwrite dialog: %r' % text)
+			return OverwriteChoice.ABORT
+		expected_text, answer = self._expected_overwrites.pop(0)
+		self._test_case.assertEqual(expected_text, text, 'Wrong overwrite text')
+		return answer
+	def show_prompt(self, *args, **_):
+		if not self._expected_prompts:
+			self._test_case.fail('Unexpected prompt: %r' % args[0])
+			return '', False
+		expected_args, answer = self._expected_prompts.pop(0)
+		self._test_case.assertEqual(expected_args, args, 'Wrong prompt')
+		return answer
 	def show_alert(self, *args, **_):
 		if not self._expected_alerts:
 			self._test_case.fail('Unexpected alert: %r' % args[0])

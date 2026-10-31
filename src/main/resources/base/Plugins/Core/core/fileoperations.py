@@ -42,7 +42,9 @@ class FileTreeOperation(FileTreeGathering, Task):
 		self._progress_lock = Lock()
 		self._worker_count = 1
 		self._cannot_move_to_self_shown = False
-		self._override_all = None
+		self._conflict_policy = None
+		self._reserved_dests = set()
+		self.renamed_dests = {}
 		self._ignore_exceptions = False
 		self._completion = TransferCompletion(
 			on_file_done or (lambda url: None)

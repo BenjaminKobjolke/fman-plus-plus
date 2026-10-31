@@ -17,6 +17,14 @@ class StubProgressDialog:
 		raise NotImplementedError(
 			'Task#show_alert(...) is only supported for tasks with a GUI'
 		)
+	def show_overwrite_dialog(self, *args, **kwargs):
+		raise NotImplementedError(
+			'Task#show_overwrite_dialog(...) is only supported for tasks with a GUI'
+		)
+	def show_prompt(self, *args, **kwargs):
+		raise NotImplementedError(
+			'Task#show_prompt(...) is only supported for tasks with a GUI'
+		)
 	def show_workers(self, workers):
 		pass
 
@@ -39,5 +47,9 @@ class ChildProgressDialog:
 		return self._parent.was_canceled()
 	def show_alert(self, *args, **kwargs):
 		return self._parent.show_alert(*args, **kwargs)
+	def show_overwrite_dialog(self, *args, **kwargs):
+		return self._parent.show_overwrite_dialog(*args, **kwargs)
+	def show_prompt(self, *args, **kwargs):
+		return self._parent.show_prompt(*args, **kwargs)
 	def show_workers(self, workers):
 		self._parent.show_workers(workers)

@@ -7,6 +7,7 @@ from core import elevation
 from core.commands.editor import _find_extension_start
 from core.commands.util import create_as_admin, is_dir_checked, NO_SELECTION
 from core.undo_history import RenameRecord, history
+from core.util import is_relative_name
 from fman import CANCEL, DirectoryPaneCommand, DirectoryPaneListener, \
 	PLATFORM, RETRY, show_alert, show_prompt, submit_task, Task
 from fman.fs import exists, FileSystem, makedirs, prepare_move, \
@@ -14,9 +15,7 @@ from fman.fs import exists, FileSystem, makedirs, prepare_move, \
 from fman.url import dirname, join, normalize, relpath, splitscheme
 # os.path.basename, not fman.url's, matching what core/commands/__init__.py
 # resolved this name to before this module existed.
-from os.path import basename, pardir
-
-import os
+from os.path import basename
 
 __all__ = ['CreateDirectory', 'Rename', 'RenameListener']
 
@@ -56,10 +55,7 @@ def rename_to(pane, file_url, new_name):
 	old_name = basename(file_url)
 	if not new_name or new_name == old_name:
 		return None
-	is_relative = \
-		os.sep in new_name or new_name in (pardir, '.') \
-		or (PLATFORM == 'Windows' and '/' in new_name)
-	if is_relative:
+	if not is_relative_name(new_name):
 		show_alert(
 			'Relative paths are not supported. Please use Move (F6) '
 			'instead.'

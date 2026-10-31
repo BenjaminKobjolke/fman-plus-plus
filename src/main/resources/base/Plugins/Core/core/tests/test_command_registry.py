@@ -58,7 +58,8 @@ EXPECTED = frozenset({
 	'ShowVolumes', 'SortByColumn',
 	'SwitchPanes', 'Symlink', 'ToggleDeselectAfterTransfer',
 	'ToggleExecutableIcons', 'ToggleHiddenFiles',
-	'ToggleLockedFileCheck', 'DeselectGroup', 'DeselectSameExtension',
+	'ToggleLockedFileCheck', 'ToggleOverwriteDetails', 'DeselectGroup',
+	'DeselectSameExtension',
 	'ToggleModifiedColumn', 'ToggleNetworkIcons', 'ToggleSelection',
 	'ToggleSizeColumn', 'Undo', 'UpdateWindowTitle', 'ViewFile',
 	'ViewFileInOtherPane', 'ZenOfFman', 'none'

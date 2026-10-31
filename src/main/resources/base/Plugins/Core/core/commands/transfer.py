@@ -69,9 +69,15 @@ class _TreeCommand(DirectoryPaneCommand):
 				dest_url for _, dest_url in transfers
 				if fman.fs.exists(dest_url)
 			}
+			operation = None
 			if not self._call_elevated(files, dest_dir, dest_name):
 				makedirs(dest_dir, exist_ok=True)
-				self._call(files, dest_dir, dest_name)
+				operation = self._call(files, dest_dir, dest_name)
+			if operation is not None:
+				transfers = tuple(
+					(src, operation.renamed_dests.get(dest, dest))
+					for src, dest in transfers
+				)
 			self._record_operation(
 				transfers, destinations_that_existed
 			)
@@ -220,9 +226,11 @@ class Copy(_TreeCommand):
 		on_file_done = self._deselect if \
 			self._files_from_selection and deselect_after_transfer_enabled() \
 			else None
-		submit_task(CopyFiles(
+		operation = CopyFiles(
 			files, dest_dir, dest_name, on_file_done=on_file_done
-		))
+		)
+		submit_task(operation)
+		return operation
 	def _deselect(self, url):
 		self.pane.deselect([url])
 	def _call_elevated(self, files, dest_dir, dest_name):
@@ -234,7 +242,9 @@ class Copy(_TreeCommand):
 
 class Move(_TreeCommand):
 	def _call(self, files, dest_dir, dest_name=None):
-		submit_task(MoveFiles(files, dest_dir, dest_name))
+		operation = MoveFiles(files, dest_dir, dest_name)
+		submit_task(operation)
+		return operation
 	def _call_elevated(self, files, dest_dir, dest_name):
 		return elevation.move(files, dest_dir, dest_name)
 	def _record_operation(self, transfers, destinations_that_existed):

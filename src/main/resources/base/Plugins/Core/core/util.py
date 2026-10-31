@@ -5,7 +5,17 @@ from pathlib import PurePosixPath
 
 import errno
 import fman.fs
+import os
 from math import log
+from os.path import pardir
+from fman import PLATFORM
+
+def is_relative_name(name):
+	"""Return whether name identifies one file, rather than a relative path."""
+	return not (
+		os.sep in name or name in (pardir, '.')
+		or (PLATFORM == 'Windows' and '/' in name)
+	)
 
 def format_size(size_bytes):
 	units = ('%d B', '%d KB', '%.1f MB', '%.1f GB', '%.1f TB')

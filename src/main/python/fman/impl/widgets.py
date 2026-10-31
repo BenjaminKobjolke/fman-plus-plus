@@ -7,6 +7,7 @@ from fman.impl.frameless_dialog import make_frameless
 from fman.impl.incognito import MARKER_TEXT
 from fman.impl.in_window_dialog import Scrim, exec_in_window
 from fman.impl.model import SortedFileSystemModel
+from fman.impl.overwrite_dialog import OverwriteDialog
 from fman.impl.pane_status import PaneStatusLine, PaneStatusMode
 from fman.impl.progress_dialog import ProgressDialog
 from fman.impl.tool_windows import ToolWindows
@@ -498,6 +499,11 @@ class MainWindow(QMainWindow):
 			alert.button(button).setText(label)
 		alert.setDefaultButton(default_button)
 		return self.exec_dialog(alert)
+	@run_in_main_thread
+	def show_overwrite_dialog(self, text, details):
+		dialog = OverwriteDialog(self, text, details)
+		self.exec_dialog(dialog)
+		return dialog.choice
 	@run_in_main_thread
 	def show_file_open_dialog(self, caption, dir_path, filter_text):
 		# Let API users pass arbitrary objects by converting with str(...):

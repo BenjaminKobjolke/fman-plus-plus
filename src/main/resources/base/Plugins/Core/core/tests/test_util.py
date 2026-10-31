@@ -1,5 +1,8 @@
-from core.util import format_size, strformat_dict_values
+from core.util import format_size, is_relative_name, strformat_dict_values
 from unittest import TestCase
+from unittest.mock import patch
+
+import os
 
 class TestStrformatDictValues(TestCase):
 	def test_empty(self):
@@ -38,3 +41,18 @@ class TestFormatSize(TestCase):
 
 	def test_formats_terabytes(self):
 		self.assertEqual('4.0 TB', format_size(4 * 1024 ** 4))
+
+class TestIsRelativeName(TestCase):
+	def test_rejects_path_separators_and_dot_names(self):
+		for name in ('folder' + os.sep + 'file', '.', '..'):
+			with self.subTest(name=name):
+				self.assertFalse(is_relative_name(name))
+
+	def test_accepts_plain_file_names(self):
+		for name in ('report.txt', 'a-b', 'name with spaces'):
+			with self.subTest(name=name):
+				self.assertTrue(is_relative_name(name))
+
+	@patch('core.util.PLATFORM', 'Windows')
+	def test_rejects_forward_slashes_on_windows(self):
+		self.assertFalse(is_relative_name('folder/file.txt'))

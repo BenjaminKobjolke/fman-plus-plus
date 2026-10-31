@@ -98,10 +98,24 @@ class ProgressDialog(QProgressDialog):
 		self._was_canceled = True
 	@run_in_main_thread
 	def show_alert(self, *args, **kwargs):
+		return self._show_without_popup(
+			self.parent().show_alert, *args, **kwargs
+		)
+	@run_in_main_thread
+	def show_overwrite_dialog(self, *args, **kwargs):
+		return self._show_without_popup(
+			self.parent().show_overwrite_dialog, *args, **kwargs
+		)
+	@run_in_main_thread
+	def show_prompt(self, *args, **kwargs):
+		return self._show_without_popup(
+			self.parent().show_prompt, *args, **kwargs
+		)
+	def _show_without_popup(self, show_dialog, *args, **kwargs):
 		# Prevent the progress dialog from popping up while the alert is shown:
 		self.setMinimumDuration(self._MAX_C_INT)
 		try:
-			return self.parent().show_alert(*args, **kwargs)
+			return show_dialog(*args, **kwargs)
 		finally:
 			self.setMinimumDuration(self._MINIMUM_DURATION_MS)
 	def was_canceled(self):

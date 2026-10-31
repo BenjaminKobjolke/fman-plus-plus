@@ -1,9 +1,11 @@
 """Gather files and prepare their transfer tasks."""
-from core.util import is_parent
-from fman import Task, YES, NO, YES_TO_ALL, NO_TO_ALL, ABORT, OK
+from core.overwrite_details import free_name, get_details
+from core.util import is_parent, is_relative_name
+from fman import Task, OK, YES, YES_TO_ALL, ABORT
+from fman.impl.overwrite_dialog import OverwriteChoice
 from fman.url import basename, join, dirname, splitscheme, relpath, \
 	as_human_readable
-from os.path import pardir
+from os.path import pardir, splitext
 
 
 def describe_error(error):
@@ -71,15 +73,12 @@ class FileTreeGathering:
 				return self._merge_directory(src)
 			self._enqueue(self._prepare_transfer(src, dest))
 		else:
-			if self._fs.exists(dest):
-				should_overwrite = self._should_overwrite(dest)
-				if should_overwrite == NO:
-					self._completion.mark_incomplete()
-					return True
-				elif should_overwrite == ABORT:
-					return False
-				else:
-					assert should_overwrite == YES, should_overwrite
+			dest = self._resolve_conflict(src, dest)
+			if dest is OverwriteChoice.ABORT:
+				return False
+			if dest is None:
+				self._completion.mark_incomplete()
+				return True
 			self._enqueue(self._prepare_transfer(src, dest))
 		return True
 	def _merge_directory(self, src):
@@ -101,43 +100,80 @@ class FileTreeGathering:
 				else:
 					self._enqueue(self._prepare_transfer(file_url, dst))
 			else:
-				if self._fs.exists(dst):
-					should_overwrite = self._should_overwrite(dst)
-					if should_overwrite == NO:
-						self._completion.mark_incomplete()
-						continue
-					elif should_overwrite == ABORT:
-						return False
-					else:
-						assert should_overwrite == YES, \
-							should_overwrite
+				dst = self._resolve_conflict(file_url, dst)
+				if dst is OverwriteChoice.ABORT:
+					return False
+				if dst is None:
+					self._completion.mark_incomplete()
+					continue
 				self._enqueue(self._prepare_transfer(file_url, dst))
 		if self._does_postprocess_directory():
 			# Post-process the parent directories bottom-up. For Move, this
 			# ensures that each directory is empty when post-processing.
 			self._enqueue([self._postprocess_directory(src)])
 		return True
-	def _should_overwrite(self, file_url):
+	def _is_taken(self, dest):
+		return self._fs.exists(dest) or dest in self._reserved_dests
+	def _resolve_conflict(self, src, dest):
+		if not self._is_taken(dest):
+			return dest
 		with self._alert_lock:
-			return self._ask_overwrite(file_url)
-	def _ask_overwrite(self, file_url):
-		if self._override_all is None:
-			choice = self.show_alert(
-				"%s exists. Do you want to overwrite it?" % basename(file_url),
-				YES | NO | YES_TO_ALL | NO_TO_ALL | ABORT, YES
+			return self._ask_overwrite(src, dest)
+	def _ask_overwrite(self, src, dest):
+		if self._conflict_policy == OverwriteChoice.RENAME:
+			return self._reserve_renamed_dest(dest)
+		if self._conflict_policy == OverwriteChoice.SKIP:
+			return None
+		if self._conflict_policy == OverwriteChoice.OVERWRITE:
+			return dest
+		choice = self.show_overwrite_dialog(
+			'%s exists. Do you want to overwrite it?' % basename(dest),
+			get_details(self._fs, src, dest)
+		)
+		if choice == OverwriteChoice.OVERWRITE:
+			return dest
+		if choice == OverwriteChoice.OVERWRITE_ALL:
+			self._conflict_policy = OverwriteChoice.OVERWRITE
+			return dest
+		if choice == OverwriteChoice.SKIP:
+			return None
+		if choice == OverwriteChoice.SKIP_ALL:
+			self._conflict_policy = OverwriteChoice.SKIP
+			return None
+		if choice == OverwriteChoice.RENAME_ALL:
+			self._conflict_policy = OverwriteChoice.RENAME
+			return self._reserve_renamed_dest(dest)
+		if choice == OverwriteChoice.RENAME:
+			return self._ask_new_name(src, dest)
+		assert choice == OverwriteChoice.ABORT, choice
+		return OverwriteChoice.ABORT
+	def _reserve_renamed_dest(self, dest):
+		new_dest = free_name(dest, self._is_taken)
+		self._record_renamed_dest(dest, new_dest)
+		return new_dest
+	def _record_renamed_dest(self, dest, new_dest):
+		self._reserved_dests.add(new_dest)
+		if any(self._get_dest_url(src) == dest for src in self._files):
+			self.renamed_dests[dest] = new_dest
+	def _ask_new_name(self, src, dest):
+		default = basename(free_name(dest, self._is_taken))
+		stem, _extension = splitext(default)
+		while True:
+			name, accepted = self.show_prompt(
+				'Enter a new name for %s:' % basename(dest), default,
+				0, len(stem)
 			)
-			if choice & YES:
-				return YES
-			elif choice & NO:
-				return NO
-			elif choice & YES_TO_ALL:
-				self._override_all = True
-			elif choice & NO_TO_ALL:
-				self._override_all = False
-			else:
-				assert choice & ABORT, choice
-				return ABORT
-		return YES if self._override_all else NO
+			if not accepted:
+				return self._ask_overwrite(src, dest)
+			if not name or name in ('.', '..') or not is_relative_name(name):
+				self.show_alert('Please enter a valid file name.')
+				continue
+			new_dest = join(dirname(dest), name)
+			if self._is_taken(new_dest):
+				self.show_alert('%s already exists.' % name)
+				continue
+			self._record_renamed_dest(dest, new_dest)
+			return new_dest
 	def _enqueue(self, tasks):
 		# Iterated lazily: a file system's prepare_copy(...) may walk a whole
 		# tree, and each task must reach the transferring thread when found.

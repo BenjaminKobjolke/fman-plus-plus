@@ -206,6 +206,23 @@ class TransferRecordingTest(TestCase):
 			command(files=[self._SRC], dest_dir='file:///dest')
 		self.assertIsNone(history.pop())
 
+	def test_copy_records_renamed_destination(self):
+		self._assert_renamed_destination_is_recorded(Copy, CopyRecord)
+
+	def test_move_records_renamed_destination(self):
+		self._assert_renamed_destination_is_recorded(Move, MoveRecord)
+
+	def _assert_renamed_destination_is_recorded(self, command_type, record_type):
+		renamed_dest = 'file:///dest/a (2).txt'
+		with self._command(command_type, exists=[False, True]) as command:
+			command._call.return_value = Mock(
+				renamed_dests={self._DEST: renamed_dest}
+			)
+			command(files=[self._SRC], dest_dir='file:///dest')
+		self.assertEqual(
+			record_type(((self._SRC, renamed_dest),)), history.pop()
+		)
+
 	def test_copy_from_selection_deselects_completed_item_when_enabled(self):
 		pane = Mock()
 		command = Copy(pane)
@@ -269,7 +286,7 @@ class TransferRecordingTest(TestCase):
 		command._confirm_tree_operation = Mock(
 			return_value=('file:///dest', None)
 		)
-		command._call = Mock()
+		command._call = Mock(return_value=None)
 		return _CommandContext(command, exists)
 
 
