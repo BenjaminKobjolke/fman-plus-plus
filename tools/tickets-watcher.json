@@ -30,7 +30,7 @@
       "test": "green"
     },
     "tools\\run_core_tests.bat": {
-      "test": "failed"
+      "test": "green"
     },
     "tools\\run_robocopy_tests.bat": {
       "test": "green"
@@ -82,6 +82,7 @@
     "run_build_shutdown_tests.bat",
     "run_core_tests.bat",
     "run_icon_tests.bat",
+    "run_in_window_dialog_tests.bat",
     "run_messagebox_tests.bat",
     "run_model_tests.bat",
     "run_overlay_focus_tests.bat",
