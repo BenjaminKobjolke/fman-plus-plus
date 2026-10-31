@@ -13,6 +13,7 @@ def run_runner(tools_directory, tests_directory, test_name):
 		f"sys.path.insert(0, {str(tools_directory)!r}); "
 		"import unittest_with_timeout; "
 		"unittest_with_timeout.TEST_TIMEOUT_SECONDS = 2; "
+		"unittest_with_timeout.PROGRESS_INTERVAL_SECONDS = 0.5; "
 		f"unittest_with_timeout.main(['runner', 'discover', "
 		f"'-s', {str(tests_directory)!r}, "
 		f"'-k', {test_name!r}])"
@@ -56,6 +57,9 @@ def check_unittest_with_timeout():
 		assert "Timeout" in result.stderr, result.stdout + result.stderr
 		assert "test_sleeps" in result.stderr, result.stdout + result.stderr
 		assert "Running test: test_sample.SampleTest.test_sleeps" in result.stderr, (
+			result.stdout + result.stderr
+		)
+		assert "Still running: test_sample.SampleTest.test_sleeps" in result.stderr, (
 			result.stdout + result.stderr
 		)
 		assert elapsed < 30, f"The sleeping test ran for {elapsed:.1f} seconds"
