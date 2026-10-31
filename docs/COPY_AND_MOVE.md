@@ -98,6 +98,19 @@ scan. The check is on by default on Windows; use the **Toggle locked file
 check** command to turn it off or back on. Its setting key is
 `check_locked_files` in `Core Settings.json`. Other platforms skip the check.
 
+## Selection after a copy
+
+When Copy is started from the source pane's selection, each top-level item is
+deselected after all of its transfer tasks succeed. A folder stays selected
+when any file inside it is skipped, fails, is canceled or is not reached; the
+same applies to individual files that do not arrive. This is enabled by
+default. Use **Toggle deselect after copy** to switch it off or back on; the
+setting is `deselect_after_transfer` in `Core Settings.json`.
+
+Drag-and-drop, clipboard paste and elevated copies leave pane selection alone.
+Moves need no selection update: successful items leave the source pane, while
+items restored after a stopped move remain unselected as before.
+
 ## Parallel workers
 
 A file system can ask for several transferring threads: Copy and Move ask
@@ -226,6 +239,9 @@ for the earlier tasks.
 errors, and the two ordering flags. A barrier task starts only after the
 earlier tasks end. A blocking task starts without waiting for earlier ones,
 but holds back the later ones.
+
+`core/tests/test_transfer_completion.py` covers per-item completion across
+parallel tasks and skipped or failed work.
 
 The FTP plugin's side is checked by its own scripts, without fman running:
 `test_copy_single_dialog.py` covers the per-file move tasks, the flags, the
