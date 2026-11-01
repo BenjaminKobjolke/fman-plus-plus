@@ -12,7 +12,7 @@ active pane, and a second entry to restore the normal split view.
    Run it to restore the normal two-pane split.
 
 Only one of the two entries is shown at a time; which one depends on the
-current pane visibility, not on a saved setting.
+current pane visibility.
 
 ## Commands
 
@@ -33,8 +33,12 @@ No default key binding is set — the feature is palette-only.
 
 ## Notes
 
-- State is not persisted: closing and reopening fman always starts with all
-  panes visible.
+- Pane visibility is saved in `Session.json` and restored the next time fman
+  starts.
+- Start fman with `fman --single-pane` to hide every pane except the first when
+  all panes are visible. If the saved session already has hidden panes, their
+  visibility is preserved. Hidden panes keep their folders and can be restored
+  with **Show all panes**. This state is saved when fman closes.
 - With only a single pane open, "Show only active pane" does not appear
   (there is nothing to collapse).
 - While a pane is hidden, `switch_panes` (`Tab`) does nothing — it would

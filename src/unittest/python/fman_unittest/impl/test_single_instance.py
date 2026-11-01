@@ -1,9 +1,11 @@
 from fman.impl.session import SessionManager
 from fman.impl.single_instance import (
-	SingleInstance, bring_to_front, panes_active_first
+	SingleInstance, bring_to_front, open_paths_in_running_instance,
+	panes_active_first
 )
 from os import getpid
 from PyQt5.QtCore import QEventLoop, Qt
+from PyQt5.QtNetwork import QLocalSocket
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 
@@ -19,19 +21,64 @@ class SingleInstanceTest(TestCase):
 			self._primary._server.close()
 	def test_forward_delivers_paths_to_primary(self):
 		received = []
-		self._primary = SingleInstance(self._server_name, received.append)
+		self._primary = SingleInstance(
+			self._server_name,
+			lambda paths, single_pane: received.append((paths, single_pane))
+		)
 		self._primary.start_listening()
-		client = SingleInstance(self._server_name, lambda paths: None)
-		self.assertTrue(client.try_forward(['C:/x', 'C:/y']))
+		client = SingleInstance(self._server_name, lambda paths, single_pane: None)
+		self.assertTrue(client.try_forward(['C:/x', 'C:/y'], single_pane=True))
 		# processEvents with a wait gives the OS time to deliver newConnection:
 		for _ in range(300):
 			if received:
 				break
 			self._app.processEvents(QEventLoop.AllEvents, 10)
-		self.assertEqual([['C:/x', 'C:/y']], received)
+		self.assertEqual([(['C:/x', 'C:/y'], True)], received)
+	def test_old_list_payload_delivers_paths_without_single_pane(self):
+		received = []
+		self._primary = SingleInstance(
+			self._server_name,
+			lambda paths, single_pane: received.append((paths, single_pane))
+		)
+		self._primary.start_listening()
+		socket = QLocalSocket()
+		socket.connectToServer(self._server_name)
+		self.assertTrue(socket.waitForConnected(3000))
+		socket.write(b'["C:/legacy"]')
+		socket.flush()
+		socket.waitForBytesWritten(3000)
+		socket.disconnectFromServer()
+		for _ in range(300):
+			if received:
+				break
+			self._app.processEvents(QEventLoop.AllEvents, 10)
+		self.assertEqual([(['C:/legacy'], False)], received)
 	def test_forward_returns_false_when_no_primary(self):
-		client = SingleInstance(self._server_name, lambda paths: None)
+		client = SingleInstance(self._server_name, lambda paths, single_pane: None)
 		self.assertFalse(client.try_forward(['C:/x']))
+
+class OpenPathsInRunningInstanceTest(TestCase):
+	def test_single_pane_runs_command_on_active_pane(self):
+		left, right = _FakePane(), _FakePane()
+		plugin_support = _FakePluginSupport([left, right], active=right)
+		session = _RecordingSessionManager()
+
+		open_paths_in_running_instance(
+			_WindowState(0), plugin_support, session, ['C:/x'], single_pane=True
+		)
+
+		self.assertEqual([('show_only_active_pane',)], right.commands)
+		self.assertEqual([('C:/x', right)], session.opened)
+	def test_single_pane_runs_command_without_paths(self):
+		pane = _FakePane()
+		plugin_support = _FakePluginSupport([pane], active=pane)
+
+		open_paths_in_running_instance(
+			_WindowState(0), plugin_support, _RecordingSessionManager(), [],
+			single_pane=True
+		)
+
+		self.assertEqual([('show_only_active_pane',)], pane.commands)
 
 class OpenPathInPaneTest(TestCase):
 	def _create_session_manager(self, fs):
@@ -138,6 +185,7 @@ class _FakePane:
 		self.location = None
 		self.callback = None
 		self.cursor_url = None
+		self.commands = []
 		self._widget = _FakeWidget()
 		self.child_widget = _FakeWidget()
 		self._widget.add_child(self.child_widget)
@@ -146,6 +194,16 @@ class _FakePane:
 		self.callback = callback
 	def place_cursor_at(self, url):
 		self.cursor_url = url
+	def run_command(self, command):
+		self.commands.append((command,))
+	def focus(self):
+		pass
+
+class _RecordingSessionManager:
+	def __init__(self):
+		self.opened = []
+	def open_path_in_pane(self, pane, path):
+		self.opened.append((path, pane))
 
 class _RecordingErrorHandler:
 	def __init__(self):

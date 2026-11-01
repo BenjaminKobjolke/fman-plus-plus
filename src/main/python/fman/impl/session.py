@@ -15,6 +15,7 @@ import logging
 import sys
 
 _LOG = logging.getLogger(__name__)
+SINGLE_PANE_ARG = '--single-pane'
 
 class SessionManager:
 
@@ -27,7 +28,7 @@ class SessionManager:
 		self._fs = fs
 		self._error_handler = error_handler
 		self._fman_version = fman_version
-	def show_main_window(self, window, hidden=False):
+	def show_main_window(self, window, hidden=False, single_pane=False):
 		main_window = window._widget
 		self._restore_window_geometry(main_window)
 		pane_infos = self._settings.get('panes', None)
@@ -38,6 +39,7 @@ class SessionManager:
 			# start without any panes.
 			pane_infos = [{}] * self.DEFAULT_NUM_PANES
 		panes = [window.add_pane() for _ in range(len(pane_infos))]
+		_apply_pane_visibility(panes, pane_infos, single_pane)
 		self._show_startup_messages(main_window)
 		is_first_run = not self._settings
 		if not hidden:
@@ -178,8 +180,17 @@ class SessionManager:
 	def _read_pane_settings(self, pane, location=None):
 		return {
 			'location': location if location is not None else pane.get_location(),
-			'col_widths': pane.get_column_widths()
+			'col_widths': pane.get_column_widths(),
+			'hidden': pane._widget.isHidden()
 		}
+
+def _apply_pane_visibility(panes, pane_infos, single_pane):
+	hidden_flags = [bool(info.get('hidden')) for info in pane_infos]
+	if single_pane and not any(hidden_flags):
+		hidden_flags = [i > 0 for i in range(len(panes))]
+	if not all(hidden_flags):
+		for pane, is_hidden in zip(panes, hidden_flags):
+			pane._widget.setVisible(not is_hidden)
 
 def _encode(bytes_):
 	return b64encode(bytes_).decode('ascii')

@@ -25,7 +25,7 @@ from fman.impl.plugins.error import PluginErrorHandler
 from fman.impl.plugins.key_bindings import KeyBindings
 from fman.impl.plugins.mother_fs import MotherFileSystem
 from fman.impl.viewers import ViewerRegistry
-from fman.impl.session import SessionManager
+from fman.impl.session import SessionManager, SINGLE_PANE_ARG
 from fman.impl.scripting.actions import ScriptingActions
 from fman.impl.scripting.automation import AutomationActions
 from fman.impl.scripting.config import ScriptingApiConfig
@@ -75,6 +75,8 @@ class DevelopmentApplicationContext(ApplicationContext):
 	def run(self):
 		self.init_logging()
 		self._start_hidden = False
+		self._single_pane = SINGLE_PANE_ARG in sys.argv
+		sys.argv[:] = [arg for arg in sys.argv if arg != SINGLE_PANE_ARG]
 		if PLATFORM == 'Windows':
 			from fman.impl.autostart import TRAY_ARG, apply
 			self._start_hidden = TRAY_ARG in sys.argv
@@ -86,7 +88,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 			# Touch self.app first: QLocalSocket needs a QApplication instance.
 			_ = self.app
 			abs_paths = [make_absolute(a, getcwd()) for a in sys.argv[1:]]
-			if self.single_instance.try_forward(abs_paths):
+			if self.single_instance.try_forward(abs_paths, self._single_pane):
 				return 0
 			self.single_instance.start_listening()
 		self._start_metrics()
@@ -98,7 +100,8 @@ class DevelopmentApplicationContext(ApplicationContext):
 				# The control logged the bind failure; fman remains usable.
 				pass
 		self.session_manager.show_main_window(
-			self.window, hidden=self._start_hidden)
+			self.window, hidden=self._start_hidden,
+			single_pane=self._single_pane)
 		_ = self.global_hotkey
 		return self.app.exec_()
 	def _run_demo(self):
@@ -162,11 +165,11 @@ class DevelopmentApplicationContext(ApplicationContext):
 		return SingleInstance(
 			server_name_for(DATA_DIRECTORY), self._on_single_instance_message
 		)
-	def _on_single_instance_message(self, abs_paths):
+	def _on_single_instance_message(self, abs_paths, single_pane):
 		# Runs on the Qt main thread via QLocalServer.newConnection.
 		open_paths_in_running_instance(
 			self.main_window, self.plugin_support, self.session_manager,
-			abs_paths
+			abs_paths, single_pane
 		)
 	def init_logging(self):
 		install_stream_capture(get_console_log())

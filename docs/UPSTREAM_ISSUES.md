@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#156](https://github.com/mherrmann/fman/issues/156) | Option to start fman in 'single pane mode' | enhancement, 1 vote | deferred | 2026-11-01 | A `--single-pane` option must coordinate startup, saved pane state and single-instance forwarding; this needs a focused design before changing the pane lifecycle. |
+| [#156](https://github.com/mherrmann/fman/issues/156) | Option to start fman in 'single pane mode' | enhancement, 1 vote | implemented | 2026-11-01 | `fman --single-pane` hides other panes on startup or in the running instance, and pane visibility is restored from `Session.json`. |
 | [#155](https://github.com/mherrmann/fman/issues/155) | Add some spacing between columns | enhancement, 1 vote | already fixed | 2026-11-01 | `styles.qss` adds font-relative `0.25em` padding at the first and last cells, keeping text separated between columns. |
 | [#154](https://github.com/mherrmann/fman/issues/154) | Home/End doesn't work in prompt | bug, mac, 1 vote | skipped | 2026-11-01 | This reports macOS prompt behavior, which cannot be reproduced or tested on this Windows fork. |
 | [#152](https://github.com/mherrmann/fman/issues/152) | install plugin: Certificate Verification error | enhancement | deferred | 2026-11-01 | Disabling TLS verification weakens plugin-install security; a trusted proxy certificate or CA configuration needs a safer design decision. |

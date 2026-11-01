@@ -11,6 +11,8 @@ launch instead.
 - `fman "C:\some\file.txt"` → the running fman opens the file's parent folder in
   the active pane and places the cursor on the file.
 - `fman` (no path) → the running fman window is simply raised/focused.
+- `fman --single-pane` → the running fman hides the other panes, then comes to
+  the front. On a fresh start, the same option starts with one visible pane.
 - Multiple paths (`fman "C:\a" "C:\b"`) → the first path opens in the active pane,
   the next in the other pane, and so on, matching the fresh-start behavior.
 
@@ -35,9 +37,11 @@ The default is `true` (single instance on). Create the file if it does not exist
 
 The first instance listens on a per-user local socket
 (`QLocalServer`/`QLocalSocket`). A later launch connects to that socket, sends its
-(absolute) path arguments as JSON, and exits. The primary instance receives the
-message on its Qt event loop, raises its window, and opens the paths via the same
-path-resolution logic used at startup (`SessionManager.open_path_in_pane`).
+(absolute) path arguments as a JSON object with `paths` and `single_pane`, and
+exits. The primary instance also accepts the older plain JSON path-list payload,
+which implies `single_pane: false`. It receives the message on its Qt event loop,
+raises its window, and opens the paths via the same path-resolution logic used at
+startup (`SessionManager.open_path_in_pane`).
 
 The socket name is derived from the fman data directory
 (`fman-si-<hash>`), so different OS users and installs never collide. If the

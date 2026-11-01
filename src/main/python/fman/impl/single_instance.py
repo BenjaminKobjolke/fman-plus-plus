@@ -16,17 +16,17 @@ def server_name_for(data_directory):
 	return 'fman-si-' + digest
 
 def open_paths_in_running_instance(
-	main_window, plugin_support, session_manager, abs_paths
+	main_window, plugin_support, session_manager, abs_paths, single_pane=False
 ):
 	# Handle a forwarded launch inside the already-running primary instance:
 	# raise its window and open the paths, first one in the active pane.
 	bring_to_front(main_window)
-	if not abs_paths:
-		return
 	panes = panes_active_first(plugin_support, main_window)
 	for path, pane in zip(abs_paths, panes):
 		session_manager.open_path_in_pane(pane, path)
 	if panes:
+		if single_pane:
+			panes[0].run_command('show_only_active_pane')
 		panes[0].focus()
 
 def bring_to_front(main_window):
@@ -67,14 +67,15 @@ class SingleInstance:
 		self._on_paths_received = on_paths_received
 		self._server = None
 		self._client_socket = None
-	def try_forward(self, abs_paths):
+	def try_forward(self, abs_paths, single_pane=False):
 		# Return True if a running instance accepted the paths (caller exits),
 		# False if no instance is listening (caller becomes the primary).
 		socket = QLocalSocket()
 		socket.connectToServer(self._server_name)
 		if not socket.waitForConnected(_TIMEOUT_MS):
 			return False
-		socket.write(json.dumps(abs_paths).encode('utf-8'))
+		payload = {'paths': abs_paths, 'single_pane': single_pane}
+		socket.write(json.dumps(payload).encode('utf-8'))
 		socket.flush()
 		socket.waitForBytesWritten(_TIMEOUT_MS)
 		# waitForBytesWritten flushes to the OS, so the peer receives the
@@ -110,9 +111,18 @@ class SingleInstance:
 		data = bytes(socket.readAll())
 		socket.disconnectFromServer()
 		try:
-			paths = json.loads(data.decode('utf-8'))
+			message = json.loads(data.decode('utf-8'))
 		except (ValueError, UnicodeDecodeError):
 			_LOG.warning('Received malformed single-instance message.')
 			return
-		if isinstance(paths, list):
-			self._on_paths_received([str(p) for p in paths])
+		if isinstance(message, list):
+			paths, single_pane = message, False
+		elif (isinstance(message, dict) and
+				isinstance(message.get('paths'), list) and
+				isinstance(message.get('single_pane', False), bool)):
+			paths = message['paths']
+			single_pane = message.get('single_pane', False)
+		else:
+			_LOG.warning('Received malformed single-instance message.')
+			return
+		self._on_paths_received([str(p) for p in paths], single_pane)

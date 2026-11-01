@@ -19,7 +19,7 @@ class SessionManagerCloseTest(TestCase):
 		self.manager.on_close(self.window)
 
 		self.assertEqual(
-			[{'location': 'file://C:/after', 'col_widths': [200]}],
+			[{'location': 'file://C:/after', 'col_widths': [200], 'hidden': True}],
 			self.settings['panes'])
 		self._assert_window_settings_saved()
 
@@ -32,7 +32,7 @@ class SessionManagerCloseTest(TestCase):
 		self.manager.on_close(self.window)
 
 		self.assertEqual(
-			[{'location': 'file://C:/snapshot', 'col_widths': [200]}],
+			[{'location': 'file://C:/snapshot', 'col_widths': [200], 'hidden': True}],
 			self.settings['panes'])
 		self._assert_window_settings_saved()
 
@@ -65,6 +65,37 @@ class SessionManagerShowTest(TestCase):
 		self.assertEqual(2, len(window.panes))
 		thread_type.assert_called_once()
 		self.assertTrue(thread.started)
+	def test_restores_saved_hidden_pane(self):
+		settings = _Settings({'panes': [{'hidden': False}, {'hidden': True}]})
+		manager = SessionManager(settings, None, None, '1.2.3')
+		window = _StartupWindow()
+		with patch('fman.impl.session.Thread', return_value=_Thread()):
+			manager.show_main_window(window, hidden=True)
+		self.assertEqual(
+			[True, False], [pane._widget.isVisible for pane in window.panes])
+	def test_single_pane_hides_default_second_pane(self):
+		manager = SessionManager(_Settings({}), None, None, '1.2.3')
+		window = _StartupWindow()
+		with patch('fman.impl.session.Thread', return_value=_Thread()):
+			manager.show_main_window(window, hidden=True, single_pane=True)
+		self.assertEqual(
+			[True, False], [pane._widget.isVisible for pane in window.panes])
+	def test_single_pane_keeps_existing_saved_visibility(self):
+		settings = _Settings({'panes': [{'hidden': True}, {'hidden': False}]})
+		manager = SessionManager(settings, None, None, '1.2.3')
+		window = _StartupWindow()
+		with patch('fman.impl.session.Thread', return_value=_Thread()):
+			manager.show_main_window(window, hidden=True, single_pane=True)
+		self.assertEqual(
+			[False, True], [pane._widget.isVisible for pane in window.panes])
+	def test_all_hidden_saved_panes_leave_every_pane_visible(self):
+		settings = _Settings({'panes': [{'hidden': True}, {'hidden': True}]})
+		manager = SessionManager(settings, None, None, '1.2.3')
+		window = _StartupWindow()
+		with patch('fman.impl.session.Thread', return_value=_Thread()):
+			manager.show_main_window(window, hidden=True)
+		self.assertEqual(
+			[True, True], [pane._widget.isVisible for pane in window.panes])
 
 
 class _Settings(dict):
@@ -90,6 +121,7 @@ class _Pane:
 	def __init__(self, location, col_widths):
 		self._location = location
 		self._col_widths = col_widths
+		self._widget = _VisibilityWidget(hidden=True)
 	def get_location(self):
 		return self._location
 	def get_column_widths(self):
@@ -100,7 +132,7 @@ class _StartupWindow:
 		self._widget = _StartupWidget()
 		self.panes = []
 	def add_pane(self):
-		pane = object()
+		pane = _StartupPane()
 		self.panes.append(pane)
 		return pane
 
@@ -115,6 +147,20 @@ class _StartupWidget:
 		self.calls.append('show')
 	def showMaximized(self):
 		self.calls.append('maximize')
+
+class _StartupPane:
+	def __init__(self):
+		self._widget = _VisibilityWidget()
+
+class _VisibilityWidget:
+	def __init__(self, hidden=False):
+		self.hidden = hidden
+		self.isVisible = not hidden
+	def isHidden(self):
+		return self.hidden
+	def setVisible(self, visible):
+		self.hidden = not visible
+		self.isVisible = visible
 
 class _Thread:
 	def __init__(self):
