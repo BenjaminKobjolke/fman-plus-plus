@@ -16,7 +16,7 @@ tools\\run_messagebox_tests.bat.
 
 from fman.impl.widgets import MessageBox
 from PyQt5.QtCore import QEvent, Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QShowEvent
 from PyQt5.QtWidgets import QApplication, QDialogButtonBox, QLabel, QMessageBox, \
 	QMainWindow, QScrollArea
 from unittest import TestCase
@@ -47,6 +47,40 @@ class MessageBoxLayoutTest(TestCase):
 		scroll_area = label.parentWidget().parentWidget()
 		self.assertIsInstance(scroll_area, QScrollArea)
 		self.assertGreater(scroll_area.verticalScrollBar().maximum(), 0)
+	def test_wrapped_paragraph_that_fits_has_no_vertical_scrollbar(self):
+		text = 'Do you really want to move ' \
+			'Screenshot_20261028-182610.png to the Recycle Bin?'
+		box = MessageBox(None)
+		box.setText(text)
+		box.setStandardButtons(QMessageBox.Ok)
+		box.ensurePolished()
+		label = box.findChild(QLabel, 'qt_msgbox_label')
+		font = label.font()
+		font.setPointSize(28)
+		label.setFont(font)
+		self.addCleanup(box.deleteLater)
+		# Deliver the actual show event without creating a native window (which
+		# aborts in Qt's offscreen platform). The queued measurement then runs
+		# after Qt has processed the layout request from showing the dialog.
+		QApplication.sendEvent(box, QShowEvent())
+		QApplication.processEvents()
+		scroll_area = self._scroll_area_of(label)
+		required_height = label.heightForWidth(scroll_area.viewport().width())
+		self.assertEqual(
+			Qt.ScrollBarAlwaysOff,
+			scroll_area.verticalScrollBarPolicy()
+		)
+		self.assertGreaterEqual(
+			scroll_area.viewport().height(), required_height
+		)
+	def test_text_that_fits_has_no_horizontal_scrollbar(self):
+		box = self._box(ONE_LINE)
+		label = box.findChild(QLabel, 'qt_msgbox_label')
+		scroll_area = self._scroll_area_of(label)
+		self.assertEqual(
+			Qt.ScrollBarAlwaysOff,
+			scroll_area.horizontalScrollBarPolicy()
+		)
 	def test_four_line_message_viewport_fits_without_a_scrollbar(self):
 		text = '\n'.join(['A short line.'] * 4)
 		box = self._box(text)
