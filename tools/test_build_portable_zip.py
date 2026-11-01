@@ -28,7 +28,7 @@ class PortableZipTest(unittest.TestCase):
             marker.write_text("portable marker")
             archive_path = root / "fmanPortable.zip"
 
-            write_portable_zip(freeze_dir, marker, archive_path)
+            write_portable_zip(str(freeze_dir), str(marker), str(archive_path))
 
             with ZipFile(archive_path) as archive:
                 self.assertEqual(

@@ -2,6 +2,7 @@ from build_impl import copy_python_library, copy_release_notes
 from fbs import path, SETTINGS
 from fbs.cmdline import command
 from fbs.freeze import windows as fbs_windows
+from pathlib import Path
 from shutil import rmtree
 from subprocess import run
 from build_impl.version_info import brand_version_info
@@ -75,6 +76,7 @@ def portable_zip():
 	)
 
 def write_portable_zip(freeze_dir, marker_path, zip_path):
+	freeze_dir = Path(freeze_dir)
 	with ZipFile(zip_path, 'w', ZIP_DEFLATED) as archive:
 		for source_path in freeze_dir.rglob('*'):
 			relative_path = source_path.relative_to(freeze_dir)
