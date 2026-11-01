@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Davantage de contrôle sur les fichiers et les fenêtres",
+  "notes": [
+    "Nouveau : utilisez une version portable pour Windows qui conserve vos paramètres et vos extensions à côté de l’application et peut se mettre à jour sur place.",
+    "Nouveau : parcourez les partages réseau Windows et les archives RAR comme des dossiers, et accédez plus rapidement aux chemins de destination grâce à l’autocomplétion avec la touche Tab.",
+    "Amélioration : choisissez des applications ou des commandes par défaut pour certains types de fichiers, consultez plus de détails en cas de conflit de fichiers et renommez plusieurs éléments en conflit à la fois.",
+    "Amélioration : réduisez les tâches dans la barre d’état, réduisez fman dans la zone de notification, démarrez avec un seul volet et gardez les invites dans la fenêtre principale.",
+    "Correction : les alertes, les fenêtres de progression, la sélection des éléments copiés et les chemins contenant des variables d’environnement sont désormais plus fiables et plus faciles à utiliser."
+  ]
+}

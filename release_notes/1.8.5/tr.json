@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Dosyalar ve pencereler üzerinde daha fazla kontrol",
+  "notes": [
+    "Yeni: Ayarlarınızı ve eklentilerinizi uygulamanın yanında saklayan ve kendisini bulunduğu konumda güncelleyebilen taşınabilir Windows sürümünü kullanın.",
+    "Yeni: Windows ağ paylaşımlarına ve RAR arşivlerine klasörlere göz atar gibi göz atın; Sekme tuşuyla otomatik tamamlama özelliğini kullanarak hedef yolları daha hızlı açın.",
+    "İyileştirildi: Belirli dosya türleri için varsayılan uygulamalar veya komutlar seçin, dosyalar çakıştığında daha fazla ayrıntı görün ve çakışan dosyaları toplu olarak yeniden adlandırın.",
+    "İyileştirildi: Görevleri durum çubuğuna küçültün, fman'ı sistem tepsisine küçültün, tek bölmeyle başlatın ve istemlerin ana pencerenin içinde görünmesini sağlayın.",
+    "Düzeltildi: Uyarılar, ilerleme iletişim kutuları, kopyalanan öğelerin seçimi ve ortam değişkeni yolları artık daha güvenilir ve kullanımı daha kolay."
+  ]
+}

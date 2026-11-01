@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Mere kontrol over filer og vinduer",
+  "notes": [
+    "Nyt: Brug en bærbar Windows-version, der gemmer dine indstillinger og plugins ved siden af appen og kan opdatere sig selv på stedet.",
+    "Nyt: Gennemse netværksdelinger og RAR-arkiver i Windows som mapper, og åbn destinationsstier hurtigere med autofuldførelse via Tab.",
+    "Forbedret: Vælg faste apps eller kommandoer til bestemte filtyper, se flere oplysninger, når filer er i konflikt, og omdøb flere konflikter på én gang.",
+    "Forbedret: Minimer opgaver til statuslinjen, minimer fman til proceslinjen, start med en enkelt rude, og behold meddelelser i hovedvinduet.",
+    "Rettet: Advarsler, statusdialoger, markering af kopierede elementer og stier med miljøvariabler er nu mere pålidelige og nemmere at bruge."
+  ]
+}

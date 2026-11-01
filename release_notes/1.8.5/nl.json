@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Meer controle over bestanden en vensters",
+  "notes": [
+    "Nieuw: Gebruik een draagbare Windows-versie die je instellingen en plug-ins naast de app bewaart en zichzelf op dezelfde locatie kan bijwerken.",
+    "Nieuw: Blader door Windows-netwerkshares en RAR-archieven alsof het mappen zijn, en open bestemmingspaden sneller met aanvulling via Tab.",
+    "Verbeterd: Kies vaste apps of opdrachten voor specifieke bestandstypen, bekijk meer details wanneer bestanden conflicteren en hernoem conflicten in bulk.",
+    "Verbeterd: Minimaliseer taken naar de statusbalk, minimaliseer fman naar het systeemvak, start met één deelvenster en houd vraagvensters binnen het hoofdvenster.",
+    "Opgelost: Waarschuwingen, voortgangsvensters, de selectie van gekopieerde items en paden met omgevingsvariabelen werken nu betrouwbaarder en zijn eenvoudiger te gebruiken."
+  ]
+}

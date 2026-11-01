@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Kiểm soát tệp và cửa sổ tốt hơn",
+  "notes": [
+    "Mới: Sử dụng phiên bản Windows portable để lưu cài đặt và plugin ngay cạnh ứng dụng, đồng thời tự cập nhật tại chỗ.",
+    "Mới: Duyệt các thư mục chia sẻ trên mạng Windows và tệp lưu trữ RAR như thư mục thông thường, đồng thời mở đường dẫn đích nhanh hơn với tính năng tự động hoàn thành bằng phím Tab.",
+    "Cải thiện: Chọn ứng dụng hoặc lệnh mặc định cho từng loại tệp, xem thêm thông tin khi có tệp xung đột và đổi tên hàng loạt các tệp xung đột.",
+    "Cải thiện: Thu nhỏ tác vụ xuống thanh trạng thái, thu nhỏ fman xuống khay hệ thống, khởi động với một khung duy nhất và hiển thị lời nhắc bên trong cửa sổ chính.",
+    "Đã sửa: Thông báo, hộp thoại tiến trình, lựa chọn mục đã sao chép và đường dẫn dùng biến môi trường hiện hoạt động ổn định hơn và dễ sử dụng hơn."
+  ]
+}

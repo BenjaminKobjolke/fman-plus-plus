@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Viac možností ovládania súborov a okien",
+  "notes": [
+    "Novinka: Používajte prenosnú verziu pre Windows, ktorá uchováva nastavenia a doplnky vedľa aplikácie a dokáže sa aktualizovať priamo na mieste.",
+    "Novinka: Prehliadajte sieťové zdieľané priečinky a archívy RAR ako bežné priečinky a vďaka dopĺňaniu po stlačení klávesu Tab rýchlejšie otvárajte cieľové cesty.",
+    "Vylepšenie: Nastavte aplikácie alebo príkazy, ktoré sa majú natrvalo používať pre konkrétne typy súborov, zobrazte si viac podrobností pri konfliktoch súborov a hromadne premenujte konfliktné súbory.",
+    "Vylepšenie: Minimalizujte úlohy do stavového riadka, minimalizujte fman do systémovej lišty, spúšťajte ho s jediným panelom a zobrazujte výzvy v hlavnom okne.",
+    "Oprava: Upozornenia, dialógové okná priebehu, výber skopírovaných položiek a cesty s premennými prostredia sú teraz spoľahlivejšie a jednoduchšie na používanie."
+  ]
+}

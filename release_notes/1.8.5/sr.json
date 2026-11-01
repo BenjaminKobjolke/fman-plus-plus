@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Više kontrole nad fajlovima i prozorima",
+  "notes": [
+    "Novo: Koristite prenosivu verziju za Windows koja čuva podešavanja i dodatke pored aplikacije i može sama da se ažurira.",
+    "Novo: Pregledajte mrežne deljene foldere u Windowsu i RAR arhive kao foldere, a putanje odredišta otvarajte brže uz dovršavanje pomoću tastera Tab.",
+    "Poboljšano: Izaberite podrazumevane aplikacije ili komande za određene tipove fajlova, pogledajte više detalja kada su fajlovi u sukobu i preimenujte više sukobljenih fajlova odjednom.",
+    "Poboljšano: Svedite zadatke na statusnu traku, svedite fman u sistemsku paletu, pokrenite ga sa jednim oknom i zadržite upite unutar glavnog prozora.",
+    "Ispravljeno: Upozorenja, dijalozi za prikaz napretka, izbor kopiranih stavki i putanje sa promenljivama okruženja sada su pouzdaniji i jednostavniji za korišćenje."
+  ]
+}

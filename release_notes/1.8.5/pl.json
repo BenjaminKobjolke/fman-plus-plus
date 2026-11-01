@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Większa kontrola nad plikami i oknami",
+  "notes": [
+    "Nowość: Korzystaj z przenośnej wersji dla systemu Windows, która przechowuje ustawienia i wtyczki obok aplikacji oraz może aktualizować się bezpośrednio na miejscu.",
+    "Nowość: Przeglądaj udziały sieciowe systemu Windows i archiwa RAR jak foldery, a ścieżki docelowe otwieraj szybciej dzięki uzupełnianiu po naciśnięciu klawisza Tab.",
+    "Ulepszenie: Wybieraj aplikacje lub polecenia przypisywane na stałe do określonych typów plików, wyświetlaj więcej szczegółów w przypadku konfliktów plików i zmieniaj nazwy wielu konfliktujących plików jednocześnie.",
+    "Ulepszenie: Minimalizuj zadania do paska stanu, minimalizuj fman do obszaru powiadomień, uruchamiaj program z jednym panelem i wyświetlaj monity w głównym oknie.",
+    "Naprawiono: Alerty, okna dialogowe postępu, zaznaczanie skopiowanych elementów i ścieżki ze zmiennymi środowiskowymi działają teraz niezawodniej i są łatwiejsze w obsłudze."
+  ]
+}

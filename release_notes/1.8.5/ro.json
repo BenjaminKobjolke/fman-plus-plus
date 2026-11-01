@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Mai mult control asupra fișierelor și ferestrelor",
+  "notes": [
+    "Nou: Folosiți o versiune portabilă pentru Windows, care păstrează setările și pluginurile lângă aplicație și se poate actualiza direct, fără instalare.",
+    "Nou: Răsfoiți partajările de rețea Windows și arhivele RAR ca pe niște dosare și deschideți mai rapid căile de destinație cu completarea Tab.",
+    "Îmbunătățit: Alegeți aplicații sau comenzi implicite pentru anumite tipuri de fișiere, vedeți mai multe detalii când există conflicte între fișiere și redenumiți mai multe conflicte simultan.",
+    "Îmbunătățit: Minimizați sarcinile în bara de stare, minimizați fman în zona de notificare, porniți cu un singur panou și păstrați solicitările în fereastra principală.",
+    "Remediat: Alertele, ferestrele de progres, selectarea elementelor copiate și căile care conțin variabile de mediu sunt acum mai fiabile și mai ușor de folosit."
+  ]
+}

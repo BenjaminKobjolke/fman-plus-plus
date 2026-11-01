@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Više kontrole nad datotekama i prozorima",
+  "notes": [
+    "Novo: Koristite prijenosnu verziju za Windows koja čuva vaše postavke i dodatke uz aplikaciju te se može sama ažurirati.",
+    "Novo: Pregledavajte mrežna dijeljenja sustava Windows i RAR arhive kao mape te brže otvarajte odredišne putanje pomoću automatskog dovršavanja tipkom Tab.",
+    "Poboljšano: Odaberite zadane aplikacije ili naredbe za određene vrste datoteka, pregledajte više pojedinosti kada su datoteke u sukobu i skupno preimenujte datoteke u sukobu.",
+    "Poboljšano: Smanjite zadatke na traku stanja, minimizirajte fman u područje obavijesti, pokrenite aplikaciju s jednim oknom i zadržite upite unutar glavnog prozora.",
+    "Ispravljeno: Upozorenja, dijaloški okviri napretka, odabir kopiranih stavki i putanje varijabli okruženja sada su pouzdaniji i jednostavniji za upotrebu."
+  ]
+}

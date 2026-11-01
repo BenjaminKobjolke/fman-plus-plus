@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Mehr Kontrolle über Dateien und Fenster",
+  "notes": [
+    "Neu: Verwende eine portable Windows-Version, die deine Einstellungen und Plugins neben der App speichert und sich selbstständig aktualisieren kann.",
+    "Neu: Durchsuche Windows-Netzwerkfreigaben und RAR-Archive wie Ordner und öffne Zielpfade dank Tab-Vervollständigung schneller.",
+    "Verbessert: Lege feste Apps oder Befehle für bestimmte Dateitypen fest, sieh bei Dateikonflikten mehr Details und benenne mehrere Konflikte auf einmal um.",
+    "Verbessert: Minimiere Aufgaben in die Statusleiste, minimiere fman in den Infobereich, starte mit nur einem Bereich und zeige Eingabeaufforderungen im Hauptfenster an.",
+    "Behoben: Warnmeldungen, Fortschrittsdialoge, die Auswahl kopierter Elemente und Pfade mit Umgebungsvariablen funktionieren jetzt zuverlässiger und lassen sich einfacher verwenden."
+  ]
+}

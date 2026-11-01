@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Vairāk iespēju pārvaldīt failus un logus",
+  "notes": [
+    "Jauns: Izmantojiet pārnēsājamu Windows versiju, kurā iestatījumi un spraudņi tiek glabāti līdzās lietotnei un kuru var atjaunināt, nepārvietojot to.",
+    "Jauns: Pārlūkojiet Windows tīkla koplietojumus un RAR arhīvus tāpat kā mapes un ātrāk atveriet mērķa ceļus, izmantojot tabulēšanas pabeigšanu.",
+    "Uzlabots: Izvēlieties failu tipiem pastāvīgi lietojamas lietotnes vai komandas, skatiet plašāku informāciju par failu konfliktiem un pārdēvējiet konfliktējošos failus lielapjomā.",
+    "Uzlabots: Minimējiet uzdevumus statusa joslā, minimizējiet fman sistēmas teknē, sāciet darbu ar vienu rūti un rādiet uzvednes galvenajā logā.",
+    "Novērsts: Paziņojumi, progresa dialoglodziņi, nokopēto vienumu atlase un vides mainīgo ceļi tagad darbojas uzticamāk un ir vieglāk lietojami."
+  ]
+}

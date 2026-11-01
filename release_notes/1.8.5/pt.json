@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Mais controlo sobre ficheiros e janelas",
+  "notes": [
+    "Novo: Utilize uma versão portátil para Windows que mantém as definições e os plugins junto à aplicação e que se pode atualizar sem sair da aplicação.",
+    "Novo: Explore partilhas de rede do Windows e arquivos RAR como se fossem pastas e abra caminhos de destino mais rapidamente com a conclusão automática ao premir Tab.",
+    "Melhorado: Escolha aplicações ou comandos predefinidos para tipos de ficheiro específicos, consulte mais detalhes quando há conflitos entre ficheiros e mude o nome de vários ficheiros em conflito de uma só vez.",
+    "Melhorado: Minimize tarefas para a barra de estado, minimize o fman para a área de notificação, inicie com um único painel e mantenha as mensagens dentro da janela principal.",
+    "Corrigido: Os alertas, as caixas de diálogo de progresso, a seleção de itens copiados e os caminhos com variáveis de ambiente são agora mais fiáveis e fáceis de utilizar."
+  ]
+}

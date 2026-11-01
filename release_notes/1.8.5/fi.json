@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Lisää hallintaa tiedostoihin ja ikkunoihin",
+  "notes": [
+    "Uutta: Käytä Windowsin siirrettävää versiota, joka säilyttää asetukset ja lisäosat sovelluksen rinnalla ja voi päivittää itsensä paikan päällä.",
+    "Uutta: Selaa Windows-verkon jakoja ja RAR-arkistoja kuin kansioita ja avaa kohdepolut nopeammin sarkaintäydennyksen avulla.",
+    "Parannettu: Valitse tiedostotyypeille oletussovelluksia tai komentoja, näe lisää tietoja tiedostojen ristiriitatilanteissa ja nimeä ristiriitaiset tiedostot uudelleen erissä.",
+    "Parannettu: Pienennä tehtävät tilariville, pienennä fman ilmoitusalueelle, käynnistä yhdellä ruudulla ja pidä kehotteet pääikkunassa.",
+    "Korjattu: Ilmoitukset, edistymisikkunat, kopioitujen kohteiden valinta ja ympäristömuuttujia sisältävät polut toimivat nyt luotettavammin ja ovat helpompia käyttää."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Daugiau failų ir langų valdymo galimybių",
+  "notes": [
+    "Nauja: naudokite nešiojamąją „Windows“ versiją, kuri saugo nustatymus ir papildinius šalia programos ir gali atsinaujinti neišjungiant programos.",
+    "Nauja: naršykite „Windows“ tinklo bendrinamus išteklius ir RAR archyvus kaip aplankus, o paskirties vietų kelius įveskite greičiau naudodami automatinį užbaigimą paspaudus „Tab“.",
+    "Patobulinta: pasirinkite numatytąsias programas arba komandas konkrečių tipų failams, peržiūrėkite daugiau informacijos apie failų konfliktus ir pervadinkite konfliktuojančius failus paketiniu būdu.",
+    "Patobulinta: sutraukite užduotis į būsenos juostą, sutraukite „fman“ į sistemos dėklą, paleiskite programą su viena sritimi ir rodykite raginimus pagrindiniame lange.",
+    "Ištaisyta: pranešimai, eigos dialogo langai, nukopijuotų elementų žymėjimas ir aplinkos kintamųjų keliai dabar veikia patikimiau ir jais lengviau naudotis."
+  ]
+}

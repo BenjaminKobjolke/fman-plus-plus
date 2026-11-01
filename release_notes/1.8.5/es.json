@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Más control sobre archivos y ventanas",
+  "notes": [
+    "Nuevo: Usa una versión portable para Windows que guarda la configuración y los complementos junto a la aplicación y se actualiza automáticamente.",
+    "Nuevo: Explora recursos compartidos de red y archivos RAR como si fueran carpetas, y abre rutas de destino más rápido con el autocompletado mediante Tab.",
+    "Mejorado: Elige aplicaciones o comandos permanentes para tipos de archivo específicos, consulta más detalles cuando haya conflictos entre archivos y cambia el nombre de varios archivos en conflicto a la vez.",
+    "Mejorado: Minimiza las tareas en la barra de estado, minimiza fman en el área de notificación, inicia la aplicación con un solo panel y mantén los avisos dentro de la ventana principal.",
+    "Corregido: Las alertas, los diálogos de progreso, la selección de elementos copiados y las rutas con variables de entorno ahora son más fiables y fáciles de usar."
+  ]
+}

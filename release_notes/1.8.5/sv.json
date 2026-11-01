@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Mer kontroll över filer och fönster",
+  "notes": [
+    "Nytt: Använd en portabel Windows-version som sparar inställningar och plugin-program bredvid appen och kan uppdatera sig själv direkt på plats.",
+    "Nytt: Bläddra bland Windows-nätverksresurser och RAR-arkiv som om de vore mappar, och öppna målsökvägar snabbare med Tab-komplettering.",
+    "Förbättrat: Välj appar eller kommandon som alltid ska användas för specifika filtyper, se fler detaljer när filer står i konflikt och byt namn på flera konflikter samtidigt.",
+    "Förbättrat: Minimera uppgifter till statusfältet, minimera fman till systemfältet, starta med en enda panel och visa uppmaningar i huvudfönstret.",
+    "Åtgärdat: Aviseringar, förloppsdialogrutor, markering av kopierade objekt och sökvägar med miljövariabler är nu tillförlitligare och enklare att använda."
+  ]
+}

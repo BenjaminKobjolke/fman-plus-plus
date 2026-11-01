@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Větší kontrola nad soubory a okny",
+  "notes": [
+    "Novinka: Používejte přenosnou verzi pro Windows, která uchovává vaše nastavení a pluginy vedle aplikace a může se aktualizovat přímo na místě.",
+    "Novinka: Procházejte síťové složky Windows a archivy RAR jako běžné složky a rychleji otevírejte cílové cesty pomocí dokončování klávesou Tab.",
+    "Vylepšení: Nastavte trvalé aplikace nebo příkazy pro konkrétní typy souborů, zobrazte si více podrobností při konfliktu souborů a hromadně přejmenujte konfliktní soubory.",
+    "Vylepšení: Minimalizujte úlohy do stavového řádku, minimalizujte fman do systémové oblasti oznámení, spouštějte aplikaci s jediným panelem a zobrazujte výzvy v hlavním okně.",
+    "Opravy: Upozornění, dialogová okna průběhu, výběr zkopírovaných položek a cesty s proměnnými prostředí jsou nyní spolehlivější a snadněji použitelné."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Più controllo su file e finestre",
+  "notes": [
+    "Novità: usa una versione portatile per Windows che conserva impostazioni e plugin accanto all'app e può aggiornarsi direttamente.",
+    "Novità: esplora le condivisioni di rete di Windows e gli archivi RAR come cartelle e apri più rapidamente i percorsi di destinazione con il completamento tramite Tab.",
+    "Miglioramenti: scegli app o comandi permanenti per determinati tipi di file, visualizza più dettagli in caso di conflitto tra file e rinomina più conflitti in blocco.",
+    "Miglioramenti: riduci a icona le attività nella barra di stato, riduci fman nell'area di notifica, avvialo con un solo riquadro e mantieni le richieste all'interno della finestra principale.",
+    "Correzioni: gli avvisi, le finestre di avanzamento, la selezione degli elementi copiati e i percorsi con variabili d'ambiente sono ora più affidabili e facili da usare."
+  ]
+}

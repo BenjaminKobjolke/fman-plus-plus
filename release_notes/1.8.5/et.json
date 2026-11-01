@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Rohkem kontrolli failide ja akende üle",
+  "notes": [
+    "Uus: Kasuta kaasaskantavat Windowsi versiooni, mis hoiab sinu seaded ja pluginad rakenduse kõrval ning saab end kohapeal ise uuendada.",
+    "Uus: Sirvi Windowsi võrgukettaid ja RAR-arhiive nagu kaustu ning ava sihtkohtade radu kiiremini Tab-klahviga automaattäitmise abil.",
+    "Täiustatud: Vali kindlate failitüüpide jaoks püsirakendused või käsud, vaata failikonfliktide korral rohkem üksikasju ja nimeta konfliktis olevad failid hulgi ümber.",
+    "Täiustatud: Minimeeri ülesanded olekuribale, minimeeri fman süsteemisalve, käivita ühe paaniga ja hoia viibad peaaknas.",
+    "Parandatud: Märguanded, edenemisdialoogid, kopeeritud üksuste valimine ja keskkonnamuutujate rajad on nüüd töökindlamad ning hõlpsamini kasutatavad."
+  ]
+}

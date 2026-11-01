@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "More control over files and windows",
+  "notes": [
+    "New: Use a portable Windows version that keeps your settings and plugins beside the app and can update itself in place.",
+    "New: Browse Windows network shares and RAR archives like folders, and open destination paths faster with Tab completion.",
+    "Improved: Choose permanent apps or commands for specific file types, see more details when files conflict, and rename conflicts in bulk.",
+    "Improved: Minimize tasks to the status bar, minimize fman to the system tray, start with a single pane, and keep prompts inside the main window.",
+    "Fixed: Alerts, progress dialogs, copied-item selection, and environment-variable paths are now more reliable and easier to use."
+  ]
+}

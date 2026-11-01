@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Nagyobb irányítás a fájlok és ablakok felett",
+  "notes": [
+    "Új: Használjon hordozható Windows-verziót, amely a beállításait és bővítményeit az alkalmazás mellett tárolja, és önállóan, a meglévő helyére frissíthető.",
+    "Új: Böngéssze a Windows hálózati megosztásait és a RAR-archívumokat mappákként, a célútvonalakat pedig nyissa meg gyorsabban a Tab billentyűs kiegészítéssel.",
+    "Továbbfejlesztve: Válasszon állandó alkalmazásokat vagy parancsokat bizonyos fájltípusokhoz, tekintsen meg több részletet fájlütközések esetén, és nevezze át egyszerre az ütköző fájlokat.",
+    "Továbbfejlesztve: Minimalizálja a feladatokat az állapotsorra, a fmant az értesítési területre, indítsa el az alkalmazást egyetlen panellel, és jelenítse meg a párbeszédpaneleket a főablakon belül.",
+    "Javítva: A riasztások, a folyamatjelző ablakok, a másolt elemek kijelölése és a környezeti változókat tartalmazó útvonalak most megbízhatóbban működnek és könnyebben használhatók."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "date": "2026-11-01",
+  "title": "Več nadzora nad datotekami in okni",
+  "notes": [
+    "Novo: Uporabite prenosno različico za Windows, ki vaše nastavitve in vtičnike hrani ob aplikaciji ter se lahko posodablja kar na mestu.",
+    "Novo: Brskajte po omrežnih skupnih mapah sistema Windows in arhivih RAR kot po mapah ter hitreje odpirajte ciljne poti z dopolnjevanjem s tipko Tab.",
+    "Izboljšano: Izberite privzete aplikacije ali ukaze za določene vrste datotek, ob sporih med datotekami si oglejte več podrobnosti in množično preimenujte datoteke v sporu.",
+    "Izboljšano: Minimizirajte opravila v vrstico stanja, minimizirajte fman v območje za obvestila, zaženite program z enim podoknom in ohranite pozive znotraj glavnega okna.",
+    "Popravljeno: Opozorila, pogovorna okna z napredkom, izbiranje kopiranih elementov in poti s spremenljivkami okolja so zdaj zanesljivejši in preprostejši za uporabo."
+  ]
+}
