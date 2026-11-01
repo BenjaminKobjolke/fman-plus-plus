@@ -88,6 +88,22 @@ to bug fixes or to questions with one correct answer.
 The plugin-first rule keeps precedence: its first round still asks only the gating question, and
 the setting option applies to the detail round that follows.
 
+## Planning questions: use what the request already settles
+
+For `/tickets:plan` runs, read the todo's description and, for an `Upstream #<n>: …` todo, the
+upstream issue with its comments (`gh issue view <n> -R mherrmann/fman --comments`; read only,
+never comment) before asking design questions.
+
+When the todo or the issue states a behavior explicitly ("clicking outside closes the
+palette", "show the buttons in two rows", "the hotkey toggles the window"), that behavior is
+settled: put it into the plan, quote or cite where it was said in the plan's Context, and do
+not ask about it. Ask only about material choices the request leaves open, or where it is
+ambiguous or contradicts itself; then say in the question which part is open.
+
+A settled behavior needs no setting option: name the request as the reason in the plan's
+Context (see the setting rule above). The plugin-first rule and the setting option still apply
+to every choice that is genuinely open.
+
 ## Testing
 
 After touching `src/main/python/fman/impl/in_window_dialog.py`, `exec_dialog`,
