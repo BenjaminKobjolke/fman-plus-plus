@@ -1,7 +1,7 @@
 <!-- Managed by /coding-rules:apply — do not edit rule blocks by hand -->
 
 # Version
-6
+15
 
 Increase this version number whenever this rule file changes.
 
@@ -13,6 +13,7 @@ corresponding `*_RULES.md` files.
 ---
 
 ## Keep CODING_RULES.md in Sync
+<!-- steps: code -->
 
 When working on a project, copy all relevant rules into the project's `CODING_RULES.md` file
 (project root). The project's `CLAUDE.md` carries only a small versioned pointer block that
@@ -22,6 +23,9 @@ mandates reading `CODING_RULES.md` before code work — never the full rules, an
 - Always include all rules from `COMMON_RULES.md` and `IMPLEMENTATION_FLOW.md`.
   `COMMON_RULES.md` is copied into the project's `CODING_RULES.md`;
   `IMPLEMENTATION_FLOW.md` is copied into the project's own `IMPLEMENTATION_FLOW.md`
+- `apply` also writes `CODING_RULES_PLAN.md`, `CODING_RULES_REVIEW.md` and
+  `CODING_RULES_CODE.md` from the same rule blocks. Use `<!-- steps: plan, review, code -->`
+  under a heading to limit its section.
 - Also include applicable language-specific, project-type, and supplemental rule files
   (see `PROJECT_TYPES.md` for the project-type overview)
 - Include optional addon rule files only when the user has opted in to that addon
@@ -117,6 +121,7 @@ components work correctly together and catch issues that unit tests alone cannot
 ---
 
 ## Test Runner Scripts
+<!-- steps: review, code -->
 
 Every project must provide the following batch files in the `tools/` directory:
 
@@ -125,15 +130,30 @@ Every project must provide the following batch files in the `tools/` directory:
 
 These scripts ensure a consistent way to execute tests across environments.
 
+Both scripts must show progress while tests run: report the current setup stage, suite, or test
+before potentially slow work, and show results as execution proceeds. A start banner followed only
+by a final summary is insufficient. Prefer the runner's verbose output and stream or flush it so
+callers can see it during execution. Print one line per test: `flutter test --reporter expanded`,
+`pytest -v`, `phpunit --debug` (`--testdox` lists the tests only after the run on PHPUnit 10+).
+For a legitimate long wait without ordinary output, report the current stage or test and elapsed
+time at least every 60 seconds. Elapsed-time updates must not imply that a test completed or
+advanced. If output is captured for logs or filtering, keep progress visible during execution;
+replaying it only after completion does not count.
+
 Both must **exit with the test runner's own exit code** — capture it right after the run
 (`set TESTRESULT=%ERRORLEVEL%`) and end with `exit /b %TESTRESULT%`. A bat that prints
 "Some tests failed!" but exits 0 reports green to CI, to callers and to AI agents. Never pipe the
-test command into a filter — the pipe's exit code is the *filter's*, not the runner's; write to a
-temp file and filter that instead.
+test command into a plain filter — the pipe's exit code is the *filter's*, not the runner's. Never
+redirect the run into a temp file and print or filter that afterwards either: the script is then
+silent for the whole run. Run the command directly so its output streams. If output has to be
+filtered or logged, do it while it streams and return the runner's own code, e.g. `powershell
+-NoProfile -Command "<test command> | Where-Object { $_ -notmatch '<noise>' }; exit $LASTEXITCODE"`,
+or use the runner's own log-file option.
 
 ---
 
 ## No `pause` in Batch Files
+<!-- steps: review, code -->
 
 Batch files must never contain a `pause` line. `pause` waits for a keypress, so any bat that has one
 hangs forever when run by CI, another bat, or an AI agent. End with an explicit `exit /b <code>`
@@ -170,6 +190,19 @@ existing equivalent. If found, copy or reference it. If not:
 
 This keeps cross-project tooling consistent and prevents the same script
 from being re-invented in every new project.
+
+---
+
+## New Projects Start From a Template
+<!-- steps: plan -->
+
+Before creating a new project (an API, an app, a tool — anything that gets its own folder),
+ask the user whether a template project exists for that kind of project. Never scaffold from
+scratch without asking.
+
+- Run `/coding-rules:new-project`: it suggests the template remembered for that project type
+  in `~/.coding-rules/settings.json`, asks, and remembers a newly chosen template for next time.
+- A remembered template is a suggestion — still ask, the user may want another one or none.
 
 ---
 
@@ -235,12 +268,22 @@ kept to a minimum — a future maintainer (or you, at 3am) has to understand it.
 
 ## Confirm Dependency Versions
 
-Before adding any new package or library, confirm the version with the user to ensure we use
-up-to-date dependencies.
+When adding a new package or library, choose its version yourself from verified facts. Do not
+ask the user to confirm a routine version choice.
 
-- Do not assume which version to use
-- Ask the user to verify the latest stable version
-- Avoid outdated packages that may have security vulnerabilities or missing features
+- Never assume a version from memory: check the authoritative release source (the package
+  registry or the project's official releases) for the latest stable release.
+- Check the project's constraints: runtime/SDK version, the existing lock file, peer
+  dependencies and the package's supported platforms.
+- Use the latest stable release that satisfies them. Skip pre-releases (alpha, beta, rc, dev).
+- Pin or lock the resolved version the way the project already does (lock file, exact pin, or
+  its range convention), and name the chosen version and where it was checked in the plan or
+  change summary.
+- A version the user specified wins.
+- Ask the user only when a real tradeoff remains: the latest stable needs a new major line or a
+  runtime upgrade, supported versions conflict, a security advisory affects the candidate, or
+  the release source cannot be checked.
+- Avoid outdated packages that may have security vulnerabilities or missing features.
 
 ---
 
@@ -282,6 +325,7 @@ The logger's name is fixed per language so it is the same known type in every pr
 | Dart/Flutter  | `AppLogger`        | `app_logger.dart`   |
 | Kotlin        | `AppLogger`        | `AppLogger.kt`      |
 | C# (plain)    | `AppLogger`        | `AppLogger.cs`      |
+| C++           | `AppLogger`        | `AppLogger.h` / `AppLogger.cpp` |
 | Unity C#      | `GameLog` (static) | `GameLog.cs`        |
 | Svelte/JS/TS  | `logger` (export)  | `logger.ts`         |
 | Arduino       | `Log`              | `Log.h` / `Log.cpp` |
@@ -296,6 +340,66 @@ responses.
 - Never trust external data; validate before processing
 - Use language-appropriate validation libraries (e.g., Pydantic, Zod, FluentValidation)
 - Fail fast with clear error messages when validation fails
+
+---
+
+## API Clients: the API Sorts, Filters and Pages (BINDING)
+
+Applies to every project that reads data from an API — app, SPA, desktop tool, script.
+
+- **Show what the API returns, in the order it returns it.** Never download a whole collection
+  to sort, filter, search, count, group or join it locally.
+- **Read lists page by page.** Send the page size and position and load the next page when the
+  user scrolls or asks for more. Never loop over all pages to rebuild the full list on start or
+  on refresh.
+- **A new order, filter or search is a new request** with that parameter, starting at the first
+  page. Reordering the rows already held is wrong as soon as the list is paged: the client holds
+  one page, not the list.
+- **Do not download again what you already hold.** After a create, update or delete use the row
+  the response returned, or re-request the visible page — not the whole collection.
+- **A missing parameter is API work.** When an API you own lacks the sort, filter, search,
+  paging or count a screen needs, request it from the API project (linked todo or
+  `/feedback:write`) and plan against that. "The list is small or unpaged today, so the client
+  can do it" is not a reason. For a third-party API that cannot change, use the paging and
+  sorting it offers and mark any remaining local work with a comment naming the missing
+  capability.
+
+The server half is `project_type/REST_API.md` -> "List Endpoints: Paging, Sorting, Filtering".
+
+---
+
+## Shared Contract Repository for API and Clients (BINDING)
+
+When two or more projects we own talk over the wire — an API plus an app, an API plus a desktop
+app, or all three — keep their shared values in one contract repository. This does not apply to
+third-party APIs.
+
+- **Why:** each side keeps its own copy of every value that crosses the wire. When one side adds a
+  value the other does not know, the other side can break (for example, the API added a todo type
+  and the watcher rejected the whole todo list).
+- **One separate repository** (`<system>-contract`) holds the contract: at minimum every shared
+  enum in `enums.json`, shaped as `"<Name>": {"values": [sorted unique], "direction":
+  "api_to_client" | "client_to_api", "description": "<where it appears>"}`, plus a `README.md`
+  with the change rules and the list of consumers. Do not add version numbers; the submodule
+  pointer is the version.
+- **Every project includes it as a git submodule at `contract/`.** Pick up changes with
+  `git submodule update --remote contract` and commit the pointer bump. Production code never
+  reads `contract/`; it is test input only.
+- **The API is the producer:** export the contract from its own constants (one map, one export
+  script) and add a freshness test that fails when the committed file differs from the export.
+- **Each client is a consumer:** test that every mapped enum matches the contract in its
+  direction (`api_to_client` sets are equal so the client knows every value;
+  `client_to_api` client values are a subset) and that every contract name is mapped.
+- Both tests skip when `contract/` is not checked out.
+- **Change order:** for an `api_to_client` value, update the contract, release clients that know
+  it, then have the API emit it. For a `client_to_api` value, update the contract and API first,
+  then have the client send it. To remove a value, stop it at the API, then remove it from the
+  contract, then from clients. Never rename a value; renaming is an add plus a remove. Add a new
+  shared enum to the contract in the same change that introduces it.
+- Clients still tolerate an unknown value (skip the row; do not fail the whole response) as a
+  last line of defence, not as permission to skip the order.
+- **Setting it up** is work in each project: when one project of the system lacks the submodule
+  or its test, request it there (linked todo or `/feedback:write`).
 
 ---
 
@@ -391,6 +495,14 @@ lists in consuming code.
   export, form generation, diffing, logging, etc.
 - Combine with compile-time checks where the language supports them (e.g., sealed interfaces,
   exhaustive matching) to ensure new fields cannot be silently ignored
+
+---
+
+## Search Across Partial Words
+
+When implementing user-facing search, split the query on whitespace and match every term as a
+case-insensitive substring of the searchable text, regardless of term order. For example,
+`release bat` should find `release_build.bat`. Preserve the project's existing searchable fields.
 
 ---
 
