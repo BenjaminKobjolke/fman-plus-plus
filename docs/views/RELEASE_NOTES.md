@@ -93,10 +93,10 @@ Can be bound to a key in `Key Bindings.json` like any other command, e.g.:
   [`docs/CREATE_NEW_RELEASE.md`](../CREATE_NEW_RELEASE.md)), outside
   `src/main/resources/base/` where fbs auto-bundles from — so `freeze()` in
   `src/build/python/build_impl/windows.py` copies it into the frozen output
-  explicitly via `_copy_release_notes()`. The
-  `python-localization` dependency is bundled the same way third-party
-  plugin dependencies already are (`copy_python_library`, mirroring
-  `send2trash`), since PyInstaller doesn't scan plugin code for imports.
+  explicitly via `_copy_release_notes()`. The app imports
+  `python-localization` through `fman.impl.localization`, so PyInstaller
+  bundles it in `_internal`; Core's lazy import resolves to that copy, and a
+  second copy in the Core plugin triggers the duplicate-package alert.
 - Tests: `core/tests/test_release_notes.py` covers the pure logic above
   (folder parsing/sorting, locale fallback, rendering);
   `core/tests/commands/test_release_notes.py` is a smoke test for the

@@ -177,8 +177,8 @@ without depending on whatever codecs happen to be installed on the OS.
   situation `core/net.py`'s `requests` is in. Both are therefore listed in
   `src/build/settings/base.json`'s `hidden_imports`; drop `mpv` from that list
   and the packaged app raises `ModuleNotFoundError` on the first video.
-  `copy_python_library('mpv', ...)` (the send2trash / python_localization
-  route in `build_impl/windows.py`) is *not* usable here: it calls
+  `copy_python_library('mpv', ...)` (the send2trash route in
+  `build_impl/windows.py`) is *not* usable here: it calls
   `import_module`, and `mpv.py` raises `OSError` at import time on a build
   machine without libmpv on `%PATH%`.
 - **The native `libmpv` is not bundled.** On Windows `core/libmpv.py`
