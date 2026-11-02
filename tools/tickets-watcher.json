@@ -27,7 +27,7 @@
       "code_quality": "green"
     },
     "tools\\run_tests.bat": {
-      "test": "green"
+      "test": "failed"
     },
     "tools\\run_core_tests.bat": {
       "test": "green"
@@ -89,6 +89,7 @@
     "run_overwrite_dialog_tests.bat",
     "run_progress_dialog_tests.bat",
     "run_prompt_completion_tests.bat",
+    "run_quicksearch_tests.bat",
     "run_robocopy_integration_tests.bat",
     "run_robocopy_tests.bat",
     "run_tests.bat",
@@ -157,5 +158,10 @@
     "uv run python tools\\test_fman_ui.py": "test",
     "tools\\run_automation_tests.bat": "test"
   },
-  "project_id": 251
+  "project_id": 251,
+  "analysis_command_failing_tests": {
+    "tools\\run_tests.bat": [
+      "(failures=2)"
+    ]
+  }
 }
