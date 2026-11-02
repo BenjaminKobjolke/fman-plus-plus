@@ -5,6 +5,8 @@ class StubProgressDialog:
 		self._was_canceled = False
 	def set_text(self, status):
 		pass
+	def set_cancel_text(self, text):
+		pass
 	def set_task_size(self, size):
 		self._task_size = size
 	def set_progress(self, progress):
@@ -34,6 +36,8 @@ class ChildProgressDialog:
 		self._progress_start = parent.get_progress()
 	def set_text(self, status):
 		self._parent.set_text(status)
+	def set_cancel_text(self, text):
+		self._parent.set_cancel_text(text)
 	def set_task_size(self, size):
 		raise NotImplementedError(
 			'Setting the size of a subtask that has already been started is '

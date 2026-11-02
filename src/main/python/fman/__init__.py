@@ -584,6 +584,8 @@ class Task:
 		return self._title
 	def set_text(self, text):
 		self._dialog.set_text(text)
+	def set_cancel_text(self, text):
+		self._dialog.set_cancel_text(text)
 	def set_size(self, size):
 		self._size = size
 		self._dialog.set_task_size(size)

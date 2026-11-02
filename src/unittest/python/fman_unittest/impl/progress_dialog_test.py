@@ -257,6 +257,22 @@ class WorkersLabelTest(TestCase):
 		self.assertFalse(dialog._cancel_button.isEnabled())
 		self.assertTrue(dialog._workers_label._add.isEnabled())
 		self.assertTrue(dialog._workers_label._remove.isEnabled())
+	def test_request_cancel_uses_the_cancel_text_when_set(self):
+		dialog = self._dialog()
+		dialog.set_cancel_text('Waiting for Windows')
+		dialog.request_cancel()
+		self.assertEqual('Waiting for Windows', dialog._text)
+	def test_request_cancel_uses_the_default_text(self):
+		dialog = self._dialog()
+		dialog.request_cancel()
+		self.assertEqual('Canceling...', dialog._text)
+	def test_set_cancel_text_after_cancel_updates_the_text(self):
+		dialog = self._dialog()
+		dialog.request_cancel()
+		dialog.set_cancel_text('Waiting for Windows')
+		self.assertEqual('Waiting for Windows', dialog._text)
+		dialog.set_cancel_text(None)
+		self.assertEqual('Canceling...', dialog._text)
 	def _dialog(self, parent=None, options=None, tool_windows=None):
 		return ProgressDialog(
 			parent, 'Copying', 100, QPalette(),

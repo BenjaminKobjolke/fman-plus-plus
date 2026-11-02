@@ -45,6 +45,7 @@ class ProgressDialog(QProgressDialog):
 		self._title = title
 		self._size = self.maximum()
 		self._text = ''
+		self._cancel_text = None
 		self._progress = 0
 		self._was_canceled = False
 		self._workers_label = None
@@ -93,9 +94,13 @@ class ProgressDialog(QProgressDialog):
 			)
 	@run_in_main_thread
 	def request_cancel(self):
-		self.set_text('Canceling...')
+		self.set_text(self._cancel_text or 'Canceling...')
 		self._cancel_button.setEnabled(False)
 		self._was_canceled = True
+	def set_cancel_text(self, text):
+		self._cancel_text = text
+		if self._was_canceled:
+			self.set_text(text or 'Canceling...')
 	@run_in_main_thread
 	def show_alert(self, *args, **kwargs):
 		return self._show_without_popup(
