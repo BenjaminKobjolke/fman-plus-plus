@@ -1,5 +1,7 @@
+from core.commands import pane_view
 from core.commands.pane_view import ShowAllPanes, ShowOnlyActivePane, \
 	AddPane, RemovePane, SwitchPanes
+from PyQt5.QtGui import QFont
 from core.tests.commands import FakeWindow
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
@@ -119,6 +121,28 @@ class RemovePaneTest(TestCase):
 		window, active, other = _two_pane_window()
 		other._widget.setVisible(False)
 		self.assertFalse(RemovePane(active).is_visible())
+
+class RememberBasePaneFontSizeTest(TestCase):
+	def test_uses_polished_view_font(self):
+		class FileView:
+			def __init__(self):
+				self.polished = False
+			def ensurePolished(self):
+				self.polished = True
+			def font(self):
+				return QFont('Arial', 20 if self.polished else 9)
+
+		class Widget:
+			def __init__(self):
+				self._file_view = FileView()
+
+		class Pane:
+			def __init__(self):
+				self._widget = Widget()
+
+		font = pane_view._pane_font(Pane())
+
+		self.assertEqual(20, font.pointSize())
 
 class ShowAllPanesTest(TestCase):
 	def test_restores_all_panes(self):

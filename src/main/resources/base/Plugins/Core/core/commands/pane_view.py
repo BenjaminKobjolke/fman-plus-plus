@@ -109,7 +109,10 @@ def _pane_font(pane):
 	# live view. Passed to core/font_size as a callable, not a QFont: reaching
 	# through a pane that is going away raises, and that has to be caught
 	# where the fallback is.
-	return pane._widget._file_view.font()
+	view = pane._widget._file_view
+	# Unpolished (pane not shown yet), font() ignores the style sheet.
+	view.ensurePolished()
+	return view.font()
 
 @run_in_main_thread
 def _apply_pane_font_size(pane, size):
