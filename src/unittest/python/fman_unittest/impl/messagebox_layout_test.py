@@ -186,5 +186,10 @@ class MessageBoxLayoutTest(TestCase):
 	def setUpClass(cls):
 		# One QApplication per process; Qt refuses a second one.
 		cls.app = QApplication.instance() or QApplication([])
+		cls.original_font = cls.app.font()
 		# Approximate a theme with a large font, which is what makes Qt wrap.
 		cls.app.setFont(QFont('Consolas', 20))
+
+	@classmethod
+	def tearDownClass(cls):
+		cls.app.setFont(cls.original_font)
