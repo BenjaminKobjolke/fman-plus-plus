@@ -108,13 +108,14 @@ class LocalFileSystem(LocalTransfers, FileSystem):
 		os_path = self._url_to_os_path(path)
 		if not self._isabs(os_path):
 			raise filenotfounderror(path)
-		yield Task(
-			'Deleting ' + path.rsplit('/', 1)[-1], size=1,
-			fn=self._do_trash, args=(path, os_path)
+		fs = self
+		class TrashTask(Task):
+			def __call__(self):
+				move_to_trash(os_path, task=self)
+				fs.notify_file_removed(path)
+		yield TrashTask(
+			'Deleting ' + path.rsplit('/', 1)[-1], size=1
 		)
-	def _do_trash(self, path, os_path):
-		move_to_trash(os_path)
-		self.notify_file_removed(path)
 	def delete(self, path):
 		for task in self.prepare_delete(path):
 			task()

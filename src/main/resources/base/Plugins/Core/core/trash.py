@@ -3,13 +3,25 @@ from fman import PLATFORM
 from os import strerror
 
 if PLATFORM == 'Mac':
-	from osxtrash import move_to_trash
+	from osxtrash import move_to_trash as _move_to_trash
+
+	def move_to_trash(*files, task=None):
+		return _move_to_trash(*files)
 else:
-	def move_to_trash(*files):
-		send2trash = _import_send2trash()
+	def move_to_trash(*files, task=None):
+		trash_win = None
+		if task is not None and PLATFORM == 'Windows':
+			try:
+				from core import trash_win
+			except ImportError:
+				pass
+		send2trash = _import_send2trash() if trash_win is None else None
 		for file in files:
 			try:
-				send2trash(file)
+				if trash_win is None:
+					send2trash(file)
+				else:
+					trash_win.send_to_trash(file, task)
 			except OSError as e:
 				if PLATFORM == 'Windows':
 					if e.errno == EINVAL and e.winerror == _DE_INVALIDFILES:
