@@ -4,6 +4,7 @@ from core.commands.pane_view import ShowAllPanes, ShowOnlyActivePane, \
 from PyQt5.QtGui import QFont
 from core.tests.commands import FakeWindow
 from PyQt5.QtWidgets import QApplication
+from unittest.mock import patch
 from unittest import TestCase
 
 # ShowOnlyActivePane is decorated with @run_in_main_thread, which needs a
@@ -130,7 +131,7 @@ class RememberBasePaneFontSizeTest(TestCase):
 			def ensurePolished(self):
 				self.polished = True
 			def font(self):
-				return QFont('Arial', 20 if self.polished else 9)
+				return QFont(_APP.font().family(), 20 if self.polished else 9)
 
 		class Widget:
 			def __init__(self):
@@ -140,9 +141,17 @@ class RememberBasePaneFontSizeTest(TestCase):
 			def __init__(self):
 				self._widget = Widget()
 
-		font = pane_view._pane_font(Pane())
-
-		self.assertEqual(20, font.pointSize())
+		previous_base_size = pane_view._base_pane_font_size
+		try:
+			pane_view._base_pane_font_size = None
+			with patch.object(
+				pane_view, 'effective_font_size',
+				side_effect=lambda get_font: get_font().pointSize()
+			):
+				pane_view._remember_base_pane_font_size(Pane())
+			self.assertEqual(20, pane_view._base_pane_font_size)
+		finally:
+			pane_view._base_pane_font_size = previous_base_size
 
 class ShowAllPanesTest(TestCase):
 	def test_restores_all_panes(self):
