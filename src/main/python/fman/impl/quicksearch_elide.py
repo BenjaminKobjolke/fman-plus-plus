@@ -6,7 +6,7 @@ def elide_title_left(title, font, available_width):
 	metrics = QFontMetrics(font)
 	if metrics.horizontalAdvance(title) <= available_width:
 		return title, 0
-	elided = metrics.elidedText(title, Qt.ElideLeft, max(0, available_width))
+	elided = metrics.elidedText(title, Qt.ElideLeft, int(max(0, available_width)))
 	removed_chars = len(title) - (len(elided) - 1)
 	return elided, removed_chars
 
