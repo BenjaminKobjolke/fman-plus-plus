@@ -33,6 +33,8 @@ else:
 	SEVEN_ZIP_BINARY = join(
 		dirname(dirname(dirname(__file__))), 'bin', PLATFORM.lower(), binary
 	)
+# Upstream name; third-party plugins (e.g. SevenZipTools2) read it.
+_7ZIP_BINARY = SEVEN_ZIP_BINARY
 
 class _7ZipFileSystem(FileSystem):
 	def __init__(self, fs=fman.fs, suffixes=None):
