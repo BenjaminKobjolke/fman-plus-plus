@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Varnejša preklicevanja in jasnejša sporočila o napakah",
+  "notes": [
+    "Izboljšano: Če prekličete brisanje v sistemu Windows, se zdaj po možnosti ustavi premik v Koš, prikazano pa je tudi pojasnilo, kadar Windows še dokončuje opravilo.",
+    "Izboljšano: Napake vtičnikov zdaj prikažejo najuporabnejše podrobnosti o napaki in shranijo dnevnik, ki ga je mogoče odpreti tudi, kadar konzola ni na voljo.",
+    "Odpravljeno: Pogovorna okna napredka lahko prikažejo sporočila o preklicu, prilagojena posameznim opravilom, hitro iskanje pa zanesljivo deluje tudi pri širinah z decimalnimi vrednostmi."
+  ]
+}

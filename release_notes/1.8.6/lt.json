@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Saugesnis atšaukimas ir aiškesni klaidų pranešimai",
+  "notes": [
+    "Patobulinta: atšaukus trynimą sistemoje „Windows“, jei įmanoma, failas nebeperskeliamas į šiukšlinę. Taip pat paaiškinama, kai „Windows“ dar užbaigia operaciją.",
+    "Patobulinta: papildinių klaidų pranešimuose dabar rodoma naudingiausia informacija apie klaidą, o žurnalas išsaugomas taip, kad jį būtų galima atverti net tada, kai konsolė nepasiekiama.",
+    "Ištaisyta: eigos dialogo languose galima rodyti konkrečiai operacijai skirtus atšaukimo pranešimus, o greitoji paieška patikimai veikia esant trupmeniniam pločiui."
+  ]
+}

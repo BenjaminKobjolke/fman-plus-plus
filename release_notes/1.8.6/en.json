@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Safer cancellations and clearer errors",
+  "notes": [
+    "Improved: Canceling a Windows delete now stops the move to the Recycle Bin when possible and explains when Windows is still finishing.",
+    "Improved: Plugin errors now show the most useful error detail and save a log that can be opened even when the console is unavailable.",
+    "Fixed: Progress dialogs can show operation-specific cancellation messages, and quicksearch remains reliable with fractional widths."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Turvalisemad tühistamised ja selgemad veateated",
+  "notes": [
+    "Täiustatud: Windowsis kustutamise tühistamine peatab nüüd võimaluse korral üksuse teisaldamise prügikasti ning selgitab, kui Windows alles lõpetab toimingut.",
+    "Täiustatud: Pistikprogrammide vead kuvavad nüüd kõige kasulikuma veateabe ja salvestavad logi, mida saab avada ka siis, kui konsool pole saadaval.",
+    "Parandatud: Edenemisdialoogid saavad kuvada toimingupõhiseid tühistamisteateid ning kiirotsing töötab murdarvuliste laiuste korral endiselt usaldusväärselt."
+  ]
+}

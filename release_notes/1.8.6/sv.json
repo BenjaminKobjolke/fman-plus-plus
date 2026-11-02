@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Säkrare avbrytningar och tydligare fel",
+  "notes": [
+    "Förbättrat: Om du avbryter en borttagning i Windows stoppas nu flytten till Papperskorgen när det är möjligt. Du får också veta när Windows fortfarande slutför åtgärden.",
+    "Förbättrat: Fel i insticksprogram visar nu den mest användbara felinformationen och sparar en logg som kan öppnas även när konsolen inte är tillgänglig.",
+    "Åtgärdat: Förloppsdialoger kan visa avbrytningsmeddelanden som är specifika för åtgärden, och snabbsökningen förblir tillförlitlig även med breddvärden med decimaler."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Bezbednije otkazivanje i jasnije greške",
+  "notes": [
+    "Poboljšano: Otkazivanje brisanja u operativnom sistemu Windows sada, kada je to moguće, zaustavlja premeštanje u Korpu za otpatke i objašnjava kada Windows još dovršava operaciju.",
+    "Poboljšano: Greške dodataka sada prikazuju najkorisnije detalje o grešci i čuvaju zapisnik koji može da se otvori čak i kada konzola nije dostupna.",
+    "Ispravljeno: Dijalozi napretka mogu da prikazuju poruke o otkazivanju prilagođene konkretnoj operaciji, a brza pretraga pouzdano radi i sa razlomljenim širinama."
+  ]
+}

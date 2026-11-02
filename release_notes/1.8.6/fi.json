@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Turvallisemmat peruutukset ja selkeämmät virheilmoitukset",
+  "notes": [
+    "Parannettu: Windowsissa poiston peruuttaminen estää nyt mahdollisuuksien mukaan siirron Roskakoriin ja ilmoittaa, jos Windows viimeistelee toimintoa vielä.",
+    "Parannettu: Lisäosien virheilmoituksissa näytetään nyt hyödyllisimmät virhetiedot, ja virheloki tallennetaan niin, että sen voi avata myös silloin, kun konsoli ei ole käytettävissä.",
+    "Korjattu: Edistymisikkunoissa voidaan näyttää toimintokohtaisia peruutusviestejä, ja pikahaku toimii luotettavasti myös murto-osaleveyksillä."
+  ]
+}

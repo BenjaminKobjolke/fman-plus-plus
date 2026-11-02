@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Anulări mai sigure și erori mai clare",
+  "notes": [
+    "Îmbunătățire: Anularea unei ștergeri în Windows oprește acum mutarea în Coșul de reciclare atunci când este posibil și explică atunci când Windows încă finalizează operațiunea.",
+    "Îmbunătățire: Erorile pluginurilor afișează acum cele mai utile detalii despre eroare și salvează un jurnal care poate fi deschis chiar și atunci când consola nu este disponibilă.",
+    "Remediere: Dialogurile de progres pot afișa mesaje de anulare specifice operațiunii, iar căutarea rapidă rămâne fiabilă și la lățimi fracționare."
+  ]
+}

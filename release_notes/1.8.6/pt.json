@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Cancelamentos mais seguros e erros mais claros",
+  "notes": [
+    "Melhoria: Cancelar uma eliminação no Windows interrompe agora a movimentação para a Reciclagem, quando possível, e explica quando o Windows ainda está a concluir a operação.",
+    "Melhoria: Os erros dos plug-ins apresentam agora os detalhes mais úteis e guardam um registo que pode ser aberto mesmo quando a consola não está disponível.",
+    "Correção: As caixas de diálogo de progresso podem apresentar mensagens de cancelamento específicas da operação, e a pesquisa rápida continua a funcionar de forma fiável com larguras fracionárias."
+  ]
+}

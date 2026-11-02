@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Hủy an toàn hơn, thông báo lỗi rõ ràng hơn",
+  "notes": [
+    "Cải tiến: Khi hủy thao tác xóa trên Windows, quá trình chuyển vào Thùng rác sẽ được dừng lại nếu có thể, đồng thời giải thích khi Windows vẫn đang hoàn tất thao tác.",
+    "Cải tiến: Lỗi plugin giờ đây hiển thị thông tin lỗi hữu ích nhất và lưu nhật ký có thể mở ngay cả khi không có bảng điều khiển.",
+    "Đã sửa: Hộp thoại tiến trình có thể hiển thị thông báo hủy riêng cho từng thao tác, và tính năng tìm kiếm nhanh vẫn hoạt động đáng tin cậy với độ rộng dạng phân số."
+  ]
+}

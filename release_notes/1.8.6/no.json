@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Tryggere avbrytinger og tydeligere feilmeldinger",
+  "notes": [
+    "Forbedret: Hvis du avbryter en sletting i Windows, stoppes flyttingen til papirkurven nå når det er mulig. Du får også beskjed når Windows fortsatt holder på med å fullføre operasjonen.",
+    "Forbedret: Plugin-feil viser nå den mest nyttige feildetaljen og lagrer en logg som kan åpnes selv når konsollen ikke er tilgjengelig.",
+    "Rettet: Fremdriftsdialoger kan vise avbrytelsesmeldinger som er tilpasset operasjonen, og hurtigsøk fungerer fortsatt pålitelig med ikke-heltallige bredder."
+  ]
+}

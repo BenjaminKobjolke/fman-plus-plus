@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Biztonságosabb megszakítások és egyértelműbb hibaüzenetek",
+  "notes": [
+    "Továbbfejlesztve: Windows alatt a törlés megszakítása most lehetőség szerint leállítja az áthelyezést a Lomtárba, és jelzi, ha a Windows még befejezi a műveletet.",
+    "Továbbfejlesztve: A bővítmények hibái most a leghasznosabb részleteket jelenítik meg, és olyan naplófájlt mentenek, amely akkor is megnyitható, ha a konzol nem érhető el.",
+    "Javítva: A folyamatjelző párbeszédablakok műveletspecifikus megszakítási üzeneteket jeleníthetnek meg, a gyorskeresés pedig tört szélességértékekkel is megbízhatóan működik."
+  ]
+}

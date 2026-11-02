@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Veiliger annuleren en duidelijkere foutmeldingen",
+  "notes": [
+    "Verbeterd: Als u het verwijderen in Windows annuleert, wordt het verplaatsen naar de Prullenbak waar mogelijk gestopt. Er wordt ook uitgelegd wanneer Windows nog bezig is met afronden.",
+    "Verbeterd: Bij plug-infouten worden nu de nuttigste foutdetails weergegeven en wordt een logboek opgeslagen dat ook kan worden geopend wanneer de console niet beschikbaar is.",
+    "Opgelost: Voortgangsvensters kunnen nu annuleringsmeldingen weergeven die specifiek zijn voor de bewerking. Ook blijft Snel zoeken betrouwbaar werken bij breedtes met decimalen."
+  ]
+}

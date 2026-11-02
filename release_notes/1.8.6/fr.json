@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Annulations plus sûres et erreurs plus claires",
+  "notes": [
+    "Amélioration : l’annulation d’une suppression sous Windows interrompt désormais, lorsque c’est possible, le déplacement vers la Corbeille et indique lorsque Windows est encore en train de terminer l’opération.",
+    "Amélioration : les erreurs de plug-in affichent désormais les détails les plus utiles et enregistrent un journal qui peut être ouvert même lorsque la console n’est pas disponible.",
+    "Correction : les boîtes de dialogue de progression peuvent afficher des messages d’annulation propres à chaque opération, et la recherche rapide reste fiable avec des largeurs fractionnaires."
+  ]
+}

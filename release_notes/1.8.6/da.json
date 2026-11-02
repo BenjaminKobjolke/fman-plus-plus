@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Sikrere annulleringer og tydeligere fejlmeddelelser",
+  "notes": [
+    "Forbedret: Hvis du annullerer en sletning i Windows, stoppes flytningen til Papirkurven nu, når det er muligt. Du får også besked, hvis Windows stadig er ved at afslutte handlingen.",
+    "Forbedret: Pluginfejl viser nu de mest relevante fejloplysninger og gemmer en log, som kan åbnes, selvom konsollen ikke er tilgængelig.",
+    "Rettet: Statusdialoger kan nu vise annulleringsmeddelelser, der er specifikke for handlingen, og hurtigsøgning fungerer fortsat pålideligt med ikke-heltallige bredder."
+  ]
+}

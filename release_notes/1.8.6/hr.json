@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Sigurnije otkazivanje i jasnije pogreške",
+  "notes": [
+    "Poboljšano: Otkazivanje brisanja u sustavu Windows sada, kad je to moguće, zaustavlja premještanje u Koš za smeće i objašnjava kada Windows još dovršava postupak.",
+    "Poboljšano: Pogreške dodataka sada prikazuju najkorisnije pojedinosti o pogrešci i spremaju zapisnik koji se može otvoriti čak i kada konzola nije dostupna.",
+    "Ispravljeno: Dijalozi napretka mogu prikazivati poruke o otkazivanju specifične za pojedinu operaciju, a brzo pretraživanje ostaje pouzdano i pri širinama s decimalnim vrijednostima."
+  ]
+}

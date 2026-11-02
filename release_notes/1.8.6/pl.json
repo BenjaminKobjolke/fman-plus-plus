@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Bezpieczniejsze anulowanie i bardziej czytelne komunikaty o błędach",
+  "notes": [
+    "Ulepszono: Anulowanie usuwania w systemie Windows zatrzymuje przenoszenie do Kosza, gdy jest to możliwe, i informuje, gdy Windows nadal kończy tę operację.",
+    "Ulepszono: Błędy wtyczek wyświetlają teraz najbardziej przydatne szczegóły i zapisują dziennik, który można otworzyć nawet wtedy, gdy konsola jest niedostępna.",
+    "Naprawiono: Okna postępu mogą wyświetlać komunikaty o anulowaniu dostosowane do konkretnej operacji, a szybkie wyszukiwanie działa niezawodnie przy szerokościach ułamkowych."
+  ]
+}

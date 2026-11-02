@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Bezpečnější rušení operací a srozumitelnější chybová hlášení",
+  "notes": [
+    "Vylepšení: Zrušení odstraňování ve Windows nyní podle možností zastaví přesun do Koše a vysvětlí, když Windows ještě dokončuje operaci.",
+    "Vylepšení: Chyby pluginů nyní zobrazují nejužitečnější podrobnosti a ukládají protokol, který lze otevřít i v případě, že konzole není dostupná.",
+    "Oprava: Dialogová okna průběhu mohou zobrazovat zprávy o zrušení konkrétní operace a rychlé vyhledávání zůstává spolehlivé i při zlomkových šířkách."
+  ]
+}

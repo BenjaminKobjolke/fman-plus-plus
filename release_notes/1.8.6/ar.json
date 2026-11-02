@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Cancelaciones más seguras y errores más claros",
+  "notes": [
+    "Mejora: Si cancelás una eliminación en Windows, ahora se detiene el envío a la Papelera de reciclaje cuando es posible, y se explica cuándo Windows todavía está terminando.",
+    "Mejora: Los errores de los complementos ahora muestran los detalles más útiles y guardan un registro que se puede abrir incluso cuando la consola no está disponible.",
+    "Corrección: Los diálogos de progreso pueden mostrar mensajes de cancelación específicos para cada operación, y la búsqueda rápida sigue funcionando de manera confiable con anchos fraccionarios."
+  ]
+}

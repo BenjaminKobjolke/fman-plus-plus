@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Daha güvenli iptaller ve daha anlaşılır hata mesajları",
+  "notes": [
+    "İyileştirildi: Windows'ta silme işlemi iptal edildiğinde, mümkünse Geri Dönüşüm Kutusu'na taşıma durduruluyor. Windows işlemi tamamlamaya devam ediyorsa bu durum açıklanıyor.",
+    "İyileştirildi: Eklenti hatalarında artık en yararlı hata ayrıntısı gösteriliyor ve konsol kullanılamasa bile açılabilen bir günlük dosyası kaydediliyor.",
+    "Düzeltildi: İlerleme iletişim kutuları işleme özel iptal mesajları gösterebiliyor ve hızlı arama kesirli genişliklerde de güvenilir şekilde çalışıyor."
+  ]
+}

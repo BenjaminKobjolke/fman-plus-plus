@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Bezpečnejšie rušenie operácií a zrozumiteľnejšie chyby",
+  "notes": [
+    "Vylepšené: Zrušenie odstraňovania vo Windowse teraz podľa možností zastaví presúvanie do Koša a vysvetlí, keď Windows ešte dokončuje operáciu.",
+    "Vylepšené: Chyby zásuvných modulov teraz zobrazujú najužitočnejšie podrobnosti a ukladajú protokol, ktorý možno otvoriť aj vtedy, keď konzola nie je dostupná.",
+    "Opravené: Dialógové okná priebehu môžu zobrazovať správy o zrušení špecifické pre danú operáciu a rýchle vyhľadávanie spoľahlivo funguje aj pri necelých šírkach."
+  ]
+}

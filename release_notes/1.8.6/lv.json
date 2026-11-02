@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Drošāka atcelšana un skaidrāki kļūdu ziņojumi",
+  "notes": [
+    "Uzlabots: Atceļot dzēšanu operētājsistēmā Windows, pārvietošana uz Atkritni tagad tiek apturēta, ja tas ir iespējams, un tiek paskaidrots, ja Windows vēl pabeidz šo procesu.",
+    "Uzlabots: Spraudņu kļūdu ziņojumos tagad tiek parādīta noderīgākā informācija par kļūdu un saglabāts žurnāls, ko var atvērt arī tad, ja konsole nav pieejama.",
+    "Novērsta problēma: Progresa dialogos var tikt rādīti konkrētajai darbībai paredzēti atcelšanas ziņojumi, un ātrā meklēšana uzticami darbojas arī ar daļskaitļu platuma vērtībām."
+  ]
+}

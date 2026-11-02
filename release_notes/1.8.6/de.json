@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Sicherere Abbrüche und verständlichere Fehlermeldungen",
+  "notes": [
+    "Verbessert: Wird ein Löschvorgang unter Windows abgebrochen, wird das Verschieben in den Papierkorb nun nach Möglichkeit gestoppt. Außerdem wird erklärt, wenn Windows den Vorgang noch abschließt.",
+    "Verbessert: Bei Plugin-Fehlern werden nun die hilfreichsten Details angezeigt und ein Protokoll gespeichert, das sich auch öffnen lässt, wenn die Konsole nicht verfügbar ist.",
+    "Behoben: Fortschrittsdialoge können nun vorgangsspezifische Abbruchmeldungen anzeigen, und die Schnellsuche funktioniert auch bei nicht ganzzahligen Breiten zuverlässig."
+  ]
+}

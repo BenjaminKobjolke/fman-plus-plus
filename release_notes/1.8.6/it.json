@@ -1,0 +1,10 @@
+{
+  "version": "1.8.6",
+  "date": "2026-11-02",
+  "title": "Annullamenti più sicuri ed errori più chiari",
+  "notes": [
+    "Migliorato: annullando un'eliminazione in Windows, quando possibile si interrompe lo spostamento nel Cestino e viene spiegato quando Windows sta ancora terminando l'operazione.",
+    "Migliorato: gli errori dei plugin mostrano ora i dettagli più utili e salvano un log che può essere aperto anche quando la console non è disponibile.",
+    "Corretto: le finestre di avanzamento possono mostrare messaggi di annullamento specifici per ogni operazione e la ricerca rapida rimane affidabile anche con larghezze frazionarie."
+  ]
+}
