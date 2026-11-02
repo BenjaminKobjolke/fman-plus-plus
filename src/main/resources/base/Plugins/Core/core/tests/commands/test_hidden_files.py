@@ -1,7 +1,8 @@
 from core.commands.hidden_files import _get_pane_info, _hidden_file_filter, \
 	_forget_pane_info, _is_hidden_file, _toggle_hidden_files
 from fman import PLATFORM
-from stat import FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY
+from stat import FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY, \
+	FILE_ATTRIBUTE_SYSTEM
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, patch
 
@@ -24,6 +25,8 @@ class HiddenFileFilterTest(TestCase):
 
 	def test_hidden(self):
 		self.assertFalse(self._filter(stat=_StubStat(FILE_ATTRIBUTE_HIDDEN)))
+	def test_system(self):
+		self.assertFalse(self._filter(stat=_StubStat(FILE_ATTRIBUTE_SYSTEM)))
 	def test_not_hidden(self):
 		self.assertTrue(self._filter(stat=_StubStat(FILE_ATTRIBUTE_NORMAL)))
 	def test_stat_fails(self):

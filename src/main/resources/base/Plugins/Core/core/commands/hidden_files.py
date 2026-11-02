@@ -14,7 +14,7 @@ from fman import DirectoryPaneCommand, DirectoryPaneListener, PLATFORM, \
 	load_json, save_json, show_alert, show_status_message
 from fman.fs import notify_file_changed, query
 from fman.url import as_human_readable, splitscheme
-from stat import FILE_ATTRIBUTE_HIDDEN
+from stat import FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_SYSTEM
 
 __all__ = ['InitHiddenFilesFilter', 'ToggleHiddenFiles']
 
@@ -150,7 +150,7 @@ def _hidden_file_filter(url):
 			attrs = query(url, 'stat').st_file_attributes
 		except OSError:
 			return True
-		return not attrs & FILE_ATTRIBUTE_HIDDEN
+		return not attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)
 	return not is_hidden(path)
 
 def _is_hidden_file(url):
