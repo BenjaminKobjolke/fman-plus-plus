@@ -54,7 +54,8 @@ from fman.impl.view import ProxyStyle
 from fman.impl.widgets import MainWindow, Application
 from os import makedirs, getcwd
 from os.path import dirname, join
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QUrl, QTimer
+from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QStyleFactory, QFileIconProvider
 
 import fman
@@ -465,9 +466,14 @@ class DevelopmentApplicationContext(ApplicationContext):
 	@cached_property
 	def plugin_error_handler(self):
 		return PluginErrorHandler(
-			self.app, get_console_log(), self._open_console_from_error
+			self.app, get_console_log(), self._open_console_from_error,
+			self._get_local_data_file('Errors.log')
 		)
 	def _open_console_from_error(self):
+		if 'show_console' not in self.pane_command_registry.get_commands():
+			log_path = self._get_local_data_file('Errors.log')
+			QDesktopServices.openUrl(QUrl.fromLocalFile(log_path))
+			return
 		pane = self.plugin_support.get_active_pane()
 		if pane is None:
 			pane = self.main_window.get_panes()[0]

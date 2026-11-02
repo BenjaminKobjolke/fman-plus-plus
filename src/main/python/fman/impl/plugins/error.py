@@ -2,7 +2,10 @@ from fbs_runtime.application_context import is_frozen
 from fbs_runtime.excepthook import ExceptionHandler
 from fman.impl.theme import ThemeError
 from fman.impl.util import is_below_dir
+from datetime import datetime
+from os import makedirs
 from os.path import dirname, basename
+from threading import Lock
 from traceback import StackSummary, extract_tb, TracebackException, \
 	print_exception
 
@@ -13,11 +16,15 @@ import sys
 from PyQt5.QtWidgets import QMessageBox
 from fman.impl.console_log import get_console_log
 
+_LOG_PATHS_INITIALIZED = set()
+_LOG_LOCK = Lock()
+
 class PluginErrorHandler(ExceptionHandler):
-	def __init__(self, app, console_log=None, open_console=None):
+	def __init__(self, app, console_log=None, open_console=None, log_path=None):
 		self._app = app
 		self._console_log = console_log or get_console_log()
 		self._open_console = open_console or (lambda: None)
+		self._log_path = log_path
 		self._main_window = None
 		self._pending_errors = []
 		self._plugin_dirs = []
@@ -54,10 +61,32 @@ class PluginErrorHandler(ExceptionHandler):
 			traceback = self._get_plugin_traceback(exc)
 		self._console_log.append_error(message, traceback)
 		details = message + ('\n\n' + traceback if traceback else '')
+		self._write_error_log(details)
+		alert_text = message
+		if traceback:
+			alert_text += '\n\n' + traceback.rstrip().splitlines()[-1]
 		if self._main_window:
-			self._show_error_alert(message, details)
+			self._show_error_alert(alert_text, details)
 		else:
-			self._pending_errors.append((message, details))
+			self._pending_errors.append((alert_text, details))
+	def _write_error_log(self, details):
+		if not self._log_path:
+			return
+		with _LOG_LOCK:
+			try:
+				log_dir = dirname(self._log_path)
+				if log_dir:
+					makedirs(log_dir, exist_ok=True)
+				mode = 'a' if self._log_path in _LOG_PATHS_INITIALIZED else 'w'
+				with open(self._log_path, mode, encoding='utf-8') as log_file:
+					log_file.write(
+						'[%s]\n%s\n\n' % (
+							datetime.now().isoformat(timespec='seconds'), details
+						)
+					)
+				_LOG_PATHS_INITIALIZED.add(self._log_path)
+			except OSError:
+				pass
 	def _show_error_alert(self, headline, details):
 		buttons = QMessageBox.Cancel | QMessageBox.Open | QMessageBox.Save
 		result = self._main_window.show_alert(
@@ -80,8 +109,8 @@ class PluginErrorHandler(ExceptionHandler):
 	def on_main_window_shown(self, main_window):
 		self._main_window = main_window
 		if self._pending_errors:
-			headline, details = self._pending_errors[0]
-			self._show_error_alert(headline, details)
+			alert_text, details = self._pending_errors[0]
+			self._show_error_alert(alert_text, details)
 	def _get_plugin_traceback(self, exc):
 		if isinstance(exc, ThemeError):
 			return exc.description
