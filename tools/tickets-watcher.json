@@ -27,7 +27,7 @@
       "code_quality": "green"
     },
     "tools\\run_tests.bat": {
-      "test": "failed"
+      "test": "green"
     },
     "tools\\run_core_tests.bat": {
       "test": "green"
@@ -157,10 +157,5 @@
     "uv run python tools\\test_fman_ui.py": "test",
     "tools\\run_automation_tests.bat": "test"
   },
-  "project_id": 251,
-  "analysis_command_failing_tests": {
-    "tools\\run_tests.bat": [
-      "(errors=1)"
-    ]
-  }
+  "project_id": 251
 }
