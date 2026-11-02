@@ -13,6 +13,11 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
+| [#165](https://github.com/mherrmann/fman/issues/165) | fman displays "files" not shown in Explorer | enhancement, windows | fixed | 2026-11-02 | Windows entries with the system attribute now follow the existing hidden-files filter in `hidden_files.py`. |
+| [#167](https://github.com/mherrmann/fman/issues/167) | Reduce fman size / Qt, PyQt5 dependency, static linking, etc. | discussion | skipped | 2026-11-02 | This is a discussion of technology tradeoffs rather than an actionable change; the replies favor development speed over reducing package size. |
+| [#163](https://github.com/mherrmann/fman/issues/163) | Can not resize command palette | enhancement, 1 vote | deferred | 2026-11-02 | Resizing and truncating long folder names need a product decision about palette sizing and filename presentation. |
+| [#162](https://github.com/mherrmann/fman/issues/162) | Add a command for checking for updates | enhancement, 5 votes | already fixed | 2026-11-02 | The built-in `check_for_updates` command already checks for and reports available updates (`core/commands/updates.py`). |
+| [#158](https://github.com/mherrmann/fman/issues/158) | Create a packaged version of fman for RHEL | enhancement, linux | skipped | 2026-11-02 | RHEL packaging is Linux-specific and cannot be built or tested in this Windows fork. |
 | [#156](https://github.com/mherrmann/fman/issues/156) | Option to start fman in 'single pane mode' | enhancement, 1 vote | implemented | 2026-11-01 | `fman --single-pane` hides other panes on startup or in the running instance, and pane visibility is restored from `Session.json`. |
 | [#155](https://github.com/mherrmann/fman/issues/155) | Add some spacing between columns | enhancement, 1 vote | already fixed | 2026-11-01 | `styles.qss` adds font-relative `0.25em` padding at the first and last cells, keeping text separated between columns. |
 | [#154](https://github.com/mherrmann/fman/issues/154) | Home/End doesn't work in prompt | bug, mac, 1 vote | skipped | 2026-11-01 | This reports macOS prompt behavior, which cannot be reproduced or tested on this Windows fork. |
