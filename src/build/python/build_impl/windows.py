@@ -47,10 +47,6 @@ def freeze():
 	# licence left behind for a font that is not shipped is just confusing.
 	rmtree(path('${core_plugin_in_freeze_dir}/Fonts/Open Sans'))
 	copy_python_library('send2trash', path('${core_plugin_in_freeze_dir}'))
-	# core.release_notes (Core plugin) imports this to detect the system
-	# language for locale fallback - not scanned by PyInstaller since plugin
-	# code is bundled as data, so it's copied in explicitly like send2trash:
-	copy_python_library('python_localization', path('${core_plugin_in_freeze_dir}'))
 
 @command
 def sign():

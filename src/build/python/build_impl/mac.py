@@ -27,9 +27,6 @@ def freeze():
 	rmtree(path('${core_plugin_in_freeze_dir}/Fonts/Roboto'))
 	_strip_unused_from_bundle()
 	copy_python_library('osxtrash', path('${core_plugin_in_freeze_dir}'))
-	# core.release_notes imports this to detect the system language; plugin
-	# code is bundled as data, so PyInstaller doesn't collect it automatically.
-	copy_python_library('python_localization', path('${core_plugin_in_freeze_dir}'))
 	import osxtrash
 	so_name = basename(osxtrash.__file__)
 	# Move the .so to Frameworks (where PyInstaller 6.x sets sys._MEIPASS),
