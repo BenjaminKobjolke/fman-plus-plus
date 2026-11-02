@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Lepsze skalowanie czcionki i zgodność z wtyczkami",
+  "notes": [
+    "Naprawiono: Zmiany rozmiaru czcionki uwzględniają teraz prawidłową wartość bazową po otwarciu panelu, dzięki czemu powiększanie tekstu jest bardziej spójne.",
+    "Ulepszono: Wtyczki współpracujące z 7-Zip mogą teraz łatwiej odnaleźć dołączony do fman plik wykonywalny 7-Zip."
+  ]
+}

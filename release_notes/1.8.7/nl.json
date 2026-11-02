@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Verbeterde lettergrootte en plug-incompatibiliteit",
+  "notes": [
+    "Opgelost: Wijzigingen in de lettergrootte gebruiken nu de juiste basiswaarde wanneer een deelvenster wordt geopend, waardoor tekst consistenter kan worden ingezoomd.",
+    "Verbeterd: Plug-ins die met 7-Zip integreren, kunnen nu het meegeleverde 7-Zip-uitvoerbare bestand van fman betrouwbaarder vinden."
+  ]
+}

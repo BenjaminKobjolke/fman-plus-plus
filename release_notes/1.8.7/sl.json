@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Boljše določanje velikosti pisave in združljivost z vtičniki",
+  "notes": [
+    "Popravljeno: Spremembe velikosti pisave zdaj uporabljajo pravilno osnovno velikost, ko se odpre podokno, zato je spreminjanje povečave besedila doslednejše.",
+    "Izboljšano: Vtičniki, ki se povezujejo s programom 7-Zip, zdaj zanesljiveje najdejo priloženo binarno datoteko 7-Zip programa fman."
+  ]
+}

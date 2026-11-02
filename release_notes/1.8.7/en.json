@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Better font sizing and plugin compatibility",
+  "notes": [
+    "Fixed: Font-size changes now use the correct baseline when a pane is opened, so zooming text is more consistent.",
+    "Improved: Plugins that integrate with 7-Zip can now find fman's bundled 7-Zip binary more reliably."
+  ]
+}

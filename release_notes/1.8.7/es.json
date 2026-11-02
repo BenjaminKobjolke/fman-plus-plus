@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Mejoras en el tamaño de fuente y la compatibilidad con plugins",
+  "notes": [
+    "Corregido: Los cambios en el tamaño de fuente ahora usan el valor de referencia correcto al abrir un panel, por lo que el zoom del texto es más uniforme.",
+    "Mejorado: Los plugins que se integran con 7-Zip ahora pueden encontrar con mayor fiabilidad el ejecutable de 7-Zip incluido en fman."
+  ]
+}

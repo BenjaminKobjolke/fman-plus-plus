@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Melhorias no tamanho da letra e na compatibilidade com plug-ins",
+  "notes": [
+    "Corrigido: As alterações ao tamanho da letra usam agora a linha de base correta quando um painel é aberto, tornando o zoom do texto mais consistente.",
+    "Melhorado: Os plug-ins que se integram com o 7-Zip conseguem agora localizar com maior fiabilidade o executável do 7-Zip incluído no fman."
+  ]
+}

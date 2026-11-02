@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Cải thiện cách đặt cỡ chữ và khả năng tương thích với plugin",
+  "notes": [
+    "Đã sửa: Các thay đổi về cỡ chữ giờ đây sử dụng đúng giá trị cơ sở khi mở một ngăn, giúp việc phóng to văn bản nhất quán hơn.",
+    "Đã cải thiện: Các plugin tích hợp với 7-Zip giờ đây có thể tìm thấy tệp nhị phân 7-Zip đi kèm với fman đáng tin cậy hơn."
+  ]
+}

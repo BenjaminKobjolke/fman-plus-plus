@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Patobulintas šrifto dydžio nustatymas ir įskiepių suderinamumas",
+  "notes": [
+    "Pataisyta: pakeitus šrifto dydį, atidarius skydelį dabar naudojama teisinga pradinė reikšmė, todėl teksto mastelio keitimas yra nuoseklesnis.",
+    "Patobulinta: su „7-Zip“ integruoti įskiepiai dabar gali patikimiau rasti „fman“ rinkinyje esantį „7-Zip“ vykdomąjį failą."
+  ]
+}

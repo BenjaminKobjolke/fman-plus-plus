@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Uzlabota fonta lieluma pielāgošana un spraudņu saderība",
+  "notes": [
+    "Labots: Atverot paneli, fonta lieluma izmaiņām tagad tiek izmantota pareizā sākotnējā vērtība, tāpēc teksta mērogošana ir vienmērīgāka.",
+    "Uzlabots: Spraudņi, kas integrējas ar 7-Zip, tagad var uzticamāk atrast fman komplektācijā iekļauto 7-Zip izpildfailu."
+  ]
+}

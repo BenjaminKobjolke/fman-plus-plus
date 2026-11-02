@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Dimensiuni mai bune ale fontului și compatibilitate cu pluginurile",
+  "notes": [
+    "Remediat: Modificările dimensiunii fontului folosesc acum valoarea de bază corectă la deschiderea unui panou, astfel încât scalarea textului este mai consecventă.",
+    "Îmbunătățit: Pluginurile care se integrează cu 7-Zip pot găsi acum mai fiabil executabilul 7-Zip inclus în fman."
+  ]
+}

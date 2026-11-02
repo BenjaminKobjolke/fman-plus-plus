@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Parem fondi suuruse muutmine ja pluginate ühilduvus",
+  "notes": [
+    "Parandatud: fondi suuruse muutmisel kasutatakse nüüd paani avamisel õiget lähteväärtust, nii et teksti suurendamine ja vähendamine on ühtlasem.",
+    "Täiustatud: 7-Zipiga integreeruvad pluginad leiavad nüüd fmani komplekti kuuluva 7-Zipi binaarfaili usaldusväärsemalt."
+  ]
+}

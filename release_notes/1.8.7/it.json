@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Dimensionamento dei caratteri e compatibilità dei plugin migliorati",
+  "notes": [
+    "Corretto: le modifiche alla dimensione dei caratteri ora usano il riferimento corretto quando si apre un riquadro, rendendo più uniforme l’ingrandimento del testo.",
+    "Migliorato: i plugin che si integrano con 7-Zip ora individuano con maggiore affidabilità la versione di 7-Zip inclusa in fman."
+  ]
+}

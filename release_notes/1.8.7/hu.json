@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Pontosabb betűméretezés és jobb bővítmény-kompatibilitás",
+  "notes": [
+    "Javítva: A betűméret módosításakor mostantól a megfelelő alapértéket használja a program egy panel megnyitásakor, így a szöveg nagyítása következetesebb.",
+    "Továbbfejlesztve: A 7-Zippel integrálódó bővítmények mostantól megbízhatóbban találják meg az fman mellé csomagolt 7-Zip bináris fájlt."
+  ]
+}

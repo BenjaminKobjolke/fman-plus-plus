@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Lepší nastavení velikosti písma a kompatibilita s pluginy",
+  "notes": [
+    "Opraveno: Změny velikosti písma nyní při otevření panelu používají správnou výchozí hodnotu, takže přibližování textu je konzistentnější.",
+    "Vylepšeno: Pluginy, které spolupracují se 7-Zipem, nyní spolehlivěji najdou přibalený spustitelný soubor 7-Zipu ve fmanu."
+  ]
+}

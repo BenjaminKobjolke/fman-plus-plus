@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Poboljšano podešavanje veličine fonta i kompatibilnost dodataka",
+  "notes": [
+    "Ispravljeno: Promene veličine fonta sada koriste ispravnu osnovnu vrednost kada se otvori okno, pa je zumiranje teksta doslednije.",
+    "Poboljšano: Dodaci koji se integrišu sa 7-Zip-om sada pouzdanije pronalaze fman-ovu uključenu binarnu datoteku programa 7-Zip."
+  ]
+}

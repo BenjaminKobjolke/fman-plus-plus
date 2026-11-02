@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Bedre skriftstørrelse og plugin-kompatibilitet",
+  "notes": [
+    "Rettet: Endringer i skriftstørrelsen bruker nå riktig grunnlinje når en rute åpnes, slik at tekstzoomingen blir mer konsekvent.",
+    "Forbedret: Plugin-moduler som integrerer med 7-Zip, finner nå fmans innebygde 7-Zip-programfil mer pålitelig."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Daha iyi yazı tipi boyutlandırması ve eklenti uyumluluğu",
+  "notes": [
+    "Düzeltildi: Bir panel açıldığında yazı tipi boyutu değişiklikleri artık doğru referans değerini kullanıyor; böylece metni yakınlaştırma daha tutarlı hale geliyor.",
+    "İyileştirildi: 7-Zip ile entegre olan eklentiler artık fman ile birlikte gelen 7-Zip yürütülebilir dosyasını daha güvenilir bir şekilde bulabiliyor."
+  ]
+}

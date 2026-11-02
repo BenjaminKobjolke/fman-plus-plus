@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Bedre skriftstørrelser og kompatibilitet med plugins",
+  "notes": [
+    "Rettet: Ændringer af skriftstørrelsen bruger nu det korrekte udgangspunkt, når et panel åbnes, så tekstzoom bliver mere ensartet.",
+    "Forbedret: Plugins, der integrerer med 7-Zip, kan nu lettere finde fmans medfølgende 7-Zip-binærfil."
+  ]
+}

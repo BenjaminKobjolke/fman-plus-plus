@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Bättre teckenstorlek och plugin-kompatibilitet",
+  "notes": [
+    "Åtgärdat: Ändringar av teckenstorlek använder nu rätt baslinje när en panel öppnas, vilket gör textzoomning mer konsekvent.",
+    "Förbättrat: Plugin-program som integrerar med 7-Zip kan nu hitta fmans medföljande 7-Zip-binärfil mer tillförlitligt."
+  ]
+}

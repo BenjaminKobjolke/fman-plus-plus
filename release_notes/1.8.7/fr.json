@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Meilleure gestion de la taille des polices et compatibilité des plugins",
+  "notes": [
+    "Corrigé : les changements de taille de police utilisent désormais la bonne valeur de référence à l’ouverture d’un volet, pour un zoom du texte plus cohérent.",
+    "Amélioré : les plugins qui s’intègrent à 7-Zip peuvent désormais trouver plus facilement le binaire 7-Zip fourni avec fman."
+  ]
+}

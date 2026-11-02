@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Verbesserte Schriftgrößen und Plugin-Kompatibilität",
+  "notes": [
+    "Behoben: Änderungen der Schriftgröße verwenden jetzt den korrekten Ausgangswert, wenn ein Bereich geöffnet wird. Dadurch wird Text beim Zoomen einheitlicher skaliert.",
+    "Verbessert: Plugins, die mit 7-Zip integriert sind, finden die mit fman gebündelte 7-Zip-Binärdatei jetzt zuverlässiger."
+  ]
+}

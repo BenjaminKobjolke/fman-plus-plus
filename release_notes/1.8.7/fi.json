@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Parempi fonttikoon säätö ja liitännäisten yhteensopivuus",
+  "notes": [
+    "Korjattu: Fonttikoon muutoksissa käytetään nyt oikeaa lähtötasoa, kun paneeli avataan, joten tekstin zoomaus toimii yhdenmukaisemmin.",
+    "Parannettu: 7-Zipin kanssa integroituvat liitännäiset löytävät nyt luotettavammin fmanin mukana toimitettavan 7-Zip-suoritustiedoston."
+  ]
+}

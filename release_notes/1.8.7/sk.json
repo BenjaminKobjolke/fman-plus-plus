@@ -1,0 +1,9 @@
+{
+  "version": "1.8.7",
+  "date": "2026-11-02",
+  "title": "Lepšie nastavenie veľkosti písma a kompatibilita s doplnkami",
+  "notes": [
+    "Opravené: Zmeny veľkosti písma teraz pri otvorení panela používajú správnu základnú hodnotu, takže približovanie textu je konzistentnejšie.",
+    "Vylepšené: Doplnky, ktoré sa integrujú so 7-Zipom, teraz spoľahlivejšie nájdu pribalený binárny súbor 7-Zip v aplikácii fman."
+  ]
+}
