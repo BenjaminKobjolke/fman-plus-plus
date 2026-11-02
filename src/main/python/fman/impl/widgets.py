@@ -399,6 +399,7 @@ class MainWindow(QMainWindow):
 		self._null_location = null_location
 		self._panes = []
 		self._file_list_icon_size = None
+		self._quicksearch_width = None
 		self._backgrounds = ()
 		self._pane_status_mode = PaneStatusMode(True, True)
 		self._pane_status_bar_owner = None
@@ -436,6 +437,8 @@ class MainWindow(QMainWindow):
 		self._file_list_icon_size = size
 		for pane in self._panes:
 			pane.set_icon_size(size)
+	def set_quicksearch_width(self, store):
+		self._quicksearch_width = store
 	@run_in_main_thread
 	def set_backgrounds(self, backgrounds):
 		# Remembered as well as applied, for the same reason as the icon
@@ -534,7 +537,7 @@ class MainWindow(QMainWindow):
 		css = self._theme.get_quicksearch_item_css()
 		dialog = Quicksearch(
 			self, self._app, css, get_items, get_tab_completion, query, item,
-			alt_accept
+			alt_accept, width_store=self._quicksearch_width
 		)
 		self.exec_dialog(dialog, in_window=True)
 		return dialog.get_result()

@@ -49,6 +49,7 @@ from fman.impl.util import os_
 from fman.impl.util.path import make_absolute
 from fman.impl.util.qt import connect_once
 from fman.impl.util.settings import Settings
+from fman.impl.quicksearch_width import QuicksearchWidth
 from fman.impl.view import ProxyStyle
 from fman.impl.widgets import MainWindow, Application
 from os import makedirs, getcwd
@@ -275,6 +276,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 			# them; add_pane is what hands each pane its own.
 			self._main_window.set_backgrounds(
 				self.theme_controller.get_backgrounds()
+			)
+			self._main_window.set_quicksearch_width(
+				QuicksearchWidth(self.local_settings)
 			)
 			# Before show() for the same reason as the opacity above, and a
 			# stronger one: setWindowFlags on a visible window recreates the

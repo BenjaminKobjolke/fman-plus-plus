@@ -1,14 +1,16 @@
 from fbs_runtime.platform import is_mac
 from fman import translate
 from fman.localization_keys import QUICKSEARCH_TITLE
+from fman.impl.edge_grip import EdgeGrip, place_grips
+from fman.impl.quicksearch_elide import elide_title_left, shift_highlight
 from fman.impl.util.qt import Key_Tab, Key_Down, Key_Up, Key_PageDown, \
 	Key_Home, Key_End, Key_PageUp, Key_Return, Key_Enter, ShiftModifier, \
 	UserRole, AlignRight, AlignVCenter, NoFocus, FramelessWindowHint, \
 	AlignTop, AccessibleTextRole
 from PyQt5.QtCore import QAbstractListModel, QVariant, QModelIndex, QSize, \
 	QPointF, QRectF, QPoint, pyqtSignal
-from PyQt5.QtGui import QFont, QTextLayout, QTextCharFormat, QBrush, \
-	QKeySequence
+from PyQt5.QtGui import QFont, QFontMetrics, QTextLayout, QTextCharFormat, \
+	QBrush, QKeySequence
 from PyQt5.QtWidgets import QDialog, QLayout, QFrame, QVBoxLayout, QLineEdit, \
 	QListView, QStyledItemDelegate, QApplication, QStyle
 
@@ -18,7 +20,7 @@ class Quicksearch(QDialog):
 
 	def __init__(
 		self, parent, app, css, get_items, get_tab_completion=None, query='',
-		item=0, alt_accept=False
+		item=0, alt_accept=False, width_store=None
 	):
 		if get_tab_completion is None:
 			get_tab_completion = lambda q, i: None
@@ -32,6 +34,7 @@ class Quicksearch(QDialog):
 		self._initial_query = query
 		self._initial_item = item
 		self._alt_accept = alt_accept
+		self._width_store = width_store
 		self._curr_items = []
 		self._result = None
 		self._init_ui()
@@ -61,7 +64,46 @@ class Quicksearch(QDialog):
 		items_container = div(self._items)
 		items_container.setObjectName('items-container')
 		self._layout_vertically(self, query_container, items_container)
-		self.layout().setSizeConstraint(QLayout.SetFixedSize)
+		self.layout().setSizeConstraint(QLayout.SetNoConstraint)
+		self._items.ensurePolished()
+		self._default_list_width = self._items.minimumWidth()
+		self.adjustSize()
+		self._default_dialog_width = self.width()
+		self._dialog_chrome_width = self.width() - self._items.width()
+		self._left_grip = EdgeGrip(
+			self, 'left', self._resize_to, self._on_resize_released
+		)
+		self._right_grip = EdgeGrip(
+			self, 'right', self._resize_to, self._on_resize_released
+		)
+		self._grips = {'left': self._left_grip, 'right': self._right_grip}
+		place_grips(self, self._grips)
+		if self._width_store is not None:
+			stored_width = self._width_store.get()
+			if stored_width is not None:
+				self._resize_to(stored_width)
+	def resizeEvent(self, event):
+		super().resizeEvent(event)
+		if hasattr(self, '_grips'):
+			place_grips(self, self._grips)
+	def _resize_to(self, width):
+		parent_width = self.parentWidget().width()
+		minimum_width = min(self._default_dialog_width, parent_width)
+		width = max(minimum_width, min(width, parent_width))
+		center_x = self.x() + self.width() / 2
+		self._items.setMinimumWidth(max(
+			self._default_list_width, width - self._dialog_chrome_width
+		))
+		self.layout().activate()
+		self.adjustSize()
+		self.setMinimumWidth(width)
+		self.setMaximumWidth(parent_width)
+		self.resize(width, self.height())
+		self.move(round(center_x - self.width() / 2), self.y())
+		place_grips(self, self._grips)
+	def _on_resize_released(self):
+		if self._width_store is not None:
+			self._width_store.save(self.width(), self._default_dialog_width)
 	def _on_return_pressed(self):
 		self._accept(self._items.currentIndex())
 	def _on_item_clicked(self, index):
@@ -134,6 +176,8 @@ class Quicksearch(QDialog):
 		else:
 			min_height = 0
 		self._items.setMinimumHeight(min_height)
+		self.layout().activate()
+		self.setFixedHeight(self.layout().sizeHint().height())
 	def _layout_vertically(self, parent, *widgets):
 		layout = QVBoxLayout()
 		layout.setContentsMargins(0, 0, 0, 0)
@@ -236,8 +280,21 @@ class QuicksearchItemRenderer:
 			QStyle.PE_PanelItemViewItem, self._option, painter, self._widget
 		)
 	def _draw_title(self, painter):
-		layout = self._layout_title()[0]
-		highlight_formats = self._get_highlight_formats()
+		font = QFont(self._option.font)
+		font.setPointSize(int(self._css['title']['font-size_pts']))
+		available_width = self._get_title_rect().width()
+		if self._hint:
+			hint_font = QFont(self._option.font)
+			hint_font.setPointSize(int(self._css['hint']['font-size_pts']))
+			available_width -= QFontMetrics(hint_font).horizontalAdvance(
+				self._hint
+			) + self._padding_right
+		shown_title, removed_chars = elide_title_left(
+			self._title, font, available_width
+		)
+		layout = self._layout_text(shown_title, font)[0]
+		highlight = shift_highlight(self._highlight, removed_chars)
+		highlight_formats = self._get_highlight_formats(highlight)
 		painter.setPen(self._css['title']['color'])
 		pos = self._option.rect.topLeft() \
 			  + QPoint(int(self._padding_left), int(self._padding_top))
@@ -288,9 +345,9 @@ class QuicksearchItemRenderer:
 			height += line.height()
 		layout.endLayout()
 		return layout, width, height
-	def _get_highlight_formats(self):
+	def _get_highlight_formats(self, highlight=None):
 		result = []
-		for highlight_start, length in self._get_highlight_ranges():
+		for highlight_start, length in self._get_highlight_ranges(highlight):
 			rng = QTextLayout.FormatRange()
 			rng.start = highlight_start
 			rng.length = length
@@ -301,17 +358,19 @@ class QuicksearchItemRenderer:
 			rng.format = fmt
 			result.append(rng)
 		return result
-	def _get_highlight_ranges(self):
+	def _get_highlight_ranges(self, highlight=None):
 		"""
 		Say we want to highlight chars [2, 3]. The easiest way would be to
 		pass [FormatRange(start=2, length=1), FormatRange(start=3, length=1)] to
 		Qt. Unfortunately, this doesn't work - char 3 isn't highlighted. We need
 		to pass [(start=2, length=2)] instead. This function computes it.
 		"""
-		if not self._highlight:
+		if highlight is None:
+			highlight = self._highlight
+		if not highlight:
 			return []
-		result = [(self._highlight[0], 1)]
-		for highlight in self._highlight[1:]:
+		result = [(highlight[0], 1)]
+		for highlight in highlight[1:]:
 			start, length = result[-1]
 			if start + length == highlight:
 				result[-1] = (start, length + 1)

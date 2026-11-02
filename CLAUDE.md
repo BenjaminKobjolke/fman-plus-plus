@@ -110,6 +110,9 @@ After touching `src/main/python/fman/impl/in_window_dialog.py`, `exec_dialog`,
 or focus/result handling in `Prompt` or `Quicksearch`, run
 `tools\run_in_window_dialog_tests.bat`.
 
+After touching `quicksearch.py`, `edge_grip.py` or `quicksearch_elide.py`, run
+`tools\run_quicksearch_tests.bat`.
+
 After touching `src/build/python/build_impl/windows.py`'s
 `write_portable_zip()`, run `uv run python tools/test_build_portable_zip.py`.
 
