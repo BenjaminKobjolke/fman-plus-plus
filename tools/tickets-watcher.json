@@ -161,7 +161,7 @@
   "project_id": 251,
   "analysis_command_failing_tests": {
     "tools\\run_core_tests.bat": [
-      "(errors=1, skipped=2)"
+      "(failures=1, errors=1, skipped=2)"
     ]
   }
 }
