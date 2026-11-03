@@ -67,6 +67,26 @@ def from_qurl(qurl):
 		path = ('/' if is_windows() else '//') + path
 	return ':'.join([scheme, path])
 
+FMAN_URLS_MIME = 'application/x-fman-urls'
+
+def set_urls(mime_data, urls):
+	mime_data.setUrls([as_qurl(url) for url in urls])
+	mime_data.setData(FMAN_URLS_MIME, '\n'.join(urls).encode('utf-8'))
+
+def get_urls(mime_data):
+	if mime_data.hasFormat(FMAN_URLS_MIME):
+		return [url for url in bytes(mime_data.data(FMAN_URLS_MIME)).decode(
+			'utf-8').split('\n') if url]
+	result = []
+	for qurl in mime_data.urls():
+		try:
+			result.append(from_qurl(qurl))
+		except ValueError:
+			# On at least Windows 10, plain text can appear on the text/uri-list
+			# clipboard. Ignore it, as well as other invalid URLs.
+			pass
+	return result
+
 AscendingOrder = Qt.AscendingOrder
 WA_MacShowFocusRect = Qt.WA_MacShowFocusRect
 TextAlignmentRole = Qt.TextAlignmentRole

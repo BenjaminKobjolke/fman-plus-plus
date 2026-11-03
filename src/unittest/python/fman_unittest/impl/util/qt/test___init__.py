@@ -1,5 +1,6 @@
 from fbs_runtime.platform import is_windows
-from fman.impl.util.qt import as_qurl, from_qurl
+from fman.impl.util.qt import as_qurl, from_qurl, get_urls, set_urls
+from PyQt5.QtCore import QMimeData, QUrl
 from unittest import TestCase
 
 class AsFromQurlTest(TestCase):
@@ -20,3 +21,28 @@ class AsFromQurlTest(TestCase):
 		self._check('other:///a and b.txt')
 	def _check(self, url):
 		self.assertEqual(url, from_qurl(as_qurl(url)))
+
+class UrlMimeDataTest(TestCase):
+	def test_set_urls_and_get_urls_preserve_original_urls(self):
+		urls = [
+			'ftp://XIDA Projects/a/b.txt',
+			'ftps://duran Server FTP/x',
+			'file:///test/a.txt'
+		]
+		mime_data = QMimeData()
+
+		set_urls(mime_data, urls)
+
+		self.assertEqual(urls, get_urls(mime_data))
+
+	def test_get_urls_falls_back_to_qt_urls(self):
+		mime_data = QMimeData()
+		mime_data.setUrls([as_qurl('ftp://kobjolke.com/a')])
+
+		self.assertEqual(['ftp://kobjolke.com/a'], get_urls(mime_data))
+
+	def test_get_urls_skips_invalid_qt_urls(self):
+		mime_data = QMimeData()
+		mime_data.setUrls([QUrl('')])
+
+		self.assertEqual([], get_urls(mime_data))

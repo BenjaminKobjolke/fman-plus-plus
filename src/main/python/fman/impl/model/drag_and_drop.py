@@ -1,5 +1,5 @@
-from fman.impl.util.qt import MoveAction, CopyAction, IgnoreAction, from_qurl, \
-	as_qurl
+from fman.impl.util.qt import MoveAction, CopyAction, IgnoreAction, \
+	FMAN_URLS_MIME, get_urls, set_urls
 from fman.url import dirname
 from PyQt5.QtCore import QAbstractTableModel, pyqtSignal, QMimeData
 
@@ -20,15 +20,7 @@ class DragAndDrop(QAbstractTableModel):
 			return False
 		if not data.hasUrls():
 			return False
-		urls = []
-		for qurl in data.urls():
-			try:
-				url = from_qurl(qurl)
-			except ValueError:
-				# This can for instance happen for QUrl(''), which we sometimes
-				# do encounter.
-				continue
-			urls.append(url)
+		urls = get_urls(data)
 		if not urls:
 			return False
 		dest_dir = self._get_drop_dest(parent)
@@ -39,10 +31,10 @@ class DragAndDrop(QAbstractTableModel):
 		"""
 		List the MIME types used by our drag and drop implementation.
 		"""
-		return ['text/uri-list']
+		return ['text/uri-list', FMAN_URLS_MIME]
 	def mimeData(self, indexes):
 		result = QMimeData()
-		result.setUrls([as_qurl(self.url(index)) for index in indexes])
+		set_urls(result, [self.url(index) for index in indexes])
 		# The Qt documentation (http://doc.qt.io/qt-5/dnd.html) states that the
 		# QMimeData should not be deleted, because the target of the drag and
 		# drop operation takes ownership of it. We must therefore tell SIP not
@@ -56,7 +48,7 @@ class DragAndDrop(QAbstractTableModel):
 			return True
 		if not data.hasUrls():
 			return False
-		urls = [from_qurl(qurl) for qurl in data.urls()]
+		urls = get_urls(data)
 		dest = self._get_drop_dest(parent)
 		if action in (MoveAction, CopyAction):
 			self.files_dropped.emit(urls, dest, action == CopyAction)

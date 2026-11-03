@@ -1,6 +1,6 @@
 from fbs_runtime.platform import is_linux, is_windows, is_gnome_based, \
 	is_kde_based
-from fman.impl.util.qt import as_qurl, from_qurl
+from fman.impl.util.qt import get_urls, set_urls
 from fman.impl.util.qt.thread import run_in_main_thread
 from PyQt5.QtCore import QMimeData
 from PyQt5.QtGui import QClipboard
@@ -56,15 +56,7 @@ def cut_files(file_urls):
 
 @run_in_main_thread
 def get_files():
-	result = []
-	for qurl in _clipboard().mimeData().urls():
-		try:
-			result.append(from_qurl(qurl))
-		except ValueError:
-			# On at least Windows 10, we sometimes get plain text (not file
-			# URLs) on the text/uri-list clipboard. Ignore this:
-			pass
-	return result
+	return get_urls(_clipboard().mimeData())
 
 @run_in_main_thread
 def files_were_cut():
@@ -81,9 +73,8 @@ def _clipboard():
 	return QApplication.instance().clipboard()
 
 def _place_on_clipboard(file_urls, extra_data):
-	urls = [as_qurl(url) for url in file_urls]
 	new_clipboard_data = QMimeData()
-	new_clipboard_data.setUrls(urls)
+	set_urls(new_clipboard_data, file_urls)
 	# We overwrite the "URLs" part of the clipboard, but we do want to keep the
 	# text. This for instance allows for the following use case:
 	#  1) Copy a file name
