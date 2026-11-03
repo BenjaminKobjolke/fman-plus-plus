@@ -1,15 +1,15 @@
 # Toggle columns
 
-Command palette entries to hide or show the **Size** and **Modified** columns
-in the file panes, for people who mostly care about file names.
+Command palette entries and the file-list header menu let you hide or show
+columns in the file panes, for people who mostly care about file names.
 
 ## Usage
 
 1. Open the command palette and search "column".
 2. Run **"Toggle size column"** to hide the Size column; run it again to show
    it. Same for **"Toggle modified column"** and the Modified column.
-3. Both panes always change together, and the choice survives restarting
-   fman.
+3. Right-click a column header to toggle any available column. Both panes
+   change together, and the choice survives restarting fman.
 
 ## Commands
 
@@ -17,6 +17,10 @@ in the file panes, for people who mostly care about file names.
 |----------------------------|-------------------------|------------------------------------|----------------------|
 | `toggle_size_column`       | Toggle size column      | show / hide size column            | none (palette only)  |
 | `toggle_modified_column`   | Toggle modified column  | show / hide modified column, date  | none (palette only)  |
+| `toggle_extension_column`  | Toggle extension column | show / hide extension               | none (palette only)  |
+| `toggle_version_column`    | Toggle version column   | show / hide version                 | none (palette only)  |
+| `toggle_attributes_column` | Toggle attributes column| show / hide attributes, permissions | none (palette only)  |
+| `toggle_name_without_extension` | Toggle name without extension | hide extension in name | none (palette only) |
 
 The other words listed under *Keywords* are hidden search terms: they find
 the command in the palette without ever being shown. See
@@ -32,7 +36,16 @@ e.g.:
 ## Notes
 
 - The hidden state is stored in `Core Settings.json` under the
-  `hide_size_column` / `hide_modified_column` keys.
+  `hide_size_column` / `hide_modified_column` keys. The Extension, Version,
+  and Attributes columns start hidden, using `hide_extension_column`,
+  `hide_version_column`, and `hide_attributes_column` (default `true`).
+- Extension shows the last suffix (`archive.tar.gz` → `gz`); dotfiles and
+  extensionless files have an empty value. Version shows Windows executable
+  and library versions. Attributes shows `rhsa` flags on Windows and
+  `rwxr-xr-x` permissions on macOS/Linux.
+- `name_without_extension` defaults to `false`. When enabled with Extension
+  visible, Name shows only the stem; in-place rename still preserves the
+  hidden extension.
 - `fit_name_column` in `Core Settings.json` defaults to `true`: Size and
   Modified shrink to fit their contents and Name takes the remaining width.
   Set it to `false` to keep manually set column widths. The setting takes
