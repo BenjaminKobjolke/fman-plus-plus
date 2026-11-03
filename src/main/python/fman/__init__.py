@@ -125,6 +125,8 @@ class DirectoryPane:
 
 	def _add_filter(self, filter_):
 		self._widget.add_filter(filter_)
+	def _get_home_cursor(self):
+		return self._widget.get_home_cursor()
 	def _set_dimmer(self, dimmer):
 		self._widget.set_dimmer(dimmer)
 	def _remove_filter(self, filter_):

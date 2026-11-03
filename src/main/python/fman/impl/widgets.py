@@ -104,6 +104,7 @@ class DirectoryPaneWidget(QWidget):
 		# viewer, or whatever a plugin mounted. See impl/view/pane_mount.py.
 		self._mounted_widget = None
 		self._controller = controller
+		self._home_cursor = None
 		self._model.location_changed.connect(self._on_location_changed)
 		self._model.location_loaded.connect(self._on_location_loaded)
 		self._location_bar.clicked.connect(
@@ -279,8 +280,13 @@ class DirectoryPaneWidget(QWidget):
 		self._file_view.set_loading('')
 		if not self.get_file_under_cursor():
 			self.move_cursor_home()
+			self._home_cursor = self.get_file_under_cursor()
+		else:
+			self._home_cursor = None
 		self._file_view.resizeColumnsToContents()
 		self.location_changed.emit(self)
+	def get_home_cursor(self):
+		return self._home_cursor
 
 class FilterBar(QFrame):
 	def __init__(self, parent, model, file_view):

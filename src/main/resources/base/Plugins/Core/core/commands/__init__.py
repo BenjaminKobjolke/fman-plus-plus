@@ -26,7 +26,7 @@ _COMMAND_MODULES = (
 	'console', 'drive_space', 'folder_refresh',
 	'editor', 'external', 'file_properties', 'file_types', 'goto',
 	'hidden_files', 'language',
-	'locked_files', 'locking_processes', 'overwrite_details',
+	'last_visited', 'locked_files', 'locking_processes', 'overwrite_details',
 	'navigation', 'network_shares', 'open_with', 'opening', 'pack', 'palette',
 	'pane_view',
 	'places', 'plugins', 'release_notes', 'rename', 'selection',
