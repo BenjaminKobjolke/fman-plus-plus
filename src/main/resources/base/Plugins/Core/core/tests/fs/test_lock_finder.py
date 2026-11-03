@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase, skipIf
+from unittest.mock import patch
 
 from fman import PLATFORM
 
@@ -19,14 +20,26 @@ class LockFinderTest(TestCase):
 	@skipIf(PLATFORM != 'Windows', 'Restart Manager is Windows-only')
 	def test_finds_a_process_with_a_file_open(self):
 		with TemporaryDirectory() as directory:
-			path = Path(directory, 'open.txt')
-			path.write_text('locked')
-			with path.open('r'):
-				processes = find_locking_processes([directory], [str(path)])
+			paths = [Path(directory, 'open-%d.txt' % i) for i in range(2)]
+			for path in paths:
+				path.write_text('locked')
+			with patch('core.fs.local.lock_finder.RM_CHUNK_SIZE', 1):
+				with paths[0].open('r'), paths[1].open('r'):
+					progress = []
+					processes = find_locking_processes(
+						[directory], [str(path) for path in paths], progress.append
+					)
+
+		self.assertEqual([1, 2], progress)
 
 		self.assertIn(
 			(os.getpid(), REASON_OPEN_FILE),
 			[(process.pid, process.reason) for process in processes],
+		)
+		self.assertEqual(
+			1,
+			sum(process.pid == os.getpid() and process.reason == REASON_OPEN_FILE
+				for process in processes),
 		)
 
 	@skipIf(PLATFORM != 'Windows', 'Process working directories are Windows-only')
@@ -60,3 +73,16 @@ class LockFinderTest(TestCase):
 			self.assertCountEqual(
 				[str(first), str(second)], list_files([directory, str(first)])
 			)
+
+	def test_list_files_reports_the_growing_file_count_for_each_directory(self):
+		with TemporaryDirectory() as directory:
+			root = Path(directory)
+			nested = root / 'nested'
+			nested.mkdir()
+			(root / 'first.txt').touch()
+			(nested / 'second.txt').touch()
+
+			progress = []
+			list_files([directory], progress.append)
+
+		self.assertEqual([1, 2], progress)

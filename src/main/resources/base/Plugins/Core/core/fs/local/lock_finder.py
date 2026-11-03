@@ -14,6 +14,7 @@ LockingProcess = namedtuple('LockingProcess', ('pid', 'name', 'reason'))
 REASON_OPEN_FILE = 'has a file open'
 REASON_WORKING_DIR = 'has its working directory inside'
 ERROR_MORE_DATA = 234
+RM_CHUNK_SIZE = 1000
 _RM_SESSION_KEY_LENGTH = 32
 
 
@@ -36,7 +37,7 @@ class _RM_PROCESS_INFO(ctypes.Structure):
 	]
 
 
-def list_files(paths: Sequence[str]) -> list[str]:
+def list_files(paths: Sequence[str], on_progress=None) -> list[str]:
 	"""Return selected files and every file found below selected directories."""
 	files = []
 	seen = set()
@@ -48,6 +49,8 @@ def list_files(paths: Sequence[str]) -> list[str]:
 					if file_path not in seen:
 						files.append(file_path)
 						seen.add(file_path)
+				if on_progress is not None:
+					on_progress(len(files))
 		elif path not in seen:
 			files.append(path)
 			seen.add(path)
@@ -55,12 +58,12 @@ def list_files(paths: Sequence[str]) -> list[str]:
 
 
 def find_locking_processes(
-	paths: Sequence[str], files: Sequence[str]
+	paths: Sequence[str], files: Sequence[str], on_progress=None
 ) -> list[LockingProcess]:
 	"""Find processes holding any selected file or working inside a selected folder."""
 	if PLATFORM != 'Windows':
 		return []
-	processes = _restart_manager(files)
+	processes = _restart_manager(files, on_progress)
 	directories = [path for path in paths if os.path.isdir(path)]
 	processes.extend(_working_dirs(directories))
 	unique = {(process.pid, process.reason): process for process in processes}
@@ -70,7 +73,7 @@ def find_locking_processes(
 	)
 
 
-def _restart_manager(files: Sequence[str]) -> list[LockingProcess]:
+def _restart_manager(files: Sequence[str], on_progress=None) -> list[LockingProcess]:
 	if not files:
 		return []
 	rstrtmgr = ctypes.WinDLL('rstrtmgr', use_last_error=True)
@@ -97,19 +100,29 @@ def _restart_manager(files: Sequence[str]) -> list[LockingProcess]:
 	end_session.argtypes = (wintypes.DWORD,)
 	end_session.restype = wintypes.DWORD
 
-	session_handle = wintypes.DWORD()
-	session_key = ctypes.create_unicode_buffer(_RM_SESSION_KEY_LENGTH + 1)
-	_result_or_raise(
-		start_session(ctypes.byref(session_handle), 0, session_key)
-	)
-	try:
-		resource_array = (wintypes.LPCWSTR * len(files))(*files)
-		_result_or_raise(register_resources(
-			session_handle, len(files), resource_array, 0, None, 0, None
-		))
-		return _get_restart_manager_processes(get_list, session_handle)
-	finally:
-		end_session(session_handle)
+	processes = []
+	files_done = 0
+	for start in range(0, len(files), RM_CHUNK_SIZE):
+		chunk = files[start:start + RM_CHUNK_SIZE]
+		session_handle = wintypes.DWORD()
+		session_key = ctypes.create_unicode_buffer(_RM_SESSION_KEY_LENGTH + 1)
+		_result_or_raise(
+			start_session(ctypes.byref(session_handle), 0, session_key)
+		)
+		try:
+			resource_array = (wintypes.LPCWSTR * len(chunk))(*chunk)
+			_result_or_raise(register_resources(
+				session_handle, len(chunk), resource_array, 0, None, 0, None
+			))
+			processes.extend(
+				_get_restart_manager_processes(get_list, session_handle)
+			)
+		finally:
+			end_session(session_handle)
+		files_done += len(chunk)
+		if on_progress is not None:
+			on_progress(files_done)
+	return processes
 
 
 def _get_restart_manager_processes(get_list, session_handle):
