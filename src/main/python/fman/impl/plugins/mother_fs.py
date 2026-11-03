@@ -159,6 +159,9 @@ class MotherFileSystem:
 			src_fs.get_parallel_transfers(src_url, dst_url),
 			dst_fs.get_parallel_transfers(src_url, dst_url)
 		)
+	def get_parallel_deletes(self, url):
+		child, path = self._split(url)
+		return child.get_parallel_deletes(path)
 	def get_connection_count(self, url):
 		try:
 			child, path = self._split(url)

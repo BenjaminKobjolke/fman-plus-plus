@@ -12,14 +12,20 @@ from fman import translate
 from fman.localization_keys import (
 	DELETE_CONFIRM, TRASH_CONFIRM, TRASH_LABEL_RECYCLE_BIN, TRASH_LABEL_TRASH,
 )
-from fman.fs import exists, prepare_delete, prepare_trash
+from fman.fs import (
+	exists, get_connection_count, get_parallel_deletes, prepare_delete,
+	prepare_trash,
+)
 from core import elevation
 from core.commands.util import NO_SELECTION
+from core.transfer_workers import DONE, TransferWorkers, WorkerProgress
 from core.undo_history import TrashRecord, history
 from fman.url import splitscheme
 from io import UnsupportedOperation
 from os import strerror
 from os.path import basename
+from queue import Queue
+from threading import Lock
 
 __all__ = ['DeletePermanently', 'MoveToTrash']
 
@@ -103,6 +109,10 @@ class _Delete(Task):
 		self._prepare_fn = prepare_fn
 		self._unsupported = unsupported
 		self._tasks = []
+		self._progress_lock = Lock()
+		self._alert_lock = Lock()
+		self._ignore_errors = False
+		self._worker_count = 1
 	def __call__(self):
 		try:
 			self._gather_tasks()
@@ -114,17 +124,35 @@ class _Delete(Task):
 				)
 			)
 			return
-		ignore_errors = False
-		for i, task in enumerate(self._tasks):
-			self.check_canceled()
-			try:
-				self.run(task)
-			except FileNotFoundError:
-				# Perhaps the file has already been deleted.
-				pass
-			except OSError as e:
-				if ignore_errors:
-					continue
+		self._worker_count = get_parallel_deletes(self._urls[0])
+		queue = Queue()
+		for task in self._tasks:
+			queue.put(task)
+		queue.put(DONE)
+		workers = TransferWorkers(
+			self._worker_count, queue, self._run_one,
+			connection_count=lambda: get_connection_count(self._urls[0])
+		)
+		if self._worker_count > 1:
+			self.set_text(self.get_title())
+			self.show_workers(workers)
+		workers.start()
+		workers.join()
+	def _run_one(self, worker, task, is_last):
+		self.check_canceled()
+		progress = WorkerProgress(
+			self._dialog, self._progress_lock, worker, task,
+			forward_text=self._worker_count == 1
+		)
+		try:
+			self._run_with_dialog(task, progress)
+		except FileNotFoundError:
+			# Perhaps the file has already been deleted.
+			pass
+		except OSError as e:
+			with self._alert_lock:
+				if self._ignore_errors:
+					return True
 				text = task.get_title()
 				message = 'Error ' + text[0].lower() + text[1:]
 				reason = e.strerror or ''
@@ -133,16 +161,18 @@ class _Delete(Task):
 				if reason:
 					message += ': ' + reason
 				message += '.'
-				is_last = i == len(self._tasks) - 1
 				if is_last:
 					self.show_alert(message)
 				else:
 					message += ' Do you want to continue?'
 					choice = show_alert(message, YES | NO | YES_TO_ALL)
 					if choice & NO:
-						break
+						return False
 					if choice & YES_TO_ALL:
-						ignore_errors = True
+						self._ignore_errors = True
+		finally:
+			worker.title = ''
+		return True
 	def _gather_tasks(self):
 		for url in self._urls:
 			self._prepare(url, self._prepare_fn)

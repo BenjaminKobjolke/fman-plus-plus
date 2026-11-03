@@ -404,6 +404,11 @@ on (creating a folder), and `task.waits_for_earlier_tasks = True` on one that
 depends on all earlier ones (deleting an emptied folder). See
 [Copy and Move](COPY_AND_MOVE.md#parallel-workers).
 
+A `FileSystem` can return more than 1 from `get_parallel_deletes(path)` to
+delete that many entries at once. Tasks with
+`waits_for_earlier_tasks = True` start only after all earlier tasks finish and
+hold back later tasks until they finish too.
+
 Task subclasses can also set three class attributes to control their progress
 window: `keeps_focus = True` makes it modal, `minimizable = True` adds a
 minimize button, and `icon` supplies the optional `QIcon` shown in the status

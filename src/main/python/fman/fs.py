@@ -51,6 +51,9 @@ def prepare_copy(src_url, dst_url):
 def get_parallel_transfers(src_url, dst_url):
 	return _get_mother_fs().get_parallel_transfers(src_url, dst_url)
 
+def get_parallel_deletes(url):
+	return _get_mother_fs().get_parallel_deletes(url)
+
 def get_connection_count(url):
 	return _get_mother_fs().get_connection_count(url)
 
@@ -169,6 +172,10 @@ class FileSystem:
 	def get_parallel_transfers(self, src_url, dst_url):
 		# How many files a copy or move transfers at once. More than 1 pays
 		# off for transports with a high cost per file, like FTP.
+		return 1
+	def get_parallel_deletes(self, path):
+		# How many entries a delete removes at once. More than 1 pays off for
+		# transports with a high cost per file, like FTP.
 		return 1
 	def get_connection_count(self, path):
 		"""

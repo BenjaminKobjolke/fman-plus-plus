@@ -205,6 +205,12 @@ class MotherFileSystemTest(TestCase):
 		self.assertEqual(
 			3, mother_fs.get_parallel_transfers('par://a', 'stub://b')
 		)
+	def test_parallel_deletes_default_to_one(self):
+		mother_fs = self._create_mother_fs(StubFileSystem({}))
+		self.assertEqual(1, mother_fs.get_parallel_deletes('stub://a'))
+	def test_parallel_deletes_use_the_child_value(self):
+		mother_fs = self._create_mother_fs(ParallelFileSystem())
+		self.assertEqual(3, mother_fs.get_parallel_deletes('par://a'))
 	def test_connection_count_defaults_to_none(self):
 		mother_fs = self._create_mother_fs(StubFileSystem({}))
 		self.assertIsNone(mother_fs.get_connection_count('stub://a'))
@@ -254,6 +260,8 @@ class ParallelFileSystem(FileSystem):
 	scheme = 'par://'
 
 	def get_parallel_transfers(self, src_url, dst_url):
+		return 3
+	def get_parallel_deletes(self, path):
 		return 3
 
 class CountingFileSystem(FileSystem):

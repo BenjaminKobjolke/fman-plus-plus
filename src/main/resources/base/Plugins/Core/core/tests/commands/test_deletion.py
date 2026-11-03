@@ -1,7 +1,7 @@
 from core.commands import deletion
 from core.commands.deletion import _Delete, _describe, DeletePermanently
 from core.undo_history import TrashRecord, history
-from fman import DirectoryPane, PLATFORM, Task, YES
+from fman import DirectoryPane, PLATFORM, Task, YES, NO
 from fman.url import as_url
 from unittest import TestCase
 from unittest.mock import Mock, patch
@@ -9,6 +9,50 @@ from unittest.mock import Mock, patch
 class DeleteTest(TestCase):
 	def test_delete_task_is_minimizable(self):
 		self.assertTrue(_Delete([], Mock()).minimizable)
+
+	def test_parallel_delete_runs_files_before_the_final_folder(self):
+		run_order = []
+		file_tasks = [
+			Task('Deleting file %d' % i, fn=lambda i=i: run_order.append(i), size=1)
+			for i in range(4)
+		]
+		folder_task = Task(
+			'Deleting folder', fn=lambda: run_order.append('folder'), size=1
+		)
+		folder_task.waits_for_earlier_tasks = True
+		delete_task = _Delete(['stub://folder'], lambda _: file_tasks + [folder_task])
+
+		with patch('core.commands.deletion.get_parallel_deletes', return_value=3), \
+				patch('core.commands.deletion.get_connection_count'), \
+				patch.object(delete_task, '_run_with_dialog',
+					 side_effect=lambda task, progress: task()), \
+				patch.object(delete_task, 'show_workers'):
+			delete_task()
+
+		self.assertCountEqual(range(4), run_order[:-1])
+		self.assertEqual('folder', run_order[-1])
+
+	def test_no_from_delete_error_stops_later_tasks(self):
+		run_order = []
+		failing_task = Task(
+			'Deleting first',
+			fn=lambda: (_ for _ in ()).throw(OSError('failed')),
+			size=1,
+		)
+		later_task = Task(
+			'Deleting later', fn=lambda: run_order.append('later'), size=1
+		)
+		delete_task = _Delete(
+			['stub://folder'], lambda _: [failing_task, later_task]
+		)
+
+		with patch('core.commands.deletion.get_parallel_deletes', return_value=1), \
+				patch.object(delete_task, '_run_with_dialog',
+					 side_effect=lambda task, progress: task()), \
+				patch('core.commands.deletion.show_alert', return_value=NO):
+			delete_task()
+
+		self.assertEqual([], run_order)
 
 class TrashTest(TestCase):
 	def setUp(self):
