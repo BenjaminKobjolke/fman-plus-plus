@@ -13,6 +13,11 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
+| [#193](https://github.com/mherrmann/fman/issues/193) | Bundle the entire Python standard library | enhancement, 3 votes | deferred | 2026-11-03 | Bundling the full standard library is a substantial packaging and distribution change; it needs a separately approved scope and size assessment. |
+| [#192](https://github.com/mherrmann/fman/issues/192) | Symlink size -1 bytes | bug, mac | skipped | 2026-11-03 | The report is macOS-specific and cannot be reproduced or tested in this Windows fork. |
+| [#190](https://github.com/mherrmann/fman/issues/190) | Transparent display of symlinks | enhancement, 3 votes | deferred | 2026-11-03 | Keeping a symlink's displayed path while navigating its target needs a separately approved path and navigation design across the filesystem model. |
+| [#188](https://github.com/mherrmann/fman/issues/188) | Make it possible to accept tutorial dialogs by keyboard | enhancement, 1 vote | already fixed | 2026-11-03 | Tutorial overlays already focus affirmative buttons, support arrow-key selection and Enter, and expose Alt-letter shortcuts (`overlay.py`, `onboarding/__init__.py`). |
+| [#187](https://github.com/mherrmann/fman/issues/187) | Can't delete files with spaces in them on macOS 10.12.6 Beta | bug, mac | skipped | 2026-11-03 | This report is specific to an old macOS beta and cannot be reproduced or tested in this Windows fork. |
 | [#186](https://github.com/mherrmann/fman/issues/186) | Scrolloff option | enhancement, 1 vote | fixed | 2026-11-03 | Added the `scroll_margin` setting (rows kept around the cursor, default off). |
 | [#185](https://github.com/mherrmann/fman/issues/185) | Remember visited folders/files | enhancement | deferred | 2026-11-03 | Automatic folder reselection needs a separately approved history and privacy policy, including what visits persist and for how long. |
 | [#184](https://github.com/mherrmann/fman/issues/184) | Additional columns | enhancement, 28 votes | fixed | 2026-11-03 | Extension, Version and Attributes columns can be toggled from the header or command palette. |
