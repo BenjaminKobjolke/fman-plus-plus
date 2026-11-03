@@ -1,5 +1,5 @@
 from core import Modified
-from core.overwrite_details import free_name, get_details, is_enabled
+from core.overwrite_details import file_version, free_name, get_details, is_enabled
 from core.tests import StubFS
 from fman.impl.overwrite_dialog import FileDetails
 from unittest import TestCase
@@ -108,16 +108,14 @@ class OverwriteDetailsTest(TestCase):
 				patch('core.overwrite_details.PLATFORM', 'Windows'):
 			self.assertEqual(
 				'1.2.3.4',
-				__import__('core.overwrite_details', fromlist=['_version'])._version(
-					'file:///folder/app.EXE'
-				),
+				file_version('file:///folder/app.EXE'),
 			)
 			self.assertEqual('', __import__(
-				'core.overwrite_details', fromlist=['_version']
-			)._version('file:///folder/readme.txt'))
+				'core.overwrite_details', fromlist=['file_version']
+			).file_version('file:///folder/readme.txt'))
 			self.assertEqual('', __import__(
-				'core.overwrite_details', fromlist=['_version']
-			)._version('sftp:///folder/app.exe'))
+				'core.overwrite_details', fromlist=['file_version']
+			).file_version('sftp:///folder/app.exe'))
 		win32api.GetFileVersionInfo.assert_called_once_with('/folder/app.EXE', '\\')
 
 	def test_version_read_failures_return_empty(self):
@@ -126,8 +124,8 @@ class OverwriteDetailsTest(TestCase):
 		with patch.dict('sys.modules', {'win32api': win32api}), \
 				patch('core.overwrite_details.PLATFORM', 'Windows'):
 			version = __import__(
-				'core.overwrite_details', fromlist=['_version']
-			)._version('file:///folder/app.dll')
+				'core.overwrite_details', fromlist=['file_version']
+			).file_version('file:///folder/app.dll')
 		self.assertEqual('', version)
 
 

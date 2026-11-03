@@ -53,10 +53,10 @@ def _file_details(fs, url):
 	except OSError:
 		size_text = ''
 	modified = Modified(fs).get_str(url)
-	return FileDetails(size_text, modified, _version(url))
+	return FileDetails(size_text, modified, file_version(url))
 
 
-def _version(url):
+def file_version(url):
 	if PLATFORM != 'Windows':
 		return ''
 	try:

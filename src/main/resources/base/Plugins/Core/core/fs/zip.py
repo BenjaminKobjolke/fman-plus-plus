@@ -51,7 +51,7 @@ class _7ZipFileSystem(FileSystem):
 			if scheme == self.scheme
 		)
 	def get_default_columns(self, path):
-		return 'core.Name', 'core.Size', 'core.Modified'
+		return 'core.Name', 'core.file_columns.Extension', 'core.Size', 'core.Modified'
 	def resolve(self, path):
 		for suffix in self._suffixes:
 			if suffix in path.lower():

@@ -1,10 +1,10 @@
-from core.commands.columns import _get_hidden_flags
+from core.commands.columns import _get_hidden_flags, SortByColumn
 from unittest import TestCase
 from unittest.mock import patch
 
 class GetHiddenFlagsTest(TestCase):
 	def test_hides_size_and_modified_columns(self):
-		with patch('core.commands.columns.get_setting', return_value=True):
+		with patch('core.column_visibility.get_setting', return_value=True):
 			flags = _get_hidden_flags(
 				['core.Name', 'core.Size', 'core.Modified']
 			)
@@ -16,6 +16,28 @@ class GetHiddenFlagsTest(TestCase):
 			'core.fs.local.windows.drives.DriveSize',
 			'core.fs.local.windows.drives.DriveFree',
 		]
-		with patch('core.commands.columns.get_setting', return_value=True):
+		with patch('core.column_visibility.get_setting', return_value=True):
 			flags = _get_hidden_flags(columns)
 		self.assertEqual([False, False, False], flags)
+
+class SortByColumnTest(TestCase):
+	def test_quicksearch_uses_only_visible_columns_and_current_visible_index(
+		self,
+	):
+		class Pane:
+			def get_columns(self):
+				return ['core.Name', 'core.Extension', 'core.Modified']
+			def get_sort_column(self): return 'core.Modified', True
+		pane = Pane()
+		with patch(
+			'core.commands.columns._get_hidden_flags',
+			return_value=[False, True, False],
+		), patch(
+			'core.commands.columns.show_quicksearch', return_value=None
+		) as quicksearch:
+			SortByColumn(pane)()
+		get_items = quicksearch.call_args.args[0]
+		self.assertEqual(1, quicksearch.call_args.kwargs['item'])
+		self.assertEqual(
+			['core.Name', 'core.Modified'], [item.value for item in get_items('')]
+		)

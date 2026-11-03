@@ -34,7 +34,14 @@ class LocalFileSystem(LocalTransfers, FileSystem):
 		super().__init__()
 		self._watcher = None
 	def get_default_columns(self, path):
-		return 'core.Name', 'core.Size', 'core.Modified'
+		columns = (
+			'core.Name', 'core.file_columns.Extension', 'core.Size', 'core.Modified'
+		)
+		if PLATFORM == 'Windows':
+			columns += ('core.file_columns.Version',)
+		return columns + (
+			'core.file_columns.Attributes',
+		)
 	def exists(self, path):
 		os_path = self._url_to_os_path(path)
 		return self._isabs(os_path) and Path(os_path).exists()

@@ -6,6 +6,7 @@ from fman.fs import Column
 from fman.url import basename
 from PyQt5.QtCore import QLocale, QDateTime
 from .util import format_size
+from .file_extension import name_for_name_column
 
 import fman.fs
 import re
@@ -25,7 +26,7 @@ class Name(Column):
 		super().__init__()
 		self._fs = fs
 	def get_str(self, url):
-		return self._fs.query(url, 'name')
+		return name_for_name_column(self._fs, url)
 	def get_sort_value(self, url, is_ascending):
 		try:
 			is_dir = self._fs.is_dir(url)
@@ -125,3 +126,10 @@ class Modified(Column):
 		return is_dir ^ is_ascending, mtime or datetime.min
 	def _get_mtime(self, url):
 		return self._fs.query(url, 'modified_datetime')
+
+# Export after Name because Extension uses it; the plugin loader discovers these
+# columns here.
+_file_columns = _import_module('.file_columns', __name__)
+Attributes = _file_columns.Attributes
+Extension = _file_columns.Extension
+Version = _file_columns.Version

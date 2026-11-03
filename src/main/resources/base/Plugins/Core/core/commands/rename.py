@@ -4,6 +4,7 @@
 offer Retry without the user retyping the new name - see its own comment.
 """
 from core import elevation
+from core.file_extension import name_with_hidden_extension
 from core.commands.editor import _find_extension_start
 from core.commands.util import create_as_admin, is_dir_checked, NO_SELECTION
 from core.undo_history import RenameRecord, history
@@ -16,6 +17,7 @@ from fman.url import dirname, join, normalize, relpath, splitscheme
 # os.path.basename, not fman.url's, matching what core/commands/__init__.py
 # resolved this name to before this module existed.
 from os.path import basename
+import fman.fs
 
 __all__ = ['CreateDirectory', 'Rename', 'RenameListener']
 
@@ -39,7 +41,11 @@ class Rename(DirectoryPaneCommand):
 
 class RenameListener(DirectoryPaneListener):
 	def on_name_edited(self, file_url, new_name):
-		rename_to(self.pane, file_url, new_name)
+		# The editor only showed the stem while the extension column is enabled.
+		rename_to(
+			self.pane, file_url,
+			name_with_hidden_extension(fman.fs, file_url, new_name)
+		)
 
 def rename_to(pane, file_url, new_name):
 	"""

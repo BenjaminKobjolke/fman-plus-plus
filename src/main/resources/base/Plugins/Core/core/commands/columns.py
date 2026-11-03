@@ -7,6 +7,11 @@ column is remembered per directory in 'Sort Settings.json' and restored by
 """
 from core.quicksearch_matchers import contains_chars, \
 	contains_chars_after_separator, matched_in_order
+from core.column_visibility import (
+	COLUMN_SETTINGS, NAME_WITHOUT_EXTENSION_KEY, is_column_hidden,
+	set_column_hidden,
+)
+from core.commands.column_header_menu import install_header_menu
 from core.settings import get_setting, save_setting
 from fman import DirectoryPaneCommand, DirectoryPaneListener, load_json, \
 	QuicksearchItem, save_json, show_quicksearch
@@ -15,30 +20,20 @@ from fman.impl.util.qt.thread import run_in_main_thread
 
 __all__ = [
 	'InitColumnVisibility', 'RememberSortSettings', 'SortByColumn',
-	'ToggleModifiedColumn', 'ToggleSizeColumn'
+	'ToggleModifiedColumn', 'ToggleSizeColumn', 'ToggleExtensionColumn',
+	'ToggleVersionColumn', 'ToggleAttributesColumn',
+	'ToggleNameWithoutExtension'
 ]
 
 # fman has no pane.set_columns(...) - the FileSystem owns the column set and
 # the model is rebuilt on every navigation. So we hide/show columns directly
 # on the live Qt view instead, keyed by the columns' qualified names.
-_COLUMN_SETTING_KEYS = {
-	'core.Size': 'hide_size_column',
-	'core.Modified': 'hide_modified_column',
-}
-
 def _get_hidden_flags(columns):
 	# Every index gets a flag: Qt keeps a section hidden across navigation, so a
 	# column a filesystem doesn't share with file:// (eg. DriveSize) must be unhidden.
 	return [
-		col in _COLUMN_SETTING_KEYS and _is_column_hidden(col) for col in columns
+		col in COLUMN_SETTINGS and is_column_hidden(col) for col in columns
 	]
-
-def _is_column_hidden(col_qual_name):
-	key = _COLUMN_SETTING_KEYS[col_qual_name]
-	return get_setting('Core Settings.json', key, False)
-
-def _set_column_hidden(col_qual_name, hidden):
-	save_setting('Core Settings.json', _COLUMN_SETTING_KEYS[col_qual_name], hidden)
 
 @run_in_main_thread
 def _apply_column_visibility(pane):
@@ -69,9 +64,11 @@ def _apply_column_visibility(pane):
 	view.resizeColumnsToContents()
 
 def _toggle_column(window, col_qual_name):
-	_set_column_hidden(col_qual_name, not _is_column_hidden(col_qual_name))
+	set_column_hidden(col_qual_name, not is_column_hidden(col_qual_name))
 	for pane in window.get_panes():
 		_apply_column_visibility(pane)
+	from core.panes import reload_panes
+	reload_panes(window)
 
 class ToggleSizeColumn(DirectoryPaneCommand):
 
@@ -89,11 +86,35 @@ class ToggleModifiedColumn(DirectoryPaneCommand):
 	def __call__(self):
 		_toggle_column(self.pane.window, 'core.Modified')
 
+class ToggleExtensionColumn(DirectoryPaneCommand):
+	aliases = ('Toggle extension column',)
+	def __call__(self): _toggle_column(self.pane.window, 'core.file_columns.Extension')
+
+class ToggleVersionColumn(DirectoryPaneCommand):
+	aliases = ('Toggle version column',)
+	def __call__(self): _toggle_column(self.pane.window, 'core.file_columns.Version')
+
+class ToggleAttributesColumn(DirectoryPaneCommand):
+	aliases = ('Toggle attributes column',)
+	def __call__(self): _toggle_column(self.pane.window, 'core.file_columns.Attributes')
+
+class ToggleNameWithoutExtension(DirectoryPaneCommand):
+	aliases = ('Toggle name without extension',)
+	def __call__(self):
+		key = NAME_WITHOUT_EXTENSION_KEY
+		value = not get_setting('Core Settings.json', key, False)
+		save_setting('Core Settings.json', key, value)
+		from core.panes import reload_panes
+		reload_panes(self.pane.window)
+
 class InitColumnVisibility(DirectoryPaneListener):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		# Mirrors InitPaneFontSize: re-apply the saved setting on startup.
 		_apply_column_visibility(self.pane)
+		install_header_menu(
+			self.pane, lambda name: _toggle_column(self.pane.window, name)
+		)
 	def on_path_changed(self):
 		# The model (and its columns) is rebuilt on every navigation, so the
 		# hidden state has to be re-applied each time, not just on startup.
@@ -105,14 +126,23 @@ class SortByColumn(DirectoryPaneCommand):
 
 	def __call__(self, column_index=None):
 		columns = self.pane.get_columns()
+		visible_columns = [
+			column for column, hidden in zip(columns, _get_hidden_flags(columns))
+			if not hidden
+		]
 		if column_index is None:
 			curr_sort_col = self.pane.get_sort_column()[0]
-			curr_sort_col_index = columns.index(curr_sort_col)
+			curr_sort_col_index = (
+				visible_columns.index(curr_sort_col)
+				if curr_sort_col in visible_columns else 0
+			)
 			result = show_quicksearch(
-				lambda q: self._get_items(columns, q), item=curr_sort_col_index
+				lambda q: self._get_items(visible_columns, q), item=curr_sort_col_index
 			)
 			if result:
 				column_index = columns.index(result[1])
+		elif column_index is not None:
+			column_index = columns.index(visible_columns[column_index])
 		if column_index is not None:
 			column = columns[column_index]
 			sort_column, sort_column_is_ascending = self.pane.get_sort_column()
