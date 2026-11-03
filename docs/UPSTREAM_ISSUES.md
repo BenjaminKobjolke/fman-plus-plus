@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#193](https://github.com/mherrmann/fman/issues/193) | Bundle the entire Python standard library | enhancement, 3 votes | deferred | 2026-11-03 | Bundling the full standard library is a substantial packaging and distribution change; it needs a separately approved scope and size assessment. |
+| [#193](https://github.com/mherrmann/fman/issues/193) | Bundle the entire Python standard library | enhancement, 3 votes | fixed | 2026-11-03 | Build hook adds every standard-library module except Tk, IDLE, tests and installers; ~1–2% larger build. |
 | [#192](https://github.com/mherrmann/fman/issues/192) | Symlink size -1 bytes | bug, mac | skipped | 2026-11-03 | The report is macOS-specific and cannot be reproduced or tested in this Windows fork. |
 | [#190](https://github.com/mherrmann/fman/issues/190) | Transparent display of symlinks | enhancement, 3 votes | deferred | 2026-11-03 | Keeping a symlink's displayed path while navigating its target needs a separately approved path and navigation design across the filesystem model. |
 | [#188](https://github.com/mherrmann/fman/issues/188) | Make it possible to accept tutorial dialogs by keyboard | enhancement, 1 vote | already fixed | 2026-11-03 | Tutorial overlays already focus affirmative buttons, support arrow-key selection and Enter, and expose Alt-letter shortcuts (`overlay.py`, `onboarding/__init__.py`). |

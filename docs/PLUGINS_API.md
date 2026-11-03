@@ -39,6 +39,10 @@ Load order is shipped → third-party → user (`impl/plugins/discover.py`). Eac
 plugin directory is appended to `sys.path`, so a plugin can `import` any other
 loaded plugin's packages — including Core's.
 
+The frozen app ships the full Python standard library except Tk and turtle,
+IDLE, `lib2to3`, the test suite, `ensurepip` and `venv`. Third-party packages
+still belong in the plugin's own folder.
+
 ## Plugin layout
 
 ```
