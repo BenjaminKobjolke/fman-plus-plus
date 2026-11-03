@@ -10,6 +10,7 @@ from fman.impl.view.drag_and_drop import DragAndDrop
 from fman.impl.view.move_without_updating_selection import \
 	MoveWithoutUpdatingSelection
 from fman.impl.view.resize_cols_to_contents import ResizeColumnsToContents
+from fman.impl.view.scroll_margin import ScrollMargin
 from fman.impl.view.single_row_mode import SingleRowMode
 from PyQt5.QtCore import QEvent, QItemSelection, QItemSelectionModel as QISM, \
 	QRect, Qt, pyqtSignal, QRectF
@@ -20,7 +21,7 @@ from PyQt5.QtWidgets import QTableView, QLineEdit, QVBoxLayout, QStyle, \
 
 class FileListView(
 	SingleRowMode, MoveWithoutUpdatingSelection, DragAndDrop,
-	ResizeColumnsToContents
+	ResizeColumnsToContents, ScrollMargin
 ):
 	activated = pyqtSignal()
 

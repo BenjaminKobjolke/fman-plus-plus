@@ -24,6 +24,7 @@ from fman.impl.plugins.discover import find_plugin_dirs
 from fman.impl.plugins.error import PluginErrorHandler
 from fman.impl.plugins.key_bindings import KeyBindings
 from fman.impl.plugins.mother_fs import MotherFileSystem
+from fman.impl.scroll_margin_setting import load_scroll_margin
 from fman.impl.viewers import ViewerRegistry
 from fman.impl.session import SessionManager, SINGLE_PANE_ARG
 from fman.impl.scripting.actions import ScriptingActions
@@ -280,6 +281,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 			)
 			self._main_window.set_quicksearch_width(
 				QuicksearchWidth(self.local_settings)
+			)
+			self._main_window.set_scroll_margin(
+				load_scroll_margin(self.local_settings)
 			)
 			# Before show() for the same reason as the opacity above, and a
 			# stronger one: setWindowFlags on a visible window recreates the

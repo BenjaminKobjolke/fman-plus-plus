@@ -109,6 +109,7 @@ class MainWindowPaneStatusTest(TestCase):
 		self.window._pane_status_mode = PaneStatusMode(False, True)
 		pane = QWidget()
 		pane.set_icon_size = MagicMock()
+		pane.set_scroll_margin = MagicMock()
 		pane.set_status_line_visible = MagicMock()
 		pane.set_backgrounds = MagicMock()
 		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):

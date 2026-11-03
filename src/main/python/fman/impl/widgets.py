@@ -121,6 +121,8 @@ class DirectoryPaneWidget(QWidget):
 		self._file_view.setIconSize(
 			QSize() if size is None else QSize(size, size)
 		)
+	def set_scroll_margin(self, rows):
+		self._file_view.set_scroll_margin(rows)
 	def get_file_view(self):
 		return self._file_view
 	def set_backgrounds(self, backgrounds, pane_index):
@@ -402,6 +404,7 @@ class MainWindow(QMainWindow):
 		self._panes = []
 		self._file_list_icon_size = None
 		self._quicksearch_width = None
+		self._scroll_margin = 0
 		self._backgrounds = ()
 		self._pane_status_mode = PaneStatusMode(True, True)
 		self._pane_status_bar_owner = None
@@ -441,6 +444,10 @@ class MainWindow(QMainWindow):
 			pane.set_icon_size(size)
 	def set_quicksearch_width(self, store):
 		self._quicksearch_width = store
+	def set_scroll_margin(self, rows):
+		self._scroll_margin = rows
+		for pane in self._panes:
+			pane.set_scroll_margin(rows)
 	@run_in_main_thread
 	def set_backgrounds(self, backgrounds):
 		# Remembered as well as applied, for the same reason as the icon
@@ -622,6 +629,7 @@ class MainWindow(QMainWindow):
 			self._fs, self._null_location, self._splitter, self._controller
 		)
 		result.set_icon_size(self._file_list_icon_size)
+		result.set_scroll_margin(self._scroll_margin)
 		result.set_status_line_visible(self._pane_status_mode.lines_visible)
 		self._panes.append(result)
 		# After the append, because the pane's own index is what decides
