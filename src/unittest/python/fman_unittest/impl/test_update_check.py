@@ -1,6 +1,6 @@
 from fman.impl.plugins import PluginSupport
 from fman.impl.update_check import (
-	CHECK_INTERVAL_MS, FIRST_CHECK_DELAY_MS, UPDATE_COMMAND, UpdateCheckTimer,
+	FIRST_CHECK_DELAY_MS, TICK_INTERVAL_MS, UPDATE_COMMAND, UpdateCheckTimer,
 )
 from unittest import TestCase
 from unittest.mock import MagicMock
@@ -27,10 +27,10 @@ class UpdateCheckTimerTest(TestCase):
 		self.update_check.start()
 		self.timer.start.assert_called_once_with(FIRST_CHECK_DELAY_MS)
 
-	def test_fires_daily_after_first_check(self):
+	def test_fires_hourly_after_first_check(self):
 		self.update_check.start()
 		self.timer.fire()
-		self.timer.setInterval.assert_called_once_with(CHECK_INTERVAL_MS)
+		self.timer.setInterval.assert_called_once_with(TICK_INTERVAL_MS)
 		self.timer.fire()
 		self.assertEqual(
 			2, self.plugin_support.run_application_command.call_count

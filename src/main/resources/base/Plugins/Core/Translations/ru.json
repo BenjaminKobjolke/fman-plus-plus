@@ -36,6 +36,8 @@
   "command_go_to_downloads": "Перейти в загрузки",
   "command_toggle_hidden_files": "Показать или скрыть файлы",
   "command_check_for_updates": "Проверить обновления",
+  "command_toggle_automatic_updates": "Включить или отключить автообновления",
+  "command_set_automatic_update_interval": "Задать интервал автообновления",
   "command_select_theme": "Выбрать тему",
   "command_select_icon_set": "Выбрать набор значков",
   "command_open_with": "Открыть с помощью...",

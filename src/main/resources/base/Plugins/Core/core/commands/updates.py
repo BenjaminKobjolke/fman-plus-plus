@@ -5,13 +5,14 @@ import tempfile
 import zipfile
 from subprocess import DEVNULL, Popen
 
-from core import net
+from core import auto_update, net
 from core.portable_update import PORTABLE_ASSET, extract_update, start_swap
 from core.updates import check_for_update
 from fman import APP_NAME, ApplicationCommand, NO, PLATFORM, Task, YES, \
 	clear_status_message, links, load_json, save_json, show_alert, \
 	show_status_message, submit_task
 from fman.impl.portable import portable_app_dir
+from fman.impl.update_countdown import show_update_countdown
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QDesktopServices
 from urllib.error import HTTPError, URLError
@@ -31,6 +32,9 @@ PORTABLE_INSTALL_MESSAGE = (
 	APP_NAME + ' %s is available (installed: %s). '
 	'Download it and replace this portable copy now?'
 )
+AUTO_UPDATE_COUNTDOWN_MESSAGE = (
+	APP_NAME + ' {0} is available (installed: {1}). Updating in %d s.'
+)
 DOWNLOAD_ERROR = 'Could not download the update: %s'
 CURRENT_MESSAGE = APP_NAME + ' %s is up to date.'
 ERROR_MESSAGE = 'Could not check for updates: %s'
@@ -41,6 +45,10 @@ class CheckForUpdates(ApplicationCommand):
 	aliases = ('Check for updates',)
 
 	def __call__(self, silent=False):
+		automatic_silent = silent and auto_update.is_enabled() and \
+			auto_update.is_supported()
+		if silent and not auto_update.is_check_due():
+			return
 		if not silent:
 			show_status_message(CHECKING_MESSAGE)
 		try:
@@ -55,7 +63,8 @@ class CheckForUpdates(ApplicationCommand):
 					show_alert(CURRENT_MESSAGE % status.installed)
 				return
 			settings = load_json(UPDATE_CHECK_FILE, default={})
-			if silent and settings.get('announced') == status.latest:
+			if silent and not automatic_silent and \
+					settings.get('announced') == status.latest:
 				return
 			settings['announced'] = status.latest
 			save_json(UPDATE_CHECK_FILE)
@@ -68,18 +77,31 @@ class CheckForUpdates(ApplicationCommand):
 				message = INSTALL_MESSAGE
 			else:
 				message = UPDATE_MESSAGE
+			if automatic_silent:
+				if not show_update_countdown(
+					AUTO_UPDATE_COUNTDOWN_MESSAGE.format(
+						status.latest, status.installed
+					),
+					auto_update.COUNTDOWN_SECONDS
+				):
+					return
+				_install(status.latest, portable_dir, silent=True)
+				return
 			answer = show_alert(
 				message % (status.latest, status.installed),
 				YES | NO, YES
 			)
 			if answer & YES:
-				_install(status.latest, portable_dir)
+				_install(
+					status.latest, portable_dir,
+					silent=auto_update.is_enabled() and auto_update.is_supported()
+				)
 		finally:
 			if not silent:
 				clear_status_message()
 
 
-def _install(latest, portable_dir=None):
+def _install(latest, portable_dir=None, silent=False):
 	asset = PORTABLE_ASSET if portable_dir is not None else \
 		INSTALLER_ASSETS.get(PLATFORM)
 	if asset is None:
@@ -124,7 +146,10 @@ def _install(latest, portable_dir=None):
 		return
 
 	if PLATFORM == 'Windows':
-		Popen([path], cwd=os.path.dirname(path), stdout=DEVNULL, stderr=DEVNULL)
+		command = auto_update.installer_command(path) if silent else [path]
+		if command is None:
+			command = [path]
+		Popen(command, cwd=os.path.dirname(path), stdout=DEVNULL, stderr=DEVNULL)
 		sys.exit(0)
 	else:
 		Popen(['open', path])

@@ -17,6 +17,9 @@ class CheckForUpdatesTest(TestCase):
 			'QDesktopServices', 'show_status_message', 'clear_status_message',
 			'submit_task', 'Popen', 'sys', 'PLATFORM', 'net.download',
 			'portable_app_dir', 'extract_update', 'start_swap',
+			'auto_update.is_enabled', 'auto_update.is_supported',
+			'auto_update.is_check_due', 'auto_update.installer_command',
+			'show_update_countdown',
 		):
 			p = patch('core.commands.updates.' + name, 'Linux') \
 				if name == 'PLATFORM' else patch('core.commands.updates.' + name)
@@ -24,6 +27,12 @@ class CheckForUpdatesTest(TestCase):
 			self.addCleanup(p.stop)
 		self.patches['load_json'].return_value = {}
 		self.patches['portable_app_dir'].return_value = None
+		self.patches['auto_update.is_enabled'].return_value = False
+		self.patches['auto_update.is_supported'].return_value = True
+		self.patches['auto_update.is_check_due'].return_value = True
+		self.patches['auto_update.installer_command'].return_value = (
+			'silent setup command'
+		)
 		self.patches['check_for_update'].return_value = UpdateStatus(
 			'1.7.13', '1.8.0'
 		)
@@ -77,6 +86,101 @@ class CheckForUpdatesTest(TestCase):
 		)
 		self.patches['Popen'].assert_not_called()
 		self.patches['sys'].exit.assert_called_once_with(0)
+
+	def test_manual_yes_with_automatic_updates_uses_silent_installer(self):
+		self.patches['auto_update.is_enabled'].return_value = True
+		self.patches['show_alert'].return_value = YES
+		self.patches['submit_task'].side_effect = lambda task: task()
+		self.patches['net.download'].side_effect = self._write_download
+		self.patches['auto_update.installer_command'].return_value = (
+			'silent setup command'
+		)
+		with tempfile.TemporaryDirectory() as directory:
+			with patch(
+				'core.commands.updates.tempfile.gettempdir', return_value=directory
+			):
+				with patch('core.commands.updates.PLATFORM', 'Windows'):
+					CheckForUpdates(None)()
+		path = self.patches['net.download'].call_args.args[1]
+		self.patches['auto_update.installer_command'].assert_called_once_with(path)
+		self.patches['Popen'].assert_called_once_with(
+			'silent setup command', cwd=os.path.dirname(path),
+			stdout=DEVNULL, stderr=DEVNULL
+		)
+		self.patches['sys'].exit.assert_called_once_with(0)
+
+	def test_manual_yes_uses_wizard_when_automatic_install_is_unsupported(self):
+		self.patches['auto_update.is_enabled'].return_value = True
+		self.patches['auto_update.is_supported'].return_value = False
+		self._download_update('Windows', self._write_download)
+		path = self.patches['net.download'].call_args.args[1]
+		self.patches['Popen'].assert_called_once_with(
+			[path], cwd=os.path.dirname(path), stdout=DEVNULL, stderr=DEVNULL
+		)
+		self.patches['auto_update.installer_command'].assert_not_called()
+
+	def test_silent_automatic_check_returns_when_not_due(self):
+		self.patches['auto_update.is_enabled'].return_value = True
+		self.patches['auto_update.is_check_due'].return_value = False
+		CheckForUpdates(None)(silent=True)
+		self.patches['auto_update.is_check_due'].assert_called_once_with()
+		self.patches['check_for_update'].assert_not_called()
+		self.patches['show_alert'].assert_not_called()
+
+	def test_silent_fallback_check_returns_when_not_due(self):
+		self.patches['auto_update.is_enabled'].return_value = False
+		self.patches['auto_update.is_check_due'].return_value = False
+		CheckForUpdates(None)(silent=True)
+		self.patches['auto_update.is_check_due'].assert_called_once_with()
+		self.patches['check_for_update'].assert_not_called()
+		self.patches['show_alert'].assert_not_called()
+
+	def test_silent_automatic_check_counts_down_then_runs_silent_installer(self):
+		self.patches['auto_update.is_enabled'].return_value = True
+		self.patches['show_update_countdown'].return_value = True
+		self.patches['submit_task'].side_effect = lambda task: task()
+		self.patches['net.download'].side_effect = self._write_download
+		with tempfile.TemporaryDirectory() as directory:
+			with patch(
+				'core.commands.updates.tempfile.gettempdir', return_value=directory
+			):
+				with patch('core.commands.updates.PLATFORM', 'Windows'):
+					CheckForUpdates(None)(silent=True)
+		self.patches['show_update_countdown'].assert_called_once_with(
+			'fman++ 1.8.0 is available (installed: 1.7.13). Updating in %d s.',
+			30
+		)
+		self.patches['show_alert'].assert_not_called()
+		path = self.patches['net.download'].call_args.args[1]
+		self.patches['auto_update.installer_command'].assert_called_once_with(path)
+		self.patches['Popen'].assert_called_once_with(
+			'silent setup command', cwd=os.path.dirname(path),
+			stdout=DEVNULL, stderr=DEVNULL
+		)
+		self.patches['sys'].exit.assert_called_once_with(0)
+
+	def test_cancelled_automatic_countdown_repeats_on_next_due_check(self):
+		self.patches['auto_update.is_enabled'].return_value = True
+		self.patches['show_update_countdown'].return_value = False
+		CheckForUpdates(None)(silent=True)
+		CheckForUpdates(None)(silent=True)
+		self.assertEqual(2, self.patches['show_update_countdown'].call_count)
+		self.patches['show_alert'].assert_not_called()
+		self.patches['net.download'].assert_not_called()
+		self.patches['Popen'].assert_not_called()
+		self.patches['sys'].exit.assert_not_called()
+
+	def test_automatic_updates_do_not_change_portable_manual_update(self):
+		self.patches['auto_update.is_enabled'].return_value = True
+		self.patches['auto_update.is_supported'].return_value = False
+		self.patches['portable_app_dir'].return_value = 'portable-app'
+		self.patches['extract_update'].return_value = 'extracted/fman++'
+		self._download_update('Windows', self._write_download)
+		path = self.patches['net.download'].call_args.args[1]
+		self.assertEqual('fmanPortable.zip', os.path.basename(path))
+		self.patches['extract_update'].assert_called_once()
+		self.patches['auto_update.installer_command'].assert_not_called()
+		self.patches['show_update_countdown'].assert_not_called()
 
 	def test_invalid_portable_archive_reports_error_and_opens_releases(self):
 		self.patches['portable_app_dir'].return_value = 'portable-app'

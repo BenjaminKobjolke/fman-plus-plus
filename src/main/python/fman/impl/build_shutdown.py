@@ -10,11 +10,15 @@ session. Windows only: the request is a native window message.
 from ctypes import windll
 from ctypes.wintypes import MSG
 from fman import APP_NAME
-from fman.impl.widgets import MessageBox
+from fman.impl.countdown import Countdown
 from PyQt5.QtCore import QAbstractNativeEventFilter, QTimer
 
 # Must match $MessageName in tools\close_running_fman.ps1.
 MESSAGE_NAME = 'fman.CloseForBuild'
+_TEXT = (
+	'Closing ' + APP_NAME + ' for a build in %d s.\n'
+	'Press Esc to keep it running.'
+)
 
 class BuildShutdownFilter(QAbstractNativeEventFilter):
 	def __init__(self, main_window, quit_):
@@ -42,34 +46,10 @@ class BuildShutdownFilter(QAbstractNativeEventFilter):
 		return True, 1
 	def _count_down(self, seconds):
 		try:
-			countdown = Countdown(self._main_window, seconds)
+			countdown = Countdown(self._main_window, _TEXT, seconds)
+			# The build runs in another window, so fman is rarely in front.
+			countdown.shown.connect(countdown.activateWindow)
 			if self._main_window.exec_dialog(countdown) == Countdown.Ok:
 				self._quit()
 		finally:
 			self._counting_down = False
-
-class Countdown(MessageBox):
-
-	_TEXT = (
-		'Closing ' + APP_NAME + ' for a build in %d s.\n'
-		'Press Esc to keep it running.'
-	)
-
-	def __init__(self, parent, seconds):
-		super().__init__(parent)
-		self._seconds_left = seconds
-		self.setStandardButtons(self.Cancel)
-		self.setDefaultButton(self.Cancel)
-		self.setText(self._TEXT % seconds)
-		# The build runs in another window, so fman is rarely in front.
-		self.shown.connect(self.activateWindow)
-		self._timer = QTimer(self)
-		self._timer.timeout.connect(self._tick)
-		self._timer.start(1000)
-	def _tick(self):
-		self._seconds_left -= 1
-		if self._seconds_left > 0:
-			self.setText(self._TEXT % self._seconds_left)
-		else:
-			self._timer.stop()
-			self.done(self.Ok)

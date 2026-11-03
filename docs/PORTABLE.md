@@ -23,6 +23,8 @@ does not start. Move or extract the folder somewhere writable.
 
 ## Updates and multiple copies
 
+Automatic updates are unavailable in portable copies.
+
 In a portable copy, **Check for updates** downloads the new `fmanPortable.zip`.
 After you confirm, fman closes and a helper replaces the program files, keeps
 the `Data` folder and files stored beside the program, then starts the updated

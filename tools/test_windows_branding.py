@@ -102,8 +102,29 @@ def check_installer():
     assert 'Push "remove"\n  Call un.UpdateUserPath' in uninstall
 
 
+def check_installer_waits_for_running_app_and_restarts_silent_installs():
+    script = INSTALLER.read_text()
+    install = script.split("Section\n", 1)[1].split("SectionEnd", 1)[0]
+    wait = install.split("; Wait for the running app", 1)[1].split(
+        "  SetOutPath", 1
+    )[0]
+    assert 'IfFileExists "$InstDir\\${app_name}.exe"' in wait
+    assert 'FileOpen $1 "$InstDir\\${app_name}.exe" a' in wait
+    assert 'StrCpy $0 120' in wait
+    assert 'Sleep 500' in wait
+    assert 'Abort "Could not wait for ${app_name} to close."' in wait
+
+    success = script.split("Function .onInstSuccess", 1)[1].split(
+        "FunctionEnd", 1
+    )[0]
+    assert "IfSilent silent_install" in success
+    assert "Return" in success
+    assert "Call LaunchAsNonAdmin" in success
+
+
 def main():
     check_installer()
+    check_installer_waits_for_running_app_and_restarts_silent_installs()
     check_version_info_rewrite()
     check_version_info_wrapper_returns_path()
 

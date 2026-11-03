@@ -21,7 +21,7 @@ helper as well. `__getattr__` below closes that gap for plugins.
 from importlib import import_module as _import_module
 
 _COMMAND_MODULES = (
-	'app', 'archives', 'clipboard', 'columns', 'deletion',
+	'app', 'archives', 'auto_update', 'clipboard', 'columns', 'deletion',
 	'deselect_after_transfer', 'drag_to_app',
 	'console', 'drive_space',
 	'editor', 'external', 'file_properties', 'file_types', 'goto',

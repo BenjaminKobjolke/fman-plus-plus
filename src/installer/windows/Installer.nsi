@@ -137,6 +137,22 @@ FunctionEnd
 !define UNINST_KEY \
   "Software\Microsoft\Windows\CurrentVersion\Uninstall\${app_name}"
 Section
+  ; Wait for the running app to exit so Windows releases its executable.
+  IfFileExists "$InstDir\${app_name}.exe" 0 fman_wait_done
+  StrCpy $0 120
+fman_wait_retry:
+  ClearErrors
+  FileOpen $1 "$InstDir\${app_name}.exe" a
+  IfErrors fman_wait_again
+  FileClose $1
+  Goto fman_wait_done
+fman_wait_again:
+  Sleep 500
+  IntOp $0 $0 - 1
+  IntCmp $0 0 fman_wait_timeout fman_wait_retry fman_wait_retry
+fman_wait_timeout:
+  Abort "Could not wait for ${app_name} to close."
+fman_wait_done:
   SetOutPath "$InstDir"
   File /r "..\${app_name}\*"
   WriteRegStr SHCTX "Software\${app_name}" "" $InstDir
@@ -157,6 +173,14 @@ Section
   Call UpdateUserPath
 
 SectionEnd
+
+Function .onInstSuccess
+  IfSilent silent_install
+  Return
+silent_install:
+  ; Silent updates have no Finish page to launch the app from.
+  Call LaunchAsNonAdmin
+FunctionEnd
 
 ;--------------------------------
 ;Uninstaller Section

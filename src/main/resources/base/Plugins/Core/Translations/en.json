@@ -36,6 +36,8 @@
   "command_go_to_downloads": "Go to downloads",
   "command_toggle_hidden_files": "Toggle hidden files",
   "command_check_for_updates": "Check for updates",
+  "command_toggle_automatic_updates": "Toggle automatic updates",
+  "command_set_automatic_update_interval": "Set automatic update interval",
   "command_select_theme": "Select theme",
   "command_select_icon_set": "Select icon set",
   "command_open_with": "Open with...",

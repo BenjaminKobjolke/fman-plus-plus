@@ -23,7 +23,7 @@ import inspect
 
 EXPECTED = frozenset({
 	'About', 'AddPane', 'ArchiveOpenListener', 'CenterWindow', 'ChangeLanguage',
-	'CheckForUpdates',
+	'CheckForUpdates', 'SetAutomaticUpdateInterval',
 	'ClearHiddenAttribute',
 	'CommandPalette', 'CompareDirectories', 'Copy', 'CopyFileName', 'CopyFilePath',
 	'CopyPathsToClipboard', 'ConnectNetworkShare',
@@ -59,6 +59,7 @@ EXPECTED = frozenset({
 	'SwitchPanes', 'Symlink', 'ToggleDeselectAfterTransfer',
 	'ToggleExecutableIcons', 'ToggleHiddenFiles',
 	'ToggleLockedFileCheck', 'ToggleOverwriteDetails', 'DeselectGroup',
+	'ToggleAutomaticUpdates',
 	'DeselectSameExtension',
 	'ToggleModifiedColumn', 'ToggleNetworkIcons', 'ToggleSelection',
 	'ToggleSizeColumn', 'Undo', 'UpdateWindowTitle', 'ViewFile',
