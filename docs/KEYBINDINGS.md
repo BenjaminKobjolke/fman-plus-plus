@@ -32,6 +32,10 @@ extra `args` object, e.g.:
 { "keys": ["Alt+F1"], "command": "show_volumes", "args": {"pane_index": 0} }
 ```
 
+Qt reports some shifted punctuation by the character it produces, rather than
+the unshifted key. To bind `:` or `?`, use `Shift+:` or `Shift+?`; for example,
+`Shift+.` does not match the `:` produced by Shift+period on a US keyboard.
+
 To add your own binding, edit (or create) your user
 `Key Bindings (<OS>).json` and add an entry to the top-level array — it
 doesn't need to repeat anything from the Core files, only what you're adding

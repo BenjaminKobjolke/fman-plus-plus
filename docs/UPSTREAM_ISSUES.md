@@ -13,6 +13,11 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
+| [#186](https://github.com/mherrmann/fman/issues/186) | Scrolloff option | enhancement, 1 vote | deferred | 2026-11-03 | A configurable scroll margin needs a chosen default and setting location; the ticket does not settle either. |
+| [#185](https://github.com/mherrmann/fman/issues/185) | Remember visited folders/files | enhancement | deferred | 2026-11-03 | Automatic folder reselection needs a separately approved history and privacy policy, including what visits persist and for how long. |
+| [#184](https://github.com/mherrmann/fman/issues/184) | Additional columns | enhancement, 28 votes | deferred | 2026-11-03 | Configurable version, attributes and extension columns need a broader column-selection design; the extension behavior also needs the unresolved decisions recorded for #67. |
+| [#183](https://github.com/mherrmann/fman/issues/183) | Replace information modals with non-blocking solution | enhancement | deferred | 2026-11-03 | Replacing onboarding and statistics dialogs with persistent non-blocking messages needs a separately approved product design. |
+| [#181](https://github.com/mherrmann/fman/issues/181) | Using Shift as a meta key in Keyboard Shortcuts. | enhancement, 1 vote | fixed | 2026-11-03 | Documented Qt's shifted-punctuation key names and the `Shift+:` / `Shift+?` workaround in `KEYBINDINGS.md`. |
 | [#175](https://github.com/mherrmann/fman/issues/175) | GoTo: Also support / instead of just \\ on Windows | enhancement, windows, 9 votes | fixed | 2026-11-03 | Go To now treats forward slashes as Windows separators while matching directory suggestions (`suggest_locations.py`). |
 | [#173](https://github.com/mherrmann/fman/issues/173) | Add support for the Touch Bar on MacBooks | enhancement, mac, 5 votes | skipped | 2026-11-03 | Touch Bar support is macOS-only and cannot be reproduced or tested in this Windows fork. |
 | [#171](https://github.com/mherrmann/fman/issues/171) | GoTo dialog differences when moving parent window | discussion | skipped | 2026-11-03 | The report describes inconsistent behavior across desktop environments and gives no portable, reproducible target for this Windows fork. |
