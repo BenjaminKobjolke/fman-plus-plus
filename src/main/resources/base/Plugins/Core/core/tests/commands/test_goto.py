@@ -231,6 +231,17 @@ class SuggestLocationsTest(TestCase):
 		)
 	def test_prefix_match(self):
 		self._check_query_returns('~/dow', ['~/Downloads'], [[0, 1, 2, 3, 4]])
+	@skipIf(PLATFORM != 'Windows', 'Windows path separators only')
+	def test_prefix_match_with_forward_slashes(self):
+		result = list(self.instance(r'C:/Users/michael/Down'))
+		self.assertEqual(
+			['C:\\Users\\michael\\Downloads'],
+			[item.title for item in result]
+		)
+		self.assertEqual(
+			[list(range(len(r'C:/Users/michael/Down')))],
+			[item.highlight for item in result]
+		)
 	def test_existing_path(self):
 		self._check_query_returns(
 			'~/Unvisited', ['~/Unvisited', '~/Unvisited/Dir']

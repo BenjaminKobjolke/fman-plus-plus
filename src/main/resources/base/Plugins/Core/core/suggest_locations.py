@@ -156,10 +156,13 @@ class SuggestLocations:
 		except OSError:
 			return False
 	def _filter_matching(self, dirs, query):
+		matching_query = query.replace('/', os.sep) \
+			if PLATFORM == 'Windows' else query
 		use_tilde = \
-			not query.startswith(os.path.dirname(self.fs.expanduser('~')))
+			not matching_query.startswith(
+				os.path.dirname(self.fs.expanduser('~'))
+			)
 		has_parent_segment = '..' in re.split(r'[\\/]+', query)
-		matching_query = query
 		if has_parent_segment:
 			normalized_query = self._normalize_query(query)
 			matching_query = self._unexpand_user(normalized_query) \
