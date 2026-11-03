@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#186](https://github.com/mherrmann/fman/issues/186) | Scrolloff option | enhancement, 1 vote | deferred | 2026-11-03 | A configurable scroll margin needs a chosen default and setting location; the ticket does not settle either. |
+| [#186](https://github.com/mherrmann/fman/issues/186) | Scrolloff option | enhancement, 1 vote | fixed | 2026-11-03 | Added the `scroll_margin` setting (rows kept around the cursor, default off). |
 | [#185](https://github.com/mherrmann/fman/issues/185) | Remember visited folders/files | enhancement | deferred | 2026-11-03 | Automatic folder reselection needs a separately approved history and privacy policy, including what visits persist and for how long. |
 | [#184](https://github.com/mherrmann/fman/issues/184) | Additional columns | enhancement, 28 votes | deferred | 2026-11-03 | Configurable version, attributes and extension columns need a broader column-selection design; the extension behavior also needs the unresolved decisions recorded for #67. |
 | [#183](https://github.com/mherrmann/fman/issues/183) | Replace information modals with non-blocking solution | enhancement | deferred | 2026-11-03 | Replacing onboarding and statistics dialogs with persistent non-blocking messages needs a separately approved product design. |
