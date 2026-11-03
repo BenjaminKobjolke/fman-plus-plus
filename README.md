@@ -36,6 +36,8 @@ The whole tour is driven from the keyboard. The mouse is never touched.
 
 ## What you get
 
+Coming from the original fman? **[What fman++ adds](docs/FMAN_PLUS_PLUS_VS_FMAN.md)** lists every difference.
+
 **Navigate.** `Ctrl+P` jumps to any folder by fuzzy name, with tab-completion
 and your visited paths ranked first. `Alt+←`/`Alt+→` walk your history.
 `Alt+F1`/`Alt+F2` list drives, `Ctrl+\` goes to the drive root,
@@ -240,6 +242,7 @@ These are the ones maintained on this account.
 
 | Doc | Topic |
 |---|---|
+| [FMAN_PLUS_PLUS_VS_FMAN.md](docs/FMAN_PLUS_PLUS_VS_FMAN.md) | Everything fman++ adds or changes compared to the original fman |
 | [ARCHIVES.md](docs/ARCHIVES.md) | `.zip`, `.7z`, `.tar` and read-only `.rar` archives browsed like folders with 7-Zip 26.00 |
 | [COPY_AND_MOVE.md](docs/COPY_AND_MOVE.md) | Copy and Move: gathering and transferring at the same time, parallel workers |
 | [COMMAND_PALLETTE.md](docs/COMMAND_PALLETTE.md) | The `Ctrl+Shift+P` palette |
