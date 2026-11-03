@@ -13,6 +13,11 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
+| [#175](https://github.com/mherrmann/fman/issues/175) | GoTo: Also support / instead of just \\ on Windows | enhancement, windows, 9 votes | fixed | 2026-11-03 | Go To now treats forward slashes as Windows separators while matching directory suggestions (`suggest_locations.py`). |
+| [#173](https://github.com/mherrmann/fman/issues/173) | Add support for the Touch Bar on MacBooks | enhancement, mac, 5 votes | skipped | 2026-11-03 | Touch Bar support is macOS-only and cannot be reproduced or tested in this Windows fork. |
+| [#171](https://github.com/mherrmann/fman/issues/171) | GoTo dialog differences when moving parent window | discussion | skipped | 2026-11-03 | The report describes inconsistent behavior across desktop environments and gives no portable, reproducible target for this Windows fork. |
+| [#170](https://github.com/mherrmann/fman/issues/170) | Windows: updates to remote directories not shown in the UI | bug, windows, 1 vote | deferred | 2026-11-03 | Windows filesystem watching is disabled to avoid persistent file and directory locks; refreshing remote providers needs a defined update mechanism and timing policy. |
+| [#169](https://github.com/mherrmann/fman/issues/169) | Dragging file to VLC fails on macOS | bug, mac, 1 vote | skipped | 2026-11-03 | This is a macOS Qt/VLC drag-operation incompatibility and cannot be reproduced or fixed in the Windows fork. |
 | [#165](https://github.com/mherrmann/fman/issues/165) | fman displays "files" not shown in Explorer | enhancement, windows | fixed | 2026-11-02 | Windows entries with the system attribute now follow the existing hidden-files filter in `hidden_files.py`. |
 | [#167](https://github.com/mherrmann/fman/issues/167) | Reduce fman size / Qt, PyQt5 dependency, static linking, etc. | discussion | skipped | 2026-11-02 | This is a discussion of technology tradeoffs rather than an actionable change; the replies favor development speed over reducing package size. |
 | [#163](https://github.com/mherrmann/fman/issues/163) | Can not resize command palette | enhancement, 1 vote | fixed | 2026-11-02 | The palette can be resized and remembers its width; long titles hide their beginning. |
