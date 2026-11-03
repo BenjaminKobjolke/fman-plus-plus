@@ -146,6 +146,8 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		return self.sourceModel().get_columns()
 	def reload(self):
 		self.sourceModel().reload()
+	def reload_unless_pending(self):
+		self.sourceModel().reload_unless_pending()
 	def sort(self, column, order=Qt.AscendingOrder):
 		self.sourceModel().sort(column, order)
 	def add_filter(self, filter_):

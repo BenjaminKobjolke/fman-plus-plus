@@ -400,6 +400,34 @@ class ModelShutdownTest(ExecutorTestCase):
 		model._worker._thread.join(2)
 		model._file_watcher.shutdown.assert_called_once_with()
 
+class TimedReloadTest(ExecutorTestCase):
+	def test_reloads_once_while_pending_and_again_after_completion(self):
+		fs = StubFileSystem({'': {'files': []}})
+		fs.clear_cache = lambda _: None
+		iterdir = fs.iterdir
+		calls = []
+		def count_iterdir(path):
+			calls.append(path)
+			return iterdir(path)
+		fs.iterdir = count_iterdir
+		model = Model(fs, 'stub://', [Column()])
+		queued = []
+		model._worker.submit = lambda *args: queued.append(args)
+
+		model.reload_unless_pending()
+		model.reload_unless_pending()
+
+		self.assertEqual(1, len(queued))
+		priority, fn, *args = queued.pop()
+		fn(*args)
+		self.assertEqual(['stub://'], calls)
+
+		model.reload_unless_pending()
+		self.assertEqual(1, len(queued))
+		priority, fn, *args = queued.pop()
+		fn(*args)
+		self.assertEqual(['stub://', 'stub://'], calls)
+
 class SortedFileSystemModelShutdownTest(TestCase):
 	def test_shutdown_unregisters_file_removed_callback_and_is_idempotent(self):
 		class StubFileSystem:

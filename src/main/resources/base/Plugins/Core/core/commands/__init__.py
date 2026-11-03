@@ -23,7 +23,7 @@ from importlib import import_module as _import_module
 _COMMAND_MODULES = (
 	'app', 'archives', 'auto_update', 'clipboard', 'columns', 'deletion',
 	'deselect_after_transfer', 'drag_to_app',
-	'console', 'drive_space',
+	'console', 'drive_space', 'folder_refresh',
 	'editor', 'external', 'file_properties', 'file_types', 'goto',
 	'hidden_files', 'language',
 	'locked_files', 'locking_processes', 'overwrite_details',

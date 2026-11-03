@@ -192,6 +192,8 @@ class DirectoryPaneWidget(QWidget):
 		self._model.set_location(url, sort_column, ascending, callback, onerror)
 	def reload(self):
 		self._model.reload()
+	def reload_unless_pending(self):
+		self._model.reload_unless_pending()
 	@run_in_main_thread
 	def place_cursor_at(self, file_url):
 		self._file_view.place_cursor_at(file_url)

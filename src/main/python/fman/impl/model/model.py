@@ -86,6 +86,7 @@ class Model(SortFilterTableModel, DragAndDrop):
 		self._load_attempted = set()
 		self._file_watcher = FileWatcher(fs, self)
 		self._worker = Worker()
+		self._timed_reload_pending = False
 		self._shutdown = False
 	def start(self, callback):
 		self._worker.start()
@@ -356,6 +357,18 @@ class Model(SortFilterTableModel, DragAndDrop):
 		self._on_files_reloaded(files)
 		# We may have found new files that now still need to be loaded:
 		self._load_remaining_files()
+	def reload_unless_pending(self):
+		if self._timed_reload_pending:
+			return
+		self._timed_reload_pending = True
+		self._timed_reload()
+	@transaction(priority=5)
+	def _timed_reload(self):
+		# A slow reload must not queue another timed reload behind itself.
+		try:
+			Model.reload.__wrapped__(self)
+		finally:
+			self._timed_reload_pending = False
 	@run_in_main_thread
 	def _on_files_reloaded(self, rows):
 		self._files = {
