@@ -1,7 +1,9 @@
 """Tests for minimized task progress windows and their status-bar buttons."""
 
 from fman.impl.tool_windows import ToolWindowOptions, ToolWindows
+from fman.impl.util.qt.thread import is_in_main_thread
 from PyQt5.QtWidgets import QApplication, QProgressDialog, QStatusBar, QToolButton
+from threading import Thread
 from unittest import TestCase
 
 
@@ -24,6 +26,33 @@ class ToolWindowOptionsTest(TestCase):
 
 
 class ToolWindowsTest(TestCase):
+	def test_restore_runs_on_main_thread_when_called_from_background_thread(self):
+		windows = ToolWindows(QStatusBar())
+		dialog = _ThreadCheckingDialog()
+		windows.register(dialog, True)
+		windows.minimize(dialog, 'Copying files')
+
+		thread = Thread(target=windows.restore, args=(dialog,))
+		thread.start()
+		while thread.is_alive():
+			self.app.processEvents()
+		thread.join()
+
+		self.assertTrue(dialog.show_ran_on_main_thread)
+
+	def test_minimize_runs_on_main_thread_when_called_from_background_thread(self):
+		windows = ToolWindows(QStatusBar())
+		dialog = _ThreadCheckingDialog()
+		windows.register(dialog, True)
+
+		thread = Thread(target=windows.minimize, args=(dialog, 'Copying files'))
+		thread.start()
+		while thread.is_alive():
+			self.app.processEvents()
+		thread.join()
+
+		self.assertTrue(dialog.hide_ran_on_main_thread)
+
 	def test_minimize_restore_and_remove(self):
 		status_bar = QStatusBar()
 		windows = ToolWindows(status_bar)
@@ -117,3 +146,15 @@ class _Dialog:
 
 	def shown_at(self):
 		return self._shown_at
+
+
+class _ThreadCheckingDialog:
+	def __init__(self):
+		self.show_ran_on_main_thread = None
+		self.hide_ran_on_main_thread = None
+
+	def show(self):
+		self.show_ran_on_main_thread = is_in_main_thread()
+
+	def hide(self):
+		self.hide_ran_on_main_thread = is_in_main_thread()

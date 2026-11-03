@@ -1,6 +1,7 @@
 """Minimization support for task progress dialogs."""
 
 from dataclasses import dataclass
+from fman.impl.util.qt.thread import run_in_main_thread
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QStyle, QToolButton
 
@@ -38,6 +39,7 @@ class ToolWindows:
 			self._next_shown += 1
 			window['shown'] = self._next_shown
 
+	@run_in_main_thread
 	def minimize(self, dialog, title, icon=None):
 		window = self._windows[dialog]
 		if window['minimized'] is not None:
@@ -55,6 +57,7 @@ class ToolWindows:
 		self._status_bar.addPermanentWidget(button)
 		dialog.hide()
 
+	@run_in_main_thread
 	def restore(self, dialog):
 		window = self._windows.get(dialog)
 		if window is None or window['minimized'] is None:
@@ -62,6 +65,7 @@ class ToolWindows:
 		self._remove_button(window)
 		dialog.show()
 
+	@run_in_main_thread
 	def remove(self, dialog):
 		window = self._windows.pop(dialog, None)
 		if window is not None:
