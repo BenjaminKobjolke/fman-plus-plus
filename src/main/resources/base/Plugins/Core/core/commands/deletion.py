@@ -94,6 +94,8 @@ class DeletePermanently(DirectoryPaneCommand):
 			delete(urls)
 
 class _Delete(Task):
+	minimizable = True
+
 	def __init__(self, urls, prepare_fn, unsupported=_DELETE_UNSUPPORTED):
 		super().__init__('Deleting ' + _describe(urls))
 		self._urls = urls

@@ -1,10 +1,14 @@
 from core.commands import deletion
-from core.commands.deletion import _describe, DeletePermanently
+from core.commands.deletion import _Delete, _describe, DeletePermanently
 from core.undo_history import TrashRecord, history
 from fman import DirectoryPane, PLATFORM, Task, YES
 from fman.url import as_url
 from unittest import TestCase
 from unittest.mock import Mock, patch
+
+class DeleteTest(TestCase):
+	def test_delete_task_is_minimizable(self):
+		self.assertTrue(_Delete([], Mock()).minimizable)
 
 class TrashTest(TestCase):
 	def setUp(self):
