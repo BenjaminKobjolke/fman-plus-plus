@@ -268,3 +268,7 @@ QPushButton#tool-window-minimize {
 	background: transparent;
 	border: none;
 }
+
+QPushButton#tool-window-minimize:focus {
+	border: 1px solid $bright_fg;
+}

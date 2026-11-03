@@ -55,6 +55,20 @@ class WorkersLabelTest(TestCase):
 		self.assertEqual([], tool_windows.minimized())
 		self.assertEqual([], status_bar.findChildren(QToolButton))
 
+	def test_minimize_button_has_tab_focus(self):
+		dialog = self._dialog(options=ToolWindowOptions(False, True, None))
+		button = dialog.findChild(QPushButton, 'tool-window-minimize')
+		self.assertEqual(Qt.TabFocus, button.focusPolicy())
+	def test_minimize_button_keeps_the_palette_shortcut(self):
+		parent = _PaletteParent('Cancel')
+		dialog = self._dialog(
+			parent, ToolWindowOptions(False, True, None)
+		)
+		button = dialog.findChild(QPushButton, 'tool-window-minimize')
+		QTest.keyClick(
+			button, Qt.Key_P, Qt.ControlModifier | Qt.ShiftModifier
+		)
+		self.assertTrue(dialog.was_canceled())
 	def test_dialog_matches_hidden_main_window_title_bar(self):
 		dialog = QWidget()
 		MainWindow._match_title_bar(_FakeMainWindow(False), dialog)

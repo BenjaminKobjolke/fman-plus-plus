@@ -40,7 +40,7 @@ class ProgressDialog(QProgressDialog):
 		if options.minimizable and not options.keeps_focus:
 			self._minimize_button = QPushButton('–', self)
 			self._minimize_button.setObjectName('tool-window-minimize')
-			self._minimize_button.setFocusPolicy(Qt.NoFocus)
+			self._minimize_button.setFocusPolicy(Qt.TabFocus)
 			self._minimize_button.clicked.connect(self.minimize)
 		self._title = title
 		self._size = self.maximum()
@@ -135,6 +135,8 @@ class ProgressDialog(QProgressDialog):
 			return
 		self.installEventFilter(self)
 		self._cancel_button.installEventFilter(self)
+		if self._minimize_button is not None:
+			self._minimize_button.installEventFilter(self)
 		self._event_filter_installed = True
 	def eventFilter(self, obj, e):
 		# Filters the focused Cancel button too: it uses Up / Down itself.
