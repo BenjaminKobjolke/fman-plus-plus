@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Smidigere oppdateringer og filoperasjoner",
+  "notes": [
+    "Nytt: Installerte Windows-versjoner kan nå automatisk se etter oppdateringer etter en tidsplan. Du kan avbryte nedtellingen før en oppdatering installeres.",
+    "Nytt: Bruk «Finn låsende prosesser» fra kommandopaletten for å se hvilke apper som bruker de valgte filene eller mappene.",
+    "Forbedret: Søk etter sletting og låsende prosesser kan kjøres i fremdriftsdialoger som kan minimeres og avbrytes. Minimeringsknappene kan også brukes med tastaturet.",
+    "Rettet: Vertsnavn i FTP-bokmerker bevares nå når du kopierer, limer inn eller drar filer."
+  ]
+}

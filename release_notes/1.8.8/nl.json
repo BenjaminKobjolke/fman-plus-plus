@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Vlottere updates en bestandsbewerkingen",
+  "notes": [
+    "Nieuw: Geïnstalleerde Windows-versies kunnen nu automatisch op gezette tijden controleren op updates. Je kunt het aftellen annuleren voordat een update wordt geïnstalleerd.",
+    "Nieuw: Gebruik ‘Vergrendelende processen zoeken’ in het opdrachtenpalet om te zien welke apps geselecteerde bestanden of mappen gebruiken.",
+    "Verbeterd: Zoekopdrachten naar verwijderingen en vergrendelende processen kunnen worden uitgevoerd in minimaliseerbare voortgangsvensters die je kunt annuleren. De minimaliseerknoppen zijn ook toegankelijk via het toetsenbord.",
+    "Opgelost: Hostnamen van FTP-bladwijzers blijven nu behouden wanneer je bestanden kopieert, plakt of sleept."
+  ]
+}

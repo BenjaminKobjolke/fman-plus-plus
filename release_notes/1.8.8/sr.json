@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Ujednačenija ažuriranja i rad sa datotekama",
+  "notes": [
+    "Novo: Instalirane verzije za Windows sada mogu automatski da proveravaju da li postoje ažuriranja prema rasporedu. Odbrojavanje možete otkazati pre instaliranja ažuriranja.",
+    "Novo: Iz palete komandi izaberite „Pronađi procese koji zaključavaju“ da biste videli koje aplikacije koriste izabrane datoteke ili fascikle.",
+    "Poboljšano: Pretrage za brisanje i procese koji zaključavaju mogu da se pokreću u minimizujućim dijalozima napretka koje možete otkazati, a dugmad za minimizovanje dostupna su preko tastature.",
+    "Ispravljeno: Imena hostova FTP obeleživača sada se čuvaju prilikom kopiranja, nalepljivanja ili prevlačenja datoteka."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Plynulejší aktualizace a operace se soubory",
+  "notes": [
+    "Novinka: Nainstalované kopie pro Windows nyní mohou automaticky kontrolovat aktualizace podle plánu. Odpočet můžete zrušit ještě před instalací aktualizace.",
+    "Novinka: Pomocí příkazu Najít procesy zamykající soubory v paletě příkazů zjistíte, které aplikace právě používají vybrané soubory nebo složky.",
+    "Vylepšení: Vyhledávání souborů ke smazání a procesů zamykajících soubory může probíhat v minimalizovatelných a zrušitelných dialogových oknech průběhu. Tlačítka pro minimalizaci lze ovládat klávesnicí.",
+    "Oprava: Názvy hostitelů v záložkách FTP se nyní zachovají při kopírování, vkládání nebo přetahování souborů."
+  ]
+}

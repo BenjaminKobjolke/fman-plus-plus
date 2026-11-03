@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Daha sorunsuz güncellemeler ve dosya işlemleri",
+  "notes": [
+    "Yeni: Windows'a yüklenmiş sürümler artık güncellemeleri belirli aralıklarla otomatik olarak denetleyebilir. Bir güncelleme yüklenmeden önce geri sayımı iptal edebilirsiniz.",
+    "Yeni: Seçili dosya veya klasörleri hangi uygulamaların kullandığını görmek için komut paletinden Kilitleyen işlemleri bul'u kullanın.",
+    "İyileştirildi: Silme ve dosyaları kilitleyen işlemleri arama işlemleri küçültülebilir ve iptal edilebilir ilerleme iletişim kutularında çalıştırılabilir. Bu pencerelerin küçültme düğmelerine klavyeyle de erişilebilir.",
+    "Düzeltildi: FTP yer işaretlerindeki ana bilgisayar adları, dosyalar kopyalanırken, yapıştırılırken veya sürüklenirken artık korunuyor."
+  ]
+}

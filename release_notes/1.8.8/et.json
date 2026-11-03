@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Sujuvamad värskendused ja failitoimingud",
+  "notes": [
+    "Uus: Windowsi installitud koopiad saavad nüüd ajastatud kontrolli abil automaatselt värskendusi otsida. Enne värskenduse installimist saad pöördloenduse tühistada.",
+    "Uus: Kasuta käsupaletist käsku „Otsi lukustavaid protsesse“, et näha, millised rakendused kasutavad valitud faile või kaustu.",
+    "Täiustatud: Kustutamis- ja lukustavate protsesside otsinguid saab käivitada minimeeritavates ja tühistatavates edenemisdialoogides. Ka nende minimeerimisnupud on klaviatuuriga kasutatavad.",
+    "Parandatud: FTP-järjehoidjate hostinimed säilivad nüüd failide kopeerimisel, kleepimisel või lohistamisel."
+  ]
+}

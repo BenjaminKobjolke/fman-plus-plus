@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Cập nhật và thao tác với tệp mượt mà hơn",
+  "notes": [
+    "Mới: Các bản cài đặt trên Windows giờ đây có thể tự động kiểm tra bản cập nhật theo lịch. Bạn có thể hủy đếm ngược trước khi bản cập nhật được cài đặt.",
+    "Mới: Dùng lệnh Tìm tiến trình đang khóa trong bảng lệnh để xem ứng dụng nào đang sử dụng các tệp hoặc thư mục đã chọn.",
+    "Cải thiện: Tìm kiếm tệp đã xóa và tiến trình đang khóa có thể chạy trong hộp thoại tiến trình có thể thu nhỏ và hủy. Nút thu nhỏ cũng có thể được truy cập bằng bàn phím.",
+    "Đã sửa: Tên máy chủ trong dấu trang FTP giờ đây được giữ nguyên khi sao chép, dán hoặc kéo thả tệp."
+  ]
+}

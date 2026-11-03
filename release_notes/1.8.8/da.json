@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Smidigere opdateringer og filhandlinger",
+  "notes": [
+    "Nyt: Installerede Windows-versioner kan nu automatisk søge efter opdateringer efter en tidsplan. Du kan annullere nedtællingen, før en opdatering installeres.",
+    "Nyt: Brug Find låsende processer i kommandopaletten til at se, hvilke apps der bruger de valgte filer eller mapper.",
+    "Forbedret: Søgninger efter sletninger og låsende processer kan køres i minimerbare statusdialoger, der kan annulleres, og deres minimeringsknapper kan betjenes med tastaturet.",
+    "Rettet: Værtsnavne for FTP-bogmærker bevares nu, når filer kopieres, indsættes eller trækkes."
+  ]
+}

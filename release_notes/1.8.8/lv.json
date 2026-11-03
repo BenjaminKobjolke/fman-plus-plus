@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Ērtāki atjauninājumi un darbības ar failiem",
+  "notes": [
+    "Jaunums: Instalētās Windows versijas tagad var automātiski pārbaudīt, vai ir pieejami atjauninājumi, pēc noteikta grafika. Atpakaļskaitīšanu var atcelt, pirms atjauninājums tiek instalēts.",
+    "Jaunums: Komandu paletē izmantojiet funkciju “Atrast failus bloķējošos procesus”, lai noskaidrotu, kuras lietotnes izmanto atlasītos failus vai mapes.",
+    "Uzlabots: Dzēšanas un failus bloķējošo procesu meklēšanu var veikt minimizējamos un atceļamos progresa logos, kuru minimizēšanas pogas ir pieejamas arī ar tastatūru.",
+    "Novērsta kļūda: Kopējot, ielīmējot vai velkot failus, FTP grāmatzīmju resursdatoru nosaukumi tagad tiek saglabāti."
+  ]
+}

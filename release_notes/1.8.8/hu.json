@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Zökkenőmentesebb frissítések és fájlműveletek",
+  "notes": [
+    "Újdonság: A telepített Windows-példányok mostantól ütemezetten, automatikusan ellenőrizhetik a frissítéseket. A frissítés telepítése előtt megszakíthatja a visszaszámlálást.",
+    "Újdonság: A parancspalettán válassza a Zároló folyamatok keresése parancsot, hogy megtudja, mely alkalmazások használják a kijelölt fájlokat vagy mappákat.",
+    "Továbbfejlesztés: A törlési műveletek és a zároló folyamatok keresése kicsinyíthető és megszakítható folyamatjelző párbeszédablakban futhat. A kicsinyítés gomb billentyűzettel is elérhető.",
+    "Javítva: Az FTP-könyvjelzők állomásnevei másolás, beillesztés és fájlok áthúzása közben is megmaradnak."
+  ]
+}

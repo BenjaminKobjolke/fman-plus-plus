@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Smoother updates and file operations",
+  "notes": [
+    "New: Installed Windows copies can now check for updates automatically on a schedule. You can cancel the countdown before an update is installed.",
+    "New: Use Find locking processes from the command palette to see which apps are using selected files or folders.",
+    "Improved: Delete and locking-process searches can run in minimizable, cancellable progress dialogs, and their minimize buttons are keyboard-accessible.",
+    "Fixed: FTP bookmark host names are now preserved when copying, pasting, or dragging files."
+  ]
+}

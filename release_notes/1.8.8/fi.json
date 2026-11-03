@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Sujuvammat päivitykset ja tiedostotoiminnot",
+  "notes": [
+    "Uutta: Windowsiin asennetut versiot voivat nyt tarkistaa päivitykset automaattisesti ajastetusti. Voit peruuttaa lähtölaskennan ennen päivityksen asentamista.",
+    "Uutta: Valitse komentovalikosta Etsi tiedostoja lukitsevat prosessit, niin näet, mitkä sovellukset käyttävät valittuja tiedostoja tai kansioita.",
+    "Parannettu: Poistojen ja tiedostoja lukitsevien prosessien haut voidaan suorittaa pienennettävissä ja peruutettavissa edistymisikkunoissa, ja niiden pienennyspainikkeita voi käyttää näppäimistöllä.",
+    "Korjattu: FTP-kirjanmerkkien palvelinnimet säilyvät nyt ennallaan, kun tiedostoja kopioidaan, liitetään tai vedetään."
+  ]
+}

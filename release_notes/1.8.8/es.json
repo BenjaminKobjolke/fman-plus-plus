@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Actualizaciones y operaciones con archivos más fluidas",
+  "notes": [
+    "Nuevo: Las versiones instaladas para Windows ahora pueden buscar actualizaciones automáticamente según una programación. Puedes cancelar la cuenta atrás antes de que se instale una actualización.",
+    "Nuevo: Usa «Buscar procesos que bloquean» en la paleta de comandos para ver qué aplicaciones están usando los archivos o carpetas seleccionados.",
+    "Mejorado: Las búsquedas de archivos eliminados y de procesos que los bloquean ahora pueden ejecutarse en cuadros de progreso minimizables y cancelables; además, los botones para minimizarlos se pueden usar con el teclado.",
+    "Corregido: Ahora se conservan los nombres de host de los marcadores FTP al copiar, pegar o arrastrar archivos."
+  ]
+}

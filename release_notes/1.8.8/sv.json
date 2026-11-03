@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Smidigare uppdateringar och filhantering",
+  "notes": [
+    "Nytt: Installerade Windows-kopior kan nu automatiskt söka efter uppdateringar enligt ett schema. Du kan avbryta nedräkningen innan en uppdatering installeras.",
+    "Nytt: Använd Hitta låsande processer i kommandopaletten för att se vilka appar som använder markerade filer eller mappar.",
+    "Förbättrat: Sökningar efter filer att ta bort och låsande processer kan köras i förloppsdialogrutor som går att minimera och avbryta. Minimeringsknapparna kan också användas med tangentbordet.",
+    "Åtgärdat: Värdnamn för FTP-bokmärken bevaras nu när du kopierar, klistrar in eller drar filer."
+  ]
+}

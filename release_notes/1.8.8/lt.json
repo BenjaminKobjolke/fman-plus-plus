@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Sklandesni naujinimai ir failų operacijos",
+  "notes": [
+    "Nauja: įdiegtos „Windows“ versijos dabar gali automatiškai tikrinti, ar yra naujinimų, pagal nustatytą tvarkaraštį. Galite atšaukti atgalinį skaičiavimą prieš įdiegiant naujinimą.",
+    "Nauja: komandų paletėje pasirinkite „Rasti failus užrakinusius procesus“, kad pamatytumėte, kurios programos naudoja pasirinktus failus ar aplankus.",
+    "Patobulinta: trynimo ir failus užrakinusių procesų paieškas galima vykdyti eigos dialogo languose, kuriuos galima sumažinti ir atšaukti. Šių langų sumažinimo mygtukus galima pasiekti klaviatūra.",
+    "Ištaisyta: kopijuojant, įklijuojant ar velkant failus, FTP žymelių serverių pavadinimai dabar išsaugomi."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Atualizações e operações de ficheiros mais fluidas",
+  "notes": [
+    "Novo: As cópias instaladas no Windows podem agora procurar atualizações automaticamente segundo um horário. Pode cancelar a contagem decrescente antes de uma atualização ser instalada.",
+    "Novo: Use «Localizar processos que bloqueiam» na paleta de comandos para ver que aplicações estão a usar os ficheiros ou pastas selecionados.",
+    "Melhorado: As pesquisas de ficheiros a eliminar e de processos que os bloqueiam podem ser executadas em caixas de diálogo de progresso minimizáveis e canceláveis, cujos botões para minimizar também podem ser usados com o teclado.",
+    "Corrigido: Os nomes dos anfitriões dos marcadores FTP são agora preservados ao copiar, colar ou arrastar ficheiros."
+  ]
+}

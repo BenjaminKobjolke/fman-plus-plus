@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Actualizări și operațiuni cu fișiere mai fluide",
+  "notes": [
+    "Nou: Copiile instalate pe Windows pot acum să caute automat actualizări conform unui program. Puteți anula numărătoarea inversă înainte de instalarea unei actualizări.",
+    "Nou: Folosiți comanda „Găsește procesele care blochează” din paleta de comenzi pentru a vedea ce aplicații folosesc fișierele sau folderele selectate.",
+    "Îmbunătățit: Căutările pentru ștergere și procesele care blochează pot rula în ferestre de progres care pot fi minimizate și anulate, iar butoanele de minimizare pot fi accesate de la tastatură.",
+    "Remediat: Numele gazdelor din marcajele FTP sunt acum păstrate atunci când copiați, lipiți sau glisați fișiere."
+  ]
+}

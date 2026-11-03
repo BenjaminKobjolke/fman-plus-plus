@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Mises à jour plus fluides et opérations sur les fichiers",
+  "notes": [
+    "Nouveau : Les versions installées sous Windows peuvent désormais rechercher automatiquement les mises à jour selon un calendrier. Vous pouvez annuler le compte à rebours avant l’installation d’une mise à jour.",
+    "Nouveau : Utilisez « Rechercher les processus qui verrouillent » dans la palette de commandes pour voir quelles applications utilisent les fichiers ou dossiers sélectionnés.",
+    "Amélioration : Les recherches de fichiers à supprimer ou de processus qui les verrouillent peuvent s’exécuter dans des boîtes de dialogue de progression réductibles et annulables. Leurs boutons de réduction sont également accessibles au clavier.",
+    "Correction : Les noms d’hôte des favoris FTP sont désormais conservés lors de la copie, du collage ou du glissement de fichiers."
+  ]
+}

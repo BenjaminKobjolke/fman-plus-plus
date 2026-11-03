@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Płynniejsze aktualizacje i operacje na plikach",
+  "notes": [
+    "Nowość: Zainstalowane wersje aplikacji dla systemu Windows mogą teraz automatycznie sprawdzać dostępność aktualizacji według harmonogramu. Możesz anulować odliczanie przed zainstalowaniem aktualizacji.",
+    "Nowość: Użyj polecenia „Znajdź procesy blokujące” z palety poleceń, aby sprawdzić, które aplikacje korzystają z wybranych plików lub folderów.",
+    "Ulepszenie: Wyszukiwanie usuwanych plików i procesów blokujących może odbywać się w oknach postępu, które można minimalizować i anulować. Przyciski minimalizowania są też dostępne z klawiatury.",
+    "Naprawiono: Nazwy hostów zakładek FTP są teraz zachowywane podczas kopiowania, wklejania lub przeciągania plików."
+  ]
+}

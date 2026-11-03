@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Plynulejšie aktualizácie a operácie so súbormi",
+  "notes": [
+    "Novinka: Nainštalované verzie aplikácie pre Windows teraz môžu automaticky kontrolovať dostupnosť aktualizácií podľa plánu. Odpočítavanie pred inštaláciou aktualizácie môžete zrušiť.",
+    "Novinka: Pomocou príkazu Nájsť procesy blokujúce súbory na paneli príkazov zistíte, ktoré aplikácie používajú vybrané súbory alebo priečinky.",
+    "Vylepšenie: Vyhľadávanie súborov na odstránenie a procesov, ktoré ich blokujú, teraz môže prebiehať v minimalizovateľných dialógových oknách s ukazovateľom priebehu, ktoré možno zrušiť. Tlačidlá na minimalizovanie sú dostupné aj pomocou klávesnice.",
+    "Oprava: Názvy hostiteľov v záložkách FTP sa teraz zachovajú pri kopírovaní, vkladaní alebo presúvaní súborov."
+  ]
+}

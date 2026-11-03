@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Aggiornamenti e operazioni sui file più fluidi",
+  "notes": [
+    "Novità: le copie installate su Windows possono ora controllare automaticamente la disponibilità di aggiornamenti secondo una pianificazione. Puoi annullare il conto alla rovescia prima che venga installato un aggiornamento.",
+    "Novità: usa «Trova processi che bloccano» dalla tavolozza dei comandi per vedere quali app stanno usando i file o le cartelle selezionati.",
+    "Miglioramenti: le ricerche di file eliminati e di processi che li bloccano possono essere eseguite in finestre di avanzamento riducibili a icona e annullabili. Inoltre, i relativi pulsanti per ridurre a icona sono accessibili da tastiera.",
+    "Correzione: i nomi host dei segnalibri FTP vengono ora mantenuti quando si copiano, si incollano o si trascinano file."
+  ]
+}

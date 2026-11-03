@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Bolj gladke posodobitve in delo z datotekami",
+  "notes": [
+    "Novo: Nameščene različice za Windows lahko zdaj samodejno preverjajo, ali so na voljo posodobitve, po urniku. Odštevanje lahko prekličete, preden se posodobitev namesti.",
+    "Novo: V paleti ukazov izberite »Poišči procese, ki zaklepajo datoteke«, da preverite, katere aplikacije uporabljajo izbrane datoteke ali mape.",
+    "Izboljšano: Iskanje izbrisanih datotek in procesov, ki zaklepajo datoteke, lahko poteka v minimizirljivih pogovornih oknih z napredkom, ki jih je mogoče preklicati. Gumbe za minimiziranje je mogoče upravljati tudi s tipkovnico.",
+    "Odpravljeno: Imena gostiteljev v zaznamkih FTP se zdaj ohranijo pri kopiranju, lepljenju ali vlečenju datotek."
+  ]
+}

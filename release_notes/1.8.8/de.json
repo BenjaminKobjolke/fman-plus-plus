@@ -1,0 +1,11 @@
+{
+  "version": "1.8.8",
+  "date": "2026-11-03",
+  "title": "Reibungslosere Updates und Dateioperationen",
+  "notes": [
+    "Neu: Installierte Windows-Versionen können jetzt automatisch nach einem Zeitplan nach Updates suchen. Sie können den Countdown abbrechen, bevor ein Update installiert wird.",
+    "Neu: Mit „Blockierende Prozesse suchen“ in der Befehlspalette sehen Sie, welche Apps ausgewählte Dateien oder Ordner verwenden.",
+    "Verbessert: Die Suche nach Dateien zum Löschen und nach blockierenden Prozessen kann in minimierbaren, abbrechbaren Fortschrittsdialogen ausgeführt werden. Die Schaltflächen zum Minimieren sind jetzt auch per Tastatur erreichbar.",
+    "Behoben: FTP-Lesezeichen behalten jetzt ihre Hostnamen beim Kopieren, Einfügen oder Ziehen von Dateien bei."
+  ]
+}
