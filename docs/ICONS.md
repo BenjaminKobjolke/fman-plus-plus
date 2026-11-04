@@ -10,6 +10,10 @@ shell, GTK on Linux, the Finder's on macOS. That is the **`System`** set, and
 it is what fman has always done: one grey page for every text-ish file, one
 folder for every folder.
 
+On Windows, OS icons are fetched in the background as files load, so a slow
+shell lookup does not stall drawing or scrolling. See
+[Shell icons are fetched by the worker](LARGE_DIRECTORIES.md#shell-icons-are-fetched-by-the-worker).
+
 An **icon set** replaces them with a picture per file type. One ships with
 fman:
 

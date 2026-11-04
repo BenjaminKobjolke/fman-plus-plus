@@ -88,6 +88,41 @@ later row, in a Python loop: O(n) per call, and 91% of the time when thousands
 of rows were inserted one after the other. An insert or removal now just drops
 the dictionary; `find(...)` rebuilds it the next time someone asks.
 
+## Shell icons are fetched by the worker
+
+On Windows, `QFileIconProvider.icon()` returns a lazy icon. The actual shell
+lookup happens when Qt first paints it, on the GUI thread; repainting program
+icons can ask the shell again. In a current Windows 11 profile (Qt 5.15.2,
+PyQt5 5.15.11, Python 3.14), listing ordinary folders took under 5 ms, while
+the first GUI-thread pixmap pass took seconds in cold shell caches. Painting
+one screen of System32 program rows took 42–54 ms per paint with lazy icons,
+versus 5–6 ms with finished pixmaps.
+
+| Directory | Entries | `os.listdir` | `os.stat` all | Shell icon provider | First `pixmap()` pass | Repaint `pixmap()` pass |
+|---|---:|---:|---:|---:|---:|---:|
+| `C:\Windows\System32` | 5272 | 2.6 ms | 110 ms | 6.7 ms | 3178 ms | 765 ms |
+| `C:\Windows` | 127 | 0.2 ms | 2.6 ms | 0.2 ms | 256 ms | 10 ms |
+| Downloads, cold shell cache | 34 | 0.1 ms | 4.7 ms | 0.1 ms | 3561 ms | 11 ms |
+| Downloads, warm shell cache | 34 | – | – | – | 64 ms | 10 ms |
+| fman source directory | 57 | 0.1 ms | 0.7 ms | 0.1 ms | 14 ms | 0.1 ms |
+
+`ShellIconProvider` now asks the shell and materializes 16, 32 and 48 px
+pixmaps in the pane worker. Ordinary files share a finished icon per suffix;
+folders and `.exe`, `.lnk` and `.ico` retain their own icons. A lock serializes
+the two panes' calls into Qt's shared shell helper thread. At the 64 px view
+cap, Qt scales the 48 px pixmap; add another size if that looks soft.
+
+Repeat the profile in a Windows desktop session (the first run after boot
+measures a cold shell cache):
+
+```bash
+uv run python tools/profile_directory_phases.py "C:\Windows\System32" "%USERPROFILE%\Downloads"
+```
+
+The tool separates enumeration, stat, lazy icon lookup, first and second
+pixmap passes, worker-side materialization and table painting. It also checks
+that every materialized 16 px image matches Qt's lazy icon.
+
 ## Known remaining slow paths
 
 Not fixed, because none of them blocks the GUI thread for long. Measure before
@@ -118,6 +153,10 @@ changing any of them: `python -m fman.main --profile`.
 - `src/main/python/fman/impl/model/record_files.py` — `RecordFiles.__call__()`
   groups the inserts.
 - `src/main/python/fman/impl/model/table.py` — `Rows`, the lazy `_keys`.
+- `src/main/python/fman/impl/model/shell_icons.py` — materializes Windows shell
+  icons in the pane worker.
+- `tools/profile_directory_phases.py` — measures directory loading and icon
+  painting phases.
 
 ## Tests
 
@@ -131,6 +170,8 @@ powershell -Command "cd 'D:\GIT\BenjaminKobjolke\fman'; cmd /c '.\tools\run_view
   `InitStreamsFilesTest.test_huge_fast_listing_commits_once`.
 - `test_table.py` — `RowsFindTest`: `find(...)` after insert, remove, move and
   update.
+- `test_shell_icons.py` — Windows shell icon caching, materialization and
+  worker-thread loading.
 - `uniform_row_heights_test.py` — the header gets the row height, also after
   the icon size changes. A `*_test.py` file: it needs a `QApplication` of its
   own and stays out of `python build.py test`.

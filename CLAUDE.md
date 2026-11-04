@@ -113,6 +113,8 @@ or focus/result handling in `Prompt` or `Quicksearch`, run
 After touching `quicksearch.py`, `edge_grip.py` or `quicksearch_elide.py`, run
 `tools\run_quicksearch_tests.bat`.
 
+After touching `shell_icons.py`, run `tools\run_icon_tests.bat`.
+
 After touching `src/build/python/build_impl/windows.py`'s
 `write_portable_zip()`, run `uv run python tools/test_build_portable_zip.py`.
 
