@@ -12,6 +12,7 @@ from fman.impl.metrics import Metrics, ServerBackend, AsynchronousMetrics, \
 	LoggingBackend
 from fman.impl.model.icon_provider import GnomeFileIconProvider, \
 	GnomeNotAvailable, IconProvider
+from fman.impl.model.shell_icons import ShellIconProvider
 from fman.impl.model.icon_set import load_icon_set
 from fman.impl.nonexistent_shortcut_handler import NonexistentShortcutHandler
 from fman.impl.plugins import PluginSupport, CommandCallback, PluginFactory
@@ -406,7 +407,8 @@ class DevelopmentApplicationContext(ApplicationContext):
 		try:
 			qt_icon_provider = GnomeFileIconProvider()
 		except GnomeNotAvailable:
-			qt_icon_provider = QFileIconProvider()
+			qt_icon_provider = ShellIconProvider() if PLATFORM == 'Windows' \
+				else QFileIconProvider()
 		icons_dir = self._get_local_data_file('Cache', 'Icons')
 		makedirs(icons_dir, exist_ok=True)
 		return IconProvider(

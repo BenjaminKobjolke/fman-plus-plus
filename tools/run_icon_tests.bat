@@ -13,6 +13,7 @@ set PYTHONPATH=%ROOT%\src\main\python;%ROOT%\src\unittest\python
 call "%~dp0unittest_with_timeout.bat" -v ^
 	fman_unittest.impl.model.test_icon_set ^
 	fman_unittest.impl.model.test_icon_provider ^
+	fman_unittest.impl.model.test_shell_icons ^
 	fman_unittest.impl.model.test_icon_tint ^
 	fman_unittest.impl.model.test_table
 exit /b %ERRORLEVEL%
