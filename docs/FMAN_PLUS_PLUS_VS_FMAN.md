@@ -57,6 +57,7 @@ fman++ is a fork of [mherrmann/fman](https://github.com/mherrmann/fman). This pa
 
 - **Show more file details.** Toggle Extension, Version and Attributes columns, including POSIX permissions where supported. See [Toggle columns](functions/TOGGLE_COLUMNS.md) (upstream [#184](https://github.com/mherrmann/fman/issues/184), [#67](https://github.com/mherrmann/fman/issues/67), [#48](https://github.com/mherrmann/fman/issues/48)).
 - **Use the available list width.** The name column fills spare space instead of leaving unused room. See [Toggle columns](functions/TOGGLE_COLUMNS.md).
+- **Switch a pane to compact multi-column view.** Show filenames in columns and keep each pane's view mode across restarts. See [Compact view](views/COMPACT_VIEW.md) (upstream [#214](https://github.com/mherrmann/fman/issues/214)).
 - **Spot hidden files more easily.** Hidden entries have a distinct appearance, and Windows system-attribute entries follow the hidden-file filter. See [Hidden files](functions/hidden-files.md).
 - **Keep the cursor in view.** An optional scroll margin keeps rows around the current selection visible. See [Scroll margin](SCROLL_MARGIN.md) (upstream [#186](https://github.com/mherrmann/fman/issues/186)).
 - **Read and control status by pane.** Each pane can show its own status message, while the window status bar can be hidden. See [Status bar](STATUSBAR.md).

@@ -230,6 +230,9 @@ which stalled the GUI thread in directories with tens of thousands of entries.
 After touching `src/main/python/fman/impl/view/scroll_margin.py`, run
 `tools\run_view_tests.bat`.
 
+After touching `compact_view.py` or `pane_view_mode.py`, run
+`tools\run_view_tests.bat`.
+
 How fman drives 7-Zip (the `-bsp1` progress protocol, canceling, why there is
 no pseudo-terminal on Windows) is documented in `docs/ARCHIVES.md`.
 
