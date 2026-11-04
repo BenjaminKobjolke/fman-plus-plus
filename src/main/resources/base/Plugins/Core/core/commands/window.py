@@ -1,8 +1,8 @@
 """Commands and listeners that act on the window rather than its files.
 
-The window title is rebuilt from both panes' paths on every navigation, so
-`_format_window_title` is a pure string builder kept apart from the Qt access
-around it. The two icon toggles write settings the engine owns
+The window title starts with both panes' folder names and is rebuilt on every
+navigation, so `_format_window_title` is a pure string builder kept apart from
+the Qt access around it. The two icon toggles write settings the engine owns
 (`fman.impl.model.icon_provider`) and then reload the panes to redraw.
 """
 from core.commands.util import is_file_url
@@ -22,15 +22,23 @@ __all__ = [
 	'ToggleNetworkIcons', 'UpdateWindowTitle'
 ]
 
-_WINDOW_TITLE_PREFIX = APP_NAME + ' - file manager'
+_WINDOW_TITLE_SUFFIX = ' - ' + APP_NAME
+
+def _folder_name(path):
+	trimmed = path.rstrip('\\/')
+	if not trimmed or not any(
+		separator in trimmed for separator in ('\\', '/')
+	):
+		return path
+	return trimmed[max(trimmed.rfind('\\'), trimmed.rfind('/')) + 1:]
 
 def _format_window_title(paths):
 	# Pure string builder, kept separate from the pane/Qt access so it's
 	# unit-testable without a running application.
-	paths = [path for path in paths if path]
-	if not paths:
-		return _WINDOW_TITLE_PREFIX
-	return _WINDOW_TITLE_PREFIX + ' - ' + ' | '.join(paths)
+	names = [_folder_name(path) for path in paths if path]
+	if not names:
+		return APP_NAME
+	return ' | '.join(names) + _WINDOW_TITLE_SUFFIX
 
 def _path_for_title(pane):
 	try:

@@ -6,27 +6,29 @@ bar.
 
 ## Window title
 
-The fman window title shows both panes' current paths, kept in sync as either
+The fman window title shows both panes' folder names, kept in sync as either
 pane navigates.
 
 ### Format
 
 ```
-fman - file manager - <left pane path> | <right pane path>
+<left folder> | <right folder> - fman++
 ```
 
 Example:
 
 ```
-fman - file manager - C:\test | D:\GIT\BenjaminKobjolke\fman\debug
+test | debug - fman++
 ```
 
-- A fixed `fman - file manager` prefix.
-- Pane paths in **left, right** order (matches pane order everywhere else in
-  fman, e.g. `window.get_panes()`), separated by ` | `.
+- Folder names in **left, right** order (matches pane order everywhere else in
+  fman, e.g. `window.get_panes()`), separated by ` | `, followed by ` - fman++`.
+- The folder name is the text after the last `/` or `\`; trailing separators
+  are ignored. Drive roots and URLs without a folder segment keep their full
+  text.
 - A pane whose path can't be rendered (e.g. `null://`) is skipped rather than
   shown as garbage; with zero renderable panes the title falls back to just
-  the prefix.
+  `fman++`.
 - Updates live: navigating either pane (open a folder, go up, jump via the
   location bar, etc.) refreshes the whole title, not just that pane's segment.
 
@@ -42,9 +44,9 @@ fman - file manager - C:\test | D:\GIT\BenjaminKobjolke\fman\debug
   `UpdateWindowTitle` (`DirectoryPaneListener`). Sets the title once on
   startup and again on every `on_path_changed`, mirroring the existing
   `InitHiddenFilesFilter` / `InitPaneFontSize` startup-listener pattern.
-- `_format_window_title(paths)` is the pure string builder (prefix + join),
-  kept separate from pane/Qt access so it's unit-testable without a running
-  application. `_path_for_title(pane)` converts a pane's URL
+- `_format_window_title(paths)` and `_folder_name(path)` are pure string
+  builders, kept separate from pane/Qt access so they are unit-testable without
+  a running application. `_path_for_title(pane)` converts a pane's URL
   (`pane.get_path()`) to a human-readable path via `as_human_readable(...)`,
   swallowing any conversion error as a blank/skipped segment.
 - `_refresh_window_title(window)` reads all panes via `window.get_panes()`
@@ -55,8 +57,8 @@ fman - file manager - C:\test | D:\GIT\BenjaminKobjolke\fman\debug
   `ResetPaneFontSize` and `ShowOnlyActivePane`/`ShowAllPanes` in
   `core/commands/pane_view.py`.
 - `src/main/resources/base/Plugins/Core/core/tests/commands/test_window.py`
-  — `FormatWindowTitleTest` covers the pure title-building logic (no paths,
-  blank paths skipped, one path, two paths).
+  — `FormatWindowTitleTest` covers no paths, blank paths, one and two folders,
+  drive roots, URL paths, plain URLs and trailing separators.
 
 ## The bars above the panes
 
