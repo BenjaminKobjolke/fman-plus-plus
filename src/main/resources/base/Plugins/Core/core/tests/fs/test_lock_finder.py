@@ -45,8 +45,10 @@ class LockFinderTest(TestCase):
 	@skipIf(PLATFORM != 'Windows', 'Process working directories are Windows-only')
 	def test_finds_a_process_whose_working_directory_is_selected(self):
 		with TemporaryDirectory() as directory:
+			# The venv python.exe is a launcher; its interpreter child outlives kill()
+			# and holds cwd.
 			process = subprocess.Popen(
-				[sys.executable, '-c', 'import time; time.sleep(30)'],
+				[sys._base_executable, '-c', 'import time; time.sleep(30)'],
 				cwd=directory,
 			)
 			try:
