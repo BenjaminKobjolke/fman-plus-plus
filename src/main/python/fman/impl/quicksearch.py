@@ -7,7 +7,7 @@ from fman.impl.util.qt import Key_Tab, Key_Down, Key_Up, Key_PageDown, \
 	Key_Home, Key_End, Key_PageUp, Key_Return, Key_Enter, ShiftModifier, \
 	UserRole, AlignRight, AlignVCenter, NoFocus, FramelessWindowHint, \
 	AlignTop, AccessibleTextRole
-from PyQt5.QtCore import QAbstractListModel, QVariant, QModelIndex, QSize, \
+from PyQt5.QtCore import QAbstractListModel, QVariant, QModelIndex, QSize, Qt, \
 	QPointF, QRectF, QPoint, pyqtSignal
 from PyQt5.QtGui import QFont, QFontMetrics, QTextLayout, QTextCharFormat, \
 	QBrush, QKeySequence
@@ -53,6 +53,9 @@ class Quicksearch(QDialog):
 		self._query.returnPressed.connect(self._on_return_pressed)
 		self._query.setSelection(0, len(self._initial_query))
 		self._items = QListView()
+		# Titles are elided from the left, so a horizontal bar would only cover
+		# the last row (upstream #195).
+		self._items.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		self._items.setUniformItemSizes(True)
 		self._items.setModel(QuicksearchListModel(self))
 		self._items.setItemDelegate(QuicksearchItemDelegate(self, self._css))
@@ -169,10 +172,11 @@ class Quicksearch(QDialog):
 	def _adjust_item_list_ize(self, min_num_items_to_display=7):
 		num_items = len(self._curr_items)
 		row_height = self._items.sizeHintForRow(0)
-		max_height = num_items * row_height
+		frame = 2 * self._items.frameWidth()
+		max_height = num_items * row_height + frame
 		self._items.setMaximumHeight(max_height)
 		if num_items >= min_num_items_to_display:
-			min_height = min_num_items_to_display * row_height
+			min_height = min_num_items_to_display * row_height + frame
 		else:
 			min_height = 0
 		self._items.setMinimumHeight(min_height)
@@ -265,16 +269,15 @@ class QuicksearchItemRenderer:
 		self._draw_description(painter)
 		painter.restore()
 	def sizeHint(self):
-		width, height = self._layout_title()[1:]
+		height = self._layout_title()[1]
 		height += self._css['border-top-width_px'] + \
 				  self._padding_top + \
 				  self._css['border-bottom-width_px']
 		if self._description:
-			w, h = self._layout_description()[1:]
-			width = max(width, w)
+			h = self._layout_description()[1]
 			height += h
-		width += self._padding_left + self._padding_right
-		return QSize(int(width), int(height))
+		# The row takes the list's width so the title is elided instead of scrolled.
+		return QSize(0, int(height))
 	def _draw_background(self, painter):
 		self._proxy.drawPrimitive(
 			QStyle.PE_PanelItemViewItem, self._option, painter, self._widget
@@ -326,13 +329,13 @@ class QuicksearchItemRenderer:
 	def _get_title_rect(self):
 		x = self._option.rect.x() + self._padding_left
 		y = self._option.rect.y() + self._padding_top
-		height = self._layout_title()[2]
+		height = self._layout_title()[1]
 		padding_width = self._padding_left + self._padding_right
 		width = self._option.rect.width() - padding_width
 		return QRectF(x, y, width, height)
 	def _layout_text(self, text, font):
 		layout = QTextLayout(text, font)
-		width = height = 0
+		height = 0
 		layout.beginLayout()
 		while True:
 			line = layout.createLine()
@@ -341,10 +344,9 @@ class QuicksearchItemRenderer:
 			# This call is required or else we get 0 in `line.height()` below:
 			line.setNumColumns(len(text))
 			line.setPosition(QPointF(0, height))
-			width = max(width, line.naturalTextWidth())
 			height += line.height()
 		layout.endLayout()
-		return layout, width, height
+		return layout, height
 	def _get_highlight_formats(self, highlight=None):
 		result = []
 		for highlight_start, length in self._get_highlight_ranges(highlight):

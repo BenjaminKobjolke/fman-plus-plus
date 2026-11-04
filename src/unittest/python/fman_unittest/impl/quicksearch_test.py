@@ -1,12 +1,29 @@
 from unittest import TestCase
 
 from PyQt5.QtCore import QEvent, QPoint, QPointF, Qt
-from PyQt5.QtGui import QFont, QMouseEvent
+from PyQt5.QtGui import QColor, QFont, QMouseEvent
 from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import QApplication, QWidget
 
+from fman import QuicksearchItem
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.quicksearch_elide import elide_title_left, shift_highlight
+
+
+_CSS = {
+	'border-top-width_px': 0,
+	'border-bottom-width_px': 1,
+	'padding-top_px': 5,
+	'padding-left_px': 7,
+	'padding-right_px': 7,
+	'title': {
+		'font-size_pts': 11,
+		'color': QColor('#fff'),
+		'highlight': {'color': QColor('#f00')},
+	},
+	'hint': {'font-size_pts': 9, 'color': QColor('#aaa')},
+	'description': {'font-size_pts': 9, 'color': QColor('#aaa')},
+}
 
 
 class QuicksearchTest(TestCase):
@@ -29,6 +46,46 @@ class QuicksearchTest(TestCase):
 		self.dialog.close()
 		self.parent.close()
 		self.app.processEvents()
+
+	def _dialog_with_long_items(self, count):
+		items = [
+			QuicksearchItem(
+				'C:/' + '/very_long_folder_name' * 8 + str(i), hint='hint'
+			)
+			for i in range(count)
+		]
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: items
+		)
+		dialog.show()
+		self.app.processEvents()
+		self.addCleanup(dialog.close)
+		return dialog
+
+	def test_long_title_does_not_add_a_horizontal_scrollbar(self):
+		dialog = self._dialog_with_long_items(1)
+		self.assertFalse(dialog._items.horizontalScrollBar().isVisible())
+
+	def test_single_long_item_is_fully_visible(self):
+		dialog = self._dialog_with_long_items(1)
+		self.assertGreaterEqual(
+			dialog._items.viewport().height(), dialog._items.sizeHintForRow(0)
+		)
+
+	def test_last_of_several_long_items_is_fully_visible(self):
+		dialog = self._dialog_with_long_items(3)
+		self.assertGreaterEqual(
+			dialog._items.viewport().height(),
+			3 * dialog._items.sizeHintForRow(0),
+		)
+		self.assertFalse(dialog._items.verticalScrollBar().isVisible())
+
+	def test_long_title_row_fits_the_list_width(self):
+		dialog = self._dialog_with_long_items(1)
+		self.assertLessEqual(
+			dialog._items.visualRect(dialog._items.model().index(0, 0)).width(),
+			dialog._items.viewport().width(),
+		)
 
 	def test_shift_highlight_drops_hidden_chars_and_moves_visible_chars(self):
 		self.assertEqual([2, 3], shift_highlight([0, 1, 10, 11], 9))
