@@ -12,6 +12,8 @@ from urllib.error import URLError
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'fman_ui'))
 import recycle_cleanup
 import fman_ui
+import session_reaper
+import test_fman_ui_session_reaper
 
 
 class FmanUiTest(TestCase):
@@ -36,14 +38,18 @@ class FmanUiTest(TestCase):
 			session = {'profile': str(profile), 'pid': 123}
 			with patch.object(fman_ui, '_read_current', return_value=session), \
 				patch.object(fman_ui, '_current_path', return_value=current_path), \
-				patch.object(fman_ui, 'cleanup_recycle_bin', return_value=2), \
-				patch.object(fman_ui.subprocess, 'run'):
+				patch.object(fman_ui, 'close_session', return_value=2) as close_session:
 				result = fman_ui._run(SimpleNamespace(action='close'))
+			close_session.assert_called_once_with(session_root)
 		self.assertEqual(
 			{'ok': True, 'recycle_bin_entries_removed': 2}, result)
 		self.assertFalse(session_root.exists())
+		self.assertFalse(current_path.exists())
 
 	def test_close_cleans_session_even_when_recycle_cleanup_fails(self):
+		self._assert_close_cleans_files(removed_entries=0)
+
+	def _assert_close_cleans_files(self, removed_entries):
 		with TemporaryDirectory() as temp:
 			session_root = Path(temp) / 'session'
 			profile = session_root / 'profile'
@@ -53,14 +59,48 @@ class FmanUiTest(TestCase):
 			session = {'profile': str(profile), 'pid': 123}
 			with patch.object(fman_ui, '_read_current', return_value=session), \
 				patch.object(fman_ui, '_current_path', return_value=current_path), \
-				patch.object(fman_ui, 'cleanup_recycle_bin',
-					side_effect=OSError('Recycle Bin unavailable')), \
-				patch.object(fman_ui.subprocess, 'run'):
+				patch.object(fman_ui, 'close_session',
+					return_value=removed_entries):
 				result = fman_ui._run(SimpleNamespace(action='close'))
-		self.assertEqual(
-			{'ok': True, 'recycle_bin_entries_removed': 0}, result)
+		self.assertEqual({
+			'ok': True,
+			'recycle_bin_entries_removed': removed_entries,
+		}, result)
 		self.assertFalse(session_root.exists())
 		self.assertFalse(current_path.exists())
+
+	def test_close_old_format_session_falls_back_to_taskkill(self):
+		with TemporaryDirectory() as temp:
+			current_path = Path(temp) / 'current.json'
+			current_path.write_text('{}', encoding='utf-8')
+			session = {'profile': str(Path(temp) / 'session' / 'profile'), 'pid': 123}
+			with patch.object(fman_ui, '_read_current', return_value=session), \
+				patch.object(fman_ui, '_current_path', return_value=current_path), \
+				patch.object(fman_ui, 'close_session') as close_session, \
+				patch.object(fman_ui.subprocess, 'run') as run:
+				fman_ui._run(SimpleNamespace(action='close'))
+			close_session.assert_called_once_with(Path(session['profile']).parent)
+			run.assert_called_once_with(
+				['taskkill', '/PID', '123', '/T', '/F'], check=False,
+				stdout=fman_ui.subprocess.DEVNULL,
+				stderr=fman_ui.subprocess.DEVNULL)
+			self.assertFalse(current_path.exists())
+
+	def test_driver_command_touches_session_file_before_api_call(self):
+		with TemporaryDirectory() as temp:
+			profile = Path(temp) / 'profile'
+			profile.mkdir()
+			session_root = profile.parent
+			session_file = session_root / session_reaper.SESSION_FILE
+			session_file.write_text('{}')
+			session = {'profile': str(profile)}
+			args = SimpleNamespace(action='state')
+			with patch.object(fman_ui, '_read_current', return_value=session), \
+				patch.object(fman_ui, '_api', return_value={'ok': True}) as api, \
+				patch.object(fman_ui.os, 'utime') as utime:
+				self.assertEqual({'ok': True}, fman_ui._run(args))
+			utime.assert_called_once_with(session_file, None)
+			api.assert_called_once()
 
 	def test_recycle_cleanup_removes_only_entries_within_session_root(self):
 		root = r'C:\Temp\fman-ui\session'
@@ -125,6 +165,10 @@ class FmanUiTest(TestCase):
 			with patch.dict(os.environ, {'TEMP': temp}), \
 				patch.object(fman_ui, '_reserve_port', return_value=45678), \
 				patch.object(fman_ui, '_wait_for_state'), \
+				patch.object(fman_ui, 'process_start_time', return_value=10.5), \
+				patch.object(fman_ui, 'fman_process_identity',
+					return_value=(456, 20)), \
+				patch.object(fman_ui, 'reap_stale') as reap_stale, \
 				patch.object(fman_ui.subprocess, 'Popen') as popen, \
 				patch.object(fman_ui.subprocess, 'run'):
 				popen.return_value.pid = 123
@@ -148,6 +192,15 @@ class FmanUiTest(TestCase):
 						check=True, stdout=fman_ui.subprocess.DEVNULL,
 						stderr=fman_ui.subprocess.DEVNULL)
 				self.assertEqual(session, fman_ui._read_current())
+				reap_stale.assert_called_once()
+				session_data = json.loads((Path(session['profile']).parent /
+					'session.json').read_text())
+				self.assertEqual(123, session_data['pid'])
+				self.assertEqual(10.5, session_data['start_time'])
+				self.assertEqual(456, session_data['fman_pid'])
+				self.assertEqual(20, session_data['fman_start_time'])
+				self.assertIn(
+					'session_reaper.py', popen.call_args_list[1].args[0][1])
 
 	def test_bare_file_name_is_resolved_against_selected_pane(self):
 		with TemporaryDirectory() as temp:
@@ -174,7 +227,7 @@ class FmanUiTest(TestCase):
 					]) as api:
 					self.assertEqual(0, fman_ui.main([
 						'click', '--file', name, '--settle', '0']))
-					self.assertEqual(
+				self.assertEqual(
 					'file:///C:/fixture/' + name,
 					api.call_args_list[1].args[3]['file'],
 					)
@@ -184,16 +237,23 @@ class FmanUiTest(TestCase):
 			log = Path(temp) / 'fman.log'
 			log.write_text('last log line\n')
 			process = SimpleNamespace(
+				pid=123,
 				poll=lambda: None,
-				kill=lambda: setattr(process, 'killed', True),
 			)
-			process.killed = False
 			with patch.object(fman_ui.time, 'monotonic', side_effect=[0, 61]), \
 				patch.object(fman_ui.time, 'sleep'), \
-				patch.object(fman_ui, '_api', side_effect=OSError('not ready')):
+				patch.object(fman_ui, '_api', side_effect=OSError('not ready')), \
+				patch.object(fman_ui, 'kill_process') as kill_process:
 				with self.assertRaisesRegex(RuntimeError, 'last log line'):
-					fman_ui._wait_for_state({}, process, log)
-			self.assertTrue(process.killed)
+					fman_ui._wait_for_state({'start_time': 10}, process, log)
+			kill_process.assert_called_once_with(process.pid, 10)
+
+
+
+def load_tests(loader, tests, pattern):
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_session_reaper.SessionReaperTest))
+	return tests
 
 
 if __name__ == '__main__':
