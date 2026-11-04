@@ -42,6 +42,21 @@ separate taskbar buttons do not merge into a pinned fman icon. Windows also has
 a system-wide switch under Settings > Personalization > Taskbar > Taskbar
 behaviors > "Combine taskbar buttons and hide labels".
 
+### Pinned folders
+
+On Windows, use **Pin folder to taskbar** in the command palette to add the
+current pane's folder to the taskbar button's **Pinned folders** jump-list
+category. Use **Unpin folder from taskbar** to choose and remove a saved folder.
+The folder paths are stored in `taskbar_pinned_folders` in `Core Settings.json`.
+Selecting an entry opens that folder in fman: with `single_instance` enabled it
+opens in the active pane of the running window; with it disabled, it opens in a
+new window.
+
+Windows limits how many entries appear according to the recent-items count in
+the Start settings. When `taskbar_grouping` is `false`, fman rebuilds the list
+for each new window so each window's separate taskbar button has the pinned
+folders.
+
 ## How it works
 
 The first instance listens on a per-user local socket
