@@ -36,6 +36,8 @@ can redirect writes, and overwriting a hard-linked destination can change its
 other aliases. Use ordinary filesystem entries and absolute local-drive or UNC
 destinations. Relative paths, wildcards, device namespaces, alternate-stream
 input paths, self-transfers, and directory-into-itself transfers are refused.
+Robocopy replaces read-only destinations without asking and applies the source's
+attributes; the `ask_before_replacing_read_only` setting does not apply to it.
 
 The progress display is a busy indicator with elapsed time and the selected
 items or current job; it is not byte progress. Jobs run sequentially, with

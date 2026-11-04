@@ -118,6 +118,14 @@ scan. The check is on by default on Windows; use the **Toggle locked file
 check** command to turn it off or back on. Its setting key is
 `check_locked_files` in `Core Settings.json`. Other platforms skip the check.
 
+On Windows, after you choose to overwrite an existing read-only file, Core asks
+whether to replace it anyway. Choose **Yes**, **Yes to all**, **No**, or
+**Abort**; the default is **No**. The question is enabled by default. Use
+**Toggle read-only replace question** in the command palette to switch it off
+or back on; the setting is `ask_before_replacing_read_only` in
+`Core Settings.json`. The replacement takes the incoming file's attributes, so
+it is read-only only when the source file is read-only.
+
 Overwrite details are shown by default. Set `show_overwrite_details` in
 `Core Settings.json` to `false` to show only the overwrite question and buttons;
 use the **Toggle overwrite details** command in the command palette to switch
