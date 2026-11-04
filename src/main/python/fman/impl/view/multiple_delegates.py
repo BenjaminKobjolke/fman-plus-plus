@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QTableView, QStyledItemDelegate
+from PyQt5.QtWidgets import QStyledItemDelegate
 
-class MultipleDelegates(QTableView):
-	""" Let a QTableView have multiple ItemDelegates. """
+class MultipleDelegates:
+	""" Let an item view have multiple ItemDelegates. """
 	def __init__(self, parent=None):
 		super().__init__(parent)
 		self._composite_delegate = CompositeItemDelegate(self)

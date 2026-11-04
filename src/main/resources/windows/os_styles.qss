@@ -6,7 +6,7 @@ QHeaderView::section {
 	padding: .75ex 2ex 1.25ex;
 }
 
-QTableView::item {
+QTableView::item, CompactFileView::item {
 	padding-top: .5ex;
 	padding-bottom: .5ex;
 }

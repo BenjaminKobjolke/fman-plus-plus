@@ -18,7 +18,7 @@ QHeaderView::section {
 	border-right-width: 1px;
 }
 
-QTableView::item {
+QTableView::item, CompactFileView::item {
 	color: $pane_fg;
 	padding-top: 1px;
 	padding-bottom: 1px;
@@ -29,32 +29,33 @@ QTableView::item {
  * selectors. To work around this, our backend sets State_Children and
  * State_Open, which we can catch here as :has-children and :open, respectively.
  */
-QTableView::item:has-children {
+QTableView::item:has-children, CompactFileView::item:has-children {
 	color: $pane_fg_dir;
 	padding-left: 0.25em;
 	/* The padding directive has no effect unless we specify a background: */
 	background: transparent;
 }
-QTableView::item:open {
+QTableView::item:open, CompactFileView::item:open {
 	padding-right: 0.25em;
 }
 
 /* :disabled is set by the delegate for hidden rows; repeat the selected
  * selector so selection color wins over the hidden-row color. */
-QTableView::item:disabled {
+QTableView::item:disabled, CompactFileView::item:disabled {
 	color: $pane_hidden_fg;
 }
-QTableView::item:has-children:disabled {
+QTableView::item:has-children:disabled, CompactFileView::item:has-children:disabled {
 	color: $pane_hidden_fg_dir;
 }
 
-QTableView::item:selected, QTableView::item:selected:disabled {
+QTableView::item:selected, QTableView::item:selected:disabled,
+CompactFileView::item:selected, CompactFileView::item:selected:disabled {
 	color: $pane_selected_fg;
 	/* Avoid the ugly default blue background color for selected cells: */
 	background-color: $pane_bg;
 }
 
-QTableView::item:focus {
+QTableView::item:focus, CompactFileView::item:focus {
 	background-color: $pane_cursor_bg;
 }
 
@@ -72,6 +73,8 @@ QTableView::item:focus {
  */
 QTableView[fman_background="true"],
 QTableView[fman_background="true"]::item:selected,
+CompactFileView[fman_background="true"],
+CompactFileView[fman_background="true"]::item:selected,
 QHeaderView[fman_background="true"],
 QHeaderView[fman_background="true"]::section,
 QStatusBar[fman_background="true"],
@@ -80,7 +83,7 @@ LocationBar[fman_background="true"] {
 	background: transparent;
 }
 
-QTableView #editor {
+QTableView #editor, CompactFileView #editor {
 	/*
 	 * The Qt "editor" when renaming a file. It's a QLineEdit, which has a
 	 * border (see below). On Windows, this border shifts the file name down so

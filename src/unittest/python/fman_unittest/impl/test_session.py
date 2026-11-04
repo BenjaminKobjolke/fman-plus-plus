@@ -19,9 +19,18 @@ class SessionManagerCloseTest(TestCase):
 		self.manager.on_close(self.window)
 
 		self.assertEqual(
-			[{'location': 'file://C:/after', 'col_widths': [200], 'hidden': True}],
+			[{'location': 'file://C:/after', 'col_widths': [200], 'hidden': True,
+			  'compact_view': False}],
 			self.settings['panes'])
 		self._assert_window_settings_saved()
+	def test_saves_compact_view_for_each_pane(self):
+		pane = _Pane('file://C:/after', [200], compact_view=True)
+		window = _MainWindow([pane])
+		incognito.set_incognito(False)
+
+		self.manager.on_close(window)
+
+		self.assertEqual(True, self.settings['panes'][0]['compact_view'])
 
 	def test_saves_remembered_panes_but_current_column_widths_when_incognito(self):
 		incognito.remember_pane_states([
@@ -32,7 +41,8 @@ class SessionManagerCloseTest(TestCase):
 		self.manager.on_close(self.window)
 
 		self.assertEqual(
-			[{'location': 'file://C:/snapshot', 'col_widths': [200], 'hidden': True}],
+			[{'location': 'file://C:/snapshot', 'col_widths': [200], 'hidden': True,
+			  'compact_view': False}],
 			self.settings['panes'])
 		self._assert_window_settings_saved()
 
@@ -52,6 +62,19 @@ class SessionManagerCloseTest(TestCase):
 		self.assertEqual(1, self.settings.flush_count)
 
 class SessionManagerShowTest(TestCase):
+	def test_restores_saved_compact_pane(self):
+		manager = SessionManager(_Settings({}), None, None, '1.2.3')
+		pane = _StartupPane()
+		with patch.object(manager, 'open_path_in_pane'):
+			manager._init_pane(pane, None, {'compact_view': True})
+		self.assertTrue(pane._widget.compact_view)
+	def test_old_session_without_view_mode_keeps_detail_pane(self):
+		manager = SessionManager(_Settings({}), None, None, '1.2.3')
+		pane = _StartupPane()
+		pane._widget.compact_view = True
+		with patch.object(manager, 'open_path_in_pane'):
+			manager._init_pane(pane, None, {})
+		self.assertFalse(pane._widget.compact_view)
 	def test_hidden_startup_initializes_panes_without_showing_window(self):
 		settings = _Settings({'window_geometry': 'Z2VvbWV0cnk='})
 		manager = SessionManager(settings, None, None, '1.2.3')
@@ -118,10 +141,10 @@ class _MainWindow:
 
 
 class _Pane:
-	def __init__(self, location, col_widths):
+	def __init__(self, location, col_widths, compact_view=False):
 		self._location = location
 		self._col_widths = col_widths
-		self._widget = _VisibilityWidget(hidden=True)
+		self._widget = _VisibilityWidget(hidden=True, compact_view=compact_view)
 	def get_location(self):
 		return self._location
 	def get_column_widths(self):
@@ -153,11 +176,16 @@ class _StartupPane:
 		self._widget = _VisibilityWidget()
 
 class _VisibilityWidget:
-	def __init__(self, hidden=False):
+	def __init__(self, hidden=False, compact_view=False):
 		self.hidden = hidden
 		self.isVisible = not hidden
+		self.compact_view = compact_view
 	def isHidden(self):
 		return self.hidden
+	def is_compact_view(self):
+		return self.compact_view
+	def set_compact_view(self, compact_view):
+		self.compact_view = compact_view
 	def setVisible(self, visible):
 		self.hidden = not visible
 		self.isVisible = visible

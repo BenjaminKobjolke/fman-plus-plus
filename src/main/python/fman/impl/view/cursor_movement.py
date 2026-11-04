@@ -1,7 +1,6 @@
 from PyQt5.QtCore import Qt, QRect, QItemSelectionModel as QISM
-from PyQt5.QtWidgets import QTableView
 
-class CursorMovement(QTableView):
+class CursorMovement:
 	def move_cursor_down(self, toggle_selection=False):
 		if toggle_selection:
 			self._toggle_current_index()

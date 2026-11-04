@@ -4,7 +4,7 @@ from core.commands.pane_view import ShowAllPanes, ShowOnlyActivePane, \
 from PyQt5.QtGui import QFont
 from core.tests.commands import FakeWindow
 from PyQt5.QtWidgets import QApplication
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from unittest import TestCase
 
 # ShowOnlyActivePane is decorated with @run_in_main_thread, which needs a
@@ -152,6 +152,22 @@ class RememberBasePaneFontSizeTest(TestCase):
 			self.assertEqual(20, pane_view._base_pane_font_size)
 		finally:
 			pane_view._base_pane_font_size = previous_base_size
+
+class ApplyPaneFontSizeTest(TestCase):
+	def test_styles_both_file_view_modes_through_the_pane_widget(self):
+		pane = Mock()
+
+		pane_view._apply_pane_font_size(pane, 16)
+
+		pane._widget.set_file_list_style_sheet.assert_called_once_with(
+			'FileListView, CompactFileView { font-size: 16pt; }'
+		)
+	def test_clears_the_override_through_the_pane_widget(self):
+		pane = Mock()
+
+		pane_view._apply_pane_font_size(pane, None)
+
+		pane._widget.set_file_list_style_sheet.assert_called_once_with('')
 
 class ShowAllPanesTest(TestCase):
 	def test_restores_all_panes(self):

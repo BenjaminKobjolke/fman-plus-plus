@@ -2,9 +2,9 @@ from fbs_runtime.platform import is_mac, is_windows, is_linux
 from fman.impl.util.qt import MoveAction, NoButton, AltModifier, \
 	ControlModifier, CopyAction
 from PyQt5.QtCore import QItemSelectionModel as QISM
-from PyQt5.QtWidgets import QTableView, QAbstractItemView
+from PyQt5.QtWidgets import QAbstractItemView
 
-class DragAndDrop(QTableView):
+class DragAndDrop:
 
 	_IDLE_STATES = (QAbstractItemView.NoState, QAbstractItemView.AnimatingState)
 

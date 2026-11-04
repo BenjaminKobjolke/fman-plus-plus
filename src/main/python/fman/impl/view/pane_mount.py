@@ -38,7 +38,7 @@ def mount_widget(pane, pane_widget, view, focus=True):
 	# viewers and plugin widgets take the file list's place.
 	pane_widget.layout().insertWidget(
 		pane_widget.layout().count() - 1, view)
-	pane_widget._file_view.setVisible(False)
+	pane_widget._view_mode.hide()
 	pane_widget._mounted_widget = view
 	# Re-point the pane's focus proxy at the mounted widget. switch_panes()
 	# ends by calling the *other* pane's focus(), which is setFocus() on this
@@ -74,6 +74,5 @@ def unmount_widget(pane_widget):
 	pane_widget._mounted_widget = None
 	# Restore the pane's original focus proxy (set in DirectoryPaneWidget
 	# .__init__) before the file view reclaims focus.
-	pane_widget.setFocusProxy(pane_widget._file_view)
-	pane_widget._file_view.setVisible(True)
-	pane_widget._file_view.setFocus()
+	pane_widget._view_mode.restore()
+	pane_widget._view_mode.visible_view().setFocus()

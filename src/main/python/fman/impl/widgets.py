@@ -19,6 +19,7 @@ from fman.impl.util.qt.thread import run_in_main_thread
 from fman.impl.view.backgrounds import PAINTER, set_transparent
 from fman.impl.view.location_bar import LocationBar
 from fman.impl.view import FileListView, Layout, set_selection
+from fman.impl.view.pane_view_mode import PaneViewMode
 from fman.url import as_human_readable, basename, splitscheme
 from PyQt5.QtCore import pyqtSignal, QTimer, Qt, QEvent, QSize, QPoint, \
 	QRect
@@ -98,6 +99,10 @@ class DirectoryPaneWidget(QWidget):
 		self._status_line = PaneStatusLine(self)
 		self.setLayout(Layout(
 			self._location_bar, self._file_view, self._status_line))
+		self._view_mode = PaneViewMode(
+			self, self._file_view, lambda: controller.on_activated(self),
+			self._on_doubleclicked
+		)
 		self._location_bar.setFocusProxy(self._file_view)
 		self.setFocusProxy(self._file_view)
 		# The widget currently shown in place of the file list - a file
@@ -119,18 +124,22 @@ class DirectoryPaneWidget(QWidget):
 	def set_icon_size(self, size):
 		# An invalid QSize is how Qt is told to go back to its own
 		# decorationSize, so size=None reads as "fman never asked".
-		self._file_view.setIconSize(
-			QSize() if size is None else QSize(size, size)
-		)
+		self._view_mode.set_icon_size(size)
 	def set_scroll_margin(self, rows):
 		self._file_view.set_scroll_margin(rows)
 	def get_file_view(self):
 		return self._file_view
+	def is_compact_view(self):
+		return self._view_mode.is_compact()
+	def set_compact_view(self, on):
+		self._view_mode.set_compact(on)
+	def set_file_list_style_sheet(self, css):
+		self._view_mode.set_style_sheet(css)
 	def set_backgrounds(self, backgrounds, pane_index):
 		# The seam the window talks to: nothing outside this class
 		# reaches into _file_view. The location bar is chrome like the
 		# column header and the status bar, so it clears the same way.
-		self._file_view.set_backgrounds(backgrounds, pane_index)
+		self._view_mode.set_backgrounds(backgrounds, pane_index)
 		set_transparent(self._location_bar, chrome_is_transparent(backgrounds))
 		set_transparent(self._status_line, chrome_is_transparent(backgrounds))
 	def set_status_message(self, text, timeout_secs=None):
@@ -144,22 +153,22 @@ class DirectoryPaneWidget(QWidget):
 		self._filter_bar.reposition()
 	@run_in_main_thread
 	def move_cursor_up(self, toggle_selection=False):
-		self._file_view.move_cursor_up(toggle_selection)
+		self._view_mode.visible_view().move_cursor_up(toggle_selection)
 	@run_in_main_thread
 	def move_cursor_down(self, toggle_selection=False):
-		self._file_view.move_cursor_down(toggle_selection)
+		self._view_mode.visible_view().move_cursor_down(toggle_selection)
 	@run_in_main_thread
 	def move_cursor_home(self, toggle_selection=False):
-		self._file_view.move_cursor_home(toggle_selection)
+		self._view_mode.visible_view().move_cursor_home(toggle_selection)
 	@run_in_main_thread
 	def move_cursor_end(self, toggle_selection=False):
-		self._file_view.move_cursor_end(toggle_selection)
+		self._view_mode.visible_view().move_cursor_end(toggle_selection)
 	@run_in_main_thread
 	def move_cursor_page_up(self, toggle_selection=False):
-		self._file_view.move_cursor_page_up(toggle_selection)
+		self._view_mode.visible_view().move_cursor_page_up(toggle_selection)
 	@run_in_main_thread
 	def move_cursor_page_down(self, toggle_selection=False):
-		self._file_view.move_cursor_page_down(toggle_selection)
+		self._view_mode.visible_view().move_cursor_page_down(toggle_selection)
 	@run_in_main_thread
 	def focus(self):
 		self.setFocus()
@@ -202,7 +211,9 @@ class DirectoryPaneWidget(QWidget):
 		self._file_view.place_cursor_at(file_url)
 	@run_in_main_thread
 	def edit_name(self, file_url, selection_start=0, selection_end=None):
-		self._file_view.edit_name(file_url, selection_start, selection_end)
+		self._view_mode.visible_view().edit_name(
+			file_url, selection_start, selection_end
+		)
 	@run_in_main_thread
 	def add_filter(self, filter_):
 		self._model.add_filter(filter_)
@@ -272,12 +283,12 @@ class DirectoryPaneWidget(QWidget):
 		self._loading_started = time()
 		self._loading_timer.start()
 	def _on_loading_timeout(self):
-		self._file_view.set_loading(format_loading_message(
+		self._view_mode.set_loading(format_loading_message(
 			self._loading_message, time() - self._loading_started
 		))
 	def _on_location_loaded(self, url):
 		self._loading_timer.stop()
-		self._file_view.set_loading('')
+		self._view_mode.set_loading('')
 		if not self.get_file_under_cursor():
 			self.move_cursor_home()
 			self._home_cursor = self.get_file_under_cursor()

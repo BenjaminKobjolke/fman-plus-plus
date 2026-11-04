@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QItemSelectionModel as QISM, QEvent
-from PyQt5.QtWidgets import QTableView
 
-class MoveWithoutUpdatingSelection(QTableView):
+class MoveWithoutUpdatingSelection:
 	def selectionCommand(self, index, event):
 		if event:
 			if event.type() == QEvent.MouseButtonPress and event.modifiers():

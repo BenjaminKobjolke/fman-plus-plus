@@ -1,11 +1,9 @@
 from fbs_runtime.platform import is_mac
-from fman.impl.background import chrome_is_transparent, focus_changes_pane, \
-	for_pane, pane_is_transparent
 from fman.impl.frameless_dialog import extra_margin
 from fman.impl.model.table import DimmedRole
 from fman.impl.util.qt import WA_MacShowFocusRect, Key_Home, Key_End, \
 	ShiftModifier, Key_Return, Key_Enter, ToolTipRole, connect_once
-from fman.impl.view.backgrounds import PAINTER, set_transparent
+from fman.impl.view.pane_surface import PaneSurface
 from fman.impl.view.drag_and_drop import DragAndDrop
 from fman.impl.view.move_without_updating_selection import \
 	MoveWithoutUpdatingSelection
@@ -15,12 +13,12 @@ from fman.impl.view.single_row_mode import SingleRowMode
 from PyQt5.QtCore import QEvent, QItemSelection, QItemSelectionModel as QISM, \
 	QRect, Qt, pyqtSignal, QRectF
 from PyQt5.QtGui import QPen, QContextMenuEvent, QKeySequence, QPainterPath, \
-	QRegion, QPainter, QPalette
+	QRegion
 from PyQt5.QtWidgets import QTableView, QLineEdit, QVBoxLayout, QStyle, \
 	QStyledItemDelegate, QProxyStyle, QHeaderView, QToolTip, QMenu, QAction
 
 class FileListView(
-	SingleRowMode, MoveWithoutUpdatingSelection, DragAndDrop,
+	PaneSurface, SingleRowMode, MoveWithoutUpdatingSelection, DragAndDrop,
 	ResizeColumnsToContents, ScrollMargin
 ):
 	activated = pyqtSignal()
@@ -52,28 +50,14 @@ class FileListView(
 		# moves between panes - see fman.impl.background.for_pane.
 		self._backgrounds = ()
 		self._pane_index = 0
-	def set_backgrounds(self, backgrounds, pane_index):
-		"""
-		The images the active theme places, and which pane this is. Also
-		switches this pane's opaque background off when something is
-		drawn behind it, and its header's when the *window* is what is
-		drawn there - a pane image stays inside its pane.
-		"""
-		self._backgrounds = backgrounds
-		self._pane_index = pane_index
-		set_transparent(self, pane_is_transparent(backgrounds, pane_index))
-		set_transparent(
-			self.horizontalHeader(), chrome_is_transparent(backgrounds)
-		)
-		self.viewport().update()
-	def set_loading(self, text):
-		"""
-		Show `text` while the pane has no rows yet. Pass '' to hide it again.
-		"""
-		self._loading_text = text
-		self.viewport().update()
+	def _header(self):
+		return self.horizontalHeader()
 	def contextMenuEvent(self, event):
 		index = self.indexAt(event.pos())
+		y_offset = 0 if event.reason() == QContextMenuEvent.Mouse \
+			else self.horizontalHeader().height()
+		self.show_context_menu(event, index, y_offset)
+	def show_context_menu(self, event, index, y_offset):
 		updated_selection = False
 		if index.isValid():
 			file_under_mouse = self.model().url(index)
@@ -118,10 +102,7 @@ class FileListView(
 						action.setShortcut(QKeySequence(shortcut))
 					menu.addAction(action)
 			pos = event.globalPos()
-			if event.reason() != QContextMenuEvent.Mouse:
-				# For some reason, event.globalPos() does not take the header into
-				# account when not caused by mouse. Correct for this:
-				pos.setY(pos.y() + self.horizontalHeader().height())
+			pos.setY(pos.y() + y_offset)
 			menu.exec(pos)
 		finally:
 			if updated_selection:
@@ -226,12 +207,7 @@ class FileListView(
 		visible = self.get_visible_row_range()
 		return visible.start <= i < visible.stop
 	def paintEvent(self, event):
-		missing_rows, missing_urls = self._get_rows_to_load()
-		if missing_rows:
-			self._urls_being_loaded.extend(missing_urls)
-			def callback(location=self.model().get_location()):
-				self._on_rows_loaded(location, missing_urls)
-			self.model().load_rows(missing_rows, callback=callback)
+		self.request_rows(self._get_rows_visible_but_not_loaded())
 		# Before super(), so the rows are drawn on top of the image. The
 		# QSS rule that lets it show through is keyed on the property
 		# set_backgrounds sets - see impl/view/backgrounds.py.
@@ -239,22 +215,6 @@ class FileListView(
 		super().paintEvent(event)
 		if self._loading_text and not self.model().rowCount():
 			self._paint_loading_text()
-	def _paint_backgrounds(self):
-		backgrounds = for_pane(
-			self._backgrounds, self._pane_index, self.hasFocus()
-		)
-		if not backgrounds:
-			# Nothing of this pane's own. The viewport may still be
-			# transparent because the *window* has an image, and then
-			# painting the theme color here would hide it.
-			return
-		viewport = self.viewport()
-		painter = QPainter(viewport)
-		# The color the QSS rule just stopped painting, so a partly
-		# transparent image blends with the theme rather than with
-		# whatever happens to be behind the pane.
-		painter.fillRect(viewport.rect(), self.palette().color(QPalette.Base))
-		PAINTER.paint(painter, viewport.rect(), backgrounds)
 	def focusInEvent(self, event):
 		super().focusInEvent(event)
 		self.activated.emit()
@@ -262,22 +222,8 @@ class FileListView(
 	def focusOutEvent(self, event):
 		super().focusOutEvent(event)
 		self._repaint_if_focus_matters()
-	def _repaint_if_focus_matters(self):
-		if focus_changes_pane(self._backgrounds, self._pane_index):
-			self.viewport().update()
-	def _paint_loading_text(self):
-		painter = QPainter(self.viewport())
-		painter.setPen(
-			self.palette().color(QPalette.Disabled, QPalette.Text)
-		)
-		painter.drawText(
-			# Keep the text off the pane's edges so it still wraps readably when
-			# the pane is narrow:
-			self.viewport().rect().adjusted(16, 0, -16, 0),
-			Qt.AlignCenter | Qt.TextWordWrap, self._loading_text
-		)
-	def _get_rows_to_load(self):
-		rows = self._get_rows_visible_but_not_loaded()
+	def request_rows(self, rows):
+		rows = [row for row in rows if not self.model().row_is_loaded(row)]
 		urls = [
 			self.model().url(self.model().index(row, 0))
 			for row in rows
@@ -289,7 +235,12 @@ class FileListView(
 				continue
 			del rows[i]
 			del urls[i]
-		return rows, urls
+		if not rows:
+			return
+		self._urls_being_loaded.extend(urls)
+		def callback(location=self.model().get_location()):
+			self._on_rows_loaded(location, urls)
+		self.model().load_rows(rows, callback=callback)
 	def _on_rows_loaded(self, location, urls):
 		if location != self.model().get_location():
 			return

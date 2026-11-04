@@ -118,8 +118,9 @@ def _pane_font(pane):
 def _apply_pane_font_size(pane, size):
 	# size=None removes our override stylesheet so the pane falls back to
 	# whatever the app-wide theme (Theme.css) sets.
-	css = '' if size is None else 'FileListView { font-size: %dpt; }' % size
-	pane._widget._file_view.setStyleSheet(css)
+	css = '' if size is None else \
+		'FileListView, CompactFileView { font-size: %dpt; }' % size
+	pane._widget.set_file_list_style_sheet(css)
 
 def _remember_base_pane_font_size(pane):
 	# Call before applying an override to `pane`: afterwards the view reports

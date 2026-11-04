@@ -7,6 +7,7 @@
 	],
 	"check_for_updates": ["update", "upgrade", "new version", "latest release", "github"],
 	"toggle_automatic_updates": ["auto update", "automatic update", "unattended update"],
+	"toggle_compact_view": ["compact view", "brief view", "detail view", "list view", "multi column", "view mode"],
 	"set_automatic_update_interval": ["update interval", "update frequency", "check frequency"],
 	"clear_hidden_attribute": ["unhide file", "show file", "unmark hidden", "attrib -h", "attribute"],
 	"create_and_edit_file": ["create file", "create and edit file", "new"],

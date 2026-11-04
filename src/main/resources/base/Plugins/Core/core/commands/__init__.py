@@ -31,7 +31,7 @@ _COMMAND_MODULES = (
 	'navigation', 'network_shares', 'open_with', 'opening', 'pack', 'palette',
 	'pane_view',
 	'places', 'plugins', 'release_notes', 'rename', 'selection',
-	'symlink', 'theme', 'transfer',
+	'symlink', 'theme', 'transfer', 'view_mode',
 	'undo', 'updates', 'window'
 )
 __all__ = []

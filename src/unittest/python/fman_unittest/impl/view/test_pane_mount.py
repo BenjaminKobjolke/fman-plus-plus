@@ -15,6 +15,8 @@ def _pane_widget():
 	# _mounted_widget slot declared in DirectoryPaneWidget.__init__.
 	widget = MagicMock()
 	widget._mounted_widget = None
+	widget._view_mode = MagicMock()
+	widget._view_mode.visible_view.return_value = widget._file_view
 	return widget
 
 def _pane(widget, others=()):
@@ -51,10 +53,10 @@ class MountWidgetTest(TestCase):
 			mount_widget(self.pane, self.widget, self.view)
 		self.widget.layout().insertWidget.assert_called_once_with(0, self.view)
 
-	def test_hides_the_file_list(self):
+	def test_hides_the_active_file_view(self):
 		with patch('fman.impl.view.pane_mount.QTimer'):
 			mount_widget(self.pane, self.widget, self.view)
-		self.widget._file_view.setVisible.assert_called_once_with(False)
+		self.widget._view_mode.hide.assert_called_once_with()
 
 	def test_records_the_view_on_the_pane_widget(self):
 		with patch('fman.impl.view.pane_mount.QTimer'):
@@ -111,25 +113,24 @@ class UnmountWidgetTest(TestCase):
 		unmount_widget(self.widget)
 		self.assertIsNone(self.widget._mounted_widget)
 
-	def test_restores_the_file_list_and_its_focus_proxy(self):
+	def test_restores_the_active_file_view(self):
 		unmount_widget(self.widget)
-		self.widget.setFocusProxy.assert_called_once_with(self.widget._file_view)
-		self.widget._file_view.setVisible.assert_called_once_with(True)
+		self.widget._view_mode.restore.assert_called_once_with()
+		self.widget._view_mode.visible_view.assert_called_once_with()
 		self.widget._file_view.setFocus.assert_called_once_with()
 
-	def test_restores_the_proxy_before_the_file_list_takes_focus(self):
-		# Order matters: the file view must not reclaim focus while the proxy
-		# still points at the widget being deleted.
+	def test_restores_the_view_before_it_takes_focus(self):
+		# The view mode restores visibility and its focus proxy before focus.
 		calls = []
-		self.widget.setFocusProxy.side_effect = \
-			lambda *_: calls.append('proxy')
+		self.widget._view_mode.restore.side_effect = \
+			lambda: calls.append('restore')
 		self.widget._file_view.setFocus.side_effect = \
 			lambda *_: calls.append('focus')
 		unmount_widget(self.widget)
-		self.assertEqual(['proxy', 'focus'], calls)
+		self.assertEqual(['restore', 'focus'], calls)
 
 	def test_does_nothing_when_no_widget_is_mounted(self):
 		self.widget._mounted_widget = None
 		unmount_widget(self.widget)
 		self.widget.layout().removeWidget.assert_not_called()
-		self.widget._file_view.setVisible.assert_not_called()
+		self.widget._view_mode.restore.assert_not_called()
