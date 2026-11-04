@@ -1,6 +1,5 @@
 """Command line driver for an isolated fman UI automation session."""
 
-import argparse
 import json
 import os
 from pathlib import Path
@@ -14,7 +13,11 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 import uuid
 
-from recycle_cleanup import cleanup_session as cleanup_recycle_bin
+from parser import parser as _parser
+from session_reaper import (
+	SESSION_FILE, close_session, fman_process_identity, kill_process,
+	process_start_time, reap_stale,
+)
 
 
 def _root():
@@ -55,6 +58,13 @@ def _reserve_port():
 		return listener.getsockname()[1]
 
 
+def _detached_flags():
+	return (
+		getattr(subprocess, 'CREATE_NEW_PROCESS_GROUP', 0)
+		| getattr(subprocess, 'DETACHED_PROCESS', 0)
+	)
+
+
 def _make_fixture(path):
 	path.mkdir(parents=True, exist_ok=True)
 	(path / 'visible.txt').write_text('visible fixture\n', encoding='utf-8')
@@ -73,6 +83,12 @@ def _make_fixture(path):
 def _wait_for_state(session, process, log_path):
 	deadline = time.monotonic() + 60
 	while time.monotonic() < deadline:
+		identity = fman_process_identity(process.pid)
+		if identity is not None and identity != (
+				session.get('fman_pid'), session.get('fman_start_time')):
+			session['fman_pid'], session['fman_start_time'] = identity
+			Path(session['profile']).parent.joinpath(SESSION_FILE).write_text(
+				json.dumps(session, indent=2), encoding='utf-8')
 		try:
 			return _api(session, 'GET', '/v1/state')
 		except (OSError, RuntimeError, URLError):
@@ -80,7 +96,8 @@ def _wait_for_state(session, process, log_path):
 				break
 			time.sleep(.25)
 	if process.poll() is None:
-		process.kill()
+		kill_process(session.get('fman_pid', process.pid),
+			session.get('fman_start_time', session['start_time']))
 	try:
 		tail = log_path.read_text(encoding='utf-8', errors='replace').splitlines()[-40:]
 	except OSError:
@@ -91,6 +108,7 @@ def _wait_for_state(session, process, log_path):
 def _launch(args):
 	root = _root()
 	root.mkdir(parents=True, exist_ok=True)
+	reap_stale(root, time.time())
 	session_id = uuid.uuid4().hex
 	session_root = root / session_id
 	profile = session_root / 'profile'
@@ -128,10 +146,6 @@ def _launch(args):
 		Path(__file__).resolve().parents[2] / 'src' / 'main' / 'python'
 	)
 	main = Path(environment['PYTHONPATH']) / 'fman' / 'main.py'
-	flags = (
-		getattr(subprocess, 'CREATE_NEW_PROCESS_GROUP', 0)
-		| getattr(subprocess, 'DETACHED_PROCESS', 0)
-	)
 	with log_path.open('wb') as log:
 		process = subprocess.Popen(
 			[
@@ -139,14 +153,30 @@ def _launch(args):
 				str(left), str(right),
 			],
 			cwd=str(Path(__file__).resolve().parents[2]), env=environment,
-			stdout=log, stderr=subprocess.STDOUT, creationflags=flags,
+			stdout=log, stderr=subprocess.STDOUT,
+			creationflags=_detached_flags(),
 		)
 	session['pid'] = process.pid
+	session['start_time'] = process_start_time(process.pid)
+	identity = fman_process_identity(process.pid)
+	if identity is not None:
+		session['fman_pid'], session['fman_start_time'] = identity
+	(session_root / SESSION_FILE).write_text(
+		json.dumps(session, indent=2), encoding='utf-8')
 	try:
 		_wait_for_state(session, process, log_path)
 	except Exception:
 		shutil.rmtree(session_root, ignore_errors=True)
 		raise
+	subprocess.Popen(
+		[
+			sys.executable,
+			str(Path(__file__).with_name('session_reaper.py')),
+			str(session_root),
+		], creationflags=_detached_flags(), stdin=subprocess.DEVNULL,
+		stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+		cwd=str(Path(__file__).resolve().parents[2]),
+	)
 	_current_path().write_text(json.dumps(session, indent=2), encoding='utf-8')
 	return session
 
@@ -161,16 +191,19 @@ def _run(args):
 		return _launch(args)
 	session = _read_current()
 	if args.action == 'close':
-		subprocess.run(['taskkill', '/PID', str(session['pid']), '/T', '/F'],
-			check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-		try:
-			removed_entries = cleanup_recycle_bin(
-				Path(session['profile']).parent)
-		except OSError:
-			removed_entries = 0
-		shutil.rmtree(Path(session['profile']).parent, ignore_errors=True)
+		session_root = Path(session['profile']).parent
+		if 'start_time' not in session:
+			subprocess.run(['taskkill', '/PID', str(session['pid']), '/T', '/F'],
+				check=False, stdout=subprocess.DEVNULL,
+				stderr=subprocess.DEVNULL)
+		removed_entries = close_session(session_root)
 		_current_path().unlink(missing_ok=True)
 		return {'ok': True, 'recycle_bin_entries_removed': removed_entries}
+	profile = session.get('profile')
+	if profile is not None:
+		session_file = Path(profile).parent / SESSION_FILE
+		if session_file.exists():
+			os.utime(session_file, None)
 	if args.action in ('state', 'commands'):
 		return _api(session, 'GET', '/v1/' + args.action)
 	if args.action == 'files':
@@ -232,41 +265,6 @@ def _run(args):
 		Path(args.png_path).write_bytes(data)
 		return {'path': str(Path(args.png_path).resolve())}
 	raise RuntimeError('Unknown command.')
-
-
-def _parser():
-	parser = argparse.ArgumentParser(prog='fman_ui')
-	commands = parser.add_subparsers(dest='action', required=True)
-	launch = commands.add_parser('launch')
-	launch.add_argument('--left')
-	launch.add_argument('--right')
-	for name in ('state', 'commands', 'close', 'dialog'):
-		commands.add_parser(name)
-	command = commands.add_parser('command')
-	command.add_argument('name')
-	command.add_argument('args_json', nargs='?', default='{}')
-	command.add_argument('--pane', type=int, default=0)
-	command.add_argument('--settle', type=int, default=500)
-	files = commands.add_parser('files')
-	files.add_argument('--pane', type=int, default=0)
-	keys = commands.add_parser('keys')
-	keys.add_argument('chords', nargs='+')
-	keys.add_argument('--settle', type=int, default=500)
-	type_text = commands.add_parser('type')
-	type_text.add_argument('text')
-	type_text.add_argument('--settle', type=int, default=500)
-	click = commands.add_parser('click')
-	choice = click.add_mutually_exclusive_group(required=True)
-	choice.add_argument('--file')
-	choice.add_argument('--x', type=int)
-	click.add_argument('--y', type=int)
-	click.add_argument('--pane', type=int, default=0)
-	click.add_argument('--right', action='store_true')
-	click.add_argument('--double', action='store_true')
-	click.add_argument('--settle', type=int, default=500)
-	screenshot = commands.add_parser('screenshot')
-	screenshot.add_argument('png_path')
-	return parser
 
 
 def main(argv=None):
