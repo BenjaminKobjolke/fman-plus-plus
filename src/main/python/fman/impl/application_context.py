@@ -83,9 +83,11 @@ class DevelopmentApplicationContext(ApplicationContext):
 		sys.argv[:] = [arg for arg in sys.argv if arg != SINGLE_PANE_ARG]
 		if PLATFORM == 'Windows':
 			from fman.impl.autostart import TRAY_ARG, apply
+			from fman.impl.taskbar_grouping import apply as apply_taskbar_grouping
 			self._start_hidden = TRAY_ARG in sys.argv
 			sys.argv[:] = [arg for arg in sys.argv if arg != TRAY_ARG]
 			apply(self.local_settings)
+			apply_taskbar_grouping(self.local_settings)
 		if '--automation-demo' in sys.argv:
 			return self._run_demo()
 		if self.single_instance_enabled:

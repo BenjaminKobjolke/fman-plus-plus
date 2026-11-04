@@ -33,6 +33,15 @@ To allow multiple independent fman windows again, set `single_instance` to
 
 The default is `true` (single instance on). Create the file if it does not exist.
 
+### Taskbar buttons
+
+When `single_instance` is `false`, set `taskbar_grouping` to `false` in the
+same settings file to give each fman window its own taskbar button. The default
+is `true`, which keeps fman windows grouped. This setting is read at startup;
+separate taskbar buttons do not merge into a pinned fman icon. Windows also has
+a system-wide switch under Settings > Personalization > Taskbar > Taskbar
+behaviors > "Combine taskbar buttons and hide labels".
+
 ## How it works
 
 The first instance listens on a per-user local socket
