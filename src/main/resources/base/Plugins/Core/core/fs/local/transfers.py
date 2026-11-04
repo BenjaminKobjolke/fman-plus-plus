@@ -14,6 +14,7 @@ from fman.url import (
 )
 
 from core.fs.local import locks
+from core.fs.local import read_only
 
 
 class LocalTransfers:
@@ -82,7 +83,8 @@ class LocalTransfers:
 		os_src_path = self._url_to_os_path(src_path)
 		dst_path = splitscheme(dst_url)[1]
 		os_dst_path = self._url_to_os_path(dst_path)
-		Path(os_src_path).replace(os_dst_path)
+		with read_only.writable_destination(os_dst_path):
+			Path(os_src_path).replace(os_dst_path)
 		self.notify_file_removed(src_path)
 		self.notify_file_added(dst_path)
 	def copy(self, src_url, dst_url):
@@ -152,7 +154,11 @@ class CopyFile(Task):
 							num_written += fdst.write(buf)
 							self.set_progress(num_written)
 				copystat(src, temp, follow_symlinks=False)
-				os.replace(temp, dst)
+				if dst_existed:
+					with read_only.writable_destination(dst):
+						os.replace(temp, dst)
+				else:
+					os.replace(temp, dst)
 			except BaseException:
 				try:
 					remove(temp)

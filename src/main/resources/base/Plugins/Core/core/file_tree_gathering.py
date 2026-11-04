@@ -118,7 +118,10 @@ class FileTreeGathering:
 		if not self._is_taken(dest):
 			return dest
 		with self._alert_lock:
-			return self._ask_overwrite(src, dest)
+			result = self._ask_overwrite(src, dest)
+			if result == dest:
+				return self._read_only_overwrite.confirm(self, dest)
+			return result
 	def _ask_overwrite(self, src, dest):
 		if self._conflict_policy == OverwriteChoice.RENAME:
 			return self._reserve_renamed_dest(dest)

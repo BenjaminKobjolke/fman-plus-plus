@@ -234,7 +234,7 @@ class LocalFileSystemTest(TestCase):
 		This test checks that 2) is only performed if 1) was successful, and
 		thus that no data loss occurs. It does this by forcing LFS to use the
 		copy-move (and not the rename) implementation. Then, it makes 1) fail by
-		making dst read-only.
+		forcing the atomic replacement to raise PermissionError.
 		"""
 		with TemporaryDirectory() as tmp_dir:
 			src = Path(tmp_dir, 'src')
@@ -246,33 +246,21 @@ class LocalFileSystemTest(TestCase):
 			dst_dir.mkdir()
 			dst = dst_dir / 'dst'
 			dst.touch()
-			# Make dst read-only.
-			dst.chmod(dst.stat().st_mode ^ S_IWRITE)
-			try:
-				permission_error_raised = False
-				for task in self._fs._prepare_move(
-					src_url, as_url(dst), use_rename=False
-				):
-					try:
+			with patch(
+				'core.fs.local.transfers.os.replace',
+				side_effect=PermissionError(13, 'permission denied')
+			):
+				with self.assertRaises(PermissionError):
+					for task in self._fs._prepare_move(
+						src_url, as_url(dst), use_rename=False
+					):
 						task()
-					except PermissionError:
-						permission_error_raised = True
-				self.assertTrue(
-					permission_error_raised,
-					'PermissionError was not raised upon writing to read-only '
-					'dst. This test may have to be updated to trigger this '
-					'error in a different way.'
-				)
-				self.assertTrue(
-					src.exists(),
-					'LocalFileSystem deleted the source file even though '
-					'copying it to the destination failed. This can lead to '
-					'data loss!'
-				)
-			finally:
-				# Make file writable again. Otherwise cleaning up the temporary
-				# directory fails on Windows.
-				dst.chmod(dst.stat().st_mode | S_IWRITE)
+			self.assertTrue(
+				src.exists(),
+				'LocalFileSystem deleted the source file even though '
+				'copying it to the destination failed. This can lead to '
+				'data loss!'
+			)
 	def test_move_across_devices(self):
 		with TemporaryDirectory() as tmp_dir:
 			src_parent = Path(tmp_dir, 'src_parent')

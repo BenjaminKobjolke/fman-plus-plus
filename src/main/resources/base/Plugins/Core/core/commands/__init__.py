@@ -27,6 +27,7 @@ _COMMAND_MODULES = (
 	'editor', 'external', 'file_properties', 'file_types', 'goto',
 	'hidden_files', 'language',
 	'last_visited', 'locked_files', 'locking_processes', 'overwrite_details',
+	'read_only_overwrite',
 	'navigation', 'network_shares', 'open_with', 'opening', 'pack', 'palette',
 	'pane_view',
 	'places', 'plugins', 'release_notes', 'rename', 'selection',

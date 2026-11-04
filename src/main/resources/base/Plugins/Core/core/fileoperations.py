@@ -7,6 +7,7 @@ from threading import Lock, Thread
 from urllib.parse import urlparse
 from core.move_rollback import MoveRollback
 from core.transfer_completion import TransferCompletion
+from core.read_only_overwrite import ReadOnlyOverwrite
 
 import fman.fs
 
@@ -43,6 +44,7 @@ class FileTreeOperation(FileTreeGathering, Task):
 		self._worker_count = 1
 		self._cannot_move_to_self_shown = False
 		self._conflict_policy = None
+		self._read_only_overwrite = ReadOnlyOverwrite()
 		self._reserved_dests = set()
 		self.renamed_dests = {}
 		self._ignore_exceptions = False

@@ -456,6 +456,10 @@ class CopyFilesTest(FileTreeOperationAT, TestCase):
 	def __init__(self, methodName='runTest'):
 		super().__init__(CopyFiles, 'copy', methodName)
 	@skipIf(_is_root, 'Skip this test when run by root')
+	@skipIf(
+		PLATFORM == 'Windows',
+		'Windows replaces read-only files; see test_read_only_overwrite'
+	)
 	def test_overwrite_locked_file(self):
 		# Would also like to have this as a test case in MoveFilesTest but the
 		# call to chmod(0o444) which we use to lock the file doesn't prevent the
