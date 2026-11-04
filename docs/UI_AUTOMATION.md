@@ -18,6 +18,11 @@ fixtures, then removes Recycle Bin entries whose original paths are inside this
 session folder. It leaves caller-provided folders and other Recycle Bin entries
 alone; the close result reports how many entries it removed.
 
+A session that receives no driver command for 30 minutes, or whose fman process
+has exited, is closed by a watchdog started with that session. The next
+`launch` also removes such old sessions. `close` is still required at the end
+of every check.
+
 All commands except `launch` and `close` read the session information written
 to `%TEMP%\fman-ui\current.json`; the driver never reads `%APPDATA%\fman`.
 The instance runs without user plugins and does not move or click the real
