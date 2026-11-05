@@ -4,6 +4,7 @@ from core.commands import editor as editor_module
 from core.commands.editor import _find_extension_start, configure_editor
 from core.text_editor import build_editor_setting, format_arguments
 from fman import CANCEL, OK
+from fman.url import as_url
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -155,3 +156,19 @@ class OpenWithEditorConfigurationTest(TestCase):
 			patch.object(editor_module, 'configure_editor') as wizard:
 			self.assertEqual({}, editor_module.OpenWithEditor(None)._get_editor())
 			wizard.assert_not_called()
+
+
+class OpenWithEditorUncTest(TestCase):
+	def test_unc_path_is_passed_to_editor_as_a_windows_path(self):
+		url = as_url(r'\\localhost\c$\Windows\win.ini')
+		with patch.object(editor_module, 'resolve', return_value=url), \
+				patch.object(editor_module, 'load_json', return_value={
+					'editor': {'args': ['editor.exe', '{file}']}
+				}), \
+				patch.object(editor_module.os.path, 'exists', return_value=True), \
+				patch.object(editor_module, 'Popen') as popen:
+			editor_module.OpenWithEditor(None)(url=url)
+
+		kwargs = popen.call_args.kwargs
+		self.assertEqual(r'\\localhost\c$\Windows\win.ini', kwargs['args'][-1])
+		self.assertNotIn('cwd', kwargs)
