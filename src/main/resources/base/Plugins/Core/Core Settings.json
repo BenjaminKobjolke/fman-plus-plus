@@ -6,6 +6,15 @@
 		".xpi": "zip://",
 		".7z": "7z://",
 		".xz": "7z://",
+		".tar.xz": "ctar://",
+		".txz": "ctar://",
+		".tar.gz": "ctar://",
+		".tgz": "ctar://",
+		".tar.bz2": "ctar://",
+		".tbz2": "ctar://",
+		".tbz": "ctar://",
+		".tar.zst": "ctar://",
+		".tzst": "ctar://",
 		".tar": "tar://",
 		".rar": "rar://"
 	}

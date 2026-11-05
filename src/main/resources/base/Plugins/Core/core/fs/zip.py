@@ -107,7 +107,9 @@ class _7ZipFileSystem(FileSystem):
 		if src_scheme == self.scheme and dst_scheme == 'file://':
 			zip_path, path_in_zip = self._split(src_path)
 			dst_ospath = as_human_readable(dst_url)
-			return [Extract(self._fs, zip_path, path_in_zip, dst_ospath)]
+			return [Extract(
+				self._fs, self._7zip_archive(zip_path), path_in_zip, dst_ospath
+			)]
 		elif src_scheme == 'file://' and dst_scheme == self.scheme:
 			zip_path, path_in_zip = self._split(dst_path)
 			src_ospath = as_human_readable(src_url)
@@ -211,7 +213,8 @@ class _7ZipFileSystem(FileSystem):
 							self.makedirs(parent_fullpath)
 		return CM()
 	def _split(self, path):
-		for suffix in self._suffixes:
+		# Try longer suffixes first: .tbz and .zip prefix .tbz2 and .zipx.
+		for suffix in sorted(self._suffixes, key=len, reverse=True):
 			try:
 				split_point = path.lower().index(suffix) + len(suffix)
 			except ValueError:
@@ -219,10 +222,13 @@ class _7ZipFileSystem(FileSystem):
 			else:
 				return path[:split_point], path[split_point:].lstrip('/')
 		raise filenotfounderror(self.scheme + path) from None
+	def _7zip_archive(self, zip_path):
+		"""The file 7-Zip reads; subclasses may substitute a decompressed copy."""
+		return zip_path
 	def _iter_infos(self, path):
 		zip_path, path_in_zip = self._split(path)
 		self._raise_filenotfounderror_if_not_exists(zip_path)
-		args = ['l', '-ba', '-slt', zip_path]
+		args = ['l', '-ba', '-slt', self._7zip_archive(zip_path)]
 		if path_in_zip:
 			args.append(path_in_zip)
 		# We can hugely improve performance by making 7-Zip exclude children of

@@ -43,6 +43,21 @@ class GetHandlerForArchiveTest(TestCase):
 			settings = load(settings_file)
 		with patch('core.commands.archives.load_json', return_value=settings):
 			self.assertEqual('7z://', _get_handler_for_archive('archive.xz'))
+	def test_compressed_tar_files_use_the_compressed_tar_filesystem(self):
+		with open(Path(__file__).parents[3] / 'Core Settings.json') as settings_file:
+			settings = load(settings_file)
+		with patch('core.commands.archives.load_json', return_value=settings):
+			for suffix in (
+				'.tar.xz', '.txz', '.tar.gz', '.tgz', '.tar.bz2', '.tbz2',
+				'.tbz', '.tar.zst', '.tzst'
+			):
+				with self.subTest(suffix=suffix):
+					self.assertEqual(
+						'ctar://',
+						_get_handler_for_archive('archive' + suffix)
+					)
+			self.assertEqual('7z://', _get_handler_for_archive('archive.xz'))
+			self.assertEqual('tar://', _get_handler_for_archive('archive.tar'))
 	def test_unknown_suffix_has_no_handler(self):
 		self.assertIsNone(self._handler('notes.txt'))
 	def test_no_handlers_configured(self):
