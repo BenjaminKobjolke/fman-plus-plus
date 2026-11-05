@@ -92,6 +92,32 @@ place (`a`, `d`, `rn`, `u`), never for extraction, and a missing or locked
 
 Covered by `core/tests/fs/test_zip_temp_archive.py`.
 
+## Passwords
+
+Copying a file out of an encrypted zip or 7z archive prompts for its password
+when needed. fman keeps a successful password in memory until it closes; it is
+never written to disk. A wrong password clears the remembered value, shows
+"Wrong password.", and prompts again. Each attempt extracts into a fresh
+temporary directory because 7-Zip can leave empty files behind after a failed
+attempt. Only a successful extraction is moved to the destination.
+
+7-Zip receives passwords through stdin so they do not appear in its command
+line. For encrypted archive creation, fman uses the bare `-p` switch and sends
+the password on stdin. For extraction, the bundled Windows 7-Zip 26.00 treats
+bare `-p` as an empty password, so fman omits that switch and lets 7-Zip read
+stdin. Password runs merge stderr into stdout because 7-Zip reports wrong
+password errors there; fman identifies those messages and retries with a new
+prompt.
+
+The `Pack to archive with password` command asks for the password twice. Zip
+archives use AES-256, which Windows Explorer's built-in zip support cannot
+open; use 7-Zip File Manager or WinRAR. 7-Zip cannot create zip archives with
+non-ASCII passwords, so fman refuses those and suggests `.7z`; 7z archives
+accept non-ASCII passwords. The archive file names remain visible because
+header encryption is not enabled. fman cannot browse 7z archives whose file
+names are encrypted, or delete and rename entries inside an encrypted solid
+7z archive.
+
 ## Code map
 
 | Where | What |

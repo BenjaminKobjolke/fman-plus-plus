@@ -31,7 +31,7 @@ class ViewerCommandFlagTest(TestCase):
 			'AddPane', 'Copy', 'Move', 'RemovePane', 'Symlink', 'CopyPathsToClipboard',
 			'CopyFileName', 'CopyFilePath',
 			'OpenWithEditor', 'OpenTerminal', 'OpenNativeFileManager',
-			'ShowExplorerProperties', 'Pack', 'OpenWith',
+			'ShowExplorerProperties', 'Pack', 'PackWithPassword', 'OpenWith',
 			'ShowConsole', 'ShowConsoleWindow', 'ShowOnlyActivePane', 'ShowAllPanes',
 			'SetTextEditor',
 		}

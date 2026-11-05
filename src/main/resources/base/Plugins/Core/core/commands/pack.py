@@ -7,6 +7,7 @@ and a suffix nobody registered is refused before any file is read.
 """
 from core.commands.archives import _get_handler_for_archive
 from core.commands.deletion import _describe
+from core.fs import archive_password
 from core.path_completion import complete_path
 from core.commands.transfer import _from_human_readable, get_dest_suggestion
 from core.commands.util import chosen_files, get_opposite_pane
@@ -22,10 +23,20 @@ from functools import partial
 import fman.fs
 import re
 
-__all__ = ['Pack']
+__all__ = ['Pack', 'PackWithPassword']
 
 # Suggested when the pane's directory has no name of its own ('drives://').
 _DEFAULT_ARCHIVE_NAME = 'archive'
+_PASSWORD_PACK_ALIAS = 'Pack to archive with password (.zip, .7z)'
+_PASSWORD_PACK_PROMPT = 'Pack %s to password-protected (.zip, .7z):'
+_PASSWORD_PROMPT = 'Password:'
+_CONFIRM_PASSWORD_PROMPT = 'Confirm password:'
+_PASSWORD_MISMATCH_MESSAGE = 'The passwords do not match.'
+_TAR_PASSWORD_MESSAGE = 'Tar archives cannot be password-protected.'
+_NON_ASCII_ZIP_MESSAGE = (
+	'Zip archives do not support non-ASCII passwords in 7-Zip. '
+	'Choose a .7z archive instead.'
+)
 
 class Pack(DirectoryPaneCommand):
 
@@ -45,7 +56,7 @@ class Pack(DirectoryPaneCommand):
 		suggested_dst, selection_start, selection_end = \
 			get_dest_suggestion(dest_url)
 		dest, ok = show_prompt(
-			'Pack %s to (.zip, .7z, .tar):' % _describe(files), suggested_dst,
+			self._get_prompt(files), suggested_dst,
 			selection_start, selection_end,
 			get_completions=partial(
 				complete_path, dest_dir=dest_dir,
@@ -59,6 +70,9 @@ class Pack(DirectoryPaneCommand):
 				show_alert('Sorry, but this archive format is not supported.')
 				return
 			dest_rewritten = scheme + splitscheme(dest)[1]
+			password = self._prepare_password(dest_rewritten)
+			if password is False:
+				return
 			try:
 				# Create empty archive:
 				mkdir(dest_rewritten)
@@ -69,9 +83,42 @@ class Pack(DirectoryPaneCommand):
 				)
 				if not answer & YES:
 					return
+			if password is not None:
+				archive_password.remember_password(
+					splitscheme(dest_rewritten)[1], password
+				)
 			submit_task(_Pack(files, dest_rewritten))
+	def _get_prompt(self, files):
+		return 'Pack %s to (.zip, .7z, .tar):' % _describe(files)
+	def _prepare_password(self, archive_url):
+		return None
 	def is_visible(self):
 		return bool(self.pane.get_file_under_cursor())
+
+class PackWithPassword(Pack):
+	aliases = (_PASSWORD_PACK_ALIAS,)
+	def _get_prompt(self, files):
+		return _PASSWORD_PACK_PROMPT % _describe(files)
+	def _prepare_password(self, archive_url):
+		file_name = basename(archive_url).lower()
+		if file_name.endswith(('.tar', '.tar.gz', '.tar.bz2', '.tar.xz')):
+			show_alert(_TAR_PASSWORD_MESSAGE)
+			return False
+		password, ok = show_prompt(_PASSWORD_PROMPT, '', password=True)
+		if not ok:
+			return False
+		confirmation, ok = show_prompt(
+			_CONFIRM_PASSWORD_PROMPT, '', password=True
+		)
+		if not ok:
+			return False
+		if password != confirmation:
+			show_alert(_PASSWORD_MISMATCH_MESSAGE)
+			return False
+		if file_name.endswith('.zip') and not password.isascii():
+			show_alert(_NON_ASCII_ZIP_MESSAGE)
+			return False
+		return password
 
 def _suggest_archive_name(dir_url):
 	scheme, path = splitscheme(dir_url)

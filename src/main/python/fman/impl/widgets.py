@@ -542,13 +542,13 @@ class MainWindow(QMainWindow):
 	@run_in_main_thread
 	def show_prompt(
 		self, text, default='', selection_start=0, selection_end=None,
-		get_completions=None
+		get_completions=None, password=False
 	):
 		# Let API users pass arbitrary objects by converting str(text):
 		text_str = str(text)
 		dialog = Prompt(
 			self, APP_NAME, text_str, default, selection_start, selection_end,
-			get_completions=get_completions
+			get_completions=get_completions, password=password
 		)
 		dialog.setTextValue(default)
 		result = self.exec_dialog(dialog, in_window=True)
@@ -978,7 +978,7 @@ class Prompt(QInputDialog):
 
 	def __init__(
 		self, parent, title, text, default='', selection_start=0,
-		selection_end=None, get_completions=None
+		selection_end=None, get_completions=None, password=False
 	):
 		super().__init__(parent)
 		self.setWindowTitle(title)
@@ -987,7 +987,9 @@ class Prompt(QInputDialog):
 		self._selection_end = selection_end
 		if default:
 			self.setTextValue(default)
-		self.setTextEchoMode(QLineEdit.Normal)
+		self.setTextEchoMode(
+			QLineEdit.Password if password else QLineEdit.Normal
+		)
 		self.setFocusProxy(self._get_line_edit())
 		self._request_immediate_repaint = False
 		self._is_second_paint = False

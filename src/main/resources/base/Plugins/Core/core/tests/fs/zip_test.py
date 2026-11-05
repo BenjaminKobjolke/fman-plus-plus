@@ -1,8 +1,10 @@
 from errno import ENOENT
-from core.fs.zip import ZipFileSystem, SevenZipFileSystem
+from core.fs import archive_password
+from core.fs.zip import ZipFileSystem, SevenZipFileSystem, SEVEN_ZIP_BINARY
 import core.fs.zip as zip_module
 from core.tests import StubFS
 from datetime import date, datetime
+from fman import Task
 from fman.url import as_url, join, as_human_readable, splitscheme
 from os import listdir
 from pathlib import Path
@@ -10,12 +12,152 @@ from shutil import copyfile
 from tempfile import TemporaryDirectory
 from unicodedata import normalize
 from unittest import TestCase
+from unittest.mock import patch
 from zipfile import ZipFile
 
 import os
 import os.path
+import subprocess
 
 class ZipFileSystemTest(TestCase):
+	def test_extracting_password_protected_archives_prompts_once(self):
+		for extension, scheme in (('.zip', 'zip://'), ('.7z', '7z://')):
+			with self.subTest(extension=extension), TemporaryDirectory() as tmp_dir:
+				archive_path = self._create_encrypted_archive(tmp_dir, extension)
+				fs = self._filesystem_for(archive_path, extension)
+				with patch.object(
+					archive_password, 'ask_password', return_value='secret'
+				) as ask_password:
+					for name in ('one.txt', 'two.txt'):
+						destination = os.path.join(tmp_dir, 'out-' + name)
+						fs.copy(
+							as_url(
+								archive_path.replace(os.sep, '/') + '/' + name, scheme
+							),
+							as_url(destination),
+						)
+						self.assertEqual(name, Path(destination).read_text())
+				ask_password.assert_called_once()
+	def test_wrong_then_right_password_retries_without_leaving_partial_file(self):
+		for extension in ('.zip', '.7z'):
+			with self.subTest(extension=extension), TemporaryDirectory() as tmp_dir:
+				archive_path = self._create_encrypted_archive(tmp_dir, extension)
+				fs = self._filesystem_for(archive_path, extension)
+				destination_dir = os.path.join(tmp_dir, 'destination')
+				os.mkdir(destination_dir)
+				destination = os.path.join(destination_dir, 'output.txt')
+				with patch.object(
+					archive_password, 'ask_password', side_effect=('wrong', 'secret')
+				) as ask_password:
+					fs.copy(
+						self._archive_url(archive_path, 'one.txt', extension),
+						as_url(destination),
+					)
+				self.assertEqual('one.txt', Path(destination).read_text())
+				self.assertEqual(2, ask_password.call_count)
+				self.assertFalse(ask_password.call_args_list[0].kwargs['wrong_password'])
+				self.assertTrue(ask_password.call_args_list[1].kwargs['wrong_password'])
+				self.assertEqual(['output.txt'], os.listdir(destination_dir))
+				self.assertGreater(Path(destination).stat().st_size, 0)
+	def test_cancelling_password_prompt_does_not_create_destination(self):
+		for extension in ('.zip', '.7z'):
+			with self.subTest(extension=extension), TemporaryDirectory() as tmp_dir:
+				archive_path = self._create_encrypted_archive(tmp_dir, extension)
+				fs = self._filesystem_for(archive_path, extension)
+				destination = os.path.join(tmp_dir, 'output.txt')
+				with patch.object(
+					archive_password, 'ask_password', side_effect=Task.Canceled
+				):
+					with self.assertRaises(Task.Canceled):
+						fs.copy(
+							self._archive_url(archive_path, 'one.txt', extension),
+							as_url(destination)
+						)
+				self.assertFalse(Path(destination).exists())
+	def test_archive_additions_use_remembered_password_and_aes_for_zip(self):
+		for extension in ('.zip', '.7z'):
+			with self.subTest(extension=extension), TemporaryDirectory() as tmp_dir:
+				archive_path = os.path.join(tmp_dir, 'protected' + extension)
+				Path(tmp_dir, 'initial.txt').write_text('initial')
+				if extension == '.zip':
+					with ZipFile(archive_path, 'w') as archive:
+						archive.write(Path(tmp_dir, 'initial.txt'), 'initial.txt')
+				else:
+					zip_module._run_7zip(
+						['a', archive_path, 'initial.txt'], cwd=tmp_dir
+					)
+				fs = self._filesystem_for(archive_path, extension)
+				archive_password.remember_password(archive_path, 'secret')
+				source = Path(tmp_dir, 'added.txt')
+				source.write_text('added')
+				fs.copy(
+					as_url(str(source)),
+					self._archive_url(archive_path, 'added.txt', extension),
+				)
+				if extension == '.zip':
+					output = subprocess.run(
+						[SEVEN_ZIP_BINARY, 'l', '-slt', archive_path],
+						check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+						text=True
+					).stdout
+					entry = output.split('Path = added.txt', 1)[1]
+					self.assertIn('Method = AES-256', entry)
+				with TemporaryDirectory() as extracted:
+					destination = os.path.join(extracted, 'added.txt')
+					with patch.object(
+						archive_password, 'ask_password', return_value='secret'
+					) as ask_password:
+						fs.copy(
+							self._archive_url(archive_path, 'added.txt', extension),
+							as_url(destination)
+						)
+					self.assertEqual('added', Path(destination).read_text())
+					ask_password.assert_not_called()
+	def test_plain_archives_never_prompt_for_a_password(self):
+		for extension in ('.zip', '.7z'):
+			with self.subTest(extension=extension), TemporaryDirectory() as tmp_dir:
+				archive_path = os.path.join(tmp_dir, 'plain' + extension)
+				if extension == '.zip':
+					with ZipFile(archive_path, 'w') as archive:
+						archive.writestr('file.txt', 'plain')
+				else:
+					Path(tmp_dir, 'file.txt').write_text('plain')
+					zip_module._run_7zip(
+						['a', archive_path, 'file.txt'], cwd=tmp_dir
+					)
+				fs = self._filesystem_for(archive_path, extension)
+				destination = os.path.join(tmp_dir, 'output.txt')
+				with patch.object(archive_password, 'ask_password') as ask_password:
+					fs.copy(
+						self._archive_url(archive_path, 'file.txt', extension),
+						as_url(destination)
+					)
+				self.assertEqual('plain', Path(destination).read_text())
+				ask_password.assert_not_called()
+	def _filesystem_for(self, archive_path, extension):
+		if extension == '.7z':
+			return SevenZipFileSystem(StubFS(), {extension})
+		return self._fs
+	def _archive_url(self, archive_path, path_in_archive, extension):
+		scheme = '7z://' if extension == '.7z' else 'zip://'
+		return as_url(archive_path.replace(os.sep, '/') + '/' + path_in_archive, scheme)
+	def _create_encrypted_archive(self, tmp_dir, extension):
+		archive_path = os.path.join(tmp_dir, 'protected' + extension)
+		for name in ('one.txt', 'two.txt'):
+			Path(tmp_dir, name).write_text(name)
+		args = [SEVEN_ZIP_BINARY]
+		if os.name == 'nt':
+			args.append('-sccUTF-8')
+		args.extend(['a', archive_path, 'one.txt', 'two.txt', '-p'])
+		if extension == '.zip':
+			args.append('-mem=AES256')
+		result = subprocess.run(
+			args, cwd=tmp_dir, input='secret\n', text=True,
+			stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+		)
+		if result.returncode:
+			self.fail('Could not create encrypted fixture: ' + result.stdout)
+		return archive_path
 	def test_7z_fractional_modified_timestamp(self):
 		with TemporaryDirectory() as tmp_dir:
 			zip_path = os.path.join(tmp_dir, 'test.7z')
@@ -396,6 +538,7 @@ class ZipFileSystemTest(TestCase):
 		ZipFile(path, 'w').close()
 	def setUp(self):
 		super().setUp()
+		archive_password.clear()
 		fman_fs = StubFS()
 		self._fs = ZipFileSystem(fman_fs, {'.zip'})
 		fman_fs.add_child(self._fs)
@@ -414,5 +557,6 @@ class ZipFileSystemTest(TestCase):
 		)
 		self.maxDiff = None
 	def tearDown(self):
+		archive_password.clear()
 		self._tmp_dir.cleanup()
 		super().tearDown()

@@ -1,4 +1,5 @@
 from collections import namedtuple, deque
+from core.fs import archive_password
 from core.os_ import is_arch, is_mac
 from core.util import filenotfounderror
 from datetime import datetime
@@ -8,7 +9,7 @@ from fman.url import as_url, splitscheme, as_human_readable, basename
 from io import UnsupportedOperation, FileIO, BufferedReader, TextIOWrapper
 from os.path import join, dirname
 from pathlib import PurePosixPath, Path
-from subprocess import Popen, PIPE, DEVNULL, CalledProcessError
+from subprocess import Popen, PIPE, STDOUT, DEVNULL, CalledProcessError
 from tempfile import TemporaryDirectory
 
 import fman.fs
@@ -278,7 +279,8 @@ class _7ZipFileSystem(FileSystem):
 
 class _7zipTaskWithProgress(Task):
 	def run_7zip_with_progress(self, args, **kwargs):
-		with _7zip(args, pty=True, **kwargs) as process:
+		pty = kwargs.pop('pty', True)
+		with _7zip(args, pty=pty, **kwargs) as process:
 			for line in process.stdout_lines:
 				try:
 					self.check_canceled()
@@ -319,7 +321,18 @@ class AddToArchive(_7zipTaskWithProgress):
 				# We need to incur the cost of physically copying the file:
 				self._fman_fs.copy(as_url(src), as_url(dest))
 			args = ['a', self._zip_path, self._path_in_zip]
-			self.run_7zip_with_progress(args, cwd=tmp_dir)
+			password = archive_password.get_password(self._zip_path)
+			if password is not None:
+				args.append('-p')
+				if self._zip_path.lower().endswith('.zip'):
+					args.append('-mem=AES256')
+				# shortcut: Unix's pty-based progress runner can echo supplied stdin.
+				self.run_7zip_with_progress(
+					args, cwd=tmp_dir, stdin_text=password + '\n',
+					pty=PLATFORM == 'Windows'
+				)
+			else:
+				self.run_7zip_with_progress(args, cwd=tmp_dir)
 			dest_path = self._zip_path + '/' + self._path_in_zip
 			self._zip_fs.notify_file_added(dest_path)
 
@@ -331,26 +344,45 @@ class Extract(Task):
 		self._path_in_zip = path_in_zip
 		self._dst_ospath = dst_ospath
 	def __call__(self):
-		# Create temp dir next to dst_path to ensure Path.replace(...) works
-		# because it's on the same file system.
-		tmp_dir = _create_temp_dir_next_to(self._dst_ospath)
-		try:
-			args = ['x', self._zip_path, '-o' + tmp_dir.name]
-			if self._path_in_zip:
-				args.insert(2, self._path_in_zip)
-			_run_7zip(args)
-			# Use fman.fs.move(...) so fman's file:// caches are notified of the
-			# new file:
-			self._fman_fs.move(
-				join(as_url(tmp_dir.name), self._path_in_zip),
-				as_url(self._dst_ospath)
-			)
-		finally:
+		password = archive_password.get_password(self._zip_path)
+		while True:
+			# A failed 7-Zip extraction may leave empty files behind, so each
+			# password attempt must write to a fresh temporary directory.
+			tmp_dir = _create_temp_dir_next_to(self._dst_ospath)
 			try:
-				tmp_dir.cleanup()
-			except FileNotFoundError:
-				# This happens when path_in_zip = ''
-				pass
+				args = ['x', self._zip_path, '-o' + tmp_dir.name]
+				if self._path_in_zip:
+					args.insert(2, self._path_in_zip)
+				try:
+					_run_7zip(
+						args,
+						stdin_text=(password + '\n') if password is not None else None,
+					)
+				except _7zipError as error:
+					if not archive_password.is_password_error(error.output or ''):
+						raise
+					archive_password.forget_password(self._zip_path)
+					password = archive_password.ask_password(
+						self._zip_path,
+						self,
+						wrong_password=password is not None,
+					)
+					continue
+				if password is not None:
+					archive_password.remember_password(self._zip_path, password)
+				# Use fman.fs.move(...) so fman's file:// caches are notified of the
+				# new file:
+				self._fman_fs.move(
+					join(as_url(tmp_dir.name), self._path_in_zip),
+					as_url(self._dst_ospath)
+				)
+				return
+			finally:
+				try:
+					tmp_dir.cleanup()
+				except FileNotFoundError:
+					# Moving the archive root may move the temp directory itself.
+					pass
 
 class CopyBetweenArchives(Task):
 	def __init__(
@@ -416,9 +448,10 @@ def _basename(zip_path, path_in_zip):
 	sep = ('/' if path_in_zip else '')
 	return (zip_path + sep + path_in_zip).rsplit('/', 1)[-1]
 
-def _run_7zip(args, cwd=None, pty=False):
-	with _7zip(args, cwd=cwd, pty=pty):
-		pass
+def _run_7zip(args, cwd=None, pty=False, stdin_text=None):
+	with _7zip(args, cwd=cwd, pty=pty, stdin_text=stdin_text) as process:
+		for _ in process.stdout_lines:
+			pass
 
 def _create_temp_dir_next_to(path):
 	return TemporaryDirectory(
@@ -429,11 +462,12 @@ class _7zip:
 
 	_7ZIP_WARNING = 1
 
-	def __init__(self, args, cwd=None, pty=False, kill=False):
+	def __init__(self, args, cwd=None, pty=False, kill=False, stdin_text=None):
 		self._args = args
 		self._cwd = cwd
 		self._pty = pty
 		self._kill = kill
+		self._stdin_text = stdin_text
 		self._killed = False
 		self._process = None
 		self._stdout_lines = deque(maxlen=100)
@@ -442,7 +476,7 @@ class _7zip:
 			cls = Popen7ZipWindowsWithProgress if self._pty else Popen7ZipWindows
 		else:
 			cls = Run7ZipViaPty if self._pty else Popen7ZipUnix
-		self._process = cls(self._args, self._cwd)
+		self._process = cls(self._args, self._cwd, stdin_text=self._stdin_text)
 		return self
 	@property
 	def stdout_lines(self):
@@ -500,15 +534,20 @@ class _7zipError(CalledProcessError):
 		return result
 
 class Popen7Zip:
-	def __init__(self, args, cwd, env, encoding=None, **kwargs):
+	def __init__(self, args, cwd, env, encoding=None, stdin_text=None, **kwargs):
 		# We need to supply stdin and stderr != None because otherwise on
 		# Windows, when fman is run as a GUI app, we get:
 		# 	OSError: [WinError 6] The handle is invalid
 		# This is likely caused by https://bugs.python.org/issue3905.
 		self._process = Popen(
-			[SEVEN_ZIP_BINARY] + args, stdout=PIPE, stderr=DEVNULL, stdin=DEVNULL,
+			[SEVEN_ZIP_BINARY] + args, stdout=PIPE,
+			stderr=STDOUT if stdin_text is not None else DEVNULL,
+			stdin=PIPE if stdin_text is not None else DEVNULL,
 			cwd=cwd, env=env, **kwargs
 		)
+		if stdin_text is not None:
+			self._process.stdin.write(stdin_text.encode('utf-8'))
+			self._process.stdin.close()
 		self.stdout = SourceClosingTextIOWrapper(self._process.stdout, encoding)
 	def kill(self):
 		self._process.kill()
@@ -516,10 +555,10 @@ class Popen7Zip:
 		return self._process.wait()
 
 class Popen7ZipWindows(Popen7Zip):
-	def __init__(self, args, cwd):
+	def __init__(self, args, cwd, stdin_text=None):
 		args = _get_7zip_args_windows(args)
 		super().__init__(
-			args, cwd, env=None, encoding='utf-8',
+			args, cwd, env=None, encoding='utf-8', stdin_text=stdin_text,
 			startupinfo=self._get_startupinfo()
 		)
 	def _get_startupinfo(self):
@@ -535,9 +574,9 @@ def _get_7zip_args_windows(args):
 	return ['-sccUTF-8'] + args
 
 class Popen7ZipUnix(Popen7Zip):
-	def __init__(self, args, cwd):
+	def __init__(self, args, cwd, stdin_text=None):
 		env, encoding = _get_7zip_env_encoding_unix()
-		super().__init__(args, cwd, env, encoding=encoding)
+		super().__init__(args, cwd, env, encoding=encoding, stdin_text=stdin_text)
 
 def _get_7zip_env_encoding_unix():
 	# According to the README in its source code distribution, p7zip can
@@ -601,9 +640,11 @@ class Run7ZipViaPty:
 		def close(self):
 			self._source.close()
 
-	def __init__(self, args, cwd):
+	def __init__(self, args, cwd, stdin_text=None):
 		env, encoding = _get_7zip_env_encoding_unix()
 		self._pid, fd = self._spawn([SEVEN_ZIP_BINARY] + args, cwd, env)
+		if stdin_text is not None:
+			os.write(fd, stdin_text.encode('utf-8'))
 		self.stdout = self.Stdout(fd, encoding=encoding)
 	def kill(self):
 		os.kill(self._pid, signal.SIGTERM)
@@ -634,8 +675,8 @@ class Popen7ZipWindowsWithProgress(Popen7ZipWindows):
 	Progress lines look like ' 12% 142 - some\file.txt' and are terminated by a
 	lone '\r', which the TextIOWrapper around stdout turns into a line break.
 	"""
-	def __init__(self, args, cwd):
-		super().__init__(['-bsp1'] + args, cwd)
+	def __init__(self, args, cwd, stdin_text=None):
+		super().__init__(['-bsp1'] + args, cwd, stdin_text=stdin_text)
 
 class ZipFileSystem(_7ZipFileSystem):
 	scheme = 'zip://'

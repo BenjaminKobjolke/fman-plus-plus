@@ -339,10 +339,10 @@ def log(*args):
 
 def show_prompt(
 		text, default='', selection_start=0, selection_end=None,
-		get_completions=None):
+		get_completions=None, password=False):
 	return _get_ui().show_prompt(
 		text, default, selection_start, selection_end,
-		get_completions=get_completions
+		get_completions=get_completions, password=password
 	)
 
 def show_status_message(text, timeout_secs=None):

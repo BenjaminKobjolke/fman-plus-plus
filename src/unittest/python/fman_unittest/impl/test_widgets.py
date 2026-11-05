@@ -1,7 +1,19 @@
 from fman.impl.widgets import LOADING_MESSAGE, LOADING_MESSAGE_NETWORK, \
-	format_loading_message, _overlay_pos
+	format_loading_message, _overlay_pos, Prompt
 from PyQt5.QtCore import QRect, QSize
+from PyQt5.QtWidgets import QApplication, QLineEdit
 from unittest import TestCase
+
+class PromptTest(TestCase):
+	@classmethod
+	def setUpClass(cls):
+		cls.app = QApplication.instance() or QApplication([])
+	def test_password_prompt_uses_password_echo_mode(self):
+		prompt = Prompt(None, 'fman', 'Password:', password=True)
+		self.assertEqual(QLineEdit.Password, prompt._get_line_edit().echoMode())
+	def test_prompt_uses_normal_echo_mode_by_default(self):
+		prompt = Prompt(None, 'fman', 'Name:')
+		self.assertEqual(QLineEdit.Normal, prompt._get_line_edit().echoMode())
 
 class FormatLoadingMessageTest(TestCase):
 
