@@ -193,6 +193,9 @@ def _resize_column(col, new_size, widths, min_widths, available_width):
 				delta -= trim
 				if not delta:
 					break
+		overflow = sum(result) - available_width
+		if overflow > 0:
+			result[col] -= min(overflow, result[col] - min_widths[col])
 	else:
 		next_col = col + 1
 		if sum(result) < available_width:

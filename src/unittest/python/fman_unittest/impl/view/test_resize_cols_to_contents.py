@@ -54,6 +54,10 @@ class ResizeColumnTest(TestCase):
 		self._expect([1, 1, 2], 1, 1, [1, 2, 1], [2, 1, 2])
 	def test_enlarge_trims_last_col(self):
 		self._expect([2, 1], 0, 2, [1, 2], [1, 1], 3)
+	def test_enlarge_never_exceeds_available_width(self):
+		self._expect([5, 3, 3], 0, 8, [5, 3, 3], [1, 3, 3], 11)
+	def test_enlarge_partly_trims_then_clamps(self):
+		self._expect([6, 3, 3], 0, 8, [5, 4, 3], [1, 3, 3], 12)
 	def test_rightalign_last_col(self):
 		self._expect([1, 2, 1], 0, 1, [2, 1, 1], [1, 1, 1])
 	def _expect(
