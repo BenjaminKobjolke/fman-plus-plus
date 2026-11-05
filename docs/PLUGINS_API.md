@@ -78,6 +78,12 @@ ancestry includes one of these:
 | `fman.fs.Column` | A new file-list column |
 | `Viewer` | A file viewer shown inside a pane — see [Viewers](#viewers) |
 
+When a pane has mixed file and folder sorting enabled, fman calls a column's
+`get_mixed_sort_value(url, is_ascending)`. Its default delegates to
+`get_sort_value`, so existing plugin columns keep their current order. A
+column that sorts folders first can override it to remove that priority key.
+See [mixed sorting](functions/mixed-sorting.md) for the built-in behavior.
+
 Two consequences worth knowing:
 
 - **Split your plugin across modules and you must re-export.** Only names
