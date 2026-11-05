@@ -19,10 +19,22 @@ __all__ = ['GoTo', 'GoToListener']
 class GoTo(DirectoryPaneCommand):
 	def __call__(self, query=''):
 		visited_paths = self._get_visited_paths()
-		get_items = SuggestLocations(
-			_with_well_known_dirs(visited_paths), labels=get_well_known_dirs()
+		quicksearch_kwargs = {}
+		if PLATFORM == 'Windows':
+			from core.network_suggestions import NetworkSuggestions
+			network = NetworkSuggestions(visited_paths)
+			get_items = SuggestLocations(
+				_with_well_known_dirs(visited_paths),
+				labels=get_well_known_dirs(), network=network
+			)
+			quicksearch_kwargs['set_refresh'] = network.set_refresh
+		else:
+			get_items = SuggestLocations(
+				_with_well_known_dirs(visited_paths), labels=get_well_known_dirs()
+			)
+		result = show_quicksearch(
+			get_items, self._get_tab_completion, query, **quicksearch_kwargs
 		)
-		result = show_quicksearch(get_items, self._get_tab_completion, query)
 		if result:
 			url = self._get_target_location(*result)
 			if exists(url):
@@ -58,7 +70,7 @@ class GoTo(DirectoryPaneCommand):
 				pass
 		return url
 	def _get_tab_completion(self, query, curr_item):
-		if curr_item:
+		if curr_item and curr_item.value is not None:
 			result = curr_item.title
 			if not result.endswith(os.sep):
 				result += os.sep

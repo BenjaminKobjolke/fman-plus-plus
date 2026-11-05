@@ -2,7 +2,7 @@ from core.commands.goto import _shrink_visited_paths, _with_well_known_dirs, \
 	GoTo, GoToListener
 from core.suggest_locations import SuggestLocations
 from core.util import filenotfounderror
-from fman import PLATFORM
+from fman import PLATFORM, QuicksearchItem
 from fman.impl import incognito
 from fman.url import as_human_readable, as_url
 from os.path import normpath
@@ -56,6 +56,12 @@ class GoToEnvironmentVariablesTest(TestCase):
 				'%FMAN_GOTO_TEST_DIR%', None
 			)
 		self.assertEqual(as_url(path), result)
+
+
+class GoToTabCompletionTest(TestCase):
+	def test_status_item_does_not_complete(self):
+		item = QuicksearchItem(None, r'\\server', hint='Searching network…')
+		self.assertIsNone(GoTo(Mock())._get_tab_completion('', item))
 
 
 class GoToListenerIncognitoTest(TestCase):

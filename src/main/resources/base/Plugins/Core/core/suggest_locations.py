@@ -89,13 +89,14 @@ class SuggestLocations:
 				except (adodbapi.Error, com_error):
 					pass
 
-	def __init__(self, visited_paths, file_system=None, labels=None):
+	def __init__(self, visited_paths, file_system=None, labels=None, network=None):
 		if file_system is None:
 			# Encapsulating filesystem-related functionality in a separate field
 			# allows us to use a different implementation for testing.
 			file_system = self.LocalFileSystem()
 		self.visited_paths = visited_paths
 		self.fs = file_system
+		self.network = network
 		# A longer name-prefix query cannot match after a prefix found no folders.
 		self._prefixes_without_folders = []
 		# {path: name} for directories that have a name of their own, such as
@@ -103,6 +104,13 @@ class SuggestLocations:
 		# _filter_matching.
 		self.labels = labels or {}
 	def __call__(self, query):
+		if self.network is not None:
+			result = self.network(query)
+			if result is not None:
+				items = self._filter_matching(result.dirs, query)
+				if result.status is not None:
+					items.append(result.status)
+				return items
 		possible_dirs = self._gather_dirs(query)
 		return self._filter_matching(possible_dirs, query)
 	def _gather_dirs(self, query):

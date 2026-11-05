@@ -17,6 +17,9 @@ DELETE_CONFIRM = 'delete_confirm'
 TRASH_CONFIRM = 'trash_confirm'
 TRASH_LABEL_RECYCLE_BIN = 'trash_label_recycle_bin'
 TRASH_LABEL_TRASH = 'trash_label_trash'
+GOTO_NETWORK_SEARCHING = 'goto_network_searching'
+GOTO_NETWORK_NO_ANSWER = 'goto_network_no_answer'
+GOTO_NETWORK_NO_SHARES = 'goto_network_no_shares'
 COULD_NOT_READ = 'could_not_read'
 COULD_NOT_CREATE = 'could_not_create'
 SHORTCUT_TARGET_MISSING = 'shortcut_target_missing'
@@ -66,6 +69,9 @@ ENGLISH_TEXT = {
 	TRASH_CONFIRM: 'Do you really want to move %s to the %s?',
 	TRASH_LABEL_RECYCLE_BIN: 'Recycle Bin',
 	TRASH_LABEL_TRASH: 'Trash',
+	GOTO_NETWORK_SEARCHING: 'Searching network…',
+	GOTO_NETWORK_NO_ANSWER: 'Did not answer',
+	GOTO_NETWORK_NO_SHARES: 'No shared folders',
 	COULD_NOT_READ: 'Could not read from %s (%s)',
 	COULD_NOT_CREATE: 'Could not create %s (%s)',
 	SHORTCUT_TARGET_MISSING: 'The destination of %s does not exist.',
