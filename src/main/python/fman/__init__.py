@@ -91,6 +91,7 @@ class DirectoryPane:
 		self._widget = widget
 		self._command_registry = command_registry
 		self._listeners = []
+		self._edit_name_callback = None
 		self._get_file_under_cursor_orig = self.get_file_under_cursor
 
 	def _add_listener(self, listener):
@@ -167,8 +168,17 @@ class DirectoryPane:
 		self._widget.set_location(args[0], args[1], args[2], callback, onerror)
 	def reload(self):
 		self._widget.reload()
-	def edit_name(self, file_url, selection_start=0, selection_end=None):
+	def edit_name(
+		self, file_url, selection_start=0, selection_end=None, callback=None
+	):
+		"""Run callback(file_url, new_name) on confirmation; otherwise broadcast
+		the deprecated listener event."""
+		self._edit_name_callback = callback
 		self._widget.edit_name(file_url, selection_start, selection_end)
+	def _take_edit_name_callback(self):
+		callback = self._edit_name_callback
+		self._edit_name_callback = None
+		return callback
 	def select_all(self):
 		self._widget.select_all()
 	def clear_selection(self):
@@ -310,6 +320,7 @@ class DirectoryPaneListener:
 	def on_doubleclicked(self, file_url):
 		pass
 	def on_name_edited(self, file_url, new_name):
+		"""Deprecated; only fires when edit_name(...) has no callback."""
 		pass
 	# TODO: Rename to after_location_change()
 	def on_path_changed(self):

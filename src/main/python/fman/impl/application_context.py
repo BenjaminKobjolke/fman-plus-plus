@@ -490,7 +490,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 	def controller(self):
 		return Controller(
 			self.plugin_support, self.nonexistent_shortcut_handler,
-			self.usage_helper, self.metrics
+			self.usage_helper, self.metrics, self.plugin_error_handler
 		)
 	@cached_property
 	def nonexistent_shortcut_handler(self):

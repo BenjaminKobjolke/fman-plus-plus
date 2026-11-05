@@ -1,4 +1,4 @@
-from core.commands.rename import _Rename, rename_to
+from core.commands.rename import Rename, _Rename, rename_to
 from core.undo_history import RenameRecord, history
 from core.tests import StubUI
 from fman import CANCEL, RETRY, Task
@@ -77,6 +77,27 @@ class RenameTest(TestCase):
 	def _move(self, fails):
 		if fails:
 			raise PermissionError()
+
+
+class RenameCommandTest(TestCase):
+
+	def test_passes_rename_logic_as_edit_name_callback(self):
+		pane = MagicMock(spec=DirectoryPane)
+		pane.get_file_under_cursor.return_value = 'file://C:/dir/a.txt'
+		with patch('core.commands.rename.is_dir_checked', return_value=False):
+			Rename(pane)()
+
+		pane.edit_name.assert_called_once()
+		callback = pane.edit_name.call_args.kwargs['callback']
+		with patch(
+			'core.commands.rename.name_with_hidden_extension',
+			return_value='b.txt'
+		), patch('core.commands.rename.rename_to') as rename_to_mock:
+			callback('file://C:/dir/a.txt', 'b')
+
+		rename_to_mock.assert_called_once_with(
+			pane, 'file://C:/dir/a.txt', 'b.txt'
+		)
 
 class _StubProgressDialog(StubUI):
 

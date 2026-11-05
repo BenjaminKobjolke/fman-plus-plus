@@ -1,5 +1,7 @@
 from fman.impl.util.qt.key_event import QtKeyEvent
+from fman.impl.plugins.plugin import ReportExceptions
 from PyQt5.QtGui import QContextMenuEvent
+from threading import Thread
 from weakref import WeakValueDictionary
 
 class Controller:
@@ -9,12 +11,13 @@ class Controller:
 	"""
 	def __init__(
 		self, plugin_support, nonexistent_shortcut_handler, usage_helper,
-		metrics
+		metrics, error_handler
 	):
 		self._plugin_support = plugin_support
 		self._nonexistent_shortcut_handler = nonexistent_shortcut_handler
 		self._usage_helper = usage_helper
 		self._metrics = metrics
+		self._error_handler = error_handler
 		self._panes = WeakValueDictionary()
 	def register_pane(self, pane_widget, pane):
 		self._panes[pane_widget] = pane
@@ -61,9 +64,24 @@ class Controller:
 		pane = self._panes[pane_widget]
 		if not self._usage_helper.on_doubleclicked(pane, past_events):
 			pane._broadcast('on_doubleclicked', file_path)
-	def on_file_renamed(self, pane_widget, *args):
+	def on_file_renamed(self, pane_widget, file_url, new_name):
 		self._metrics.track('RenamedFile')
-		self._panes[pane_widget]._broadcast('on_name_edited', *args)
+		pane = self._panes[pane_widget]
+		callback = pane._take_edit_name_callback()
+		if callback is None:
+			pane._broadcast('on_name_edited', file_url, new_name)
+		else:
+			# Callbacks can do file IO and show dialogs, like listener events.
+			Thread(
+				target=self._run_edit_name_callback,
+				args=(callback, file_url, new_name), daemon=True
+			).start()
+	def _run_edit_name_callback(self, callback, file_url, new_name):
+		with ReportExceptions(
+			self._error_handler,
+			'DirectoryPane.edit_name(...) callback raised error.'
+		):
+			callback(file_url, new_name)
 	def on_files_dropped(self, pane_widget, *args):
 		self._metrics.track('DroppedFile')
 		self._panes[pane_widget]._broadcast('on_files_dropped', *args)

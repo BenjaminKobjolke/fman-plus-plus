@@ -9,6 +9,7 @@ from core.commands.editor import _find_extension_start
 from core.commands.util import create_as_admin, is_dir_checked, NO_SELECTION
 from core.undo_history import RenameRecord, history
 from core.util import is_relative_name
+from functools import partial
 from fman import CANCEL, DirectoryPaneCommand, DirectoryPaneListener, \
 	PLATFORM, RETRY, show_alert, show_prompt, submit_task, Task
 from fman.fs import exists, FileSystem, makedirs, prepare_move, \
@@ -33,7 +34,10 @@ class Rename(DirectoryPaneCommand):
 			else:
 				file_name = basename(file_under_cursor)
 				selection_end = _find_extension_start(file_name)
-			self.pane.edit_name(file_under_cursor, selection_end=selection_end)
+			self.pane.edit_name(
+				file_under_cursor, selection_end=selection_end,
+				callback=partial(_on_name_edited, self.pane)
+			)
 		else:
 			show_alert(NO_SELECTION)
 	def is_visible(self):
@@ -41,11 +45,15 @@ class Rename(DirectoryPaneCommand):
 
 class RenameListener(DirectoryPaneListener):
 	def on_name_edited(self, file_url, new_name):
-		# The editor only showed the stem while the extension column is enabled.
-		rename_to(
-			self.pane, file_url,
-			name_with_hidden_extension(fman.fs, file_url, new_name)
-		)
+		# Kept for plugins that still call pane.edit_name(...) without a callback.
+		_on_name_edited(self.pane, file_url, new_name)
+
+def _on_name_edited(pane, file_url, new_name):
+	# The editor only showed the stem while the extension column is enabled.
+	rename_to(
+		pane, file_url,
+		name_with_hidden_extension(fman.fs, file_url, new_name)
+	)
 
 def rename_to(pane, file_url, new_name):
 	"""
@@ -53,7 +61,7 @@ def rename_to(pane, file_url, new_name):
 	None when there is nothing to do (unchanged name) or the name was
 	rejected, in which case the user has already been told why.
 
-	Split out of RenameListener.on_name_edited so the in-pane viewers can
+	Split out of _on_name_edited so the in-pane viewers can
 	rename the file they are showing (core/viewer_file_ops.py): the Rename
 	command itself is unusable there, driving pane.edit_name on the file list
 	the viewer is covering.
