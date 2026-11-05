@@ -9,6 +9,7 @@ import shutil
 import string
 
 _DRIVE_REMOTE = 4
+_DRIVE_REMOVABLE = 2
 
 class DrivesFileSystem(FileSystem):
 
@@ -45,9 +46,21 @@ class DrivesFileSystem(FileSystem):
 		bitmask = windll.kernel32.GetLogicalDrives()
 		for letter in string.ascii_uppercase:
 			if bitmask & 1:
-				result.append(letter + ':')
+				drive = letter + ':'
+				if not _is_empty_removable_drive(drive):
+					result.append(drive)
 			bitmask >>= 1
 		return result
+
+def _is_empty_removable_drive(path):
+	volume_path = path + '\\'
+	if windll.kernel32.GetDriveTypeW(ctypes.c_wchar_p(volume_path)) != _DRIVE_REMOVABLE:
+		return False
+	try:
+		shutil.disk_usage(volume_path)
+	except OSError:
+		return True
+	return False
 
 def _is_remote(path):
 	return windll.kernel32.GetDriveTypeW(ctypes.c_wchar_p(path)) == _DRIVE_REMOTE

@@ -136,3 +136,33 @@ class DriveSpaceTest(TestCase):
 			self.assertEqual(
 				(False, 0), DriveSize().get_sort_value('drives://D:', True)
 			)
+
+
+@skipIf(PLATFORM != 'Windows', 'drives:// only exists on Windows')
+class DriveListingTest(TestCase):
+	def test_hides_removable_drives_without_media(self):
+		from types import SimpleNamespace
+		from unittest.mock import patch
+
+		class Kernel32:
+			def GetLogicalDrives(self):
+				return (1 << 2) | (1 << 4) | (1 << 5)
+			def GetDriveTypeW(self, path):
+				return {'C:\\': 3, 'E:\\': 2, 'F:\\': 2}[path.value]
+
+		class Windll:
+			kernel32 = Kernel32()
+
+		def disk_usage(path):
+			if path == 'E:\\':
+				raise OSError('No media')
+			return SimpleNamespace(total=100, used=50, free=50)
+
+		with patch('core.fs.local.windows.drives.windll', Windll()), patch(
+				'core.fs.local.windows.drives.shutil.disk_usage',
+				side_effect=disk_usage,
+		):
+			self.assertEqual(
+				['C:', 'F:', DrivesFileSystem.NETWORK],
+				DrivesFileSystem().iterdir(''),
+			)
