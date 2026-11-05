@@ -407,10 +407,13 @@ font; see [Fonts](FONTS.md).
 
 ## Dialogs and progress
 
-`show_alert`, `show_prompt`, `show_status_message`, `clear_status_message`,
+`show_input`, `show_alert`, `show_prompt`, `show_status_message`, `clear_status_message`,
 `show_file_open_dialog`, `show_quicksearch` (with `QuicksearchItem`), and
 `submit_task(Task(...))` for anything long enough to need a progress dialog.
-`show_prompt(..., get_completions=f)` makes Tab cycle through `f(text)`; the
+`show_input(...)` returns the entered text, including an empty string, when the
+user accepts, and `None` when they cancel. New code should use `show_input`;
+`show_prompt(...)` still returns `(text, accepted)` for existing plugins.
+`show_input(..., get_completions=f)` makes Tab cycle through `f(text)`; the
 callback runs off the GUI thread.
 
 A `FileSystem` can return more than 1 from

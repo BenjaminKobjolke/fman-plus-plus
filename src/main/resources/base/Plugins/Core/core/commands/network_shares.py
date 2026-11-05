@@ -15,7 +15,7 @@ if PLATFORM == 'Windows':
 		connect_share, describe_wnet_error,
 		disconnect, list_connections, parse_share_address,
 	)
-	from fman import QuicksearchItem, show_prompt, show_quicksearch
+	from fman import QuicksearchItem, show_input, show_quicksearch
 	from fman.url import as_human_readable, as_url
 
 	class ShareLogin(Enum):
@@ -50,15 +50,15 @@ if PLATFORM == 'Windows':
 				as_human_readable(self.pane.get_path())
 			)
 			default = current.share_unc if current and current.share else 'smb://'
-			text, accepted = show_prompt('Network share address:', default)
-			if not accepted or not text:
+			text = show_input('Network share address:', default)
+			if not text:
 				return
 			address = parse_share_address(text)
 			if address is None or not address.share:
 				show_alert('Enter a share, for example smb://server/share.')
 				return
-			letter, accepted = show_prompt('Drive letter (leave empty for none):')
-			if not accepted:
+			letter = show_input('Drive letter (leave empty for none):')
+			if letter is None:
 				return
 			letter = letter.strip().upper()
 			if letter.endswith(':'):

@@ -48,9 +48,9 @@ def _invoke(action: str, command: DirectoryPaneCommand) -> None:
 			fman.show_alert(_NO_SELECTION_MESSAGE)
 			return
 		pane = command.pane
-		destination, ok = fman.show_prompt(
+		destination = fman.show_input(
 			_prompt_text(action, selected), _other_pane_path(command), 0, None)
-		if not (ok and destination):
+		if not destination:
 			return
 		settings = Settings.load(fman.load_json(_SETTINGS_NAME, {}))
 		executable = windows.executable()

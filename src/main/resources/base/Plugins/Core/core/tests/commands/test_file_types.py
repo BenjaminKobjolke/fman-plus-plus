@@ -58,8 +58,8 @@ class ChooseFileTypeActionTest(TestCase):
 			'core.commands.file_types._show_app_open_dialog',
 			return_value='csv.exe'
 		), patch(
-			'core.commands.file_types.show_prompt',
-			return_value=('--sep ";"', True)
+			'core.commands.file_types.show_input',
+			return_value='--sep ";"'
 		), patch(
 			'core.commands.file_types.parse_arguments',
 			return_value=['--sep', ';']
@@ -76,7 +76,7 @@ class ChooseFileTypeActionTest(TestCase):
 
 	def test_cancelling_program_or_arguments_saves_nothing(self):
 		for dialog_value, prompt_value in (
-			('', ('', False)), ('app.exe', ('', False))
+			('', None), ('app.exe', None)
 		):
 			with self.subTest(dialog_value=dialog_value):
 				self.save.reset_mock()
@@ -84,7 +84,7 @@ class ChooseFileTypeActionTest(TestCase):
 					'core.commands.file_types._show_app_open_dialog',
 					return_value=dialog_value
 				), patch(
-					'core.commands.file_types.show_prompt',
+					'core.commands.file_types.show_input',
 					return_value=prompt_value
 				):
 					ChooseFileTypeAction(

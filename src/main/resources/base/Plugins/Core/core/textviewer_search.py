@@ -14,7 +14,7 @@ from core.key_bindings import (
 	format_shortcut_hint, get_shortcuts_for_command, VIEWER_KEY_BINDINGS_FILE,
 )
 from fman import (
-	clear_status_message, load_json, show_prompt, show_status_message,
+	clear_status_message, load_json, show_input, show_status_message,
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTextCursor
@@ -97,8 +97,8 @@ class ViewerSearch:
 	def start(self):
 		# Modal, like "Save file as…" - fman's API has no non-modal input.
 		# Pre-filled with the last query so repeating a search is / + Enter.
-		query, ok = show_prompt('/', default=self._query)
-		if not ok or not query:
+		query = show_input('/', default=self._query)
+		if not query:
 			return
 		self._query = query
 		self._active = True

@@ -116,6 +116,11 @@ class ProgressDialog(QProgressDialog):
 		return self._show_without_popup(
 			self.parent().show_prompt, *args, **kwargs
 		)
+	@run_in_main_thread
+	def show_input(self, *args, **kwargs):
+		return self._show_without_popup(
+			self.parent().show_input, *args, **kwargs
+		)
 	def _show_without_popup(self, show_dialog, *args, **kwargs):
 		# Prevent the progress dialog from popping up while the alert is shown:
 		self.setMinimumDuration(self._MAX_C_INT)

@@ -7,7 +7,7 @@ from core.file_type_actions import (
 )
 from core.quicksearch_screen import QuicksearchScreen
 from core.text_editor import parse_arguments
-from fman import DirectoryPaneCommand, show_alert, show_prompt, \
+from fman import DirectoryPaneCommand, show_alert, show_input, \
 	show_status_message
 
 
@@ -78,11 +78,11 @@ class ChooseFileTypeAction(QuicksearchScreen):
 		program = _show_app_open_dialog('Pick a program')
 		if not program:
 			return None
-		text, accepted = show_prompt(
+		text = show_input(
 			'Arguments ({file} is the file; it is added last when missing):',
 			'{file}'
 		)
-		if not accepted:
+		if text is None:
 			return None
 		try:
 			arguments = parse_arguments(text)

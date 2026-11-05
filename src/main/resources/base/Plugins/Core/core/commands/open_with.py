@@ -16,7 +16,7 @@ from core.file_type_actions import (
 from core.os_ import get_popen_kwargs_for_opening
 from core.quicksearch_screen import QuicksearchScreen
 from fman import DirectoryPaneCommand, PLATFORM, load_json, save_json, \
-	show_alert, show_file_open_dialog, show_prompt, show_status_message
+	show_alert, show_file_open_dialog, show_input, show_status_message
 from fman.fs import resolve
 from fman.url import as_human_readable, splitscheme
 from subprocess import Popen
@@ -106,10 +106,10 @@ def _add_app():
 	if not app_path:
 		return
 	app_name = os.path.basename(app_path).split('.')[0].capitalize()
-	app_name, ok = show_prompt(
+	app_name = show_input(
 		'Please enter a name for the application:', app_name
 	)
-	if not ok or not app_name:
+	if not app_name:
 		return
 	apps = _load_apps()
 	apps[app_name] = app_path
@@ -231,9 +231,9 @@ class EditApp(QuicksearchScreen):
 	def get_options(self):
 		yield from sorted(_load_apps())
 	def on_selected(self, app):
-		new_name, ok = \
-			show_prompt('Enter the new name for the application:', app)
-		if not ok or not new_name:
+		new_name = \
+			show_input('Enter the new name for the application:', app)
+		if not new_name:
 			Configure(self._files).show()
 			return
 		apps = _load_apps()

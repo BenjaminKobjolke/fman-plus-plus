@@ -1,7 +1,7 @@
 """Keep archive passwords in memory and prompt for them when needed."""
 
 import os
-from fman import Task, show_alert, show_prompt
+from fman import Task, show_alert, show_input
 
 _passwords = {}
 WRONG_PASSWORD_MESSAGE = 'Wrong password.'
@@ -34,11 +34,11 @@ def ask_password(archive_path, task, wrong_password=False):
 			show_alert(WRONG_PASSWORD_MESSAGE)
 	prompt = 'Password for %s:' % os.path.basename(archive_path)
 	try:
-		password, accepted = task.show_prompt(prompt, password=True)
+		password = task.show_input(prompt, password=True)
 	except NotImplementedError:
 		# shortcut: Direct filesystem calls do not have a task dialog.
-		password, accepted = show_prompt(prompt, password=True)
-	if not accepted:
+		password = show_input(prompt, password=True)
+	if password is None:
 		raise Task.Canceled()
 	return password
 

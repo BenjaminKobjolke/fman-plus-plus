@@ -24,10 +24,10 @@ class _Screens:
 		if answer is None:
 			return None
 		return '', answer
-	def show_prompt(self, _text, *_args, **_kwargs):
+	def show_input(self, _text, *_args, **_kwargs):
 		if self._prompt is None:
-			return '', False
-		return self._prompt, True
+			return None
+		return self._prompt
 	def get_setting(self, _json_name, key, default=None):
 		return self.keywords.get(key, default)
 	def get_title(self, _json_name, key, default=None):
@@ -48,7 +48,7 @@ def _run(
 		'core.quicksearch_screen.show_quicksearch',
 		side_effect=screens.show_quicksearch
 	), patch(
-		'core.keyword_editor.show_prompt', side_effect=screens.show_prompt
+		'core.keyword_editor.show_input', side_effect=screens.show_input
 	), patch(
 		'core.keyword_editor.get_setting', side_effect=screens.get_setting
 	), patch(

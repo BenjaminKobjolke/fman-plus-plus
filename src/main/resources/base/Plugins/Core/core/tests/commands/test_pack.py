@@ -47,7 +47,7 @@ class PackWithPasswordTest(TestCase):
 			_get_handler_for_archive=DEFAULT,
 			chosen_files=DEFAULT,
 			get_opposite_pane=DEFAULT,
-			show_prompt=DEFAULT,
+			show_input=DEFAULT,
 			show_alert=DEFAULT,
 			mkdir=DEFAULT,
 			submit_task=DEFAULT,
@@ -58,17 +58,15 @@ class PackWithPasswordTest(TestCase):
 		self.mocks['show_alert'].return_value = YES
 		self.mocks['get_opposite_pane'].return_value.get_path.return_value = \
 			'file://C:/dest'
-		self.mocks['show_prompt'].side_effect = [
-			('file://C:/dest/archive.7z', True),
-			('secret', True),
-			('secret', True),
+		self.mocks['show_input'].side_effect = [
+			'file://C:/dest/archive.7z', 'secret', 'secret',
 		]
 	def tearDown(self):
 		self.patches.stop()
 		archive_password.clear()
 	def _run(self, destination, password='secret', confirmation='secret'):
-		self.mocks['show_prompt'].side_effect = [
-			(destination, True), (password, True), (confirmation, True)
+		self.mocks['show_input'].side_effect = [
+			destination, password, confirmation
 		]
 		self.command()
 	def test_mismatched_passwords_abort_packing(self):
@@ -95,11 +93,11 @@ class PackWithPasswordTest(TestCase):
 		)
 		self.assertTrue(all(
 			call.kwargs.get('password') is True
-			for call in self.mocks['show_prompt'].call_args_list[1:]
+			for call in self.mocks['show_input'].call_args_list[1:]
 		))
 	def test_canceling_password_prompt_stops_packing(self):
-		self.mocks['show_prompt'].side_effect = [
-			('file://C:/dest/archive.7z', True), ('', False)
+		self.mocks['show_input'].side_effect = [
+			'file://C:/dest/archive.7z', None
 		]
 		self.command()
 		self.mocks['mkdir'].assert_not_called()

@@ -114,13 +114,13 @@ class _TreeCommand(DirectoryPaneCommand):
 		else:
 			message = '%s %d files to' % (verb, len(files))
 			suggested_dst = dest_path
-		dest, ok = ui.show_prompt(
+		dest = ui.show_input(
 			message, suggested_dst, 0, selection_end,
 			get_completions=partial(
 				complete_path, dest_dir=dest_dir, src_dir=None, fs=fs
 			)
 		)
-		if dest and ok:
+		if dest:
 			dest_url = _from_human_readable(dest, dest_dir, None)
 			if fs.exists(dest_url):
 				try:

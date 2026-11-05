@@ -165,14 +165,14 @@ class CommandHooksTest(_PatchingTest):
 		self._submit_task.assert_not_called()
 	def test_create_directory_elevated(self):
 		with self._elevation('create', True) as create, \
-			patch('core.commands.rename.show_prompt', return_value=('new', True)), \
+			patch('core.commands.rename.show_input', return_value='new'), \
 			patch('core.commands.rename.makedirs', side_effect=PermissionError):
 			CreateDirectory(self._pane)()
 		create.assert_called_once_with(_DIR + '/new', is_dir=True)
 		self._pane.place_cursor_at.assert_called_once_with(_DIR + '/new')
 	def test_create_directory_declined(self):
 		with self._elevation('create', False), \
-			patch('core.commands.rename.show_prompt', return_value=('new', True)), \
+			patch('core.commands.rename.show_input', return_value='new'), \
 			patch('core.commands.rename.makedirs', side_effect=PermissionError), \
 			patch('core.commands.util.show_alert') as show_alert:
 			CreateDirectory(self._pane)()
@@ -181,7 +181,7 @@ class CommandHooksTest(_PatchingTest):
 	def test_create_directory_on_other_scheme(self):
 		self._pane.get_path.return_value = 'ftp://host/dir'
 		with self._elevation('create', False) as create, \
-			patch('core.commands.rename.show_prompt', return_value=('new', True)), \
+			patch('core.commands.rename.show_input', return_value='new'), \
 			patch(
 				'core.commands.rename.makedirs',
 				side_effect=PermissionError('denied')
@@ -241,7 +241,7 @@ class CommandHooksTest(_PatchingTest):
 		editor = 'core.commands.editor.'
 		result = ExitStack()
 		result.enter_context(
-			patch(editor + 'show_prompt', return_value=('new.txt', True))
+			patch(editor + 'show_input', return_value='new.txt')
 		)
 		result.enter_context(patch(editor + 'exists', return_value=False))
 		result.enter_context(

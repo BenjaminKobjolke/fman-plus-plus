@@ -53,14 +53,14 @@ class AutomaticUpdateCommandsTest(TestCase):
 			patch('core.commands.auto_update.is_supported', return_value=True),
 			patch('core.commands.auto_update.interval_hours', return_value=24),
 			patch(
-				'core.commands.auto_update.show_prompt',
-				return_value=('12', True),
-			) as show_prompt,
+				'core.commands.auto_update.show_input',
+				return_value='12',
+			) as show_input,
 			patch('core.commands.auto_update.save_setting') as save_setting,
 			patch('core.commands.auto_update.show_alert') as show_alert,
 		):
 			SetIntervalCommand(None)()
-		show_prompt.assert_called_once_with(
+		show_input.assert_called_once_with(
 			'Automatic update interval in hours (1–720):', '24'
 		)
 		save_setting.assert_called_once_with(
@@ -73,8 +73,8 @@ class AutomaticUpdateCommandsTest(TestCase):
 			patch('core.commands.auto_update.is_supported', return_value=True),
 			patch('core.commands.auto_update.interval_hours', return_value=24),
 			patch(
-				'core.commands.auto_update.show_prompt',
-				return_value=('721', True),
+				'core.commands.auto_update.show_input',
+				return_value='721',
 			),
 			patch('core.commands.auto_update.save_setting') as save_setting,
 			patch('core.commands.auto_update.show_alert') as show_alert,
@@ -90,8 +90,8 @@ class AutomaticUpdateCommandsTest(TestCase):
 			patch('core.commands.auto_update.is_supported', return_value=True),
 			patch('core.commands.auto_update.interval_hours', return_value=24),
 			patch(
-				'core.commands.auto_update.show_prompt',
-				return_value=('hourly', True),
+				'core.commands.auto_update.show_input',
+				return_value='hourly',
 			),
 			patch('core.commands.auto_update.save_setting') as save_setting,
 			patch('core.commands.auto_update.show_alert') as show_alert,
@@ -107,8 +107,8 @@ class AutomaticUpdateCommandsTest(TestCase):
 			patch('core.commands.auto_update.is_supported', return_value=True),
 			patch('core.commands.auto_update.interval_hours', return_value=24),
 			patch(
-				'core.commands.auto_update.show_prompt',
-				return_value=('', False),
+				'core.commands.auto_update.show_input',
+				return_value=None,
 			),
 			patch('core.commands.auto_update.save_setting') as save_setting,
 			patch('core.commands.auto_update.show_alert') as show_alert,
@@ -120,11 +120,11 @@ class AutomaticUpdateCommandsTest(TestCase):
 	def test_unsupported_copy_explains_interval_is_unavailable(self):
 		with (
 			patch('core.commands.auto_update.is_supported', return_value=False),
-			patch('core.commands.auto_update.show_prompt') as show_prompt,
+			patch('core.commands.auto_update.show_input') as show_input,
 			patch('core.commands.auto_update.show_alert') as show_alert,
 		):
 			SetIntervalCommand(None)()
-		show_prompt.assert_not_called()
+		show_input.assert_not_called()
 		show_alert.assert_called_once_with(
 			'Automatic updates only work with the installed Windows version.'
 		)

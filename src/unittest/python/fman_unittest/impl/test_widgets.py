@@ -1,7 +1,8 @@
 from fman.impl.widgets import LOADING_MESSAGE, LOADING_MESSAGE_NETWORK, \
 	format_loading_message, _overlay_pos, Prompt
+from fman.impl.widgets import MainWindow
 from PyQt5.QtCore import QRect, QSize
-from PyQt5.QtWidgets import QApplication, QLineEdit
+from PyQt5.QtWidgets import QApplication, QLineEdit, QWidget
 from unittest import TestCase
 
 class PromptTest(TestCase):
@@ -78,3 +79,33 @@ class OverlayPosTest(TestCase):
 			QRect(200, 100, 700, 650), margin=20
 		)
 		self.assertEqual((680, 0), (pos.x(), pos.y()))
+
+class ShowPromptCompatTest(TestCase):
+	@classmethod
+	def setUpClass(cls):
+		cls.app = QApplication.instance() or QApplication([])
+	def test_show_prompt_derives_legacy_result_from_show_input(self):
+		class FakeWindow(QWidget):
+			def __init__(self, result):
+				super().__init__()
+				self.result = result
+				self.arguments = None
+			def show_input(self, *args, **kwargs):
+				self.arguments = (args, kwargs)
+				return self.result
+			def exec_dialog(self, dialog, in_window=False):
+				return self.result is not None
+
+		arguments = {
+			'default': '', 'selection_start': 1, 'selection_end': 2,
+			'get_completions': lambda text: [text], 'password': True
+		}
+		for input_result, expected in (
+			(None, ('', False)), ('', ('', True)), ('ab', ('ab', True))
+		):
+			with self.subTest(input_result=input_result):
+				window = FakeWindow(input_result)
+				self.assertEqual(
+					expected, MainWindow.show_prompt(window, 'Name:', **arguments)
+				)
+				self.assertEqual((('Name:',), arguments), window.arguments)

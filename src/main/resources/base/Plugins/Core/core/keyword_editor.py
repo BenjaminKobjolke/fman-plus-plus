@@ -18,7 +18,7 @@ from core.command_titles import COMMAND_TITLES_FILE, get_custom_title
 from core.key_bindings import KEY_BINDINGS_FILE
 from core.quicksearch_screen import QuicksearchScreen
 from core.settings import get_setting, save_setting
-from fman import show_prompt, show_status_message
+from fman import show_input, show_status_message
 
 def edit_command_keywords(
 	command_name, title, bindings_file=KEY_BINDINGS_FILE
@@ -89,8 +89,8 @@ class EntryMenu(QuicksearchScreen):
 			# write to trip over.
 			save_setting(COMMAND_TITLES_FILE, self._command_name, None)
 	def _rename(self):
-		title, ok = show_prompt('New name for "%s":' % self._title)
-		if not ok:
+		title = show_input('New name for "%s":' % self._title)
+		if title is None:
 			return
 		title = title.strip()
 		if title:
@@ -113,8 +113,8 @@ class KeywordList(QuicksearchScreen):
 		else:
 			KeywordMenu(self._command_name, self._title, option).show()
 	def _add(self):
-		keyword, ok = show_prompt('New keyword for "%s":' % self._title)
-		if not ok:
+		keyword = show_input('New keyword for "%s":' % self._title)
+		if keyword is None:
 			self.show()
 			return
 		# Lowercase because that is how keywords are matched - and how the

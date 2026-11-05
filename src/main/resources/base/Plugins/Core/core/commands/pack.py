@@ -12,7 +12,7 @@ from core.path_completion import complete_path
 from core.commands.transfer import _from_human_readable, get_dest_suggestion
 from core.commands.util import chosen_files, get_opposite_pane
 from fman import DirectoryPaneCommand, NO, Task, YES, show_alert, \
-	show_prompt, submit_task
+	show_input, submit_task
 from fman.fs import mkdir, prepare_copy
 from fman.url import join, splitscheme
 # os.path.basename, not fman.url's - see core/commands/transfer.py.
@@ -55,7 +55,7 @@ class Pack(DirectoryPaneCommand):
 		dest_url = join(dest_dir, dest_name)
 		suggested_dst, selection_start, selection_end = \
 			get_dest_suggestion(dest_url)
-		dest, ok = show_prompt(
+		dest = show_input(
 			self._get_prompt(files), suggested_dst,
 			selection_start, selection_end,
 			get_completions=partial(
@@ -63,7 +63,7 @@ class Pack(DirectoryPaneCommand):
 				src_dir=self.pane.get_path(), fs=fman.fs
 			)
 		)
-		if dest and ok:
+		if dest:
 			dest = _from_human_readable(dest, dest_dir, self.pane.get_path())
 			scheme = _get_handler_for_archive(basename(dest))
 			if not scheme:
@@ -104,13 +104,13 @@ class PackWithPassword(Pack):
 		if file_name.endswith(('.tar', '.tar.gz', '.tar.bz2', '.tar.xz')):
 			show_alert(_TAR_PASSWORD_MESSAGE)
 			return False
-		password, ok = show_prompt(_PASSWORD_PROMPT, '', password=True)
-		if not ok:
+		password = show_input(_PASSWORD_PROMPT, '', password=True)
+		if password is None:
 			return False
-		confirmation, ok = show_prompt(
+		confirmation = show_input(
 			_CONFIRM_PASSWORD_PROMPT, '', password=True
 		)
-		if not ok:
+		if confirmation is None:
 			return False
 		if password != confirmation:
 			show_alert(_PASSWORD_MISMATCH_MESSAGE)

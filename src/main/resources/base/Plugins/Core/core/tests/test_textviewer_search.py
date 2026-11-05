@@ -100,10 +100,10 @@ class _FakeKeyEvent:
 class ViewerSearchTest(TestCase):
 	def setUp(self):
 		self.messages = []
-		self.prompts = [('two', True)]
+		self.prompts = ['two']
 		patches = {
 			'load_json': lambda *_args, **_kwargs: [],
-			'show_prompt': lambda *_args, **_kwargs: self.prompts.pop(0),
+			'show_input': lambda *_args, **_kwargs: self.prompts.pop(0),
 			'show_status_message': self.messages.append,
 			'clear_status_message': lambda: self.messages.append(None),
 		}
@@ -147,7 +147,7 @@ class ViewerSearchTest(TestCase):
 		)
 
 	def test_no_match_leaves_the_cursor_alone(self):
-		self.prompts = [('zzz', True)]
+		self.prompts = ['zzz']
 		view = _FakeView('one two three')
 		search = ViewerSearch(view)
 		search.start()
@@ -155,7 +155,7 @@ class ViewerSearchTest(TestCase):
 		self.assertEqual(['No match: zzz'], self.messages)
 
 	def test_cancelled_prompt_does_nothing(self):
-		self.prompts = [('', False)]
+		self.prompts = [None]
 		view = _FakeView('one two three')
 		search = ViewerSearch(view)
 		search.start()

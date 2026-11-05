@@ -13,7 +13,7 @@ from core.text_editor import (
 from core.util import strformat_dict_values
 from fman import CANCEL, DirectoryPaneCommand, load_json, OK, PLATFORM, \
 	QuicksearchItem, save_json, show_alert, show_file_open_dialog, \
-	show_prompt, show_quicksearch, show_status_message
+	show_input, show_quicksearch, show_status_message
 from fman.fs import exists, is_dir, resolve, touch
 from fman.url import as_human_readable, join
 # os.path.basename, not fman.url's: it is applied to the name part of a URL,
@@ -83,11 +83,11 @@ def configure_editor() -> dict[str, list[str]]:
 	if not path:
 		return {}
 	if option == MANUAL:
-		text, accepted = show_prompt(
+		text = show_input(
 			'Arguments for the editor (the file is added last):',
 			format_arguments(arguments)
 		)
-		if not accepted:
+		if text is None:
 			return {}
 		try:
 			arguments = parse_arguments(text)
@@ -155,11 +155,11 @@ class CreateAndEditFile(OpenWithEditor):
 			if not file_is_dir:
 				default_name = basename(file_under_cursor)
 		selection_end = _find_extension_start(default_name)
-		file_name, ok = show_prompt(
+		file_name = show_input(
 			'Enter file name to create/edit:', default_name,
 			selection_end=selection_end
 		)
-		if ok and file_name:
+		if file_name:
 			file_to_edit = join(self.pane.get_path(), file_name)
 			if not exists(file_to_edit):
 				try:

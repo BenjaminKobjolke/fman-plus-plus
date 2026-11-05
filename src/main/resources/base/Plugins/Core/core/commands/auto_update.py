@@ -5,7 +5,7 @@ from core.auto_update import (
 	UNSUPPORTED_MESSAGE, interval_hours, is_enabled, is_supported,
 )
 from core.settings import save_setting, SETTINGS_FILE
-from fman import ApplicationCommand, show_alert, show_prompt, show_status_message
+from fman import ApplicationCommand, show_alert, show_input, show_status_message
 
 __all__ = ['ToggleAutomaticUpdates', 'SetAutomaticUpdateInterval']
 
@@ -33,10 +33,10 @@ class SetAutomaticUpdateInterval(ApplicationCommand):
 		if not is_supported():
 			show_alert(UNSUPPORTED_MESSAGE)
 			return
-		value, accepted = show_prompt(
+		value = show_input(
 			INTERVAL_PROMPT, str(interval_hours())
 		)
-		if not accepted:
+		if value is None:
 			return
 		try:
 			hours = int(value.strip())

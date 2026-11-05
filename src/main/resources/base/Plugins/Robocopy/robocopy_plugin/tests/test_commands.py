@@ -36,7 +36,7 @@ class CommandTest(TestCase):
 		other.get_path.return_value = 'file:///C:/other'
 		plan = Mock(jobs=())
 		with patch(
-			'robocopy_plugin.fman.show_prompt', return_value=('C:\\dest', True)
+			'robocopy_plugin.fman.show_input', return_value='C:\\dest'
 		), \
 				patch('robocopy_plugin.fman.load_json', return_value={}), \
 				patch(
@@ -61,7 +61,7 @@ class CommandTest(TestCase):
 		other.get_path.return_value = 'file:///C:/other'
 		self.pane.get_selected_files.return_value = ['file:///C:/source/file.txt']
 		with patch(
-			'robocopy_plugin.fman.show_prompt', return_value=('', False)
+			'robocopy_plugin.fman.show_input', return_value=None
 		) as prompt:
 			_invoke('copy', CopyWithRobocopy(self.pane))
 		self.assertEqual(
@@ -73,9 +73,9 @@ class CommandTest(TestCase):
 	def test_canceling_or_accepting_an_empty_prompt_starts_nothing(self):
 		self.pane.window.get_panes.return_value[1].get_path.return_value = 'file:///C:/other'
 		self.pane.get_selected_files.return_value = ['file:///C:/source/file.txt']
-		for response in [('C:\\dest', False), ('', True)]:
+		for response in [None, '']:
 			with self.subTest(response=response):
-				with patch('robocopy_plugin.fman.show_prompt', return_value=response), \
+				with patch('robocopy_plugin.fman.show_input', return_value=response), \
 						patch('robocopy_plugin.planner.prepare') as prepare, \
 						patch('robocopy_plugin.fman.submit_task') as submit:
 					_invoke('copy', CopyWithRobocopy(self.pane))
@@ -86,7 +86,7 @@ class CommandTest(TestCase):
 		self.pane.get_selected_files.return_value = []
 		self.pane.get_file_under_cursor.return_value = None
 		with patch('robocopy_plugin.fman.show_alert') as alert, \
-				patch('robocopy_plugin.fman.show_prompt') as prompt:
+				patch('robocopy_plugin.fman.show_input') as prompt:
 			_invoke('copy', CopyWithRobocopy(self.pane))
 		alert.assert_called_once()
 		prompt.assert_not_called()

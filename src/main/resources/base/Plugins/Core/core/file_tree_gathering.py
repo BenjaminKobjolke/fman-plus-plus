@@ -162,11 +162,11 @@ class FileTreeGathering:
 		default = basename(free_name(dest, self._is_taken))
 		stem, _extension = splitext(default)
 		while True:
-			name, accepted = self.show_prompt(
+			name = self.show_input(
 				'Enter a new name for %s:' % basename(dest), default,
 				0, len(stem)
 			)
-			if not accepted:
+			if name is None:
 				return self._ask_overwrite(src, dest)
 			if not name or name in ('.', '..') or not is_relative_name(name):
 				self.show_alert('Please enter a valid file name.')

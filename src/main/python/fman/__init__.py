@@ -18,7 +18,8 @@ __all__ = [
 	'ApplicationCommand', 'DirectoryPaneCommand', 'DirectoryPaneListener',
 	'Viewer', 'find_viewer', 'viewer_for_category',
 	'load_json', 'save_json',
-	'show_alert', 'show_prompt', 'show_status_message', 'clear_status_message',
+	'show_alert', 'show_input', 'show_prompt',
+	'show_status_message', 'clear_status_message',
 	'show_file_open_dialog',
 	'show_quicksearch', 'QuicksearchItem',
 	'get_application_commands', 'run_application_command',
@@ -363,6 +364,14 @@ def show_prompt(
 		get_completions=get_completions, password=password
 	)
 
+def show_input(
+		text, default='', selection_start=0, selection_end=None,
+		get_completions=None, password=False):
+	return _get_ui().show_input(
+		text, default, selection_start, selection_end,
+		get_completions=get_completions, password=password
+	)
+
 def show_status_message(text, timeout_secs=None):
 	return _get_ui().show_status_message(text, timeout_secs)
 
@@ -633,6 +642,8 @@ class Task:
 		return self._dialog.show_overwrite_dialog(*args, **kwargs)
 	def show_prompt(self, *args, **kwargs):
 		return self._dialog.show_prompt(*args, **kwargs)
+	def show_input(self, *args, **kwargs):
+		return self._dialog.show_input(*args, **kwargs)
 	def show_workers(self, workers):
 		"""
 		Lists the parallel workers in the progress dialog, with buttons to add

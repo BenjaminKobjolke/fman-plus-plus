@@ -126,7 +126,7 @@ class FileTreeOperationAT:
 		self._expect_overwrite('test.txt', OverwriteChoice.RENAME)
 		self._progress_dialog.expect_prompt(
 			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
-			('chosen.txt', True)
+			'chosen.txt'
 		)
 		operation = self._perform_on(src)
 		self.assertEqual(
@@ -158,19 +158,19 @@ class FileTreeOperationAT:
 		self._expect_overwrite('test.txt', OverwriteChoice.RENAME)
 		self._progress_dialog.expect_prompt(
 			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
-			('..', True)
+			'..'
 		)
 		self._progress_dialog.expect_alert(
 			('Please enter a valid file name.',), None
 		)
 		self._progress_dialog.expect_prompt(
 			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
-			('taken.txt', True)
+			'taken.txt'
 		)
 		self._progress_dialog.expect_alert(('taken.txt already exists.',), None)
 		self._progress_dialog.expect_prompt(
 			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
-			('chosen.txt', True)
+			'chosen.txt'
 		)
 		self._perform_on(join(self.src, 'test.txt'))
 		self.assertTrue(self._fs.exists(join(self.dest, 'chosen.txt')))
@@ -180,7 +180,7 @@ class FileTreeOperationAT:
 		self._expect_overwrite('test.txt', OverwriteChoice.RENAME)
 		self._progress_dialog.expect_prompt(
 			('Enter a new name for test.txt:', 'test (2).txt', 0, 8),
-			('', False)
+			None
 		)
 		self._expect_overwrite('test.txt', OverwriteChoice.SKIP)
 		self._perform_on(join(self.src, 'test.txt'))
@@ -207,7 +207,7 @@ class FileTreeOperationAT:
 		self._expect_overwrite('first.txt', OverwriteChoice.RENAME)
 		self._progress_dialog.expect_prompt(
 			('Enter a new name for first.txt:', 'first (2).txt', 0, 9),
-			('first (2).txt', True)
+			'first (2).txt'
 		)
 		self._expect_overwrite('second.txt', OverwriteChoice.ABORT)
 		self._perform_on(first, second)
@@ -608,10 +608,10 @@ class MockProgressDialog:
 		expected_text, answer = self._expected_overwrites.pop(0)
 		self._test_case.assertEqual(expected_text, text, 'Wrong overwrite text')
 		return answer
-	def show_prompt(self, *args, **_):
+	def show_input(self, *args, **_):
 		if not self._expected_prompts:
 			self._test_case.fail('Unexpected prompt: %r' % args[0])
-			return '', False
+			return None
 		expected_args, answer = self._expected_prompts.pop(0)
 		self._test_case.assertEqual(expected_args, args, 'Wrong prompt')
 		return answer

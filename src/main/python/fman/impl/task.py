@@ -27,6 +27,10 @@ class StubProgressDialog:
 		raise NotImplementedError(
 			'Task#show_prompt(...) is only supported for tasks with a GUI'
 		)
+	def show_input(self, *args, **kwargs):
+		raise NotImplementedError(
+			'Task#show_input(...) is only supported for tasks with a GUI'
+		)
 	def show_workers(self, workers):
 		pass
 
@@ -55,5 +59,7 @@ class ChildProgressDialog:
 		return self._parent.show_overwrite_dialog(*args, **kwargs)
 	def show_prompt(self, *args, **kwargs):
 		return self._parent.show_prompt(*args, **kwargs)
+	def show_input(self, *args, **kwargs):
+		return self._parent.show_input(*args, **kwargs)
 	def show_workers(self, workers):
 		self._parent.show_workers(workers)

@@ -33,12 +33,12 @@ class ConfigureEditorTest(TestCase):
 			patch.object(editor_module, 'save_json'),
 			patch.object(editor_module, 'show_quicksearch'),
 			patch.object(editor_module, 'show_file_open_dialog'),
-			patch.object(editor_module, 'show_prompt'),
+			patch.object(editor_module, 'show_input'),
 			patch.object(editor_module, 'show_alert'),
 			patch.object(editor_module, 'show_status_message'),
 		]
 		(self.load_json, self.save_json, self.show_quicksearch,
-		 self.show_file_open_dialog, self.show_prompt, self.show_alert,
+		 self.show_file_open_dialog, self.show_input, self.show_alert,
 		 self.show_status_message) = [p.start() for p in self.patches]
 		self.addCleanup(self._stop_patches)
 
@@ -58,17 +58,17 @@ class ConfigureEditorTest(TestCase):
 		)
 		self.assertIs(result, self.settings['editor'])
 		self.save_json.assert_called_once_with('Core Settings.json')
-		self.show_prompt.assert_not_called()
+		self.show_input.assert_not_called()
 		self.show_status_message.assert_called_once_with(
 			'Text editor saved.', timeout_secs=3
 		)
 
 	def test_manual_arguments_are_prefilled_and_saved(self):
 		self._choose('Manual configuration')
-		self.show_prompt.return_value = ('--flag "a path"', True)
+		self.show_input.return_value = '--flag "a path"'
 		with patch.object(editor_module, 'PLATFORM', 'Windows'):
 			result = configure_editor()
-		self.show_prompt.assert_called_once_with(
+		self.show_input.assert_called_once_with(
 			'Arguments for the editor (the file is added last):',
 			format_arguments(['--old'])
 		)
@@ -83,7 +83,7 @@ class ConfigureEditorTest(TestCase):
 				self.save_json.reset_mock()
 				self.show_quicksearch.reset_mock()
 				self.show_file_open_dialog.reset_mock()
-				self.show_prompt.reset_mock()
+				self.show_input.reset_mock()
 				original = self.settings['editor']
 				if cancel_at == 'list':
 					self.show_quicksearch.return_value = ('', None)
@@ -92,7 +92,7 @@ class ConfigureEditorTest(TestCase):
 					self.show_file_open_dialog.return_value = ''
 				else:
 					self._choose('Manual configuration')
-					self.show_prompt.return_value = ('', False)
+					self.show_input.return_value = None
 				self.assertEqual({}, configure_editor())
 				self.save_json.assert_not_called()
 				self.assertIs(original, self.settings['editor'])
@@ -131,7 +131,7 @@ class ConfigureEditorTest(TestCase):
 
 	def test_invalid_manual_arguments_show_alert(self):
 		self._choose('Manual configuration')
-		self.show_prompt.return_value = ('"unclosed', True)
+		self.show_input.return_value = '"unclosed'
 		with patch.object(editor_module, 'PLATFORM', 'Linux'):
 			with patch('core.text_editor.PLATFORM', 'Linux'):
 				self.assertEqual({}, configure_editor())

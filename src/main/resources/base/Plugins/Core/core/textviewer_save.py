@@ -9,7 +9,7 @@ saving is tied to that widget's private state (`_path`/`_url`) as much as to
 its buffer.
 """
 from core.viewer_status import viewer_status
-from fman import show_prompt
+from fman import show_input
 from fman.fs import notify_file_changed
 
 def write_view(view, path):
@@ -45,7 +45,7 @@ def save(view):
 	_persist(view, view._path, 'Saved')
 
 def save_as(view):
-	new_path, ok = show_prompt('Save as (full path):', default=view._path)
-	if not ok or not new_path:
+	new_path = show_input('Save as (full path):', default=view._path)
+	if not new_path:
 		return
 	_persist(view, new_path, 'Saved as %s' % new_path)

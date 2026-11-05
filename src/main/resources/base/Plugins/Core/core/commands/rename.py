@@ -11,7 +11,7 @@ from core.undo_history import RenameRecord, history
 from core.util import is_relative_name
 from functools import partial
 from fman import CANCEL, DirectoryPaneCommand, DirectoryPaneListener, \
-	PLATFORM, RETRY, show_alert, show_prompt, submit_task, Task
+	PLATFORM, RETRY, show_alert, show_input, submit_task, Task
 from fman.fs import exists, FileSystem, makedirs, prepare_move, \
 	query, samefile
 from fman.url import dirname, join, normalize, relpath, splitscheme
@@ -143,8 +143,8 @@ class CreateDirectory(DirectoryPaneCommand):
 			default = basename(file_under_cursor).split('.', 1)[0]
 		else:
 			default = ''
-		name, ok = show_prompt("New folder (directory)", default)
-		if ok and name:
+		name = show_input("New folder (directory)", default)
+		if name:
 			# Support recursive creation of directories:
 			if PLATFORM == 'Windows':
 				name = name.replace('\\', '/')

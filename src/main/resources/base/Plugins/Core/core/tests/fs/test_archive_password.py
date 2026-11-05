@@ -26,17 +26,17 @@ class ArchivePasswordTest(TestCase):
 		))
 	def test_cancelling_password_prompt_cancels_task(self):
 		task = Mock()
-		task.show_prompt.return_value = ('', False)
+		task.show_input.return_value = None
 		with self.assertRaises(Task.Canceled):
 			archive_password.ask_password('archive.zip', task)
-		task.show_prompt.assert_called_once_with(
+		task.show_input.assert_called_once_with(
 			'Password for archive.zip:', password=True
 		)
 	def test_prompt_falls_back_to_main_ui_for_direct_task_calls(self):
 		task = Mock()
-		task.show_prompt.side_effect = NotImplementedError
+		task.show_input.side_effect = NotImplementedError
 		with patch.object(
-			archive_password, 'show_prompt', return_value=('secret', True)
+			archive_password, 'show_input', return_value='secret'
 		) as prompt:
 			self.assertEqual(
 				'secret', archive_password.ask_password('archive.zip', task)

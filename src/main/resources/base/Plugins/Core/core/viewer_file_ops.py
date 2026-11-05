@@ -19,7 +19,7 @@ from core.commands.editor import _find_extension_start
 from core.commands.rename import rename_to
 from core.settings import get_setting, save_setting, SETTINGS_FILE
 from core.viewer_status import viewer_status
-from fman import show_prompt
+from fman import show_input
 from fman.url import basename
 from threading import Thread
 
@@ -114,12 +114,12 @@ def rename_current(pane, url, on_renamed=None):
 	already loaded their content and navigating by the pane's cursor.
 	"""
 	old_name = basename(url)
-	new_name, ok = show_prompt(
+	new_name = show_input(
 		'Rename to:', default=old_name,
 		# Preselect the stem, like the Rename command does in the file list.
 		selection_end=_find_extension_start(old_name)
 	)
-	if not ok:
+	if new_name is None:
 		return
 	def rename():
 		# rename_to alerts and returns None for a name it rejects, so there is

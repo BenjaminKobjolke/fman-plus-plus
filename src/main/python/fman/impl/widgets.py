@@ -538,6 +538,20 @@ class MainWindow(QMainWindow):
 		self, text, default='', selection_start=0, selection_end=None,
 		get_completions=None, password=False
 	):
+		# Kept for plugins that unpack (text, accepted); upstream #260.
+		result = self.show_input(
+			text, default=default, selection_start=selection_start,
+			selection_end=selection_end, get_completions=get_completions,
+			password=password
+		)
+		if result is None:
+			return '', False
+		return result, True
+	@run_in_main_thread
+	def show_input(
+		self, text, default='', selection_start=0, selection_end=None,
+		get_completions=None, password=False
+	):
 		# Let API users pass arbitrary objects by converting str(text):
 		text_str = str(text)
 		dialog = Prompt(
@@ -547,8 +561,8 @@ class MainWindow(QMainWindow):
 		dialog.setTextValue(default)
 		result = self.exec_dialog(dialog, in_window=True)
 		if result:
-			return dialog.textValue(), True
-		return '', False
+			return dialog.textValue()
+		return None
 	@run_in_main_thread
 	def show_quicksearch(
 		self, get_items, get_tab_completion=None, query='', item=0,

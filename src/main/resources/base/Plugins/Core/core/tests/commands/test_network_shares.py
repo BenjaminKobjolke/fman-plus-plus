@@ -18,6 +18,10 @@ class ConnectNetworkShareTest(TestCase):
 		self._connect('')
 		self.assertIsNone(self.connect.call_args.args[1])
 
+	def test_canceling_drive_letter_does_not_connect(self):
+		self._connect(None)
+		self.connect.assert_not_called()
+
 	def test_invalid_drive_letter_is_rejected(self):
 		self._connect('ZZ')
 		self.connect.assert_not_called()
@@ -35,8 +39,8 @@ class ConnectNetworkShareTest(TestCase):
 		self.alert = self._patch('show_alert')
 		self._patch('_drive_letter_in_use', return_value=in_use)
 		with patch.object(
-				commands, 'show_prompt',
-				side_effect=[('smb://server/share', True), (letter, True)]
+				commands, 'show_input',
+				side_effect=['smb://server/share', letter]
 		), patch.object(
 				commands.win32gui, 'GetForegroundWindow', return_value=17
 		):

@@ -133,7 +133,7 @@ class RenameCurrentTest(_SettingsTestCase):
 	def _rename(self, prompt_result, on_renamed=None, renamed_to='file:///b.png'):
 		pane = StubPane(['file:///a.png'], cursor=0)
 		with patch(
-			'core.viewer_file_ops.show_prompt', return_value=prompt_result
+			'core.viewer_file_ops.show_input', return_value=prompt_result
 		), patch(
 			'core.viewer_file_ops.rename_to', return_value=renamed_to
 		) as rename_to:
@@ -141,18 +141,18 @@ class RenameCurrentTest(_SettingsTestCase):
 		return rename_to
 
 	def test_cancelled_prompt_renames_nothing(self):
-		rename_to = self._rename(('b.png', False))
+		rename_to = self._rename(None)
 		rename_to.assert_not_called()
 
 	def test_rejected_name_leaves_the_viewer_alone(self):
 		# rename_to returning None means it alerted and did not submit.
 		renamed = []
-		self._rename(('b.png', True), renamed.append, renamed_to=None)
+		self._rename('b.png', renamed.append, renamed_to=None)
 		self.assertEqual([], renamed)
 
 	def test_accepted_rename_reports_the_new_url(self):
 		renamed = []
-		rename_to = self._rename(('b.png', True), renamed.append)
+		rename_to = self._rename('b.png', renamed.append)
 		rename_to.assert_called_once_with(
 			rename_to.call_args[0][0], 'file:///a.png', 'b.png'
 		)
@@ -160,7 +160,7 @@ class RenameCurrentTest(_SettingsTestCase):
 
 	def test_accepted_rename_without_a_callback_does_not_crash(self):
 		# The image and video viewers pass no on_renamed.
-		rename_to = self._rename(('b.png', True))
+		rename_to = self._rename('b.png')
 		rename_to.assert_called_once()
 
 class AfterFileGoneTest(_SettingsTestCase):
@@ -228,7 +228,7 @@ class BackgroundHopTest(_SettingsTestCase):
 		backgrounded = []
 		pane = StubPane(['file:///a.png'], cursor=0)
 		with patch(
-			'core.viewer_file_ops.show_prompt', return_value=('b.png', True)
+			'core.viewer_file_ops.show_input', return_value='b.png'
 		), patch('core.viewer_file_ops.rename_to') as rename_to, patch(
 			'core.viewer_file_ops._in_background', backgrounded.append
 		):
