@@ -187,6 +187,24 @@ FunctionEnd
 
 Section "Uninstall"
 
+  DeleteRegKey HKCU "Software\Classes\Directory\shell\fman"
+  DeleteRegKey HKCU "Software\Classes\Drive\shell\fman"
+
+  ReadRegStr $0 HKCU "Software\Classes\Directory\shell" ""
+  StrCmp $0 "fman" 0 +2
+  DeleteRegValue HKCU "Software\Classes\Directory\shell" ""
+  ReadRegStr $0 HKCU "Software\Classes\Drive\shell" ""
+  StrCmp $0 "fman" 0 +2
+  DeleteRegValue HKCU "Software\Classes\Drive\shell" ""
+
+  ReadRegStr $0 HKCU "Software\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}\shell\opennewwindow\command" ""
+  StrCmp $0 "$\"$InstDir\${app_name}.exe$\"" 0 +2
+  DeleteRegKey HKCU "Software\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}"
+  ReadRegStr $0 HKCU "Software\Classes\CLSID\{20D04FE0-3AEA-1069-A2D8-08002B30309D}\shell\open\command" ""
+  StrCmp $0 "$\"$InstDir\${app_name}.exe$\" drives://" 0 +2
+  DeleteRegKey HKCU "Software\Classes\CLSID\{20D04FE0-3AEA-1069-A2D8-08002B30309D}"
+  System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+
   Push "remove"
   Call un.UpdateUserPath
   RMDir /r "$InstDir"

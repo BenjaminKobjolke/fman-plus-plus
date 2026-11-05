@@ -6,6 +6,10 @@ from subprocess import Popen, check_output
 import os
 import sys
 
+_DEFAULT_WINDOWS_FILE_MANAGER = {
+	'args': ['start', 'explorer', '{curr_dir}'], 'shell': True
+}
+
 def is_arch():
 	try:
 		return _get_os_release_name().startswith('Arch Linux')
@@ -49,7 +53,11 @@ def open_terminal_in_directory(dir_path):
 def open_native_file_manager(dir_path):
 	settings = load_json('Core Settings.json', default={})
 	app = settings.get('native_file_manager', {})
-	if app:
+	if app == _DEFAULT_WINDOWS_FILE_MANAGER and PLATFORM == 'Windows':
+		# The explicit Explorer verb avoids routing F10 back through fman's
+		# default folder verb.
+		os.startfile(dir_path, 'explore')
+	elif app:
 		_run_app_from_setting(app, dir_path)
 	else:
 		xdg_open = which('xdg-open')

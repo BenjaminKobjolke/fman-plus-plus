@@ -17,6 +17,11 @@ def toggle_start_with_windows(settings):
 	from fman.impl.autostart import toggle
 	return toggle(settings)
 
+def toggle_explorer_replacement(settings):
+	# Keep winreg out of imports on platforms where tray commands are absent.
+	from fman.impl.explorer_replacement import toggle
+	return toggle(settings)
+
 class BuiltinPlugin(Plugin):
 	def __init__(
 		self, tour_controller, tutorial_factory, cleanupguide_factory,
@@ -147,6 +152,12 @@ class BuiltinPlugin(Plugin):
 					self.window._widget.show_status_message(
 						toggle_start_with_windows(tray.settings))
 
+		class ToggleExplorerReplacement(ApplicationCommand):
+			aliases = ('Toggle Explorer replacement',)
+			def __call__(self):
+				self.window._widget.show_status_message(
+					toggle_explorer_replacement(tray.settings))
+
 		class ToggleMenuBar(ApplicationCommand):
 			aliases = ('Toggle menu bar',)
 			def __call__(self):
@@ -167,6 +178,7 @@ class BuiltinPlugin(Plugin):
 			self._register_application_command(MinimizeToTray)
 			self._register_application_command(ToggleMinimizeToTray)
 			self._register_application_command(ToggleStartWithWindows)
+			self._register_application_command(ToggleExplorerReplacement)
 		# Only Mac has a menu bar to toggle: MainWindow._init_help_menu builds
 		# the Help menu from ApplicationContext.help_menu_actions, which is
 		# empty everywhere else. Registering it off Mac would put a row in the

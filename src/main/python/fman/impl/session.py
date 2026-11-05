@@ -94,7 +94,7 @@ class SessionManager:
 			yield pane, path, pane_info
 	def _init_pane(self, pane, cmdline, pane_info):
 		if cmdline:
-			path = make_absolute(cmdline, getcwd())
+			path = cmdline if '://' in cmdline else make_absolute(cmdline, getcwd())
 		else:
 			# Note that pane_info['location'] may be None if the pane hadn't
 			# yet received a location the last time fman was closed. This

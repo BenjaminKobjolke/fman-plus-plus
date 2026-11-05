@@ -58,7 +58,7 @@ from os import makedirs, getcwd
 from os.path import dirname, join
 from PyQt5.QtCore import QUrl, QTimer
 from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QStyleFactory, QFileIconProvider
+from PyQt5.QtWidgets import QStyleFactory, QFileIconProvider, QMessageBox
 
 import fman
 import json
@@ -79,22 +79,34 @@ class DevelopmentApplicationContext(ApplicationContext):
 	def run(self):
 		self.init_logging()
 		self._start_hidden = False
+		self._explorer_replacement_message = None
 		self._single_pane = SINGLE_PANE_ARG in sys.argv
 		sys.argv[:] = [arg for arg in sys.argv if arg != SINGLE_PANE_ARG]
 		if PLATFORM == 'Windows':
 			from fman.impl.autostart import TRAY_ARG, apply
+			from fman.impl.explorer_replacement import (
+				apply as apply_explorer_replacement, fix_shell_arg)
 			from fman.impl.taskbar_grouping import apply as apply_taskbar_grouping
+			sys.argv[1:] = [fix_shell_arg(a) for a in sys.argv[1:]]
 			self._start_hidden = TRAY_ARG in sys.argv
 			sys.argv[:] = [arg for arg in sys.argv if arg != TRAY_ARG]
 			apply(self.local_settings)
+			self._explorer_replacement_message = \
+				apply_explorer_replacement(self.local_settings)
 			apply_taskbar_grouping(self.local_settings)
 		if '--automation-demo' in sys.argv:
 			return self._run_demo()
 		if self.single_instance_enabled:
 			# Touch self.app first: QLocalSocket needs a QApplication instance.
 			_ = self.app
-			abs_paths = [make_absolute(a, getcwd()) for a in sys.argv[1:]]
+			abs_paths = [
+				a if '://' in a else make_absolute(a, getcwd())
+				for a in sys.argv[1:]
+			]
 			if self.single_instance.try_forward(abs_paths, self._single_pane):
+				if self._explorer_replacement_message:
+					QMessageBox.information(
+						None, APP_NAME, self._explorer_replacement_message)
 				return 0
 			self.single_instance.start_listening()
 		self._start_metrics()
@@ -108,6 +120,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 		self.session_manager.show_main_window(
 			self.window, hidden=self._start_hidden,
 			single_pane=self._single_pane)
+		if self._explorer_replacement_message:
+			self.window.show_status_message(
+				self._explorer_replacement_message, timeout_secs=10)
 		_ = self.global_hotkey
 		return self.app.exec_()
 	def _run_demo(self):
