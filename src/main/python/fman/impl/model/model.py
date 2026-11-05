@@ -70,13 +70,14 @@ class Model(SortFilterTableModel, DragAndDrop):
 
 	def __init__(
 		self, fs, location, columns, sort_column=0, ascending=True,
-		num_rows_to_preload=0, filters=None
+		num_rows_to_preload=0, filters=None, mix_dirs=False
 	):
 		column_headers = [column.display_name for column in columns]
 		super().__init__(column_headers, sort_column, ascending, filters)
 		self._fs = fs
 		self._location = location
 		self._columns = columns
+		self._mix_dirs = mix_dirs
 		self._num_rows_to_preload = num_rows_to_preload
 		self._files = {}
 		# Rows whose #_load_file(...) has been tried once already. Without this,
@@ -88,6 +89,13 @@ class Model(SortFilterTableModel, DragAndDrop):
 		self._worker = Worker()
 		self._timed_reload_pending = False
 		self._shutdown = False
+	def set_mix_dirs(self, value):
+		# The new value takes effect on the next reload.
+		self._mix_dirs = value
+	def _column_sort_value(self, column, url, ascending):
+		if self._mix_dirs:
+			return column.get_mixed_sort_value(url, ascending)
+		return column.get_sort_value(url, ascending)
 	def start(self, callback):
 		self._worker.start()
 		self._init(callback)
@@ -172,7 +180,9 @@ class Model(SortFilterTableModel, DragAndDrop):
 			# Load the current sort value:
 			sort_val_asc = sort_val_desc = _NOT_LOADED
 			if i == self._sort_column:
-				sort_value = column.get_sort_value(url, self._sort_ascending)
+				sort_value = self._column_sort_value(
+					column, url, self._sort_ascending
+				)
 				if self._sort_ascending:
 					sort_val_asc = sort_value
 				else:
@@ -295,8 +305,8 @@ class Model(SortFilterTableModel, DragAndDrop):
 		cells = []
 		for i, cell in enumerate(row.cells):
 			if i == sort_column:
-				sort_value = self._columns[sort_column].get_sort_value(
-					row.url, ascending
+				sort_value = self._column_sort_value(
+					self._columns[sort_column], row.url, ascending
 				)
 				if ascending:
 					col_val_asc = sort_value

@@ -5,10 +5,11 @@ from core.file_extension import split_extension
 from core.overwrite_details import file_version
 from fman import PLATFORM
 from fman.fs import Column
+from core.mixed_sort import DirsFirstColumn
 import stat
 import fman.fs
 
-class Extension(Column):
+class Extension(DirsFirstColumn, Column):
 	def __init__(self, fs=fman.fs):
 		super().__init__()
 		self._fs = fs
@@ -28,7 +29,7 @@ class Extension(Column):
 		name_sort = Name(self._fs).get_sort_value(url, is_ascending)[1]
 		return is_dir ^ is_ascending, extension, name_sort
 
-class Version(Column):
+class Version(DirsFirstColumn, Column):
 	def __init__(self, fs=fman.fs):
 		super().__init__()
 		self._fs = fs
@@ -47,7 +48,7 @@ class Version(Column):
 			version = ()
 		return is_dir ^ is_ascending, version
 
-class Attributes(Column):
+class Attributes(DirsFirstColumn, Column):
 	def __init__(self, fs=fman.fs):
 		super().__init__()
 		self._fs = fs

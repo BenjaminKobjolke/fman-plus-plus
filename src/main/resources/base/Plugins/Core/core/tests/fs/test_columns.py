@@ -5,6 +5,7 @@ from core import Name, Size, Modified
 from core.tests import StubFS
 from core.tests.fs import StubFileSystem
 from core.util import format_size
+from fman.fs import Column
 from fman.url import as_url
 
 class ColumnTest:
@@ -42,9 +43,31 @@ class ColumnTest:
 		for i, left in enumerate(chain[:-1]):
 			right = chain[i + 1]
 			self.assert_is_less(left, right, is_ascending)
+	def check_mixed_less_than_chain(self, *chain, is_ascending=True):
+		for i, left in enumerate(chain[:-1]):
+			right = chain[i + 1]
+			self.assertLess(
+				self._get_mixed_sort_value(left, is_ascending),
+				self._get_mixed_sort_value(right, is_ascending)
+			)
 	def _get_sort_value(self, path, is_ascending):
 		url = as_url(path, StubFileSystem.scheme)
 		return self._column.get_sort_value(url, is_ascending)
+	def _get_mixed_sort_value(self, path, is_ascending=True):
+		url = as_url(path, StubFileSystem.scheme)
+		return self._column.get_mixed_sort_value(url, is_ascending)
+
+class MixedSortValueTest(TestCase):
+	def test_default_mixed_sort_value_uses_regular_sort_value(self):
+		class StubColumn(Column):
+			def get_sort_value(self, url, is_ascending):
+				return (url, is_ascending)
+
+		column = StubColumn()
+		self.assertEqual(
+			column.get_sort_value('stub://file', True),
+			column.get_mixed_sort_value('stub://file', True)
+		)
 
 class NameTest(ColumnTest, TestCase):
 
@@ -65,6 +88,15 @@ class NameTest(ColumnTest, TestCase):
 		self.assert_is_less('a', 'B')
 	def test_directories_before_files(self):
 		self.check_less_than_chain('a_dir', 'b_dir', 'a')
+	def test_mixed_sort_value_orders_directories_by_name(self):
+		self.check_mixed_less_than_chain(
+			'a', 'a_dir', 'b',
+			is_ascending=True
+		)
+		self.assertLess(
+			self._get_sort_value('a_dir', True),
+			self._get_sort_value('a', True)
+		)
 	def test_descending(self):
 		self.check_less_than_chain(
 			'a', 'b', 'a_dir', 'b_dir',
@@ -98,6 +130,9 @@ class SizeTest(ColumnTest, TestCase):
 		self.check_less_than_chain(
 			'b', 'a', 'b_dir', 'a_dir', is_ascending=False
 		)
+	def test_mixed_directories_count_as_zero_and_sort_by_name(self):
+		self.check_mixed_less_than_chain('a_dir', 'b', 'b_dir', 'a')
+		self.assertEqual(0, self._get_mixed_sort_value('a_dir')[0])
 
 class ModifiedTest(ColumnTest, TestCase):
 
@@ -123,3 +158,6 @@ class ModifiedTest(ColumnTest, TestCase):
 		self.assert_is_less('a', 'b', False)
 	def test_directories_before_files(self):
 		self.check_less_than_chain('a_dir', 'b_dir', 'a')
+	def test_mixed_sort_value_drops_directory_key(self):
+		self.assertEqual(1, len(self._get_mixed_sort_value('a_dir')))
+		self.assertEqual(2, len(self._get_sort_value('a_dir', True)))

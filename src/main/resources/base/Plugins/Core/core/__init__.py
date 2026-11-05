@@ -9,6 +9,7 @@ from fman.url import basename
 from PyQt5.QtCore import QLocale, QDate, QDateTime, QTime
 from .util import format_size
 from .file_extension import name_for_name_column
+from .mixed_sort import DirsFirstColumn
 
 
 def _format_mtime(mtime_qt):
@@ -27,7 +28,7 @@ for _module_name in ('.commands', '.fs', '.viewers'):
 		globals()[_name] = getattr(_module, _name)
 
 # Define here so get_default_columns(...) can reference it as core.Name:
-class Name(Column):
+class Name(DirsFirstColumn, Column):
 	def __init__(self, fs=fman.fs):
 		super().__init__()
 		self._fs = fs
@@ -55,7 +56,7 @@ class Name(Column):
 		return major, minor
 
 # Define here so get_default_columns(...) can reference it as core.Size:
-class Size(Column):
+class Size(DirsFirstColumn, Column):
 	def __init__(self, fs=fman.fs):
 		super().__init__()
 		self._fs = fs
@@ -94,11 +95,29 @@ class Size(Column):
 			except OSError:
 				minor = 0
 		return is_dir ^ is_ascending, minor
+	def get_mixed_sort_value(self, url, is_ascending):
+		try:
+			is_dir = self._fs.is_dir(url)
+		except FileNotFoundError:
+			raise
+		except OSError:
+			is_dir = False
+		if is_dir:
+			size = 0
+		else:
+			try:
+				size = self._get_size(url)
+			except OSError:
+				size = 0
+		if size is None:
+			size = 0
+		name = Name(self._fs).get_sort_value(url, is_ascending)[1]
+		return size, name
 	def _get_size(self, url):
 		return self._fs.query(url, 'size_bytes')
 
 # Define here so get_default_columns(...) can reference it as core.Modified:
-class Modified(Column):
+class Modified(DirsFirstColumn, Column):
 	def __init__(self, fs=fman.fs):
 		super().__init__()
 		self._fs = fs

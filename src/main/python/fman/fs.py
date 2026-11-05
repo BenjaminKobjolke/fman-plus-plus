@@ -242,6 +242,13 @@ class Column:
 		method receives is_ascending as a parameter.
 		"""
 		return self.get_str(url).lower()
+	def get_mixed_sort_value(self, url, is_ascending):
+		"""Sort value when the pane mixes files and folders.
+
+	    Columns that put folders first override this; the default keeps
+	    get_sort_value.
+	"""
+		return self.get_sort_value(url, is_ascending)
 	@property
 	def display_name(self):
 		return self.__class__.__name__

@@ -470,5 +470,9 @@ class ColumnWrapper(Wrapper):
 		with self._report_exceptions(exclude={FileNotFoundError}):
 			return False, self._wrapped.get_sort_value(url, is_ascending)
 		return True, 0
+	def get_mixed_sort_value(self, url, is_ascending):
+		with self._report_exceptions(exclude={FileNotFoundError}):
+			return False, self._wrapped.get_mixed_sort_value(url, is_ascending)
+		return True, 0
 	def __getattr__(self, item):
 		return getattr(self._wrapped, item)

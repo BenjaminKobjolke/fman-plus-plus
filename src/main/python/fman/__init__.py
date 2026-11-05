@@ -131,6 +131,8 @@ class DirectoryPane:
 		return self._widget.get_home_cursor()
 	def _set_dimmer(self, dimmer):
 		self._widget.set_dimmer(dimmer)
+	def _set_mix_dirs(self, value):
+		self._widget.set_mix_dirs(value)
 	def _remove_filter(self, filter_):
 		self._widget.remove_filter(filter_)
 

@@ -27,6 +27,10 @@ class FileColumnsTest(TestCase):
 		self.assertLess(
 			column.get_sort_value('a', True), column.get_sort_value('b', True),
 		)
+		self.assertEqual(
+			column.get_sort_value('folder', True)[1:],
+			column.get_mixed_sort_value('folder', True)
+		)
 
 	def test_version_empty_while_hidden_and_numeric_sort(self):
 		with patch('core.file_columns.is_column_hidden', return_value=True):

@@ -375,6 +375,44 @@ class ModelSortTest(ExecutorTestCase):
 		self._model._filters.clear()
 		self._model.update()
 
+class ModelMixedSortValueTest(TestCase):
+	def test_model_uses_mixed_sort_value_when_enabled(self):
+		column = RecordingSortColumn()
+		model = Model(StubFileSystem({}), 'null://', [column], mix_dirs=True)
+		model._load_cells('null://file')
+		self.assertEqual(['mixed'], column.calls)
+
+	def test_default_model_uses_regular_sort_value(self):
+		column = RecordingSortColumn()
+		model = Model(StubFileSystem({}), 'null://', [column])
+		model._load_cells('null://file')
+		self.assertEqual(['regular'], column.calls)
+
+	def test_set_mix_dirs_changes_sort_value_for_next_load(self):
+		column = RecordingSortColumn()
+		model = Model(StubFileSystem({}), 'null://', [column])
+		model.set_mix_dirs(True)
+		model._load_cells('null://file')
+		self.assertEqual(['mixed'], column.calls)
+
+	def test_sorting_another_column_uses_mixed_sort_value(self):
+		column = RecordingSortColumn()
+		model = Model(StubFileSystem({}), 'null://', [column], mix_dirs=True)
+		model._load_sort_value(f('null://file', [c('file')]), 0, True)
+		self.assertEqual(['mixed'], column.calls)
+
+class RecordingSortColumn(Column):
+	def __init__(self):
+		self.calls = []
+	def get_str(self, url):
+		return url
+	def get_sort_value(self, url, is_ascending):
+		self.calls.append('regular')
+		return url
+	def get_mixed_sort_value(self, url, is_ascending):
+		self.calls.append('mixed')
+		return url
+
 class ModelShutdownTest(ExecutorTestCase):
 
 	"""
@@ -442,6 +480,21 @@ class SortedFileSystemModelShutdownTest(TestCase):
 		model.shutdown()
 		self.assertNotIn(model._on_file_removed, fs.file_removed._callbacks)
 		model.shutdown()
+
+class SortedFileSystemModelMixedSortingTest(TestCase):
+	def test_set_mix_dirs_forwards_to_source_model(self):
+		class StubFileSystem:
+			def __init__(self):
+				self.file_removed = Event()
+
+		fs = StubFileSystem()
+		with patch.object(SortedFileSystemModel, 'set_location'):
+			model = SortedFileSystemModel(None, fs, 'null://')
+		source_model = MagicMock()
+		model.sourceModel = lambda: source_model
+		model.set_mix_dirs(True)
+		self.assertTrue(model._mix_dirs)
+		source_model.set_mix_dirs.assert_called_once_with(True)
 
 class NameColumn(Column):
 	def get_str(self, url):
