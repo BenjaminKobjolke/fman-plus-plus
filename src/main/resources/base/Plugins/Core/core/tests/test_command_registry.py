@@ -70,6 +70,7 @@ EXPECTED = frozenset({
 	'ToggleAutomaticUpdates',
 	'DeselectSameExtension',
 	'ToggleModifiedColumn', 'ToggleNetworkIcons', 'ToggleSelection',
+	'ToggleFixedColumnWidths',
 	'ToggleVersionColumn', 'ToggleExtensionColumn', 'ToggleNameWithoutExtension',
 	'ToggleAttributesColumn', 'ToggleCompactView',
 	'ToggleSizeColumn', 'Undo', 'UpdateWindowTitle', 'ViewFile',

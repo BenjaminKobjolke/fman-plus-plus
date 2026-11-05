@@ -2,14 +2,20 @@
 # scans names reachable from this module (plugin.py:_iterate_classes).
 from importlib import import_module as _import_module
 from datetime import datetime
+import fman.fs
+import re
 from fman.fs import Column
 from fman.url import basename
-from PyQt5.QtCore import QLocale, QDateTime
+from PyQt5.QtCore import QLocale, QDate, QDateTime, QTime
 from .util import format_size
 from .file_extension import name_for_name_column
 
-import fman.fs
-import re
+
+def _format_mtime(mtime_qt):
+	time_format = QLocale().dateTimeFormat(QLocale.ShortFormat)
+	# Always show two-digit years, not four digits:
+	time_format = time_format.replace('yyyy', 'yy')
+	return mtime_qt.toString(time_format)
 
 for _module_name in ('.commands', '.fs', '.viewers'):
 	_module = _import_module(_module_name, __name__)
@@ -69,6 +75,9 @@ class Size(Column):
 		if size_bytes is None:
 			return ''
 		return format_size(size_bytes)
+	def get_widest_str(self) -> str:
+		# The largest supported file size keeps the Size column from truncating.
+		return format_size(999_999_999)
 	def get_sort_value(self, url, is_ascending):
 		try:
 			is_dir = self._fs.is_dir(url)
@@ -108,10 +117,11 @@ class Modified(Column):
 			# This raises `OSError: [Errno 22] Invalid argument`.
 			return ''
 		mtime_qt = QDateTime.fromMSecsSinceEpoch(int(timestamp * 1000))
-		time_format = QLocale().dateTimeFormat(QLocale.ShortFormat)
-		# Always show two-digit years, not four digits:
-		time_format = time_format.replace('yyyy', 'yy')
-		return mtime_qt.toString(time_format)
+		return _format_mtime(mtime_qt)
+	def get_widest_str(self) -> str:
+		return _format_mtime(
+			QDateTime(QDate(2000, 12, 28), QTime(22, 58, 58))
+		)
 	def get_sort_value(self, url, is_ascending):
 		try:
 			is_dir = self._fs.is_dir(url)

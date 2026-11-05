@@ -21,9 +21,12 @@ from fman.impl.util.qt.thread import run_in_main_thread
 __all__ = [
 	'InitColumnVisibility', 'RememberSortSettings', 'SortByColumn',
 	'ToggleModifiedColumn', 'ToggleSizeColumn', 'ToggleExtensionColumn',
-	'ToggleVersionColumn', 'ToggleAttributesColumn',
+	'ToggleVersionColumn', 'ToggleAttributesColumn', 'ToggleFixedColumnWidths',
 	'ToggleNameWithoutExtension'
 ]
+
+FIT_NAME_COLUMN_KEY = 'fit_name_column'
+FIT_NAME_COLUMN_DEFAULT = True
 
 # fman has no pane.set_columns(...) - the FileSystem owns the column set and
 # the model is rebuilt on every navigation. So we hide/show columns directly
@@ -59,7 +62,7 @@ def _apply_column_visibility(pane):
 	# resizeEvent (e.g. the user resizing the window). Force it now so
 	# toggling is visible immediately.
 	view.fit_name_column = get_setting(
-		'Core Settings.json', 'fit_name_column', True
+		'Core Settings.json', FIT_NAME_COLUMN_KEY, FIT_NAME_COLUMN_DEFAULT
 	)
 	view.resizeColumnsToContents()
 
@@ -97,6 +100,17 @@ class ToggleVersionColumn(DirectoryPaneCommand):
 class ToggleAttributesColumn(DirectoryPaneCommand):
 	aliases = ('Toggle attributes column',)
 	def __call__(self): _toggle_column(self.pane.window, 'core.file_columns.Attributes')
+
+class ToggleFixedColumnWidths(DirectoryPaneCommand):
+	aliases = ('Toggle fixed column widths',)
+	def __call__(self):
+		key = FIT_NAME_COLUMN_KEY
+		value = not get_setting(
+			'Core Settings.json', key, FIT_NAME_COLUMN_DEFAULT
+		)
+		save_setting('Core Settings.json', key, value)
+		for pane in self.pane.window.get_panes():
+			_apply_column_visibility(pane)
 
 class ToggleNameWithoutExtension(DirectoryPaneCommand):
 	aliases = ('Toggle name without extension',)

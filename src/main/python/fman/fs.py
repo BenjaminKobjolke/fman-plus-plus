@@ -230,6 +230,9 @@ class Column:
 		return cls.__module__ + '.' + cls.__name__
 	def get_str(self, url):
 		raise NotImplementedError()
+	def get_widest_str(self) -> str:
+		"""Return a representative string wide enough for this column's values."""
+		return ''
 	def get_sort_value(self, url, is_ascending):
 		"""
 		This method should generally be independent of is_ascending.

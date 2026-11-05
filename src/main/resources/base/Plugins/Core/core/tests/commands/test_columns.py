@@ -1,6 +1,8 @@
-from core.commands.columns import _get_hidden_flags, SortByColumn
+from core.commands.columns import (
+	_get_hidden_flags, SortByColumn, ToggleFixedColumnWidths,
+)
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import Mock, call, patch
 
 class GetHiddenFlagsTest(TestCase):
 	def test_hides_size_and_modified_columns(self):
@@ -40,4 +42,27 @@ class SortByColumnTest(TestCase):
 		self.assertEqual(1, quicksearch.call_args.kwargs['item'])
 		self.assertEqual(
 			['core.Name', 'core.Modified'], [item.value for item in get_items('')]
+		)
+
+class ToggleFixedColumnWidthsTest(TestCase):
+	def test_toggles_setting_and_reapplies_visibility_to_every_pane(self):
+		panes = [object(), object()]
+		window = Mock()
+		window.get_panes.return_value = panes
+		command = ToggleFixedColumnWidths(Mock(window=window))
+		with patch(
+			'core.commands.columns.get_setting', side_effect=[True, False]
+		), patch('core.commands.columns.save_setting') as save_setting, patch(
+			'core.commands.columns._apply_column_visibility'
+		) as apply_visibility:
+			command()
+			command()
+
+		self.assertEqual([
+			call('Core Settings.json', 'fit_name_column', False),
+			call('Core Settings.json', 'fit_name_column', True),
+		], save_setting.call_args_list)
+		self.assertEqual(
+			[call(pane) for pane in panes] * 2,
+			apply_visibility.call_args_list,
 		)

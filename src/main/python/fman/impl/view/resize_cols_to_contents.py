@@ -1,4 +1,7 @@
 from fman.impl.view.uniform_row_heights import UniformRowHeights
+from fman.impl.view.fixed_column_widths import get_target_widths
+from PyQt5.QtCore import QTimer, QSize
+from PyQt5.QtWidgets import QApplication, QStyle, QStyleOptionViewItem
 from math import ceil
 
 class ResizeColumnsToContents(UniformRowHeights):
@@ -6,8 +9,14 @@ class ResizeColumnsToContents(UniformRowHeights):
 		super().__init__(parent)
 		self.horizontalHeader().sectionResized.connect(self._on_col_resized)
 		self._old_col_widths = None
+		self._dragged_widths = {}
+		self._column_widths_by_name = {}
 		self._handle_col_resize = True
 		self.fit_name_column = True
+		self._restore_widths_pending = False
+		self._resize_timer = QTimer(self)
+		self._resize_timer.setSingleShot(True)
+		self._resize_timer.timeout.connect(self._on_resize_timer)
 	def resizeColumnsToContents(self):
 		self._resize_cols_to_contents()
 	def resizeEvent(self, event):
@@ -34,10 +43,54 @@ class ResizeColumnsToContents(UniformRowHeights):
 		old_model = self.model()
 		if old_model:
 			old_model.modelReset.disconnect(self._on_model_reset)
+			old_model.modelAboutToBeReset.disconnect(
+				self._on_model_about_to_reset
+			)
+			old_model.rowsInserted.disconnect(self._on_rows_inserted)
 		super().setModel(model)
+		model.modelAboutToBeReset.connect(self._on_model_about_to_reset)
 		model.modelReset.connect(self._on_model_reset)
+		model.rowsInserted.connect(self._on_rows_inserted)
+		if self._column_widths_by_name:
+			self._restore_widths_pending = True
+			self._resize_timer.start(0)
+	def _on_model_about_to_reset(self):
+		self._record_column_widths()
 	def _on_model_reset(self):
-		self._old_col_widths = None
+		self._restore_widths_pending = True
+		self._resize_timer.start(0)
+	def _on_rows_inserted(self, *_):
+		self._resize_timer.start(0)
+	def _on_resize_timer(self):
+		if self._restore_widths_pending:
+			self._restore_column_widths()
+			self._restore_widths_pending = False
+		self._resize_cols_to_contents()
+	def _record_column_widths(self):
+		model = self.model()
+		if model is not None and hasattr(model, 'get_columns'):
+			self._column_widths_by_name.update({
+				column.get_qualified_name(): self.columnWidth(i)
+				for i, column in enumerate(model.get_columns())
+				if i < self._num_columns
+			})
+	def _restore_column_widths(self):
+		self._handle_col_resize = False
+		try:
+			for i, column in enumerate(self.model().get_columns()):
+				name = column.get_qualified_name()
+				if i < self._num_columns and name in self._column_widths_by_name:
+					self.setColumnWidth(i, self._column_widths_by_name[name])
+		finally:
+			self._handle_col_resize = True
+		self._record_column_widths()
+	def get_dragged_widths(self):
+		return dict(self._dragged_widths)
+	def set_dragged_widths(self, widths):
+		self._dragged_widths = {
+			name: width for name, width in widths.items()
+			if isinstance(name, str) and type(width) is int
+		} if isinstance(widths, dict) else {}
 	def _resize_cols_to_contents(self, curr_widths=None):
 		visible_columns = self._get_visible_columns()
 		if not visible_columns:
@@ -48,16 +101,52 @@ class ResizeColumnsToContents(UniformRowHeights):
 			curr_widths = self._get_column_widths()
 		visible_curr_widths = [curr_widths[c] for c in visible_columns]
 		header = self.horizontalHeader()
-		min_widths = [
-			max(self.sizeHintForColumn(c), header.sectionSizeHint(c))
-			for c in visible_columns
-		]
-		width = self._get_width_excl_scrollbar()
-		ideal_widths = _get_ideal_column_widths(
-			visible_curr_widths, min_widths, width, self.fit_name_column
+		content_hints = [self.sizeHintForColumn(c) for c in visible_columns]
+		header_hints = [header.sectionSizeHint(c) for c in visible_columns]
+		target_widths = self._get_target_widths(
+			visible_columns, content_hints, header_hints, self._dragged_widths
 		)
-		for col, col_width in zip(visible_columns, ideal_widths):
-			self.setColumnWidth(col, col_width)
+		width = self._get_width_excl_scrollbar()
+		columns = self.model().get_columns()
+		name_index = next(
+			(i for i, c in enumerate(visible_columns)
+			if columns[c].get_qualified_name().split('.')[-1] == 'Name'), 0
+		)
+		fixed_width = sum(
+			w for i, w in enumerate(target_widths) if i != name_index
+		)
+		if not self.fit_name_column and fixed_width <= width:
+			ideal_widths = list(target_widths)
+			ideal_widths[name_index] = width - fixed_width
+		else:
+			if not self.fit_name_column:
+				visible_curr_widths = target_widths
+			ideal_widths = _get_ideal_column_widths(
+				visible_curr_widths, target_widths, width, self.fit_name_column
+			)
+		self._handle_col_resize = False
+		try:
+			for col, col_width in zip(visible_columns, ideal_widths):
+				self.setColumnWidth(col, col_width)
+		finally:
+			self._handle_col_resize = True
+		self._record_column_widths()
+	def _get_target_widths(
+		self, visible_columns, content_hints, header_hints, dragged
+	):
+		columns = self.model().get_columns()
+		names = [columns[c].get_qualified_name() for c in visible_columns]
+		samples = {
+			column.get_qualified_name(): measure_text_width(
+				self, column.get_widest_str()
+			)
+			for c, column in enumerate(columns)
+			if c in visible_columns and column.get_widest_str()
+		}
+		return get_target_widths(
+			names, content_hints, header_hints, samples, dragged,
+			fixed=not self.fit_name_column
+		)
 	def _get_rows_visible_but_not_loaded(self):
 		model = self.model()
 		return [
@@ -65,23 +154,7 @@ class ResizeColumnsToContents(UniformRowHeights):
 			if not model.row_is_loaded(i)
 		]
 	def _get_width_excl_scrollbar(self):
-		return self.width() - self._get_vertical_scrollbar_width()
-	def _get_vertical_scrollbar_width(self):
-		scrollbar = self.verticalScrollBar()
-		if scrollbar.isVisible():
-			return scrollbar.width()
-		required_height = self.viewportSizeHint().height()
-		will_scrollbar_be_visible = required_height > self.height()
-		if will_scrollbar_be_visible:
-			# This for instance happens when fman is just starting up. In this
-			# case, scrollbar.isVisible() is False even though it is visible on
-			# the screen. One theory that could explain this is that in the
-			# initial paint event, Qt gives us the entire viewport to paint on.
-			# It then realizes that we used more than the available height and
-			# draws the vertical scrollbar on top of the viewport - without
-			# setting isVisible() to True. But this is just a theory.
-			return scrollbar.sizeHint().width()
-		return 0
+		return self.width() - self.verticalScrollBar().sizeHint().width()
 	def _get_column_widths(self):
 		return [self.columnWidth(i) for i in range(self._num_columns)]
 	def _get_visible_columns(self):
@@ -91,6 +164,9 @@ class ResizeColumnsToContents(UniformRowHeights):
 		return self.horizontalHeader().count()
 	def _on_col_resized(self, col, old_size, size):
 		if old_size == size:
+			return
+		model = self.model()
+		if not hasattr(model, 'get_columns'):
 			return
 		visible_columns = self._get_visible_columns()
 		if col not in visible_columns:
@@ -104,18 +180,38 @@ class ResizeColumnsToContents(UniformRowHeights):
 			widths = [self.columnWidth(c) for c in visible_columns]
 			widths[visible_index] = old_size
 			header = self.horizontalHeader()
-			min_widths = [
-				max(self.sizeHintForColumn(c), header.sectionSizeHint(c))
-				for c in visible_columns
-			]
-			width = self._get_width_excl_scrollbar()
-			new_widths = _resize_column(
-				visible_index, size, widths, min_widths, width
+			content_hints = [self.sizeHintForColumn(c) for c in visible_columns]
+			header_hints = [header.sectionSizeHint(c) for c in visible_columns]
+			columns = self.model().get_columns()
+			dragging = bool(QApplication.mouseButtons())
+			dragged = dict(self._dragged_widths)
+			if dragging:
+				dragged.pop(columns[col].get_qualified_name(), None)
+			min_widths = self._get_target_widths(
+				visible_columns, content_hints, header_hints, dragged
 			)
+			width = self._get_width_excl_scrollbar()
+			new_widths = _resize_column(visible_index, size, widths, min_widths, width)
 			for visible_col, col_width in zip(visible_columns, new_widths):
 				self.setColumnWidth(visible_col, col_width)
+			if dragging:
+				column = self.model().get_columns()[col]
+				self._dragged_widths[column.get_qualified_name()] = \
+					self.columnWidth(col)
+			self._record_column_widths()
 		finally:
 			self._handle_col_resize = True
+
+
+def measure_text_width(view, text):
+	option = QStyleOptionViewItem(view.viewOptions())
+	option.text = text
+	option.features |= QStyleOptionViewItem.HasDisplay
+	text_size = QSize(view.fontMetrics().horizontalAdvance(text), 0)
+	return view.style().sizeFromContents(
+		QStyle.CT_ItemViewItem, option, text_size, view
+	).width()
+
 
 def _get_ideal_column_widths(
 	curr_widths, min_widths, available_width, fit_name_column=False
@@ -164,17 +260,20 @@ def _get_ideal_column_widths(
 		result[0] += last_col_excess
 	return result
 
+
 def _distribute_evenly(width, proportions):
 	total = sum(proportions)
 	if not total:
 		return [0] * len(proportions)
 	return [int(p / total * width) for p in proportions]
 
+
 def _distribute_exponentially(width, proportions):
 	total = sum(p * p for p in proportions)
 	if not total:
 		return [0] * len(proportions)
 	return [int(p * p / total * width) for p in proportions]
+
 
 def _resize_column(col, new_size, widths, min_widths, available_width):
 	old_size = widths[col]

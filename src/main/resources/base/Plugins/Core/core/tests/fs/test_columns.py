@@ -1,8 +1,11 @@
+from datetime import datetime
+from unittest import TestCase
+
 from core import Name, Size, Modified
 from core.tests import StubFS
 from core.tests.fs import StubFileSystem
+from core.util import format_size
 from fman.url import as_url
-from unittest import TestCase
 
 class ColumnTest:
 	def setUp(self):
@@ -78,6 +81,9 @@ class SizeTest(ColumnTest, TestCase):
 
 	column_class = Size
 
+	def test_widest_str_fits_a_large_file(self):
+		self.assertEqual(format_size(999_999_999), self._column.get_widest_str())
+
 	def test_less(self):
 		self.assert_is_less('b', 'a')
 	def test_greater(self):
@@ -96,6 +102,16 @@ class SizeTest(ColumnTest, TestCase):
 class ModifiedTest(ColumnTest, TestCase):
 
 	column_class = Modified
+
+	def test_widest_str_matches_formatted_sample_date(self):
+		mtime = datetime(2000, 12, 28, 22, 58, 58)
+		self._fs._items['sample'] = {
+			'is_dir': False, 'size': 0, 'mtime': mtime
+		}
+		url = as_url('sample', StubFileSystem.scheme)
+		self.assertEqual(
+			self._column.get_widest_str(), self._column.get_str(url)
+		)
 
 	def test_less(self):
 		self.assert_is_less('a', 'b')

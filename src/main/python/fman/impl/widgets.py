@@ -244,17 +244,11 @@ class DirectoryPaneWidget(QWidget):
 		return column, ascending
 	@run_in_main_thread
 	def get_column_widths(self):
-		return [self._file_view.columnWidth(i) for i in (0, 1)]
+		return self._file_view.get_dragged_widths()
 	@run_in_main_thread
 	def set_column_widths(self, column_widths):
-		num_columns = self._model.columnCount()
-		if len(column_widths) != num_columns:
-			raise ValueError(
-				'Wrong number of columns: len(%r) != %d'
-				% (column_widths, num_columns)
-			)
-		for i, width in enumerate(column_widths):
-			self._file_view.setColumnWidth(i, width)
+		self._file_view.set_dragged_widths(column_widths)
+		self._file_view.resizeColumnsToContents()
 	def _on_doubleclicked(self, index):
 		self._controller.on_doubleclicked(self, self._model.url(index))
 	def _on_key_pressed(self, event):

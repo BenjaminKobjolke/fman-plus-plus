@@ -8,6 +8,7 @@ from fman.impl.view.drag_and_drop import DragAndDrop
 from fman.impl.view.move_without_updating_selection import \
 	MoveWithoutUpdatingSelection
 from fman.impl.view.resize_cols_to_contents import ResizeColumnsToContents
+from fman.impl.view.scrollbar_below_header import install_scrollbar_below_header
 from fman.impl.view.scroll_margin import ScrollMargin
 from fman.impl.view.single_row_mode import SingleRowMode
 from PyQt5.QtCore import QEvent, QItemSelection, QItemSelectionModel as QISM, \
@@ -41,6 +42,7 @@ class FileListView(
 		self._delegate = FileListItemDelegate()
 		self.add_delegate(self._delegate)
 		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+		install_scrollbar_below_header(self)
 		self.setContextMenuPolicy(Qt.DefaultContextMenu)
 		self._urls_being_loaded = []
 		self._loading_text = ''
