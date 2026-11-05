@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import QDialog, QLayout, QFrame, QVBoxLayout, QLineEdit, \
 class Quicksearch(QDialog):
 
 	shown = pyqtSignal()
+	_refresh_requested = pyqtSignal()
 
 	def __init__(
 		self, parent, app, css, get_items, get_tab_completion=None, query='',
@@ -25,6 +26,7 @@ class Quicksearch(QDialog):
 		if get_tab_completion is None:
 			get_tab_completion = lambda q, i: None
 		super().__init__(parent, FramelessWindowHint)
+		self._refresh_requested.connect(self._refresh)
 		# For accessibility / screen readers:
 		self.setWindowTitle(translate(QUICKSEARCH_TITLE))
 		self._app = app
@@ -42,6 +44,26 @@ class Quicksearch(QDialog):
 		self._place_cursor_at_item(self._initial_item)
 	def get_result(self):
 		return self._result
+	def request_refresh(self):
+		try:
+			self._refresh_requested.emit()
+		except RuntimeError:
+			# The C++ dialog may already be gone.
+			pass
+	def _refresh(self):
+		if not self.isVisible():
+			return
+		index = self._items.currentIndex()
+		selected = index.isValid() and index.row() < len(self._curr_items)
+		value = self._curr_items[index.row()].value if selected else None
+		self._update_items(self._query.text())
+		item = 0
+		if selected:
+			item = next((
+				row for row, item in enumerate(self._curr_items)
+				if item.value == value
+			), 0)
+		self._place_cursor_at_item(item)
 	def showEvent(self, event):
 		super().showEvent(event)
 		self.shown.emit()

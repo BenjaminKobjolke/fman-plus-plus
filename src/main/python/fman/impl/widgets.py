@@ -569,13 +569,15 @@ class MainWindow(QMainWindow):
 	@run_in_main_thread
 	def show_quicksearch(
 		self, get_items, get_tab_completion=None, query='', item=0,
-		alt_accept=False
+		alt_accept=False, set_refresh=None
 	):
 		css = self._theme.get_quicksearch_item_css()
 		dialog = Quicksearch(
 			self, self._app, css, get_items, get_tab_completion, query, item,
 			alt_accept, width_store=self._quicksearch_width
 		)
+		if set_refresh is not None:
+			set_refresh(dialog.request_refresh)
 		self.exec_dialog(dialog, in_window=True)
 		return dialog.get_result()
 	def _match_title_bar(self, dialog):

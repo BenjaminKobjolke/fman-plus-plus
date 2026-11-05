@@ -1,4 +1,5 @@
 from unittest import TestCase
+import threading
 
 from PyQt5.QtCore import QEvent, QPoint, QPointF, Qt
 from PyQt5.QtGui import QColor, QFont, QMouseEvent
@@ -131,6 +132,67 @@ class QuicksearchTest(TestCase):
 	def test_resize_to_caps_at_parent_width(self):
 		self.dialog._resize_to(5000)
 		self.assertEqual(self.parent.width(), self.dialog.width())
+
+	def test_request_refresh_updates_items_for_current_query_and_keeps_selection(self):
+		items = [QuicksearchItem('first'), QuicksearchItem('selected')]
+		queries = []
+		def get_items(query):
+			queries.append(query)
+			return items
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, get_items, query='current query'
+		)
+		dialog.show()
+		dialog._items.setCurrentIndex(dialog._items.model().index(1, 0))
+		items[:] = [QuicksearchItem('new'), QuicksearchItem('selected')]
+
+		dialog.request_refresh()
+		self.app.processEvents()
+
+		self.assertEqual('current query', dialog._query.text())
+		self.assertEqual('current query', queries[-1])
+		self.assertEqual('selected', dialog._curr_items[
+			dialog._items.currentIndex().row()
+		].value)
+
+	def test_request_refresh_selects_first_item_when_selected_value_disappears(self):
+		items = [QuicksearchItem('selected')]
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: items
+		)
+		dialog.show()
+		dialog._items.setCurrentIndex(dialog._items.model().index(0, 0))
+		items[:] = [QuicksearchItem('first'), QuicksearchItem('second')]
+
+		dialog.request_refresh()
+		self.app.processEvents()
+
+		self.assertEqual('first', dialog._curr_items[
+			dialog._items.currentIndex().row()
+		].value)
+
+	def test_request_refresh_from_thread_runs_get_items_on_gui_thread(self):
+		threads = []
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS,
+			lambda _query: threads.append(threading.get_ident()) or []
+		)
+		threads.clear()
+		dialog.show()
+		worker = threading.Thread(target=dialog.request_refresh)
+		worker.start()
+		worker.join()
+
+		self.app.processEvents()
+
+		self.assertEqual([threading.get_ident()], threads)
+
+	def test_request_refresh_after_close_does_not_raise(self):
+		self.dialog.show()
+		self.dialog.close()
+
+		self.dialog.request_refresh()
+		self.app.processEvents()
 
 	def test_dragging_right_grip_widens_by_twice_the_drag_distance(self):
 		self.dialog.show()
