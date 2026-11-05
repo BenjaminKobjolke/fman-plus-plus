@@ -152,6 +152,19 @@ other = panes[(panes.index(pane) + 1) % len(panes)]
 There are two panes by default, but the count comes from the saved session, so
 never assume exactly two.
 
+### Editing a file name in place
+
+`pane.edit_name(file_url, selection_start=0, selection_end=None, callback=None)`
+opens the inline name editor. When `callback(file_url, new_name)` is supplied,
+it runs on a worker thread after the user confirms the name. It does not run on
+Escape, and it also runs when the name is unchanged. Exceptions are reported
+like listener errors.
+
+Without `callback`, the deprecated `DirectoryPaneListener.on_name_edited` event
+is broadcast to every listener on the pane, and Core renames the file as before.
+Listeners no longer receive `on_name_edited` for Core's own Rename command
+(F2), because it now passes a callback.
+
 ### Pane activation
 
 `DirectoryPaneListener.on_activated()` is called on a worker thread when the

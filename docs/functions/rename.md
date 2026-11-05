@@ -79,13 +79,14 @@ is nothing to rename.
 Three pieces, all in
 `src/main/resources/base/Plugins/Core/core/commands/rename.py`:
 
-- `Rename` (`DirectoryPaneCommand`) — only opens the editor. Calls
+- `Rename` (`DirectoryPaneCommand`) — only opens the editor. Passes
+  `_on_name_edited` as the `pane.edit_name(...)` callback, and calls
   `is_dir` to decide how much of the name to preselect (via
   `_find_extension_start`, imported from `core/commands/editor.py`,
   which `create_and_edit_file` shares), then
-  `pane.edit_name(...)`. `is_visible()` hides it when the pane is empty.
-- `RenameListener` (`DirectoryPaneListener`) — receives `on_name_edited`
-  and does the validation above (empty/unchanged, relative path,
+- `RenameListener` (`DirectoryPaneListener`) — keeps the legacy path for
+  callers that use `pane.edit_name(...)` without a callback. Both it and the
+  callback use `_on_name_edited`, which does the validation above (empty/unchanged, relative path,
   existing target via `exists` + `samefile`), then hands off to
   `submit_task(_Rename(...))`.
 - `_Rename` (`Task`) — performs the move. Its body is a retry loop:
