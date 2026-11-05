@@ -226,8 +226,14 @@ pane receive no further events.
 
 Location and selection: `get_path()`, `set_path(url, callback, onerror)`,
 `reload()`, `get_selected_files()`, `get_file_under_cursor()`,
+`get_chosen_files()`,
 `place_cursor_at(url)`, `select()` / `deselect()`, `focus()`,
 `get_columns()`, `get_sort_column()` / `set_sort_column()`.
+
+`get_chosen_files()` returns the selected files, or the file under the cursor
+when nothing is selected, or `[]` when neither is available.
+`DirectoryPaneCommand.get_chosen_files()` remains available and returns the
+same result.
 
 ## Putting your own widget in a pane
 
