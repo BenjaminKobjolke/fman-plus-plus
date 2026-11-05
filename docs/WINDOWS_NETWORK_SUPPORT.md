@@ -142,6 +142,24 @@ letter lasts only until sign-out or restart. Disconnect refuses while files on
 the share are open and shows Windows' error so you can close them and try again.
 These commands and SMB address handling are Windows-only.
 
+## Go To suggestions for `\\`
+
+In Go To, typing `\\` suggests computers from the paths you visited and the shares connected in
+Windows, then scans the network for additional computers in the background. Typing
+`\\SERVER\` lists that server's visited, connected and discovered shares. These lookups run on
+worker threads, so entering a host or share prefix does not wait for Windows network discovery.
+
+An open Go To list refreshes when a lookup finishes. While a host scan or share lookup is running,
+a grey **Searching network…** row appears. An unavailable server shows **Did not answer**; a
+server that answered with no shares shows **No shared folders**. These rows have no destination.
+
+Successful host and share results are shared between Go To dialogs and cached for five minutes.
+Failed lookups can be retried after 30 seconds. There is no typing debounce: scanning the host
+list starts at most once per cache lifetime, and a share lookup starts only after the server name
+is followed by a slash. Windows does not provide cancellation for an in-progress network lookup;
+if you keep typing or close Go To, it finishes into the cache. Its refresh callback re-reads the
+current query, so results for an earlier prefix do not replace the current suggestions.
+
 ## Known remaining slow paths
 
 Neither freezes the UI, but both are worth knowing about:
