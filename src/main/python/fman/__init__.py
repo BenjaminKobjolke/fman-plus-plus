@@ -137,6 +137,8 @@ class DirectoryPane:
 		return self._widget.get_selected_files()
 	def get_file_under_cursor(self):
 		return self._widget.get_file_under_cursor()
+	def get_chosen_files(self) -> list[str]:
+		return _get_chosen_files(self)
 	def move_cursor_down(self, toggle_selection=False):
 		self._widget.move_cursor_down(toggle_selection)
 	def move_cursor_up(self, toggle_selection=False):
@@ -274,14 +276,19 @@ class DirectoryPaneCommand:
 		raise NotImplementedError()
 	def is_visible(self):
 		return True
-	def get_chosen_files(self):
-		selected_files = self.pane.get_selected_files()
-		if selected_files:
-			return selected_files
-		file_under_cursor = self.pane.get_file_under_cursor()
-		if file_under_cursor:
-			return [file_under_cursor]
-		return []
+	def get_chosen_files(self) -> list[str]:
+		return _get_chosen_files(self.pane)
+
+
+def _get_chosen_files(pane):
+	# Commands may run with stand-in panes that only offer these two primitives.
+	selected_files = pane.get_selected_files()
+	if selected_files:
+		return selected_files
+	file_under_cursor = pane.get_file_under_cursor()
+	if file_under_cursor:
+		return [file_under_cursor]
+	return []
 
 class Viewer:
 
