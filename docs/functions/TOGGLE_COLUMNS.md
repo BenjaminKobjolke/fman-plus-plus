@@ -20,6 +20,7 @@ columns in the file panes, for people who mostly care about file names.
 | `toggle_extension_column`  | Toggle extension column | show / hide extension               | none (palette only)  |
 | `toggle_version_column`    | Toggle version column   | show / hide version                 | none (palette only)  |
 | `toggle_attributes_column` | Toggle attributes column| show / hide attributes, permissions | none (palette only)  |
+| `toggle_fixed_column_widths` | Toggle fixed column widths | fixed / auto-fit column widths | none (palette only) |
 | `toggle_name_without_extension` | Toggle name without extension | hide extension in name | none (palette only) |
 
 The other words listed under *Keywords* are hidden search terms: they find
@@ -46,10 +47,17 @@ e.g.:
 - `name_without_extension` defaults to `false`. When enabled with Extension
   visible, Name shows only the stem; in-place rename still preserves the
   hidden extension.
-- `fit_name_column` in `Core Settings.json` defaults to `true`: Size and
-  Modified shrink to fit their contents and Name takes the remaining width.
-  Set it to `false` to keep manually set column widths. The setting takes
-  effect on the next navigation or restart.
+- `fit_name_column` in `Core Settings.json` defaults to `true` (auto-fit): Size
+  and Modified use widths that fit representative values, and Name takes the
+  remaining pane width. The Size sample covers a large file, and the Modified
+  sample covers a long formatted date. Run **"Toggle fixed column widths"** to
+  set it to `false`: Size and Modified keep their representative-value widths,
+  while Name takes the remaining width. Other visible columns continue to fit
+  their contents. Dragged column widths are remembered per pane across
+  navigation and restarts. The palette toggle applies immediately to both
+  panes.
+- The vertical scrollbar starts below the column header. Its width is reserved
+  during column sizing, including before Qt reports the scrollbar as visible.
 - Hidden columns no longer reserve width in the file list.
 - Only the Size and Modified columns can be toggled this way — the Name
   column is always shown.
@@ -67,10 +75,14 @@ e.g.:
 ## Implementation
 
 - `src/main/resources/base/Plugins/Core/core/commands/columns.py` —
-  `ToggleSizeColumn`, `ToggleModifiedColumn` (`DirectoryPaneCommand`
-  subclasses), plus `InitColumnVisibility` (`DirectoryPaneListener`) which
+  `ToggleSizeColumn`, `ToggleModifiedColumn`, `ToggleFixedColumnWidths`
+  (`DirectoryPaneCommand` subclasses), plus `InitColumnVisibility`
+  (`DirectoryPaneListener`) which
   re-applies the saved visibility on startup and after every navigation
   (`on_path_changed`) — mirrors the existing `InitPaneFontSize` pattern.
+- `src/main/python/fman/fs.py` defines the default `Column.get_widest_str()`
+  hook; Core's `Size` and `Modified` columns provide representative values in
+  `src/main/resources/base/Plugins/Core/core/__init__.py`.
 - Column visibility is set directly on the Qt view:
   `pane._widget._file_view.setColumnHidden(index, hidden)`. There is no
   `pane.set_columns(...)` in the fman API — the file system owns the column
@@ -110,3 +122,10 @@ e.g.:
   — `FindColumnIndexTest` covers the pure index-lookup logic, including the
   "column doesn't exist here" case. The live-relayout fix itself needs a real
   Qt view and isn't covered by a unit test.
+- `src/main/python/fman/impl/view/fixed_column_widths.py` — selects stable
+  content, sample, and dragged widths; its pure tests are in
+  `src/unittest/python/fman_unittest/impl/view/test_fixed_column_widths.py`.
+- `src/main/python/fman/impl/view/scrollbar_below_header.py` — positions the
+  vertical scrollbar below the header.
+- `src/unittest/python/fman_unittest/impl/view/column_widths_test.py` — covers
+  sizing, persistence, reset/refit behavior, and scrollbar placement.
