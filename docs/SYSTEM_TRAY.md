@@ -13,6 +13,7 @@ separate actions.
 | **Toggle minimize to tray** | Makes the window's minimize button hide fman to the tray. The tray icon stays visible while this is on. |
 | **Minimize to taskbar** | Minimizes the window as usual, leaving it on the taskbar. |
 | **Toggle start with Windows** | In an installed build, starts fman hidden in the tray when you sign in. |
+| **Toggle Explorer replacement** | In an installed build, opens folders, drives, Win+E and This PC in fman. See [Explorer replacement](EXPLORER_REPLACEMENT.md). |
 
 The tray icon menu has **Show** and **Quit**. Quit uses fman's normal exit path,
 which saves the session. If minimize-to-tray is off, the icon appears only while
