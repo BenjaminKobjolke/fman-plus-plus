@@ -2,8 +2,9 @@
 
 fman browses and edits `.zip`, `.7z` and `.tar` archives as if they were
 folders. `.rar` archives also open like folders and can be browsed and copied
-out of; RAR is read-only, so changes inside an archive are refused. The archive
-filesystems run 7-Zip through `core/fs/zip.py` and `core/fs/rar.py`.
+out of; RAR and compressed TAR archives are read-only, so changes inside them
+are refused. The archive filesystems run 7-Zip through `core/fs/zip.py`,
+`core/fs/rar.py` and `core/fs/compressed_tar.py`.
 
 The bundled binary is `7z.exe` plus `7z.dll` on Windows and `7zz` on Mac and
 Linux, under `src/main/resources/base/Plugins/Core/bin/<platform>/`. Arch uses
@@ -118,6 +119,16 @@ header encryption is not enabled. fman cannot browse 7z archives whose file
 names are encrypted, or delete and rename entries inside an encrypted solid
 7z archive.
 
+## Compressed TAR archives
+
+`.tar.xz`/`.txz`, `.tar.gz`/`.tgz`, `.tar.bz2`/`.tbz2`/`.tbz` and
+`.tar.zst`/`.tzst` archives open as read-only folders. 7-Zip exposes only the
+outer compressed file (or the inner `.tar`) for these formats, so fman first
+unpacks that outer layer to a temporary copy and then browses the copy as a TAR.
+The copy uses disk space equal to the uncompressed TAR until fman exits or the
+archive changes. Zstandard browsing requires a 7-Zip build that supports zstd:
+the bundled build does, while Arch's `/usr/bin/7za` may not.
+
 ## Code map
 
 | Where | What |
@@ -128,6 +139,8 @@ names are encrypted, or delete and rename entries inside an encrypted solid
 | `core/fs/zip.py` → `Run7ZipViaPty` | The Unix pseudo-terminal runner |
 | `core/fs/zip.py` → `_7zipTaskWithProgress` | Reads the output, matches ` NN% `, updates the task's progress |
 | `core/fs/zip.py` → `remove_7zip_temp_archive` | Deletes `<archive>.tmp` after a canceled update |
+| `core/fs/read_only_archive.py` → `_ReadOnly7ZipFileSystem` | Shared refusal behavior for read-only archive filesystems |
+| `core/fs/compressed_tar.py` → `CompressedTarFileSystem` | Decompresses compressed TAR wrappers into temporary copies for browsing |
 
 ## Running the tests
 
