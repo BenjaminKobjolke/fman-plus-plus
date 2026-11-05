@@ -127,3 +127,6 @@ as in royi-sync step 5.5. Proceed with `fix` issues without asking.
   this fork did.
 - `ModuleNotFoundError: fbs_runtime` means the wrong Python is running, usually the watcher's
   venv, not that the package is missing. Use the test bats, which remove the inherited venv.
+- On bundled Windows 7-Zip 26, extraction with a bare `-p` switch treats the password as empty
+  even when a password is piped to stdin. Omit `-p` for extraction so 7-Zip reads the password
+  from stdin; keep the bare switch for encrypted archive creation.
