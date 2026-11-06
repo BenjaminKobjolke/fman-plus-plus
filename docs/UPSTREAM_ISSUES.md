@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#292](https://github.com/mherrmann/fman/issues/292) | Show summary statistics on selected files e.g. show total file size for all selected files | enhancement, 14 votes | deferred | 2026-11-05 | The status bar has one message slot; live per-pane selection counts and sizes need a design for placement and directory-size semantics. |
+| [#292](https://github.com/mherrmann/fman/issues/292) | Show summary statistics on selected files e.g. show total file size for all selected files | enhancement, 14 votes | fixed | 2026-11-06 | Added live selection counts and sizes with configurable placement and optional background folder totals. |
 | [#290](https://github.com/mherrmann/fman/issues/290) | Feature request: To sync all files in the selected pane to the none selected pane. | enhancement | already fixed | 2026-11-05 | The installed FManSyncSelectedFilesToOtherPaneForWindows plugin syncs selected entries to the opposite pane with robocopy and offers a dry run. |
 | [#287](https://github.com/mherrmann/fman/issues/287) | errors with ImDisk ramdisk(drive) | bug, windows, 2 votes | already fixed | 2026-11-05 | The Core Modified column catches OSError while displaying and sorting timestamps, so invalid Windows timestamps do not interrupt directory loading. |
 | [#283](https://github.com/mherrmann/fman/issues/283) | Don't show empty (non-connected) drives on Windows | enhancement, windows | fixed | 2026-11-05 | `drives://` filters removable volumes whose disk usage probe fails while keeping fixed and accessible removable drives. |

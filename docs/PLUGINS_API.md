@@ -177,6 +177,14 @@ Listeners no longer receive `on_name_edited` for Core's own Rename command
 pane receives keyboard focus. It is sent to listeners registered with that
 pane. Keep Qt calls off this callback thread.
 
+### Pane selection changes
+
+`DirectoryPaneListener.on_selection_changed()` is called on a worker thread
+after the selection changes. Rapid changes are combined into one callback
+after a short debounce. A location change also has its usual
+`on_path_changed()` callback; plugins should not rely on selection callbacks
+for model resets.
+
 ### Incognito mode
 
 `fman.is_incognito()` returns whether incognito mode is currently enabled. The
@@ -210,6 +218,7 @@ stays until replaced or cleared.
 ```python
 self.pane.show_status_message('Copied 3 files', timeout_secs=3)
 self.pane.clear_status_message()
+self.pane.set_idle_status_message('3 files selected, 12.4 MB')
 ```
 
 `clear_status_message()` clears this pane's line. It also clears the window
@@ -217,6 +226,12 @@ status bar only if the bar still contains this pane's message, so it cannot
 erase newer feedback. The commands **Toggle pane status lines** and **Toggle
 pane messages in status bar** control these destinations; their saved settings
 and theme support are described in the [status bar guide](STATUSBAR.md).
+
+`set_idle_status_message(text, pane_line=True, status_bar=False)` sets text
+that appears whenever this pane has no active message. `pane_line` controls
+the line below the pane's file list; `status_bar` controls the window bar while
+this pane is focused. Set either destination to `False` to clear its idle text.
+An active status message temporarily takes priority over idle text.
 
 Plugins can change the pane count through the window:
 

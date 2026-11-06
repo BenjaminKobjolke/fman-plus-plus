@@ -30,6 +30,29 @@ longer for hints.
 A message may contain HTML links (the changelog one does); they open in the
 external browser.
 
+## Selection summary
+
+When a pane has selected files or folders, Core shows a summary such as
+`3 files, 2 folders selected, 12.4 MB`. Each pane keeps its own summary. With
+no selection, the summary is empty. File sizes are added by default; selected
+folders are counted but their contents are not scanned.
+
+The summary location is saved in `Core Settings.json` as
+`selection_summary_location`. It defaults to `pane`; the other values are
+`window` and `both`. Run **Toggle selection summary location** to cycle through
+those locations. The window bar shows the summary for the focused pane, and a
+temporary status message takes priority until it clears.
+
+To include selected folders' contents in the total, run **Toggle selection
+folder sizes**. This saves `selection_summary_folder_sizes` in
+`Core Settings.json` (default `false`). Core walks folder contents in the
+background and shows `calculating...` while it works. A newer selection
+cancels the old walk; entries that cannot be read are skipped, and resolved
+folders are visited only once to avoid symlink or junction loops.
+
+Both commands are available in the command palette and have no default key
+binding.
+
 When incognito mode is on, a permanent **Incognito** marker appears at the
 right side of the bar. It has its own slot, so later status messages do not
 replace it. Turning incognito on or off also shows `Incognito on.` or
@@ -119,6 +142,8 @@ Both settings are enabled by default and persist across restarts:
 |-------------|---------|---------------------|
 | `pane_status_lines_visible` | `toggle_pane_status_lines` — Toggle pane status lines | Pane message lines are shown. When disabled, pane messages go to the window bar instead. |
 | `pane_messages_in_status_bar` | `toggle_pane_messages_in_status_bar` — Toggle pane messages in status bar | Pane messages are copied to the window bar as well. This setting is ignored while pane lines are disabled. |
+| `selection_summary_location` | Toggle selection summary location | Places the selection summary in each pane line, the window bar for the focused pane, or both. Default: `pane`. |
+| `selection_summary_folder_sizes` | Toggle selection folder sizes | Adds the contents of selected folders to the size total in the background. Default: `false`. |
 
 Both commands are available in the command palette and have no default key
 binding. Pane messages reach the window bar when `pane_messages_in_status_bar`
@@ -145,12 +170,14 @@ lines; a later `.pane-statusbar` rule can set a pane-only font size.
 
 - Widget and message routing: `fman/impl/widgets.py`
 - Pane status mode and line widget: `fman/impl/pane_status.py`
-- Public methods: `fman.DirectoryPane.show_status_message` and
-  `fman.DirectoryPane.clear_status_message` in `fman/__init__.py`
+- Public methods: `fman.DirectoryPane.show_status_message`,
+  `clear_status_message` and `set_idle_status_message` in `fman/__init__.py`
 - Settings and commands: `fman/impl/window_chrome.py` and
   `fman/impl/plugins/builtin.py`
 - Viewer messages: `Plugins/Core/core/viewer_status.py`; the viewer passes its
   pane and keeps the existing three-second timeout
+- Selection summary: `Plugins/Core/core/selection_summary.py` and
+  `Plugins/Core/core/commands/selection_summary.py`
 - Styles: `src/main/resources/base/styles.qss`
 
 ## Where it lives
