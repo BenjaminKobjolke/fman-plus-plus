@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#313](https://github.com/mherrmann/fman/issues/313) | Inconsistent dialogs | enhancement | deferred | 2026-11-06 | Unifying the input dialogs needs a separate UI plan for titles, messages, completion and sizing; the discussion favors the quicksearch direction but leaves its message layout unresolved. |
+| [#313](https://github.com/mherrmann/fman/issues/313) | Inconsistent dialogs | enhancement | fixed | 2026-11-06 | Input prompts now use titled Quicksearch popups with live suggestions and shared remembered width. |
 | [#310](https://github.com/mherrmann/fman/issues/310) | Make GoTo support other file systems | enhancement | fixed | 2026-11-06 | Go To now preserves typed `scheme://` URLs, including `zip://` and `file://`; `test_goto.py` covers them. |
 | [#307](https://github.com/mherrmann/fman/issues/307) | Sort triangle hidden behind scroll bar | bug, windows | already fixed | 2026-11-06 | The vertical scrollbar starts below the column header; `scrollbar_below_header.py` and `test_scrollbar_starts_below_header` cover the overlap. |
 | [#298](https://github.com/mherrmann/fman/issues/298) | Attachment copied from Outlook 2016 cannot be pasted on fman pane. | bug, windows, 6 votes | fixed | 2026-11-06 | fman reads Windows virtual files on paste and pane drop; see [VIRTUAL_FILES.md](VIRTUAL_FILES.md). |

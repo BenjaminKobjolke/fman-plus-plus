@@ -434,8 +434,10 @@ font; see [Fonts](FONTS.md).
 `show_input(...)` returns the entered text, including an empty string, when the
 user accepts, and `None` when they cancel. New code should use `show_input`;
 `show_prompt(...)` still returns `(text, accepted)` for existing plugins.
-`show_input(..., get_completions=f)` makes Tab cycle through `f(text)`; the
-callback runs off the GUI thread.
+`show_input(..., get_completions=f)` shows matching entries as the user types
+and keeps Tab cycling through `f(text)`; the callback runs off the GUI thread.
+The prompt message stays visible above the input. Arrow keys and clicks copy a
+suggestion into the field, and Enter accepts exactly the text currently in it.
 
 A `FileSystem` can return more than 1 from
 `get_parallel_transfers(src_url, dst_url)` to have Copy and Move transfer that
@@ -472,7 +474,8 @@ class DownloadTask(Task):
 	icon = QIcon(':/my_plugin/download.png')
 ```
 
-`show_quicksearch` returns `(query, value)`, or `None` if the user pressed
+`show_quicksearch(..., title='')` can show a title above the input; the default
+empty title keeps the header hidden. It returns `(query, value)`, or `None` if the user pressed
 Escape. Pass `alt_accept=True` to also accept on **Shift+Enter**: the result is
 then always a triple, `(query, value, alt)`, with `alt` telling the two apart.
 Every other caller keeps the pair — see
