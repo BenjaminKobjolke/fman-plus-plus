@@ -9,7 +9,9 @@
 	{ "command": "copy_file_path", "caption": "Copy file path", "shortcut_command": "copy_paths_to_clipboard" },
 	{ "caption": "-", "id": "file_operations" },
 	{ "command": "rename", "caption": "Rena&me" },
+	{ "command": "duplicate_file", "caption": "Duplicate..." },
 	{ "command": "move_to_trash", "caption": "Mo&ve to Trash" },
 	{ "caption": "-", "id": "archive" },
-	{ "command": "pack", "caption": "Com&press..." }
+	{ "command": "pack", "caption": "Com&press..." },
+	{ "command": "pack_here", "caption": "Pack here..." }
 ]

@@ -33,7 +33,7 @@ class ViewerCommandFlagTest(TestCase):
 			'OpenWithEditor', 'OpenTerminal', 'OpenNativeFileManager',
 			'ShowExplorerProperties', 'Pack', 'PackWithPassword', 'OpenWith',
 			'ShowConsole', 'ShowConsoleWindow', 'ShowOnlyActivePane', 'ShowAllPanes',
-			'SetTextEditor',
+			'SetTextEditor', 'DuplicateFile', 'PackHere',
 		}
 		actual = {
 			name for name in dir(core)

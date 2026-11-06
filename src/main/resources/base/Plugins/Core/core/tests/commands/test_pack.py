@@ -1,4 +1,4 @@
-from core.commands.pack import _suggest_archive_name, PackWithPassword
+from core.commands.pack import _suggest_archive_name, PackHere, PackWithPassword
 from core.fs import archive_password
 from fman import YES
 from unittest import TestCase
@@ -33,6 +33,50 @@ class SuggestArchiveNameTest(TestCase):
 		self.assertEqual(
 			'folder.zip', _suggest_archive_name('zip://C:/source.zip/folder')
 		)
+
+
+class PackHereTest(TestCase):
+	def setUp(self):
+		self.pane = MagicMock()
+		self.pane.get_path.return_value = 'file://C:/source'
+		self.pane.get_file_under_cursor.return_value = 'file://C:/source/a.txt'
+		self.command = PackHere(self.pane)
+		self.patches = patch.multiple(
+			'core.commands.pack',
+			_get_handler_for_archive=DEFAULT,
+			chosen_files=DEFAULT,
+			get_opposite_pane=DEFAULT,
+			show_input=DEFAULT,
+			show_alert=DEFAULT,
+			mkdir=DEFAULT,
+			submit_task=DEFAULT,
+		)
+		self.mocks = self.patches.start()
+		self.mocks['_get_handler_for_archive'].return_value = 'zip://'
+		self.mocks['chosen_files'].return_value = ['file://C:/source/a.txt']
+		self.mocks['show_input'].return_value = 'file://C:/source/a.zip'
+	def tearDown(self):
+		self.patches.stop()
+	def test_single_file_suggests_archive_in_active_pane(self):
+		self.command()
+		self.assertEqual(
+			r'C:\source\a.zip',
+			self.mocks['show_input'].call_args.args[1]
+		)
+		self.mocks['get_opposite_pane'].assert_not_called()
+	def test_multiple_files_suggest_archive_in_active_pane(self):
+		self.mocks['chosen_files'].return_value = [
+			'file://C:/source/a.txt', 'file://C:/source/b.txt'
+		]
+		self.mocks['show_input'].return_value = r'C:\source\source.zip'
+		self.command()
+		self.assertEqual(
+			r'C:\source\source.zip',
+			self.mocks['show_input'].call_args.args[1]
+		)
+		self.mocks['get_opposite_pane'].assert_not_called()
+	def test_aliases(self):
+		self.assertEqual(('Pack here', 'Compress here'), PackHere.aliases)
 
 
 class PackWithPasswordTest(TestCase):

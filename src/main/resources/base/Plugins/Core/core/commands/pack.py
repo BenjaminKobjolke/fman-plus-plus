@@ -23,7 +23,7 @@ from functools import partial
 import fman.fs
 import re
 
-__all__ = ['Pack', 'PackWithPassword']
+__all__ = ['Pack', 'PackHere', 'PackWithPassword']
 
 # Suggested when the pane's directory has no name of its own ('drives://').
 _DEFAULT_ARCHIVE_NAME = 'archive'
@@ -51,7 +51,7 @@ class Pack(DirectoryPaneCommand):
 			dest_name = PurePath(basename(files[0])).stem + '.zip'
 		else:
 			dest_name = _suggest_archive_name(self.pane.get_path())
-		dest_dir = get_opposite_pane(self.pane).get_path()
+		dest_dir = self._get_dest_dir()
 		dest_url = join(dest_dir, dest_name)
 		suggested_dst, selection_start, selection_end = \
 			get_dest_suggestion(dest_url)
@@ -90,10 +90,17 @@ class Pack(DirectoryPaneCommand):
 			submit_task(_Pack(files, dest_rewritten))
 	def _get_prompt(self, files):
 		return 'Pack %s to (.zip, .7z, .tar):' % _describe(files)
+	def _get_dest_dir(self):
+		return get_opposite_pane(self.pane).get_path()
 	def _prepare_password(self, archive_url):
 		return None
 	def is_visible(self):
 		return bool(self.pane.get_file_under_cursor())
+
+class PackHere(Pack):
+	aliases = ('Pack here', 'Compress here')
+	def _get_dest_dir(self):
+		return self.pane.get_path()
 
 class PackWithPassword(Pack):
 	aliases = (_PASSWORD_PACK_ALIAS,)

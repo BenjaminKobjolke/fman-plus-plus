@@ -99,7 +99,7 @@ class _TreeCommand(DirectoryPaneCommand):
 		exists_and_is_dir = False
 		if len(files) == 1:
 			file_, = files
-			dest_name = basename(file_)
+			dest_name = cls._suggest_name(file_)
 			try:
 				exists_and_is_dir = fs.is_dir(file_)
 			except FileNotFoundError:
@@ -164,6 +164,9 @@ class _TreeCommand(DirectoryPaneCommand):
 					)
 					if choice & YES:
 						return dest_url, None
+	@classmethod
+	def _suggest_name(cls, file_url):
+		return basename(file_url)
 	@classmethod
 	def _is_into_itself(cls, files, dest_url, ui, fs):
 		for file_ in files:
