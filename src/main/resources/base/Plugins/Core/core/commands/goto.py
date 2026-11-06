@@ -61,6 +61,8 @@ class GoTo(DirectoryPaneCommand):
 			address = parse_share_address(query)
 			if address is not None:
 				return address.as_fman_url()
+		if '://' in query:
+			return query
 		url = as_url(expandvars(expanduser(query.rstrip())))
 		if PLATFORM == 'Windows' and re.match(r'\\[^\\]', query):
 			# Resolve '\Some\dir' to 'C:\Some\dir'.

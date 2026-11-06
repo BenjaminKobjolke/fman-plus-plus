@@ -64,6 +64,13 @@ class GoToTabCompletionTest(TestCase):
 		self.assertIsNone(GoTo(Mock())._get_tab_completion('', item))
 
 
+class GoToUrlTest(TestCase):
+	def test_typed_filesystem_url_is_preserved(self):
+		for url in ('zip://C:/image.zip', 'file://C:/Windows'):
+			with self.subTest(url=url):
+				self.assertEqual(url, GoTo(Mock())._get_target_location(url, None))
+
+
 class GoToListenerIncognitoTest(TestCase):
 	def setUp(self):
 		self.addCleanup(incognito.set_incognito, False)
