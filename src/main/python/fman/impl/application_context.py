@@ -414,7 +414,12 @@ class DevelopmentApplicationContext(ApplicationContext):
 	@cached_property
 	def mother_fs(self):
 		# Resolve the cyclic dependency MotherFileSystem <-> IconProvider:
-		result = MotherFileSystem(None)
+		result = MotherFileSystem(
+			None, Settings(join(
+				DATA_DIRECTORY, 'Plugins', 'User', 'Settings',
+				'Column Settings.json'
+			))
+		)
 		result._icon_provider = self._get_icon_provider(result)
 		return result
 	@cached_property

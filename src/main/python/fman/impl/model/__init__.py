@@ -33,9 +33,14 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		self._num_rows_to_preload = 0
 		self.set_location(null_location)
 		self._fs.file_removed.add_callback(self._on_file_removed)
+		self._fs.columns_changed.add_callback(self._on_columns_changed)
 	def shutdown(self):
 		try:
 			self._fs.file_removed.remove_callback(self._on_file_removed)
+		except ValueError:
+			pass
+		try:
+			self._fs.columns_changed.remove_callback(self._on_columns_changed)
 		except ValueError:
 			pass
 		source_model = self.sourceModel()
@@ -44,7 +49,8 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 	def set_num_rows_to_preload(self, preload_rows):
 		self._num_rows_to_preload = preload_rows
 	def set_location(
-		self, url, sort_column='', ascending=True, callback=None, onerror=None
+		self, url, sort_column='', ascending=True, callback=None, onerror=None,
+		force=False
 	):
 		if callback is None:
 			def callback():
@@ -55,14 +61,16 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		error_urls = {url}
 		while True:
 			try:
-				self._set_location(url, sort_column, ascending, callback)
+				self._set_location(
+					url, sort_column, ascending, callback, force=force
+				)
 				break
 			except Exception as e:
 				url = onerror(e, url)
 				if url in error_urls:
 					raise
 				error_urls.add(url)
-	def _set_location(self, url, sort_column, ascending, callback):
+	def _set_location(self, url, sort_column, ascending, callback, force=False):
 		try:
 			url_resolved = self._fs.resolve(url)
 		except FileNotFoundError:
@@ -85,7 +93,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 			url = url_resolved
 		old_model = self.sourceModel()
 		if old_model:
-			if url == old_model.get_location():
+			if url == old_model.get_location() and not force:
 				callback()
 				return
 			old_model.shutdown()
@@ -186,6 +194,21 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 					# parent directory we don't have access to. So catch all
 					# OSErrors and in the worst case go to null://.
 					self._on_file_removed(dir_)
+	def _on_columns_changed(self, url_or_scheme):
+		location = self.get_location()
+		if (
+			url_or_scheme != location and
+			url_or_scheme != splitscheme(location)[0]
+		):
+			return
+		model = self.sourceModel()
+		columns = model.get_columns()
+		sort_column = ''
+		if model._sort_column < len(columns):
+			sort_column = columns[model._sort_column].get_qualified_name()
+		self.set_location(
+			location, sort_column, model._sort_ascending, force=True
+		)
 	def _connect_signals(self, model):
 		# Would prefer signal.connect(self.signal.emit) here. But PyQt doesn't
 		# support it. So we need Python wrappers "_emit_...":

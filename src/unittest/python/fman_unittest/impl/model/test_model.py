@@ -471,6 +471,7 @@ class SortedFileSystemModelShutdownTest(TestCase):
 		class StubFileSystem:
 			def __init__(self):
 				self.file_removed = Event()
+				self.columns_changed = Event()
 
 		fs = StubFileSystem()
 		with patch.object(SortedFileSystemModel, 'set_location'):
@@ -486,6 +487,7 @@ class SortedFileSystemModelMixedSortingTest(TestCase):
 		class StubFileSystem:
 			def __init__(self):
 				self.file_removed = Event()
+				self.columns_changed = Event()
 
 		fs = StubFileSystem()
 		with patch.object(SortedFileSystemModel, 'set_location'):

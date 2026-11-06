@@ -104,6 +104,48 @@ Qt keys free; and the viewer has no version of its own. The flag is inherited,
 so subclasses that do not fit must set it back to `False`. A pane exposes the
 registered opted-in names through `pane.get_viewer_commands()`.
 
+## Choosing columns
+
+`fman.fs` lets a plugin choose the columns shown by a file system, either as a
+default for a URL scheme or for one folder. Column names are qualified names,
+such as `core.Name` or `core.Size`, and must already be registered:
+
+```python
+import fman
+
+# Use this default for local folders unless a folder has its own choice.
+fman.fs.set_default_columns(
+	'file://', ('core.Name', 'core.Size', 'core.Modified')
+)
+
+# Override the columns for this folder only. This choice survives restarts.
+fman.fs.set_columns(
+	'file:///Users/alex/Projects', ('core.Name', 'core.Modified')
+)
+```
+
+The five functions are:
+
+| Function | Effect |
+|----------|--------|
+| `fman.fs.get_columns(url)` | Returns the registered column objects selected for the folder. |
+| `fman.fs.set_default_columns(scheme, column_names)` | Sets the in-memory default for a scheme such as `file://`. |
+| `fman.fs.reset_default_columns(scheme)` | Removes that scheme's plugin default. |
+| `fman.fs.set_columns(url, column_names)` | Saves a column choice for one folder in `Column Settings.json`. |
+| `fman.fs.reset_columns(url)` | Removes that folder's saved choice. |
+
+For a folder, fman uses its saved folder choice first, then the scheme default,
+then the file system's own `get_default_columns()` result. A stored choice only
+uses columns that are still registered, so a folder remains usable if a plugin
+providing one of its columns is removed. An empty choice, or one with no
+registered columns left, falls through to the next level. The scheme default
+lasts for the session; folder choices are persisted across restarts.
+
+Users control visibility separately from the column set. The column-header
+menu lists every column except the first, and a user's hidden-column choice
+continues to win if a plugin includes that column in its set. The first column
+(normally `core.Name`) is always visible.
+
 ## Commands run off the main thread
 
 Commands and listeners run on a worker thread

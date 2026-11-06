@@ -75,6 +75,26 @@ def notify_file_changed(url):
 def notify_file_removed(url):
 	_get_mother_fs().notify_file_removed(url)
 
+def get_columns(url):
+	"""Return the registered columns selected for the given folder URL."""
+	return _get_mother_fs().get_columns(url)
+
+def set_default_columns(scheme, column_names):
+	"""Set the default qualified column names for a registered scheme."""
+	_get_mother_fs().set_default_columns(scheme, column_names)
+
+def reset_default_columns(scheme):
+	"""Remove a plugin's default column override for a registered scheme."""
+	_get_mother_fs().reset_default_columns(scheme)
+
+def set_columns(url, column_names):
+	"""Set the persisted qualified column names for one folder URL."""
+	_get_mother_fs().set_columns(url, column_names)
+
+def reset_columns(url):
+	"""Remove a folder's persisted column override."""
+	_get_mother_fs().reset_columns(url)
+
 class FileSystem:
 
 	scheme = ''

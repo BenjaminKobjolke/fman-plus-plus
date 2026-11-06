@@ -1,10 +1,11 @@
 from fman.impl.util import Event, filenotfounderror
+from fman.impl.plugins.column_sets import ColumnSets
 from fman.url import splitscheme, basename, dirname
 from io import UnsupportedOperation
 from threading import Lock
 
 class MotherFileSystem:
-	def __init__(self, icon_provider):
+	def __init__(self, icon_provider, column_settings=None):
 		super().__init__()
 		self.file_added = Event()
 		self.file_removed = Event()
@@ -14,6 +15,11 @@ class MotherFileSystem:
 		self._children_being_deleted = {}
 		self._icon_provider = icon_provider
 		self._columns = {}
+		self._column_sets = ColumnSets(
+			column_settings if column_settings is not None else {},
+			self.get_registered_column_names
+		)
+		self.columns_changed = self._column_sets.changed
 	def add_child(self, scheme, child):
 		child._file_added.add_callback(self._on_file_added)
 		child._file_removed.add_callback(self._on_file_removed)
@@ -34,7 +40,9 @@ class MotherFileSystem:
 	def get_columns(self, url):
 		child, path = self._split(url)
 		child_get_cols = child.get_default_columns
-		column_names = child_get_cols(path)
+		column_names = self._column_sets.get_columns(
+			url, child_get_cols(path)
+		)
 		try:
 			return tuple(self._columns[name] for name in column_names)
 		except KeyError as e:
@@ -44,6 +52,20 @@ class MotherFileSystem:
 					  'Should have been one of %s.' % \
 					  (fn_descr, e.args[0], available_columns)
 			raise KeyError(message) from None
+	def set_default_columns(self, scheme, column_names):
+		if scheme not in self._children:
+			raise ValueError('File system scheme %r is not registered.' % scheme)
+		self._column_sets.set_default_columns(scheme, column_names)
+	def reset_default_columns(self, scheme):
+		if scheme not in self._children:
+			raise ValueError('File system scheme %r is not registered.' % scheme)
+		self._column_sets.reset_default_columns(scheme)
+	def set_columns(self, url, column_names):
+		self._split(url)
+		self._column_sets.set_columns(url, column_names)
+	def reset_columns(self, url):
+		self._split(url)
+		self._column_sets.reset_columns(url)
 	def exists(self, url):
 		child, path = self._split(url)
 		return child.exists(path)

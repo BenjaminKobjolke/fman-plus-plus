@@ -93,6 +93,33 @@ class SortedFileSystemModelAT: # Instantiated in fman_integrationtest.test_qt
 			],
 			self._get_data()[1:self._NUM_VISIBLE_ROWS]
 		)
+	def test_column_change_refreshes_current_location_and_preserves_sort(self):
+		self._set_location('stub://')
+		with self._wait_for_signal(self._model.sort_order_changed):
+			run_in_main_thread(self._model.sort)(1, Qt.DescendingOrder)
+		with self._wait_for_signal(self._model.location_loaded):
+			self._fs.set_default_columns(
+				'stub://', ('core.Size', 'core.Name')
+			)
+		self.assertEqual('stub://', self._model.get_location())
+		self.assertEqual(
+			(self._size_column, self._name_column), self._model.get_columns()
+		)
+		self.assertEqual(0, self._model.sourceModel()._sort_column)
+		self.assertFalse(self._model.sourceModel()._sort_ascending)
+	def test_column_change_falls_back_to_first_column_when_sort_is_removed(self):
+		self._set_location('stub://')
+		with self._wait_for_signal(self._model.sort_order_changed):
+			run_in_main_thread(self._model.sort)(1, Qt.DescendingOrder)
+		with self._wait_for_signal(self._model.location_loaded):
+			self._fs.set_default_columns('stub://', ('core.Name',))
+		self.assertEqual((self._name_column,), self._model.get_columns())
+		self.assertEqual(0, self._model.sourceModel()._sort_column)
+	def test_unrelated_column_change_keeps_current_model(self):
+		self._set_location('stub://')
+		old_model = self._model.sourceModel()
+		self._fs.set_columns('stub://elsewhere', ('core.Name',))
+		self.assertIs(old_model, self._model.sourceModel())
 	def test_file_added(self):
 		self.test_set_location()
 		self._files['new'] = {

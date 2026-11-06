@@ -1,13 +1,75 @@
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from fman.fs import FileSystem, cached
+from fman import fs as fs_api
 from fman.impl.plugins.mother_fs import MotherFileSystem, CachedIterator
 from fman_unittest.impl.model import StubFileSystem
 from threading import Thread, Lock, Event
 from time import sleep
 from unittest import TestCase
+from unittest.mock import patch
 
 class MotherFileSystemTest(TestCase):
+	def test_column_overrides_prefer_folder_then_scheme_then_filesystem(self):
+		fs = StubFileSystem({}, ('core.Name', 'core.Size'))
+		mother_fs = self._create_mother_fs(fs)
+		name = object()
+		size = object()
+		modified = object()
+		mother_fs.register_column('core.Name', name)
+		mother_fs.register_column('core.Size', size)
+		mother_fs.register_column('core.Modified', modified)
+		self.assertEqual((name, size), mother_fs.get_columns('stub://a'))
+		mother_fs.set_default_columns('stub://', ('core.Name', 'core.Modified'))
+		self.assertEqual((name, modified), mother_fs.get_columns('stub://a'))
+		mother_fs.set_columns('stub://a', ('core.Name',))
+		self.assertEqual((name,), mother_fs.get_columns('stub://a'))
+		self.assertEqual((name, modified), mother_fs.get_columns('stub://b'))
+	def test_column_resets_reveal_the_next_layer(self):
+		mother_fs = self._mother_fs_with_columns()
+		mother_fs.set_default_columns('stub://', ('core.Name',))
+		mother_fs.set_columns('stub://a', ('core.Name', 'core.Modified'))
+		mother_fs.reset_columns('stub://a')
+		self.assertEqual(('core.Name',), self._column_names(
+			mother_fs.get_columns('stub://a')))
+		mother_fs.reset_default_columns('stub://')
+		self.assertEqual(('core.Name', 'core.Size'), self._column_names(
+			mother_fs.get_columns('stub://a')))
+	def test_column_setters_validate_registered_names(self):
+		mother_fs = self._mother_fs_with_columns()
+		with self.assertRaisesRegex(ValueError, 'plugin.Missing'):
+			mother_fs.set_default_columns('stub://', ('plugin.Missing',))
+		with self.assertRaisesRegex(ValueError, 'plugin.Missing'):
+			mother_fs.set_columns('stub://a', ('plugin.Missing',))
+	def test_column_set_changes_are_forwarded(self):
+		mother_fs = self._mother_fs_with_columns()
+		changes = []
+		mother_fs.columns_changed.add_callback(changes.append)
+		mother_fs.set_default_columns('stub://', ('core.Name',))
+		mother_fs.set_columns('stub://a', ('core.Name',))
+		mother_fs.reset_columns('stub://a')
+		mother_fs.reset_default_columns('stub://')
+		self.assertEqual(['stub://', 'stub://a', 'stub://a', 'stub://'], changes)
+	def test_public_column_functions_delegate_to_mother_fs(self):
+		mother_fs = self._mother_fs_with_columns()
+		with patch.object(fs_api, '_get_mother_fs', return_value=mother_fs):
+			fs_api.set_default_columns('stub://', ('core.Name',))
+			fs_api.reset_default_columns('stub://')
+			fs_api.set_columns('stub://a', ('core.Name',))
+			fs_api.reset_columns('stub://a')
+			self.assertEqual(
+				('core.Name', 'core.Size'),
+				self._column_names(fs_api.get_columns('stub://a'))
+			)
+	def _mother_fs_with_columns(self):
+		mother_fs = self._create_mother_fs(
+			StubFileSystem({}, ('core.Name', 'core.Size'))
+		)
+		for name in ('core.Name', 'core.Size', 'core.Modified'):
+			mother_fs.register_column(name, name)
+		return mother_fs
+	def _column_names(self, columns):
+		return tuple(columns)
 	def test_default_prepare_trash_moves_to_trash(self):
 		fs = TrashOnlyFileSystem()
 		mother_fs = self._create_mother_fs(fs)
