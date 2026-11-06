@@ -65,7 +65,6 @@ def _sanitize_name(name, used, is_directory=False):
 	if not parts:
 		parts = ['unnamed']
 	path = '/'.join(parts)
-	base, extension = os.path.splitext(parts[-1])
 	def conflicts(candidate):
 		key = candidate.casefold()
 		candidate_parts = candidate.split('/')
@@ -76,14 +75,22 @@ def _sanitize_name(name, used, is_directory=False):
 			(not is_directory and any(
 				entry.startswith(key + '/') for entry in used))
 	if conflicts(path):
-		parent = '/'.join(parts[:-1])
+		conflicting_parent = next((index - 1 for index in range(1, len(parts))
+			if used.get('/'.join(parts[:index]).casefold()) is False), None)
+		if conflicting_parent is None:
+			conflicting_parent = len(parts) - 1
+		conflicting_base, conflicting_extension = os.path.splitext(
+			parts[conflicting_parent])
 		number = 2
-		candidate = '/'.join(filter(None, [parent,
-			'%s (%d)%s' % (base, number, extension)]))
+		candidate_parts = parts[:conflicting_parent] + [
+			'%s (%d)%s' % (conflicting_base, number, conflicting_extension)
+		] + parts[conflicting_parent + 1:]
+		candidate = '/'.join(candidate_parts)
 		while conflicts(candidate):
 			number += 1
-			candidate = '/'.join(filter(None, [parent,
-				'%s (%d)%s' % (base, number, extension)]))
+			candidate_parts[conflicting_parent] = '%s (%d)%s' % (
+				conflicting_base, number, conflicting_extension)
+			candidate = '/'.join(candidate_parts)
 		path = candidate
 	for index in range(1, len(parts)):
 		used.setdefault('/'.join(parts[:index]).casefold(), True)
@@ -165,7 +172,7 @@ def save_virtual_files(data_object: Any) -> list[str]:
 	_prune_old_batches(root)
 	batch = os.path.join(root, str(uuid4()))
 	os.makedirs(batch)
-	used = set()
+	used = {}
 	top_level = []
 	try:
 		for index, descriptor in enumerate(descriptors):
