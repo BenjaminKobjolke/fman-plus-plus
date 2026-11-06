@@ -1,10 +1,12 @@
 from errno import ENOENT
 from core.fs import archive_password
 from core.fs.zip import ZipFileSystem, SevenZipFileSystem, SEVEN_ZIP_BINARY
+from core.fs.move_by_copy import MoveByCopy
 import core.fs.zip as zip_module
 from core.tests import StubFS
 from datetime import date, datetime
 from fman import Task
+from fman.fs import FileSystem
 from fman.url import as_url, join, as_human_readable, splitscheme
 from os import listdir
 from pathlib import Path
@@ -12,12 +14,55 @@ from shutil import copyfile
 from tempfile import TemporaryDirectory
 from unicodedata import normalize
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from zipfile import ZipFile
 
 import os
 import os.path
 import subprocess
+
+class MoveByCopyTest(TestCase):
+	def setUp(self):
+		self.fs = MagicMock(spec=FileSystem)
+		self.src = 'zip://source.zip/item.txt'
+		self.dst = 'file:///destination/item.txt'
+		self.copy = Task('Copying item.txt')
+		self.task = MoveByCopy(self.fs, self.src, self.dst, [self.copy])
+	def _fail_copy(self):
+		raise OSError('copy failed')
+	def test_copy_failure_keeps_source(self):
+		self.copy = Task('Copying item.txt', fn=self._fail_copy)
+		self.task = MoveByCopy(self.fs, self.src, self.dst, [self.copy])
+		with self.assertRaises(OSError):
+			self.task()
+		self.fs.delete.assert_not_called()
+	def test_cancel_after_copy_keeps_source(self):
+		with patch.object(self.task, 'check_canceled', side_effect=Task.Canceled):
+			with self.assertRaises(Task.Canceled):
+				self.task()
+		self.fs.delete.assert_not_called()
+	def test_missing_destination_keeps_source(self):
+		self.fs.exists.return_value = False
+		with self.assertRaises(OSError):
+			self.task()
+		self.fs.delete.assert_not_called()
+	def test_success_deletes_source_after_copy_and_destination_check(self):
+		calls = []
+		self.copy = Task('Copying item.txt', fn=lambda: calls.append('copy'))
+		self.fs.exists.side_effect = lambda url: calls.append(('exists', url)) or True
+		self.fs.delete.side_effect = lambda url: calls.append(('delete', url))
+		self.task = MoveByCopy(self.fs, self.src, self.dst, [self.copy])
+		self.task()
+		self.assertEqual([
+			'copy', ('exists', self.dst), ('delete', self.src)
+		], calls)
+	def test_archive_to_archive_copy_failure_keeps_source(self):
+		self.dst = 'zip://destination.zip/item.txt'
+		self.copy = Task('Packing item.txt', fn=self._fail_copy)
+		self.task = MoveByCopy(self.fs, self.src, self.dst, [self.copy])
+		with self.assertRaises(OSError):
+			self.task()
+		self.fs.delete.assert_not_called()
 
 class ZipFileSystemTest(TestCase):
 	def test_extracting_password_protected_archives_prompts_once(self):

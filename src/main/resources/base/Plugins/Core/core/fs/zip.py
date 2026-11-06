@@ -1,11 +1,12 @@
 from collections import namedtuple, deque
 from core.fs import archive_password
+from core.fs.move_by_copy import MoveByCopy
 from core.os_ import is_arch, is_mac
 from core.util import filenotfounderror
 from datetime import datetime
 from fman import PLATFORM, load_json, Task
 from fman.fs import FileSystem
-from fman.url import as_url, splitscheme, as_human_readable, basename
+from fman.url import as_url, splitscheme, as_human_readable
 from io import UnsupportedOperation, FileIO, BufferedReader, TextIOWrapper
 from os.path import join, dirname
 from pathlib import PurePosixPath, Path
@@ -141,12 +142,11 @@ class _7ZipFileSystem(FileSystem):
 			if src_zip == dst_zip:
 				return [Rename(self, src_zip, src_pth_in_zip, dst_pth_in_zip)]
 			else:
-				return [MoveBetweenArchives(self, src_url, dst_url)]
+				copy_tasks = self.prepare_copy(src_url, dst_url)
+				return [MoveByCopy(self._fs, src_url, dst_url, copy_tasks)]
 		else:
-			result = list(self.prepare_copy(src_url, dst_url))
-			title = 'Cleaning up ' + basename(src_url)
-			result.append(Task(title, fn=self._fs.delete, args=(src_url,)))
-			return result
+			copy_tasks = self.prepare_copy(src_url, dst_url)
+			return [MoveByCopy(self._fs, src_url, dst_url, copy_tasks)]
 	def mkdir(self, path):
 		if self.exists(path):
 			raise FileExistsError(path)
@@ -432,23 +432,6 @@ class Rename(_7zipTaskWithProgress):
 			)
 		self._fs.notify_file_removed(self._zip_path + '/' + self._src_in_zip)
 		self._fs.notify_file_added(self._zip_path + '/' + self._dst_in_zip)
-
-class MoveBetweenArchives(Task):
-	def __init__(self, fs, src_url, dst_url):
-		super().__init__('Moving ' + basename(src_url), size=200)
-		self._fs = fs
-		self._src_url = src_url
-		self._dst_url = dst_url
-	def __call__(self):
-		self.set_text('Preparing...')
-		with TemporaryDirectory() as tmp_dir:
-			# Give temp dir the same name as the source file; This leads to the
-			# correct name being displayed in the progress dialog:
-			tmp_url = as_url(os.path.join(tmp_dir, basename(self._src_url)))
-			tasks = list(self._fs.prepare_move(self._src_url, tmp_url))
-			tasks.extend(self._fs.prepare_move(tmp_url, self._dst_url))
-			for task in tasks:
-				self.run(task)
 
 def _basename(zip_path, path_in_zip):
 	sep = ('/' if path_in_zip else '')
