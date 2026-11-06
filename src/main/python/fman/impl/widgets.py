@@ -80,6 +80,7 @@ class DirectoryPaneWidget(QWidget):
 
 	location_changed = pyqtSignal(QWidget)
 	location_bar_clicked = pyqtSignal(QWidget)
+	selection_changed = pyqtSignal(QWidget)
 
 	def __init__(self, fs, null_location, parent, controller):
 		super().__init__(parent)
@@ -94,6 +95,7 @@ class DirectoryPaneWidget(QWidget):
 			lambda: controller.on_activated(self)
 		)
 		self._file_view.setModel(self._model)
+		self._connect_selection_changes()
 		self._file_view.doubleClicked.connect(self._on_doubleclicked)
 		self._file_view.key_press_event_filter = self._on_key_pressed
 		self._status_line = PaneStatusLine(self)
@@ -121,6 +123,16 @@ class DirectoryPaneWidget(QWidget):
 		self._loading_timer = QTimer(self)
 		self._loading_timer.setInterval(LOADING_INDICATOR_DELAY_MS)
 		self._loading_timer.timeout.connect(self._on_loading_timeout)
+	def _connect_selection_changes(self):
+		self._selection_timer = QTimer(self)
+		self._selection_timer.setSingleShot(True)
+		self._selection_timer.setInterval(100)
+		self._selection_timer.timeout.connect(
+			lambda: self.selection_changed.emit(self)
+		)
+		self._file_view.selectionModel().selectionChanged.connect(
+			lambda *_: self._selection_timer.start()
+		)
 	def set_icon_size(self, size):
 		# An invalid QSize is how Qt is told to go back to its own
 		# decorationSize, so size=None reads as "fman never asked".
@@ -144,6 +156,8 @@ class DirectoryPaneWidget(QWidget):
 		set_transparent(self._status_line, chrome_is_transparent(backgrounds))
 	def set_status_message(self, text, timeout_secs=None):
 		self._status_line.set_status_message(text, timeout_secs)
+	def set_idle_status_message(self, text):
+		self._status_line.set_idle_text(text)
 	def clear_status_message(self):
 		self._status_line.clear_status_message()
 	def set_status_line_visible(self, visible):
@@ -422,6 +436,9 @@ class MainWindow(QMainWindow):
 		self._backgrounds = ()
 		self._pane_status_mode = PaneStatusMode(True, True)
 		self._pane_status_bar_owner = None
+		self._pane_idle_status = {}
+		self._focused_pane = None
+		self._status_message_active = False
 		self._splitter = Splitter(self)
 		self.setCentralWidget(self._splitter)
 		self._status_bar = QStatusBar(self)
@@ -625,6 +642,7 @@ class MainWindow(QMainWindow):
 			self._dialog = None
 	@run_in_main_thread
 	def show_status_message(self, text, timeout_secs=None):
+		self._status_message_active = True
 		self._status_bar_text.setText(text)
 		self._pane_status_bar_owner = None
 		if timeout_secs:
@@ -636,7 +654,15 @@ class MainWindow(QMainWindow):
 		self._incognito_marker.setVisible(visible)
 	@run_in_main_thread
 	def clear_status_message(self):
-		self.show_status_message(translate(READY))
+		self._timer.stop()
+		self._pane_status_bar_owner = None
+		self._status_message_active = False
+		self._show_idle_status_bar()
+	def _show_idle_status_bar(self):
+		if self._status_message_active:
+			return
+		text = self._pane_idle_status.get(self._focused_pane, '')
+		self._status_bar_text.setText(text or translate(READY))
 	@run_in_main_thread
 	def set_pane_status_mode(self, mode):
 		self._pane_status_mode = mode
@@ -648,6 +674,16 @@ class MainWindow(QMainWindow):
 		if self._pane_status_mode.copies_to_status_bar:
 			self.show_status_message(text, timeout_secs)
 			self._pane_status_bar_owner = pane
+	@run_in_main_thread
+	def set_pane_idle_status(self, pane, text, pane_line=True, status_bar=False):
+		pane.set_idle_status_message(text if pane_line else '')
+		if status_bar:
+			self._pane_idle_status[pane] = text
+		else:
+			self._pane_idle_status.pop(pane, None)
+		if pane.hasFocus():
+			self._focused_pane = pane
+		self._show_idle_status_bar()
 	@run_in_main_thread
 	def clear_pane_status_message(self, pane):
 		pane.clear_status_message()

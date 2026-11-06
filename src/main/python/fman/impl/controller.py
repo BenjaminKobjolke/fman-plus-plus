@@ -23,12 +23,17 @@ class Controller:
 		self._panes[pane_widget] = pane
 		pane_widget.location_changed.connect(self.on_location_changed)
 		pane_widget.location_bar_clicked.connect(self.on_location_bar_clicked)
+		pane_widget.selection_changed.connect(self.on_selection_changed)
 		self._plugin_support.register_pane(pane)
 	def unregister_pane(self, pane_widget, pane):
 		self._panes.pop(pane_widget, None)
 		self._plugin_support.unregister_pane(pane)
 	def on_location_changed(self, pane_widget):
 		self._panes[pane_widget]._broadcast('on_path_changed')
+	def on_selection_changed(self, pane_widget):
+		pane = self._panes.get(pane_widget)
+		if pane is not None:
+			pane._broadcast('on_selection_changed')
 	def on_activated(self, pane_widget):
 		self._panes[pane_widget]._broadcast('on_activated')
 	def on_location_bar_clicked(self, pane_widget):

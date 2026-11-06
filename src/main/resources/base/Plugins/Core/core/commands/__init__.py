@@ -32,6 +32,7 @@ _COMMAND_MODULES = (
 	'navigation', 'network_shares', 'open_with', 'opening', 'pack', 'palette',
 	'pane_view',
 	'places', 'plugins', 'release_notes', 'rename', 'selection',
+	'selection_summary',
 	'symlink', 'taskbar', 'theme', 'transfer', 'view_mode',
 	'undo', 'updates', 'window'
 )

@@ -217,6 +217,14 @@ class DirectoryPane:
 	def clear_status_message(self):
 		"""Clear this pane's message without removing another pane's message."""
 		return self.window._widget.clear_pane_status_message(self._widget)
+	def set_idle_status_message(self, text, pane_line=True, status_bar=False):
+		"""Set the text shown when this pane has no active status message.
+
+		`pane_line` controls the line below this pane's file list. `status_bar`
+		controls the window status bar when this pane is focused.
+		"""
+		return self.window._widget.set_pane_idle_status(
+			self._widget, text, pane_line, status_bar)
 	def get_colors(self):
 		"""
 		This pane's live (background, foreground) as hex strings. Mounted
@@ -323,9 +331,13 @@ class Viewer:
 		raise NotImplementedError()
 
 class DirectoryPaneListener:
+	"""Base class for callbacks about activity in one directory pane."""
 	def __init__(self, pane):
 		self.pane = pane
 	def on_activated(self):
+		pass
+	def on_selection_changed(self):
+		"""Called after the selection in this pane changes."""
 		pass
 	def on_doubleclicked(self, file_url):
 		pass

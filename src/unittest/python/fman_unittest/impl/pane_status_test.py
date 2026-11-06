@@ -47,6 +47,41 @@ class PaneStatusLineTest(TestCase):
 		self.assertEqual('', self.line.text())
 		self.assertFalse(self.line.isVisible())
 
+	def test_idle_text_is_shown_until_a_message_arrives(self):
+		self.line.set_idle_text('3 files selected')
+		self.assertEqual('3 files selected', self.line.text())
+		self.assertTrue(self.line.isVisible())
+		self.line.set_status_message('Saved')
+		self.assertEqual('Saved', self.line.text())
+
+	def test_clearing_message_restores_idle_text(self):
+		self.line.set_idle_text('3 files selected')
+		self.line.set_status_message('Saved')
+		self.line.clear_status_message()
+		self.assertEqual('3 files selected', self.line.text())
+		self.assertTrue(self.line.isVisible())
+
+	def test_timed_message_restores_idle_text(self):
+		self.line.set_idle_text('3 files selected')
+		self.line.set_status_message('Saved', timeout_secs=1)
+		self.line._timer.timeout.emit()
+		self.assertEqual('3 files selected', self.line.text())
+		self.assertTrue(self.line.isVisible())
+
+	def test_empty_idle_text_keeps_line_hidden(self):
+		self.line.set_idle_text('3 files selected')
+		self.line.set_idle_text('')
+		self.assertEqual('', self.line.text())
+		self.assertFalse(self.line.isVisible())
+
+	def test_disabled_line_keeps_idle_text_but_stays_hidden(self):
+		self.line.set_status_line_visible(False)
+		self.line.set_idle_text('3 files selected')
+		self.assertEqual('3 files selected', self.line.text())
+		self.assertFalse(self.line.isVisible())
+		self.line.set_status_line_visible(True)
+		self.assertTrue(self.line.isVisible())
+
 	def test_external_links_are_opened_by_the_label(self):
 		self.assertTrue(self.line.openExternalLinks())
 
@@ -116,6 +151,36 @@ class MainWindowPaneStatusTest(TestCase):
 			self.window.add_pane()
 		pane.set_status_line_visible.assert_called_once_with(False)
 
+	def test_idle_text_is_routed_by_placement_flags(self):
+		self.window.set_pane_idle_status(
+			self.left, '3 files selected', pane_line=True, status_bar=True)
+		self.left.set_idle_status_message.assert_called_once_with(
+			'3 files selected')
+		self.assertEqual('3 files selected', self.window._status_bar_text.text())
+
+	def test_transient_window_message_takes_priority_then_idle_returns(self):
+		self.left.hasFocus.return_value = True
+		self.window.set_pane_idle_status(
+			self.left, '3 files selected', pane_line=False, status_bar=True)
+		self.window.show_status_message('Saved', timeout_secs=1)
+		self.assertEqual('Saved', self.window._status_bar_text.text())
+		self.window._timer.timeout.emit()
+		self.assertEqual('3 files selected', self.window._status_bar_text.text())
+
+	def test_idle_status_bar_tracks_focused_pane(self):
+		self.left.hasFocus.return_value = True
+		self.right.hasFocus.return_value = False
+		self.window.set_pane_idle_status(
+			self.left, 'Left summary', pane_line=False, status_bar=True)
+		self.window.set_pane_idle_status(
+			self.right, 'Right summary', pane_line=False, status_bar=True)
+		self.assertEqual('Left summary', self.window._status_bar_text.text())
+		self.right.hasFocus.return_value = True
+		self.left.hasFocus.return_value = False
+		self.window.set_pane_idle_status(
+			self.right, 'Right summary', pane_line=False, status_bar=True)
+		self.assertEqual('Right summary', self.window._status_bar_text.text())
+
 
 class DirectoryPaneStatusApiTest(TestCase):
 
@@ -133,3 +198,9 @@ class DirectoryPaneStatusApiTest(TestCase):
 		self.pane.clear_status_message()
 		self.window._widget.clear_pane_status_message.assert_called_once_with(
 			self.widget)
+
+	def test_set_idle_status_delegates_text_and_placement(self):
+		self.pane.set_idle_status_message(
+			'Summary', pane_line=True, status_bar=False)
+		self.window._widget.set_pane_idle_status.assert_called_once_with(
+			self.widget, 'Summary', True, False)

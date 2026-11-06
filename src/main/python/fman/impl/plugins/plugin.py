@@ -343,6 +343,8 @@ class ListenerWrapper(Wrapper):
 		super().__init__(listener, 'DirectoryPaneListener', error_handler)
 	def on_activated(self):
 		self._notify_listener('on_activated')
+	def on_selection_changed(self):
+		self._notify_listener('on_selection_changed')
 	def on_doubleclicked(self, *args):
 		self._notify_listener('on_doubleclicked', *args)
 	def on_name_edited(self, *args):

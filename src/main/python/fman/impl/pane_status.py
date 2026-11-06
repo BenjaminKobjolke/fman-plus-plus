@@ -27,12 +27,15 @@ class PaneStatusLine(QLabel):
 		self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
 		self.setOpenExternalLinks(True)
 		self._enabled = True
+		self._idle_text = ''
+		self._has_message = False
 		self._timer = QTimer(self)
 		self._timer.setSingleShot(True)
 		self._timer.timeout.connect(self.clear_status_message)
 		self.hide()
 
 	def set_status_message(self, text, timeout_secs=None):
+		self._has_message = True
 		self.setText(text)
 		if timeout_secs is None:
 			self._timer.stop()
@@ -42,8 +45,14 @@ class PaneStatusLine(QLabel):
 
 	def clear_status_message(self):
 		self._timer.stop()
-		self.clear()
-		self.hide()
+		self._has_message = False
+		self._update_text()
+		self._update_visibility()
+
+	def set_idle_text(self, text):
+		self._idle_text = text
+		self._update_text()
+		self._update_visibility()
 
 	def set_status_line_visible(self, visible):
 		self._enabled = visible
@@ -51,3 +60,7 @@ class PaneStatusLine(QLabel):
 
 	def _update_visibility(self):
 		self.setVisible(self._enabled and bool(self.text()))
+
+	def _update_text(self):
+		if not self._has_message:
+			self.setText(self._idle_text)
