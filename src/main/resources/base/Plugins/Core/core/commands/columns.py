@@ -8,7 +8,7 @@ column is remembered per directory in 'Sort Settings.json' and restored by
 from core.quicksearch_matchers import contains_chars, \
 	contains_chars_after_separator, matched_in_order
 from core.column_visibility import (
-	COLUMN_SETTINGS, NAME_WITHOUT_EXTENSION_KEY, is_column_hidden,
+	NAME_WITHOUT_EXTENSION_KEY, is_column_hidden,
 	set_column_hidden,
 )
 from core.commands.column_header_menu import install_header_menu
@@ -35,7 +35,8 @@ def _get_hidden_flags(columns):
 	# Every index gets a flag: Qt keeps a section hidden across navigation, so a
 	# column a filesystem doesn't share with file:// (eg. DriveSize) must be unhidden.
 	return [
-		col in COLUMN_SETTINGS and is_column_hidden(col) for col in columns
+		index != 0 and is_column_hidden(col)
+		for index, col in enumerate(columns)
 	]
 
 @run_in_main_thread

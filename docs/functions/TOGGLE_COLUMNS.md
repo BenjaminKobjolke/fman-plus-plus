@@ -8,8 +8,9 @@ columns in the file panes, for people who mostly care about file names.
 1. Open the command palette and search "column".
 2. Run **"Toggle size column"** to hide the Size column; run it again to show
    it. Same for **"Toggle modified column"** and the Modified column.
-3. Right-click a column header to toggle any available column. Both panes
-   change together, and the choice survives restarting fman.
+3. Right-click a column header to toggle any available column, including
+   columns supplied by plugins. Both panes change together, and the choice
+   survives restarting fman. The first column (normally Name) is always shown.
 
 ## Commands
 
@@ -36,10 +37,13 @@ e.g.:
 
 ## Notes
 
-- The hidden state is stored in `Core Settings.json` under the
-  `hide_size_column` / `hide_modified_column` keys. The Extension, Version,
-  and Attributes columns start hidden, using `hide_extension_column`,
-  `hide_version_column`, and `hide_attributes_column` (default `true`).
+- The hidden state for Size, Modified, Extension, Version, and Attributes
+  remains in their existing `hide_size_column`, `hide_modified_column`,
+  `hide_extension_column`, `hide_version_column`, and
+  `hide_attributes_column` keys in `Core Settings.json`. Hidden plugin columns
+  are stored by qualified name in its `hidden_columns` list and stay hidden
+  when a plugin includes them in a column set. Extension, Version, and
+  Attributes start hidden by default.
 - Extension shows the last suffix (`archive.tar.gz` → `gz`); dotfiles and
   extensionless files have an empty value. Version shows Windows executable
   and library versions. Attributes shows `rhsa` flags on Windows and
@@ -59,11 +63,10 @@ e.g.:
 - The vertical scrollbar starts below the column header. Its width is reserved
   during column sizing, including before Qt reports the scrollbar as visible.
 - Hidden columns no longer reserve width in the file list.
-- Only the Size and Modified columns can be toggled this way — the Name
-  column is always shown.
-- Because the column set is owned by the current file system and rebuilt on
-  every navigation, the hidden state is re-applied each time you move to a
-  new folder, and again on startup.
+- Every column after the first can be toggled this way — the first column is
+  always shown.
+- Column visibility is reapplied when navigating and when a plugin changes the
+  column set, as well as on startup.
 - On locations that don't have a Size or Modified column at all (e.g. the
   Windows drives list, `This PC`), toggling elsewhere has no effect there —
   there's nothing to hide.
@@ -74,58 +77,18 @@ e.g.:
 
 ## Implementation
 
-- `src/main/resources/base/Plugins/Core/core/commands/columns.py` —
-  `ToggleSizeColumn`, `ToggleModifiedColumn`, `ToggleFixedColumnWidths`
-  (`DirectoryPaneCommand` subclasses), plus `InitColumnVisibility`
-  (`DirectoryPaneListener`) which
-  re-applies the saved visibility on startup and after every navigation
-  (`on_path_changed`) — mirrors the existing `InitPaneFontSize` pattern.
-- `src/main/python/fman/fs.py` defines the default `Column.get_widest_str()`
-  hook; Core's `Size` and `Modified` columns provide representative values in
-  `src/main/resources/base/Plugins/Core/core/__init__.py`.
-- Column visibility is set directly on the Qt view:
-  `pane._widget._file_view.setColumnHidden(index, hidden)`. There is no
-  `pane.set_columns(...)` in the fman API — the file system owns the column
-  set (`get_default_columns`) and the model is rebuilt on every navigation,
-  so hiding/showing happens on the live widget instead, the same way the
-  pane-font-size feature sets a stylesheet directly on
-  `pane._widget._file_view`.
-- Column identity is resolved by qualified name (`core.Size`, `core.Modified`)
-  via `pane.get_columns()`, then mapped to an index with `_find_column_index`
-  — this also lets a location without those columns (e.g. the Windows drives
-  view) be skipped instead of raising.
-- **Making the toggle apply live, without waiting for the next navigation:**
-  `setColumnHidden(...)` resizes the section (to 0 when hiding, back to its
-  old width when showing). Either resize fires the header's `sectionResized`
-  signal, which `ResizeColumnsToContents._on_col_resized`
-  (`src/main/python/fman/impl/view/resize_cols_to_contents.py`) is connected
-  to. That handler then overwrites the width we just set with its own
-  redistributed widths, undoing the show/hide — until the next navigation
-  rebuilds the model and resets the handler's internal state, which is why
-  it used to only work after moving to another folder.
-  `_apply_column_visibility` fixes this in two steps:
-  1. While calling `setColumnHidden(...)`, it sets
-     `view._handle_col_resize = False` — the same reentrancy guard
-     `_on_col_resized` already checks internally — so that one handler is
-     suppressed for the toggle's own resize, without blocking the header's
-     other Qt-internal signal handling (an earlier attempt using
-     `header.blockSignals(True)` also suppressed those, which broke the
-     "show" direction: the column's `isColumnHidden` flag flipped correctly,
-     but nothing repainted it as visible again).
-  2. It then calls `view.resizeColumnsToContents()` (the same public method
-     already called after a folder loads, see `_on_location_loaded` in
-     `src/main/python/fman/impl/widgets.py`) to force the remaining visible
-     columns to relayout and fill the pane immediately — otherwise nothing
-     triggers that relayout until the next real `resizeEvent` (e.g. the user
-     resizing the window).
-- `src/main/resources/base/Plugins/Core/core/tests/commands/test_columns.py`
-  — `FindColumnIndexTest` covers the pure index-lookup logic, including the
-  "column doesn't exist here" case. The live-relayout fix itself needs a real
-  Qt view and isn't covered by a unit test.
-- `src/main/python/fman/impl/view/fixed_column_widths.py` — selects stable
-  content, sample, and dragged widths; its pure tests are in
-  `src/unittest/python/fman_unittest/impl/view/test_fixed_column_widths.py`.
-- `src/main/python/fman/impl/view/scrollbar_below_header.py` — positions the
-  vertical scrollbar below the header.
-- `src/unittest/python/fman_unittest/impl/view/column_widths_test.py` — covers
-  sizing, persistence, reset/refit behavior, and scrollbar placement.
+Core applies saved visibility to each live file view and reapplies it when the
+column set changes or a pane navigates. The five built-in settings keys remain
+unchanged; other columns use qualified names in `hidden_columns`. The
+column-header menu is built from the current pane's columns and omits the first
+column, which cannot be hidden.
+
+Plugins choose the columns themselves through `fman.fs.set_default_columns()`
+and `fman.fs.set_columns()`. Folder choices persist in `Column Settings.json`;
+visibility choices persist separately in `Core Settings.json`. See
+[`PLUGINS_API.md`](../PLUGINS_API.md#choosing-columns) for the API and lookup
+order.
+
+Column visibility is applied to the live Qt view. Core temporarily suppresses
+its resize handler while hiding or showing a section, then recalculates the
+remaining visible column widths so the change takes effect immediately.

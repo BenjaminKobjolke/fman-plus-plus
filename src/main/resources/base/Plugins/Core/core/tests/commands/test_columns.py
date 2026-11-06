@@ -18,9 +18,23 @@ class GetHiddenFlagsTest(TestCase):
 			'core.fs.local.windows.drives.DriveSize',
 			'core.fs.local.windows.drives.DriveFree',
 		]
-		with patch('core.column_visibility.get_setting', return_value=True):
+		with patch(
+			'core.column_visibility.get_setting',
+			side_effect=lambda _file, key, default: (
+				True if key != 'hidden_columns' else []
+			),
+		):
 			flags = _get_hidden_flags(columns)
 		self.assertEqual([False, False, False], flags)
+
+	def test_plugin_column_can_be_hidden_but_column_zero_stays_visible(self):
+		with patch(
+			'core.column_visibility.get_setting',
+			side_effect=lambda _file, key, default: ['plugin.Status']
+			if key == 'hidden_columns' else default,
+		):
+			flags = _get_hidden_flags(['plugin.Name', 'plugin.Status'])
+		self.assertEqual([False, True], flags)
 
 class SortByColumnTest(TestCase):
 	def test_quicksearch_uses_only_visible_columns_and_current_visible_index(
