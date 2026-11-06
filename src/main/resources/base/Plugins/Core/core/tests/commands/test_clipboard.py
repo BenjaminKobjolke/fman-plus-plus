@@ -1,5 +1,6 @@
 from core.commands.clipboard import (
-	CopyToClipboard, Cut, Paste, _report_clipboard_action,
+	CopyPathsToClipboard, CopyToClipboard, Cut, Paste,
+	ToggleCopyPathsWithForwardSlashes, _report_clipboard_action,
 )
 from core.commands.util import NO_SELECTION
 from core.tests.commands import FakePane
@@ -105,6 +106,57 @@ class CopyItemTextTest(TestCase):
 	def _command_class(self, name):
 		from core import commands
 		return getattr(commands, name)
+
+class CopyPathsToClipboardSeparatorTest(TestCase):
+	def test_uses_native_separators_by_default(self):
+		self._assert_copied_paths(
+			False, 'C:\\folder\\a.txt\nC:\\folder\\b.txt'
+		)
+	def test_can_copy_paths_with_forward_slashes(self):
+		self._assert_copied_paths(
+			True, 'C:/folder/a.txt\nC:/folder/b.txt'
+		)
+	def _assert_copied_paths(self, enabled, expected):
+		pane = Mock(spec=DirectoryPane)
+		pane.get_selected_files.return_value = [
+			'file://C:/a.txt', 'file://C:/b.txt'
+		]
+		command = CopyPathsToClipboard(pane)
+		with patch(
+			'core.commands.clipboard.get_setting', return_value=enabled
+		) as get_setting, patch(
+			'core.commands.clipboard.as_human_readable',
+			side_effect=lambda url: 'C:\\folder\\' + url.rsplit('/', 1)[-1]
+		), patch(
+			'core.commands.clipboard.clipboard.clear'
+		), patch(
+			'core.commands.clipboard.clipboard.set_text'
+		) as set_text, patch(
+			'core.commands.clipboard.show_status_message'
+		):
+			command()
+		get_setting.assert_called_once_with(
+			'Core Settings.json', 'copy_paths_with_forward_slashes', False
+		)
+		set_text.assert_called_once_with(expected)
+
+	def test_toggle_flips_and_saves_the_setting(self):
+		command = ToggleCopyPathsWithForwardSlashes(Mock())
+		with patch(
+			'core.commands.clipboard.get_setting', return_value=False
+		) as get_setting, patch(
+			'core.commands.clipboard.save_setting'
+		) as save_setting, patch(
+			'core.commands.clipboard.show_status_message'
+		) as show_status_message:
+			command()
+		get_setting.assert_called_once_with(
+			'Core Settings.json', 'copy_paths_with_forward_slashes', False
+		)
+		save_setting.assert_called_once_with(
+			'Core Settings.json', 'copy_paths_with_forward_slashes', True
+		)
+		show_status_message.assert_called_once()
 
 class NoSelectionTest(TestCase):
 	def test_copy_alerts_when_nothing_is_chosen(self):

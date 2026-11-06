@@ -7,16 +7,20 @@ text, not files, so it never takes part in that hand-off.
 
 Copy file name and Copy file path copy one item's name or path as text.
 """
-from fman import clipboard, DirectoryPaneCommand, PLATFORM, show_alert, \
-	show_status_message
+from fman import ApplicationCommand, clipboard, DirectoryPaneCommand, \
+	PLATFORM, show_alert, show_status_message
 from fman.fs import exists
 from fman.url import as_human_readable, basename
 from fman.impl.virtual_files import get_clipboard_data_object, \
 	has_virtual_files, save_virtual_files
 from core.commands.util import NO_SELECTION
+from core.settings import SETTINGS_FILE, get_setting, save_setting
+
+_COPY_PATHS_WITH_FORWARD_SLASHES_SETTING = 'copy_paths_with_forward_slashes'
 
 __all__ = [
-	'CopyFileName', 'CopyFilePath', 'CopyPathsToClipboard', 'CopyToClipboard',
+	'CopyFileName', 'CopyFilePath', 'CopyPathsToClipboard',
+	'ToggleCopyPathsWithForwardSlashes', 'CopyToClipboard',
 	'Cut', 'Paste', 'PasteCut'
 ]
 
@@ -25,9 +29,30 @@ class CopyPathsToClipboard(DirectoryPaneCommand):
 
 	def __call__(self):
 		to_copy = self.get_chosen_files() or [self.pane.get_path()]
+		paths = list(map(as_human_readable, to_copy))
+		if get_setting(
+			SETTINGS_FILE, _COPY_PATHS_WITH_FORWARD_SLASHES_SETTING, False
+		) is True:
+			paths = [path.replace('\\', '/') for path in paths]
 		clipboard.clear()
-		clipboard.set_text('\n'.join(map(as_human_readable, to_copy)))
+		clipboard.set_text('\n'.join(paths))
 		_report_clipboard_action('Copied', to_copy, ' to the clipboard', 'path')
+
+class ToggleCopyPathsWithForwardSlashes(ApplicationCommand):
+	aliases = ('Toggle forward slashes when copying paths',)
+
+	def __call__(self):
+		enabled = get_setting(
+			SETTINGS_FILE, _COPY_PATHS_WITH_FORWARD_SLASHES_SETTING, False
+		) is not True
+		save_setting(
+			SETTINGS_FILE, _COPY_PATHS_WITH_FORWARD_SLASHES_SETTING, enabled
+		)
+		state = 'enabled' if enabled else 'disabled'
+		show_status_message(
+			'Forward slashes when copying paths are ' + state,
+			timeout_secs=3
+		)
 
 class CopyFileName(DirectoryPaneCommand):
 	usable_in_viewer = True
