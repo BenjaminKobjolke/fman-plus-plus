@@ -106,6 +106,9 @@ to every choice that is genuinely open.
 
 ## Testing
 
+After touching `virtual_files.py` or `virtual_file_drop.py`, run
+`tools\run_tests.bat`.
+
 After touching `src/main/python/fman/impl/in_window_dialog.py`, `exec_dialog`,
 or focus/result handling in `Prompt` or `Quicksearch`, run
 `tools\run_in_window_dialog_tests.bat`.
