@@ -32,6 +32,37 @@ class TicketsWatcherCommandsTest(unittest.TestCase):
             ),
         )
 
+    def test_unit_test_suites_print_each_test_result(self):
+        script = (TOOLS / "run_tests.bat").read_text(encoding="utf-8")
+        suite_calls = re.findall(
+            r'call\s+"%~dp0unittest_with_timeout\.bat"\s+([^\r\n]+)',
+            script,
+            re.IGNORECASE,
+        )
+
+        self.assertEqual(len(suite_calls), 2, script)
+        for arguments in suite_calls:
+            with self.subTest(arguments=arguments):
+                self.assertRegex(arguments, r"(?:^|\s)-v(?:\s|$)")
+
+    def test_unit_test_runner_streams_suite_progress_to_stdout(self):
+        script = (TOOLS / "run_tests.bat").read_text(encoding="utf-8")
+        suite_labels = re.findall(
+            r"(?im)^echo\s+(Running\s+unit\s+test\s+suite:[^\r\n]+)",
+            script,
+        )
+        self.assertEqual(len(suite_labels), 2, script)
+
+        suite_calls = re.findall(
+            r'call\s+"%~dp0unittest_with_timeout\.bat"\s+([^\r\n]+)',
+            script,
+            re.IGNORECASE,
+        )
+        self.assertEqual(len(suite_calls), 2, script)
+        for arguments in suite_calls:
+            with self.subTest(arguments=arguments):
+                self.assertRegex(arguments, r"2\s*>\s*&\s*1\s*$")
+
 
 if __name__ == "__main__":
     unittest.main()
