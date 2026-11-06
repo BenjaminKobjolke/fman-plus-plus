@@ -63,6 +63,16 @@ Consequences:
 Unix keeps its own `pty.fork()`-based progress runner
 (`Run7ZipViaPty`) and invokes its platform binary through that runner.
 
+## Moving across an archive boundary
+
+Moves between an archive and a regular folder, and between two archives, copy
+the item first. fman checks that the destination exists and that the move has
+not been canceled before deleting the source. A failed or canceled copy, or a
+missing destination, leaves the source in place. The destination check confirms
+that an item appeared; it does not compare file contents. 7-Zip reports failed
+writes, while a content digest would read every moved file a second time.
+Moving an item within the same archive remains a rename.
+
 ## 7-Zip 26 compatibility
 
 7-Zip 26 adds fractional seconds to some `Modified` values in its technical

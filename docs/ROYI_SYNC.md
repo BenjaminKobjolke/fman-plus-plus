@@ -4,7 +4,7 @@ Which changes from the RoyiFileManager fork have been ported into this fork.
 Maintained by the `royi-sync` skill (`.claude/skills/royi-sync/SKILL.md`).
 
 Source: https://github.com/RoyiAvital/RoyiFileManager (local: `D:\GIT\GitHub\RoyiFileManager`)
-Last reviewed: v0.16.4 (82f462e)
+Last reviewed: v0.20.3 (fe3842b)
 
 The two repositories share no git history, so nothing can be merged or
 cherry-picked — every row is a manual re-implementation. Rows follow the
@@ -15,8 +15,84 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 
 | Version | Change | Status | Note |
 |---------|--------|--------|------|
-| 0.16.4 | Create a duplicate file (alias Copy file here): Copy with the active pane as destination | pending | easy; Copy subclass + context menu entry |
-| 0.16.4 | Pack here (alias Compress here): Pack with the active pane as destination | pending | easy; Pack subclass + context menu entry |
+| 0.20.3 | Backspace at a drive root opens and highlights that drive | pending | |
+| 0.20.2 | Empty-space context menu creates a new file | pending | |
+| 0.20.2 | Command Center updates settings file template with missing defaults | pending | |
+| 0.20.2 | Batch File Renamer adds UUID, HASHID and SQIDS aliases | pending | |
+| 0.20.1 | Find blocking processes | skipped | already implemented in `Plugins/ProcessPane` and `core/tests/commands/test_locking_processes.py` |
+| 0.20.0 | File Attributes Editor plug-in | pending | |
+| 0.20.0 | `fman.ui.show_quick_check_list` | pending | |
+| 0.20.0 | `fman.fs.notify_file_changed(url)` | pending | |
+| 0.19.3 | Application metadata moved to `src/AppMeta.json` | pending | |
+| 0.19.3 | Archive writes use pipe-based progress and drop `pywinpty` | pending | |
+| 0.19.3 | Faster folder listings without native parser | pending | |
+| 0.19.3 | `fman.fs.iterdir` no longer caches names | pending | |
+| 0.19.3 | Plug-in columns register as their own instance | pending | |
+| 0.19.3 | Remove unused plug-in APIs | pending | |
+| 0.19.3 | Remove inherited fman assets and state | pending | |
+| 0.19.3 | Errors in UI callbacks no longer close the app | pending | |
+| 0.19.3 | Quicksearch dialogs restore focus when closed | pending | |
+| 0.19.3 | Update plug-in API documentation | pending | |
+| 0.19.3 | Document `python build.py test-docs` | pending | |
+| 0.19.2 | QuickView plays animated GIF, WebP and APNG | pending | |
+| 0.19.2 | About window has an olive border | pending | |
+| 0.19.2 | Cross-drive drag follows copy/move modifiers | pending | |
+| 0.19.1 | Create missing user settings files from defaults | pending | |
+| 0.19.1 | Bundle DirectorySize and QuickView defaults | pending | |
+| 0.19.1 | Convert configuration filenames to YAML naming | pending | |
+| 0.19.1 | Plug-in settings ship commented YAML defaults | pending | |
+| 0.19.1 | About window replaces Zen command | pending | |
+| 0.19.1 | Rename application metadata file to `AppMeta.json` | pending | |
+| 0.19.1 | Cross-drive moves use their own progress and cancel | pending | |
+| 0.19.1 | Reuse read buffer when copying many small files | pending | |
+| 0.19.1 | Prepare status bar counts and sizes off the UI thread | pending | |
+| 0.19.1 | Find Files counts results past table limit efficiently | pending | |
+| 0.19.1 | QuickView table filters continue while typing | pending | |
+| 0.19.1 | QuickView table reports format errors with DuckDB guidance | pending | |
+| 0.19.1 | Remove unused Core AppSettings JSON | pending | |
+| 0.19.1 | Cross-drive move preserves changed or canceled source | pending | |
+| 0.19.1 | Recover from damaged saved window position | pending | |
+| 0.19.1 | Favorites distinguish Unicode-equivalent folder names | pending | |
+| 0.19.1 | Quit from Command Center no longer reports an error | pending | |
+| 0.19.1 | QuickView table cache is removed on quit | pending | |
+| 0.19.1 | Copying control characters from QuickView avoids PDF error | pending | |
+| 0.19.1 | New folder reports invalid-name and read-only errors | pending | |
+| 0.19.0 | Command Center groups commands by category | pending | |
+| 0.19.0 | Plug-in commands and panes expose command categories | pending | |
+| 0.19.0 | Toggle live refresh during file operations | pending | |
+| 0.19.0 | Edit settings opens application settings | pending | |
+| 0.19.0 | Add plug-in `load_settings` and `save_settings` APIs | pending | |
+| 0.19.0 | User configuration supports YAML comments | pending | |
+| 0.19.0 | Move application settings into AppSettings.yaml | pending | |
+| 0.19.0 | Rename QuickView image commands | pending | |
+| 0.19.0 | Widen QuickSearch lists | pending | |
+| 0.19.0 | Remove legacy text editor launch mappings | pending | |
+| 0.19.0 | Remove old Search Files settings keys | pending | |
+| 0.19.0 | Concurrent settings saves preserve each other's changes | pending | |
+| 0.19.0 | Elide long QuickSearch hints | pending | |
+| 0.19.0 | Command Center handles case-expanding Unicode names | pending | |
+| 0.19.0 | Document live refresh behavior | pending | |
+| 0.19.0 | Document YAML settings APIs and comments | pending | |
+| 0.18.1 | Properties no longer crashes on Windows | pending | |
+| 0.18.1 | QuickView table sizes record-number column during loading | pending | |
+| 0.18.0 | QuickView adds CSV and TSV Table View | pending | |
+| 0.18.0 | Add QuickView table file and memory limit setting | pending | |
+| 0.18.0 | Rename duplicate command in menus and Command Center | pending | |
+| 0.18.0 | Add Copy item(s) name and path commands | pending | |
+| 0.18.0 | Remove redundant `copy_paths_to_clipboard` command | pending | |
+| 0.17.1 | Add Royi Text Editor preset | pending | |
+| 0.17.1 | Shorten context menu copy name and path labels | pending | |
+| 0.17.1 | Summarize Find Files traversal errors | pending | |
+| 0.17.0 | Swap pane locations and add clipboard/link navigation | pending | |
+| 0.17.0 | Keypad selection preview and same-extension selection | pending | invert and same-extension commands already exist; keypad `+` / `-` preview remains to review |
+| 0.17.0 | Add Command Center synonyms | pending | |
+| 0.17.0 | Show local available and total space in extended status | pending | |
+| 0.17.0 | Add `DirectoryPane.get_location_info()` | pending | |
+| 0.17.0 | Copy selected names as newline-separated text | pending | |
+| 0.17.0 | Duplicate suggests available `name Copy N.ext` names | ported | 2026-11-06 — `core/commands/duplicate.py`, `core/commands/transfer.py`, `core/tests/commands/test_duplicate.py` |
+| 0.17.0 | Coalesce Select and Deselect row updates | pending | |
+| 0.16.4 | Create a duplicate file (alias Copy file here): Copy with the active pane as destination | ported | 2026-11-06 — `core/commands/duplicate.py`, `core/commands/transfer.py`, `core/tests/commands/test_duplicate.py`, Core command registration and platform context menus |
+| 0.16.4 | Pack here (alias Compress here): Pack with the active pane as destination | ported | 2026-11-06 — `core/commands/pack.py`, `core/tests/commands/test_pack.py`, platform context menus |
 | 0.16.4 | Default FileSystem.prepare_trash moves to trash instead of deleting | ported | 2026-10-20 — `src/main/python/fman/fs.py`, `test_mother_fs.py` |
 | 0.16.4 | Delete in locations without a Recycle Bin refuses instead of deleting permanently | ported | 2026-10-20 — `core/commands/deletion.py`, `core/tests/commands/test_deletion.py`; message uses the platform's trash name |
 | 0.16.4 | README Robocopy link | skipped | his docs |
@@ -140,9 +216,9 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | 0.4.4 | Ignore queued pane-reload results after model shutdown | pending | easy — `impl/model/model.py` has no shutdown guard in `_on_files_reloaded` |
 | 0.4.3 | Unpack archive command | pending | easy — no unpack command; check `docs/ARCHIVES.md` before adding it |
 | 0.4.2 | Archive extraction progress and cancel | pending | easy — `core/fs/zip.py` has no extraction progress; reuse this fork's `-bsp1` task pattern |
-| 0.4.2 | Move out of / between archives verifies before deleting source | pending | easy, data safety, do first — `core/fs/zip.py` deletes after failed copy; archive move extracts to temp before packing |
-| 0.4.2 | Failed or canceled extraction cannot trigger source deletion | pending | easy, data safety, do first — `core/fs/zip.py` schedules cleanup even when copy fails or is canceled |
-| 0.4.2 | Archive-to-archive Move no longer deletes source before packing succeeds | pending | easy, data safety, do first — `MoveBetweenArchives` moves source to temp before pack succeeds |
+| 0.4.2 | Move out of / between archives verifies before deleting source | ported | 2026-11-06 — `core/fs/move_by_copy.py`, `core/fs/zip.py`, `core/tests/fs/zip_test.py`; destination existence check, not content digest |
+| 0.4.2 | Failed or canceled extraction cannot trigger source deletion | ported | 2026-11-06 — `core/fs/move_by_copy.py`, `core/fs/zip.py`, `core/tests/fs/zip_test.py`; destination existence check, not content digest |
+| 0.4.2 | Archive-to-archive Move no longer deletes source before packing succeeds | ported | 2026-11-06 — `core/fs/move_by_copy.py`, `core/fs/zip.py`, `core/tests/fs/zip_test.py`; destination existence check, not content digest |
 | 0.4.2 | Windows directory publication refuses late destination conflicts | pending | |
 | 0.4.2 | Build retries transient 7-Zip download failures | skipped | his build pipeline |
 | 0.4.1 | Command Palette pins three most recent commands | pending | this fork has own palette work |
