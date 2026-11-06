@@ -71,7 +71,8 @@ class _TreeCommand(DirectoryPaneCommand):
 			}
 			operation = None
 			if not self._call_elevated(files, dest_dir, dest_name):
-				makedirs(dest_dir, exist_ok=True)
+				if not fman.fs.exists(dest_dir):
+					makedirs(dest_dir, exist_ok=True)
 				operation = self._call(files, dest_dir, dest_name)
 			if operation is not None:
 				transfers = tuple(

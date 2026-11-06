@@ -192,19 +192,35 @@ class TransferRecordingTest(TestCase):
 		history.clear()
 
 	def test_move_records_a_successful_destination(self):
-		with self._move_command(exists=[False, True]) as command:
+		with self._move_command(exists=[False, False, True]) as command:
 			command(files=[self._SRC], dest_dir='file:///dest')
 		self.assertEqual(MoveRecord(((self._SRC, self._DEST),)), history.pop())
 
 	def test_copy_records_a_successful_destination(self):
-		with self._copy_command(exists=[False, True]) as command:
+		with self._copy_command(exists=[False, False, True]) as command:
 			command(files=[self._SRC], dest_dir='file:///dest')
 		self.assertEqual(CopyRecord(((self._SRC, self._DEST),)), history.pop())
 
 	def test_copy_skips_a_destination_that_existed_before_the_operation(self):
-		with self._copy_command(exists=[True]) as command:
+		with self._copy_command(exists=[True, True]) as command:
 			command(files=[self._SRC], dest_dir='file:///dest')
 		self.assertIsNone(history.pop())
+
+	def test_copy_does_not_create_an_existing_destination_directory(self):
+		command = Copy(Mock())
+		command._confirm_tree_operation = Mock(
+			return_value=('file:///dest', None)
+		)
+		command._call = Mock(return_value=None)
+		with patch(
+			'core.commands.transfer.fman.fs.exists', return_value=True
+		), patch(
+			'core.commands.transfer.makedirs'
+		) as makedirs, patch(
+			'core.commands.transfer.elevation.copy', return_value=False
+		):
+			command(files=[self._SRC], dest_dir='file:///dest')
+		makedirs.assert_not_called()
 
 	def test_copy_records_renamed_destination(self):
 		self._assert_renamed_destination_is_recorded(Copy, CopyRecord)
@@ -214,7 +230,9 @@ class TransferRecordingTest(TestCase):
 
 	def _assert_renamed_destination_is_recorded(self, command_type, record_type):
 		renamed_dest = 'file:///dest/a (2).txt'
-		with self._command(command_type, exists=[False, True]) as command:
+		with self._command(
+			command_type, exists=[False, False, True]
+		) as command:
 			command._call.return_value = Mock(
 				renamed_dests={self._DEST: renamed_dest}
 			)
