@@ -1,6 +1,8 @@
 """Keys for text owned by fman and its built-in Core plugin."""
 
 QUICKSEARCH_TITLE = 'quicksearch_title'
+COMMAND_PALETTE_TITLE = 'command_palette_title'
+GOTO_TITLE = 'goto_title'
 READY = 'status_ready'
 ERROR_DISMISS = 'error_dismiss'
 ERROR_OPEN_CONSOLE = 'error_open_console'
@@ -50,6 +52,8 @@ COMMAND_TITLES = {
 
 ENGLISH_TEXT = {
 	QUICKSEARCH_TITLE: 'Quicksearch',
+	COMMAND_PALETTE_TITLE: 'Command Palette',
+	GOTO_TITLE: 'Go To',
 	READY: 'Ready.',
 	ERROR_DISMISS: 'Dismiss',
 	ERROR_OPEN_CONSOLE: 'Open in console',

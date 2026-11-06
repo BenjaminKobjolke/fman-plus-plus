@@ -15,7 +15,8 @@ from core.quicksearch_matchers import bucket_count, contains_chars, \
 	match_titles_or_keywords
 from fman import DirectoryPaneCommand, get_application_command_aliases, \
 	get_application_commands, load_json, QuicksearchItem, \
-	run_application_command, show_quicksearch
+	run_application_command, show_quicksearch, translate
+from fman.localization_keys import COMMAND_PALETTE_TITLE
 from itertools import chain
 
 __all__ = ['CommandPalette']
@@ -38,7 +39,8 @@ class CommandPalette(DirectoryPaneCommand):
 		while True:
 			result = show_quicksearch(
 				self._suggest_commands, query=self._last_query,
-				item=self._get_initial_item(), alt_accept=True
+				item=self._get_initial_item(), alt_accept=True,
+				title=translate(COMMAND_PALETTE_TITLE)
 			)
 			if not result:
 				self._last_query = self._last_cmd_name = ''

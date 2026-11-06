@@ -1,5 +1,7 @@
 {
   "quicksearch_title": "Quicksearch",
+  "command_palette_title": "Command Palette",
+  "goto_title": "Go To",
   "status_ready": "Ready.",
   "error_dismiss": "Dismiss",
   "error_open_console": "Open in console",

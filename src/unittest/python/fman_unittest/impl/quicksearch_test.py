@@ -67,6 +67,36 @@ class QuicksearchTest(TestCase):
 		dialog = self._dialog_with_long_items(1)
 		self.assertFalse(dialog._items.horizontalScrollBar().isVisible())
 
+	def test_title_is_shown_in_a_header_and_window_title_stays_accessible(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [], title='Go To'
+		)
+		dialog.show()
+		self.app.processEvents()
+
+		self.assertEqual('Go To', dialog._header.text())
+		self.assertTrue(dialog._header.isVisible())
+		self.assertEqual('Quicksearch', dialog.windowTitle())
+		dialog.close()
+
+	def test_header_is_hidden_and_accessible_window_title_is_unchanged_without_title(
+		self
+	):
+		self.assertEqual('', self.dialog._header.text())
+		self.assertFalse(self.dialog._header.isVisible())
+		self.assertEqual('Quicksearch', self.dialog.windowTitle())
+
+	def test_header_shows_a_two_line_title(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [], title='Pack\nfiles'
+		)
+		dialog.show()
+		self.app.processEvents()
+
+		self.assertEqual('Pack\nfiles', dialog._header.text())
+		self.assertTrue(dialog._header.isVisible())
+		dialog.close()
+
 	def test_single_long_item_is_fully_visible(self):
 		dialog = self._dialog_with_long_items(1)
 		self.assertGreaterEqual(

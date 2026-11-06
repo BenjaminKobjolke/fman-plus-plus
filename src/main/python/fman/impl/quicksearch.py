@@ -12,7 +12,7 @@ from PyQt5.QtCore import QAbstractListModel, QVariant, QModelIndex, QSize, Qt, \
 from PyQt5.QtGui import QFont, QFontMetrics, QTextLayout, QTextCharFormat, \
 	QBrush, QKeySequence
 from PyQt5.QtWidgets import QDialog, QLayout, QFrame, QVBoxLayout, QLineEdit, \
-	QListView, QStyledItemDelegate, QApplication, QStyle
+	QListView, QStyledItemDelegate, QApplication, QStyle, QLabel
 
 class Quicksearch(QDialog):
 
@@ -21,7 +21,7 @@ class Quicksearch(QDialog):
 
 	def __init__(
 		self, parent, app, css, get_items, get_tab_completion=None, query='',
-		item=0, alt_accept=False, width_store=None
+		item=0, alt_accept=False, width_store=None, title=''
 	):
 		if get_tab_completion is None:
 			get_tab_completion = lambda q, i: None
@@ -35,6 +35,7 @@ class Quicksearch(QDialog):
 		self._get_tab_completion = get_tab_completion
 		self._initial_query = query
 		self._initial_item = item
+		self._title = title
 		self._alt_accept = alt_accept
 		self._width_store = width_store
 		self._curr_items = []
@@ -68,6 +69,10 @@ class Quicksearch(QDialog):
 		super().showEvent(event)
 		self.shown.emit()
 	def _init_ui(self):
+		self._header = QLabel(self._title, self)
+		self._header.setObjectName('header')
+		if not self._title:
+			self._header.hide()
 		self._query = LineEdit(self._initial_query, self)
 		self.setFocusProxy(self._query)
 		self._query.keyPressEventFilter = self._on_key_pressed
@@ -88,7 +93,9 @@ class Quicksearch(QDialog):
 		query_container.setObjectName('query-container')
 		items_container = div(self._items)
 		items_container.setObjectName('items-container')
-		self._layout_vertically(self, query_container, items_container)
+		self._layout_vertically(
+			self, self._header, query_container, items_container
+		)
 		self.layout().setSizeConstraint(QLayout.SetNoConstraint)
 		self._items.ensurePolished()
 		self._default_list_width = self._items.minimumWidth()

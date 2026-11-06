@@ -1,6 +1,7 @@
 from core.commands.palette import CommandPalette
+from fman.localization_keys import COMMAND_PALETTE_TITLE
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 class CommandPaletteSuggestionsTest(TestCase):
 
@@ -79,3 +80,18 @@ class CommandPaletteSuggestionsTest(TestCase):
 				side_effect=lambda _json, key, default: titles.get(key, default)
 			):
 			return list(CommandPalette(pane)._suggest_commands(query))
+
+
+class CommandPaletteTitleTest(TestCase):
+	def test_passes_translated_title_to_quicksearch(self):
+		with patch(
+			'core.commands.palette.translate', return_value='translated title'
+		) as translate, patch(
+			'core.commands.palette.show_quicksearch', return_value=None
+		) as show:
+			CommandPalette(Mock())()
+
+		translate.assert_called_once_with(COMMAND_PALETTE_TITLE)
+		self.assertEqual(
+			'translated title', show.call_args.kwargs['title']
+		)

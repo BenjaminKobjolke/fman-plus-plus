@@ -3,6 +3,7 @@ from core.commands.goto import _shrink_visited_paths, _with_well_known_dirs, \
 from core.suggest_locations import SuggestLocations
 from core.util import filenotfounderror
 from fman import PLATFORM, QuicksearchItem
+from fman.localization_keys import GOTO_TITLE
 from fman.impl import incognito
 from fman.url import as_human_readable, as_url
 from os.path import normpath
@@ -69,6 +70,25 @@ class GoToUrlTest(TestCase):
 		for url in ('zip://C:/image.zip', 'file://C:/Windows'):
 			with self.subTest(url=url):
 				self.assertEqual(url, GoTo(Mock())._get_target_location(url, None))
+
+
+class GoToTitleTest(TestCase):
+	def test_passes_translated_title_to_quicksearch(self):
+		command = GoTo(Mock())
+		with patch.object(command, '_get_visited_paths', return_value=[]), \
+				patch('core.commands.goto.PLATFORM', 'Linux'), \
+				patch(
+					'core.commands.goto.translate',
+					return_value='translated title'
+				) as translate, patch(
+					'core.commands.goto.show_quicksearch', return_value=None
+				) as show:
+			command()
+
+		translate.assert_called_once_with(GOTO_TITLE)
+		self.assertEqual(
+			'translated title', show.call_args.kwargs['title']
+		)
 
 
 class GoToListenerIncognitoTest(TestCase):

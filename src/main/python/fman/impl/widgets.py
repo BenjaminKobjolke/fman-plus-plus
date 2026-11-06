@@ -1,5 +1,5 @@
 from fbs_runtime.platform import is_mac
-from fman import APP_NAME, OK
+from fman import OK
 from fman import translate
 from fman.localization_keys import READY
 from fman.impl.background import chrome_is_transparent, for_window
@@ -12,20 +12,20 @@ from fman.impl.pane_status import PaneStatusLine, PaneStatusMode
 from fman.impl.progress_dialog import ProgressDialog
 from fman.impl.tool_windows import ToolWindows
 from fman.impl.quicksearch import Quicksearch
-from fman.impl.prompt_completion import PromptTabCompletion
+from fman.impl.prompt_popup import Prompt
 from fman.impl.util.qt import disable_window_animations_mac, Key_Escape, \
 	NoFocus, Key_Backspace, DisplayRole
 from fman.impl.util.qt.thread import run_in_main_thread
 from fman.impl.view.backgrounds import PAINTER, set_transparent
 from fman.impl.view.location_bar import LocationBar
-from fman.impl.view import FileListView, Layout, set_selection
+from fman.impl.view import FileListView, Layout
 from fman.impl.view.pane_view_mode import PaneViewMode
 from fman.url import as_human_readable, basename, splitscheme
 from PyQt5.QtCore import pyqtSignal, QTimer, Qt, QEvent, QSize, QPoint, \
 	QRect
 from PyQt5.QtGui import QKeySequence, QPainter
 from PyQt5.QtWidgets import QWidget, QMainWindow, QSplitter, QStatusBar, \
-	QMessageBox, QInputDialog, QLineEdit, QFileDialog, QLabel, QDialog, \
+	QMessageBox, QLineEdit, QFileDialog, QLabel, QDialog, \
 	QVBoxLayout, QSplitterHandle, QApplication, QFrame, QAction, QSizePolicy, \
 	QDialogButtonBox, QSpacerItem, QScrollArea
 from collections import namedtuple
@@ -574,11 +574,12 @@ class MainWindow(QMainWindow):
 	):
 		# Let API users pass arbitrary objects by converting str(text):
 		text_str = str(text)
+		css = self._theme.get_quicksearch_item_css()
 		dialog = Prompt(
-			self, APP_NAME, text_str, default, selection_start, selection_end,
-			get_completions=get_completions, password=password
+			self, self._app, css, text_str, default, selection_start,
+			selection_end, get_completions=get_completions, password=password,
+			width_store=self._quicksearch_width
 		)
-		dialog.setTextValue(default)
 		result = self.exec_dialog(dialog, in_window=True)
 		if result:
 			return dialog.textValue()
@@ -586,12 +587,12 @@ class MainWindow(QMainWindow):
 	@run_in_main_thread
 	def show_quicksearch(
 		self, get_items, get_tab_completion=None, query='', item=0,
-		alt_accept=False, set_refresh=None
+		alt_accept=False, set_refresh=None, title=''
 	):
 		css = self._theme.get_quicksearch_item_css()
 		dialog = Quicksearch(
 			self, self._app, css, get_items, get_tab_completion, query, item,
-			alt_accept, width_store=self._quicksearch_width
+			alt_accept, width_store=self._quicksearch_width, title=title
 		)
 		if set_refresh is not None:
 			set_refresh(dialog.request_refresh)
@@ -995,93 +996,6 @@ class MessageBox(QMessageBox):
 		if e.type() == QEvent.LayoutRequest:
 			self._fit_buttons()
 		return result
-
-class Prompt(QInputDialog):
-	"""
-	Most of the code in this otherwise simple class solves the following
-	problem: Say we want the user to enter a file path, and we want to
-	pre-select the default file's base name without the extension. The file path
-	is likely too long to be contained in the text field. We want to see:
-
-		/path/to/my/file.txt
-			 |      ----   |
-
-	where --- is the selection and |   | are the visible borders of the text
-	field. Instead, by default we see:
-
-		/path/to/my/file.txt
-		  |         ----|
-
-	In other words, "file" is highlighted but the ".txt" suffix is cut off.
-
-	QInputDialog and thus this class use QLineEdit for text input. That class
-	internally uses a `hscroll` parameter to indicate the horizontal scroll
-	position which distinguishes the two figures above. The problem is,
-	`hscroll` is not settable from the outside. In fact, it is only set by
-	QLineEdit::paintEvent(...). We thus perform the initial paintEvent(...)
-	twice: First with the cursor at the end and then with the cursor / selection
-	at the correct position. This sets `hscroll` to the required value.
-	"""
-
-	shown = pyqtSignal()
-
-	def __init__(
-		self, parent, title, text, default='', selection_start=0,
-		selection_end=None, get_completions=None, password=False
-	):
-		super().__init__(parent)
-		self.setWindowTitle(title)
-		self.setLabelText(text)
-		self._selection_start = selection_start
-		self._selection_end = selection_end
-		if default:
-			self.setTextValue(default)
-		self.setTextEchoMode(
-			QLineEdit.Password if password else QLineEdit.Normal
-		)
-		self.setFocusProxy(self._get_line_edit())
-		self._request_immediate_repaint = False
-		self._is_second_paint = False
-		self._prompt_tab_completion = None
-		if get_completions is not None:
-			self._prompt_tab_completion = PromptTabCompletion(
-				self._get_line_edit(), get_completions
-			)
-	def setVisible(self, visible):
-		"""
-		Unfortunately, our double call to paintEvent(...) leads to flickering
-		effects on slower systems. The super() implementation of this function
-		selects the text edit's entire text. This makes the flickering effect
-		especially noticeable. To alleviate this, we only place the cursor at
-		the end of the text field (via .end(...)). This still has the desired
-		effect of getting Qt to not cut off the rightmost characters of the text
-		field, yet has less visual effect.
-		"""
-		if visible:
-			self.labelText() # Call private ensureLayout() of the superclass
-			self._get_line_edit().end(False)
-			self._request_immediate_repaint = True
-		QDialog.setVisible(self, visible)
-	def paintEvent(self, e):
-		if self._request_immediate_repaint:
-			self._request_immediate_repaint = False
-			# Request the second paint:
-			self.update()
-			self._is_second_paint = True
-		elif self._is_second_paint:
-			self._is_second_paint = False
-			self._set_cursor_and_selection()
-	def showEvent(self, event):
-		super().showEvent(event)
-		self.shown.emit()
-	def _set_cursor_and_selection(self):
-		line_edit = self._get_line_edit()
-		set_selection(line_edit, self._selection_start, self._selection_end)
-	def _get_line_edit(self):
-		for child in self.children():
-			if isinstance(child, QLineEdit):
-				return child
-		raise AssertionError('Should not reach here')
 
 class Splitter(QSplitter):
 	def createHandle(self):

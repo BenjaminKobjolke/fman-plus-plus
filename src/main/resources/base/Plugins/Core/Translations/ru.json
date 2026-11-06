@@ -1,5 +1,7 @@
 {
   "quicksearch_title": "Быстрый поиск",
+  "command_palette_title": "Палитра команд",
+  "goto_title": "Перейти",
   "status_ready": "Готово.",
   "error_dismiss": "Закрыть",
   "error_open_console": "Открыть консоль",

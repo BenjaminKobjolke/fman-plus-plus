@@ -1,7 +1,8 @@
 from core.commands.util import get_user, get_well_known_dirs, is_hidden
 from core.suggest_locations import SuggestLocations
 from fman import DirectoryPaneCommand, show_quicksearch, PLATFORM, load_json, \
-	DirectoryPaneListener, is_incognito
+	DirectoryPaneListener, is_incognito, translate
+from fman.localization_keys import GOTO_TITLE
 from fman.fs import exists, resolve
 from fman.url import as_url, splitscheme, as_human_readable
 from itertools import islice
@@ -33,7 +34,8 @@ class GoTo(DirectoryPaneCommand):
 				_with_well_known_dirs(visited_paths), labels=get_well_known_dirs()
 			)
 		result = show_quicksearch(
-			get_items, self._get_tab_completion, query, **quicksearch_kwargs
+			get_items, self._get_tab_completion, query,
+		title=translate(GOTO_TITLE), **quicksearch_kwargs
 		)
 		if result:
 			url = self._get_target_location(*result)

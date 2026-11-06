@@ -129,12 +129,13 @@ QLineEdit {
 	border-top-color: $pane_bg;
 }
 
-Prompt QLineEdit {
-	min-width: 20em;
-}
-
 Quicksearch {
 	background-color: $popup_bg;
+}
+
+Quicksearch #header {
+	color: $popup_input_fg;
+	padding: 6px 7px 2px 7px;
 }
 
 Quicksearch #query-container {

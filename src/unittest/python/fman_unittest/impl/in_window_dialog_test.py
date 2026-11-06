@@ -7,7 +7,7 @@ from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QVBoxLayout, QWidget
 
 from fman.impl.in_window_dialog import Scrim, exec_in_window
-from fman.impl.widgets import Prompt
+from fman.impl.prompt_popup import Prompt
 
 
 class InWindowDialogTest(TestCase):
@@ -78,19 +78,29 @@ class InWindowDialogTest(TestCase):
 		self.assertIs(self.edit, QApplication.focusWidget())
 
 	def test_prompt_focus_tab_and_enter_work_when_embedded(self):
-		prompt = Prompt(self.parent, 'fman', 'Name', default='')
-		prompt.setTextValue('typed name')
-		line_edit = prompt._get_line_edit()
+		prompt = Prompt(
+			self.parent, self.app, {}, 'Name', default='archive.tar.gz',
+			selection_start=0, selection_end=7,
+			get_completions=lambda _text: ['completed name']
+		)
+		line_edit = prompt._query
 		observed = []
 		def type_and_accept():
-			observed.append(line_edit.hasFocus())
+			QTest.qWait(10)
+			observed.append((line_edit.hasFocus(), line_edit.selectedText()))
 			QTest.keyClick(line_edit, Qt.Key_Tab)
-			observed.append(prompt.focusWidget() is not line_edit)
+			for _ in range(20):
+				if line_edit.text() == 'completed name':
+					break
+				QTest.qWait(5)
+			observed.append((line_edit.hasFocus(), line_edit.text()))
 			QTest.keyClick(line_edit, Qt.Key_Return)
 		QTimer.singleShot(0, type_and_accept)
 		self.assertEqual(QDialog.Accepted, exec_in_window(prompt, self.parent))
-		self.assertEqual([True, True], observed)
-		self.assertEqual('typed name', prompt.textValue())
+		self.assertEqual(
+			[(True, 'archive'), (True, 'completed name')], observed
+		)
+		self.assertEqual('completed name', prompt.textValue())
 
 
 class _Window(QWidget):

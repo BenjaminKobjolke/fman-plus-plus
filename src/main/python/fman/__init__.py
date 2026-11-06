@@ -397,11 +397,11 @@ def show_file_open_dialog(caption, dir_path, filter_text=''):
 
 def show_quicksearch(
 	get_items, get_tab_completion=None, query='', item=0, alt_accept=False,
-	set_refresh=None
+	set_refresh=None, title=''
 ):
 	return _get_ui().show_quicksearch(
 		get_items, get_tab_completion, query, item, alt_accept,
-		set_refresh=set_refresh
+		set_refresh=set_refresh, title=title
 	)
 
 class QuicksearchItem:
