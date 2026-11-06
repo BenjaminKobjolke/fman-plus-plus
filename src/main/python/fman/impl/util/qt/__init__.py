@@ -68,6 +68,7 @@ def from_qurl(qurl):
 	return ':'.join([scheme, path])
 
 FMAN_URLS_MIME = 'application/x-fman-urls'
+VIRTUAL_FILE_MIME = 'application/x-qt-windows-mime;value="FileGroupDescriptorW"'
 
 def set_urls(mime_data, urls):
 	mime_data.setUrls([as_qurl(url) for url in urls])

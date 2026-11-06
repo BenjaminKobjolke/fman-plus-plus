@@ -1,6 +1,7 @@
 from fman.impl.util.qt import MoveAction, CopyAction, IgnoreAction, \
-	FMAN_URLS_MIME, get_urls, set_urls
+	FMAN_URLS_MIME, VIRTUAL_FILE_MIME, get_urls, set_urls
 from fman.url import dirname
+from fbs_runtime.platform import is_windows
 from PyQt5.QtCore import QAbstractTableModel, pyqtSignal, QMimeData
 
 import sip
@@ -19,7 +20,7 @@ class DragAndDrop(QAbstractTableModel):
 		if not action & self.supportedDropActions():
 			return False
 		if not data.hasUrls():
-			return False
+			return is_windows() and data.hasFormat(VIRTUAL_FILE_MIME)
 		urls = get_urls(data)
 		if not urls:
 			return False
@@ -47,7 +48,16 @@ class DragAndDrop(QAbstractTableModel):
 		if action == IgnoreAction:
 			return True
 		if not data.hasUrls():
-			return False
+			if not is_windows() or not data.hasFormat(VIRTUAL_FILE_MIME):
+				return False
+			from fman.impl import virtual_file_drop, virtual_files
+			data_object = virtual_file_drop.current_data_object()
+			if data_object is None:
+				return False
+			# The source data object is valid only for the duration of Drop.
+			urls = virtual_files.save_virtual_files(data_object)
+			self.files_dropped.emit(urls, self._get_drop_dest(parent), True)
+			return True
 		urls = get_urls(data)
 		dest = self._get_drop_dest(parent)
 		if action in (MoveAction, CopyAction):

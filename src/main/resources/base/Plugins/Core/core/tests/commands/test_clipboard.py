@@ -1,4 +1,6 @@
-from core.commands.clipboard import CopyToClipboard, Cut, _report_clipboard_action
+from core.commands.clipboard import (
+	CopyToClipboard, Cut, Paste, _report_clipboard_action,
+)
 from core.commands.util import NO_SELECTION
 from core.tests.commands import FakePane
 from fman import DirectoryPane
@@ -110,13 +112,41 @@ class NoSelectionTest(TestCase):
 			 patch('core.commands.clipboard.show_alert') as show_alert:
 			CopyToClipboard(FakePane())()
 		show_alert.assert_called_once_with(NO_SELECTION)
-
 	def test_cut_alerts_when_nothing_is_chosen(self):
 		with patch.object(Cut, 'get_chosen_files', return_value=[]), \
-			 patch('core.commands.clipboard.PLATFORM', 'Windows'), \
-			 patch('core.commands.clipboard.show_alert') as show_alert:
+				patch('core.commands.clipboard.PLATFORM', 'Windows'), \
+				patch('core.commands.clipboard.show_alert') as show_alert:
 			Cut(FakePane())()
 		show_alert.assert_called_once_with(NO_SELECTION)
+
+class PasteVirtualFilesTest(TestCase):
+	def test_pastes_virtual_files_and_shows_command(self):
+		pane = Mock(spec=DirectoryPane)
+		pane.get_path.return_value = 'file://C:/destination'
+		data_object = object()
+		files = ['file://C:/temp/attachment.pdf']
+		command = Paste(pane)
+		with patch('core.commands.clipboard.clipboard.get_files', return_value=[]), \
+				patch('core.commands.clipboard.get_clipboard_data_object',
+					return_value=data_object), \
+				patch('core.commands.clipboard.has_virtual_files', return_value=True), \
+				patch('core.commands.clipboard.save_virtual_files',
+					return_value=files), \
+				patch('core.commands.clipboard.clipboard.files_were_cut',
+					return_value=True) as files_were_cut:
+			self.assertTrue(command.is_visible())
+			command()
+		files_were_cut.assert_not_called()
+		pane.run_command.assert_called_once_with('copy', {
+			'files': files, 'dest_dir': 'file://C:/destination'
+		})
+
+	def test_hides_paste_without_files_or_virtual_clipboard(self):
+		pane = Mock(spec=DirectoryPane)
+		with patch('core.commands.clipboard.clipboard.get_files', return_value=[]), \
+				patch('core.commands.clipboard.get_clipboard_data_object',
+					return_value=None):
+			self.assertFalse(Paste(pane).is_visible())
 
 class ReportClipboardActionTest(TestCase):
 

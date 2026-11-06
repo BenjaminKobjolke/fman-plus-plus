@@ -11,6 +11,8 @@ from fman import clipboard, DirectoryPaneCommand, PLATFORM, show_alert, \
 	show_status_message
 from fman.fs import exists
 from fman.url import as_human_readable, basename
+from fman.impl.virtual_files import get_clipboard_data_object, \
+	has_virtual_files, save_virtual_files
 from core.commands.util import NO_SELECTION
 
 __all__ = [
@@ -94,14 +96,18 @@ class Paste(DirectoryPaneCommand):
 	def __call__(self):
 		files = clipboard.get_files()
 		if not files:
-			return
-		if clipboard.files_were_cut():
+			data_object = get_clipboard_data_object()
+			if not has_virtual_files(data_object):
+				return
+			files = save_virtual_files(data_object)
+		elif clipboard.files_were_cut():
 			self.pane.run_command('paste_cut')
-		else:
-			dest = self.pane.get_path()
-			self.pane.run_command('copy', {'files': files, 'dest_dir': dest})
+			return
+		dest = self.pane.get_path()
+		self.pane.run_command('copy', {'files': files, 'dest_dir': dest})
 	def is_visible(self):
-		return bool(clipboard.get_files())
+		return bool(clipboard.get_files()) or has_virtual_files(
+			get_clipboard_data_object())
 
 class PasteCut(DirectoryPaneCommand):
 	def __call__(self):

@@ -3,7 +3,7 @@ from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from fbs_runtime.excepthook import StderrExceptionHandler
 from fbs_runtime.excepthook.sentry import SentryExceptionHandler
-from fbs_runtime.platform import is_mac
+from fbs_runtime.platform import is_mac, is_windows
 from fman import APP_NAME, PLATFORM, DATA_DIRECTORY, Window
 from fman.impl.controller import Controller
 from fman.impl.console_log import get_console_log, install_stream_capture
@@ -220,6 +220,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 	def fman_version(self):
 		return PUBLIC_SETTINGS['version']
 	def on_main_window_shown(self):
+		if is_windows():
+			from fman.impl.virtual_file_drop import install_drop_hook
+			install_drop_hook(int(self.main_window.winId()))
 		if self._demo_mode:
 			# No tutorial during a recording.
 			return
