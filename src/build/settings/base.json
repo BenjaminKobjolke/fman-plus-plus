@@ -55,7 +55,7 @@
 			]
 		}
 	},
-	"hidden_imports": ["requests", "mpv", "PyQt5.QtSvg", "pygments", "xml.dom", "xml.dom.minidom", "psutil"],
+	"hidden_imports": ["requests", "mpv", "PyQt5.QtSvg", "pygments", "xml.dom", "xml.dom.minidom", "psutil", "fman.impl.update_countdown"],
 	"extra_pyinstaller_args": [
 		"--additional-hooks-dir", "${project_dir}/src/build/pyinstaller_hooks",
 		"--exclude-module", "boto3",
