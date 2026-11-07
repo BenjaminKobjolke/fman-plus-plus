@@ -1,6 +1,7 @@
 from fman.impl.util.qt import ToolTipRole, connect_once
 from fman.impl.view import set_selection
 from fman.impl.view.drag_and_drop import DragAndDrop
+from fman.impl.view.right_button_selection import RightButtonSelection
 from fman.impl.view.move_without_updating_selection import \
 	MoveWithoutUpdatingSelection
 from fman.impl.view.pane_surface import PaneSurface
@@ -11,7 +12,8 @@ from PyQt5.QtWidgets import QListView, QToolTip
 
 
 class CompactFileView(
-	PaneSurface, SingleRowMode, MoveWithoutUpdatingSelection, DragAndDrop,
+	PaneSurface, SingleRowMode, MoveWithoutUpdatingSelection,
+	RightButtonSelection, DragAndDrop,
 	QListView
 ):
 	"""A column-major filename view sharing a pane's file view model."""
@@ -132,9 +134,17 @@ class CompactFileView(
 			self._file_view.request_rows(sorted(rows))
 
 	def contextMenuEvent(self, event):
+		if self.swallows_mouse_context_menu(event):
+			return
 		self._file_view.show_context_menu(
 			event, self.indexAt(event.pos()), 0
 		)
+
+	def _right_button_selection_on(self):
+		return self._file_view._right_button_selection_on()
+
+	def _show_context_menu_for(self, event, index):
+		self._file_view.show_context_menu(event, index, 0)
 
 	def keyPressEvent(self, event):
 		if event.key() == Qt.Key_End and event.modifiers() & Qt.ShiftModifier:

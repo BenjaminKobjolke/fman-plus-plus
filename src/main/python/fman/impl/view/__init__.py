@@ -11,6 +11,7 @@ from fman.impl.view.resize_cols_to_contents import ResizeColumnsToContents
 from fman.impl.view.scrollbar_below_header import install_scrollbar_below_header
 from fman.impl.view.scroll_margin import ScrollMargin
 from fman.impl.view.single_row_mode import SingleRowMode
+from fman.impl.view.right_button_selection import RightButtonSelection
 from PyQt5.QtCore import QEvent, QItemSelection, QItemSelectionModel as QISM, \
 	QRect, Qt, pyqtSignal, QRectF
 from PyQt5.QtGui import QPen, QContextMenuEvent, QKeySequence, QPainterPath, \
@@ -19,7 +20,8 @@ from PyQt5.QtWidgets import QTableView, QLineEdit, QVBoxLayout, QStyle, \
 	QStyledItemDelegate, QProxyStyle, QHeaderView, QToolTip, QMenu, QAction
 
 class FileListView(
-	PaneSurface, SingleRowMode, MoveWithoutUpdatingSelection, DragAndDrop,
+	PaneSurface, SingleRowMode, MoveWithoutUpdatingSelection,
+	RightButtonSelection, DragAndDrop,
 	ResizeColumnsToContents, ScrollMargin
 ):
 	activated = pyqtSignal()
@@ -56,10 +58,14 @@ class FileListView(
 	def _header(self):
 		return self.horizontalHeader()
 	def contextMenuEvent(self, event):
+		if self.swallows_mouse_context_menu(event):
+			return
 		index = self.indexAt(event.pos())
 		y_offset = 0 if event.reason() == QContextMenuEvent.Mouse \
 			else self.horizontalHeader().height()
 		self.show_context_menu(event, index, y_offset)
+	def _show_context_menu_for(self, event, index):
+		self.show_context_menu(event, index, 0)
 	def show_context_menu(self, event, index, y_offset):
 		updated_selection = False
 		if index.isValid():

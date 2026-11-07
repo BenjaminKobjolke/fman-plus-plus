@@ -23,9 +23,13 @@ MainWindow.set_title_bar_visible, which repairs both.
 
 Pane message routing is also configured here so its saved mode is ready when
 the main window starts.
+
+Right-button selection is also applied here so its saved mode reaches panes
+before the main window starts.
 """
 
 from .pane_status import PaneStatusMode
+from .right_button_selection_setting import RightButtonSelectionSetting
 
 # In %APPDATA%/fman/Local/Settings.json, and not Core Settings.json, because
 # the flags are set before any plugin (and thus fman.load_json) exists - the
@@ -75,6 +79,7 @@ class WindowChrome:
 	def __init__(self, settings):
 		self._settings = settings
 		self.pane_status = PaneStatusSettings(settings)
+		self.right_button_selection = RightButtonSelectionSetting(settings)
 	def is_title_bar_visible(self):
 		return self._settings.get(TITLE_BAR_SETTING, True)
 	def is_menu_bar_visible(self):
@@ -98,5 +103,6 @@ class WindowChrome:
 		window.set_menu_bar_visible(self.is_menu_bar_visible())
 		window.set_status_bar_visible(self.is_status_bar_visible())
 		self.pane_status.apply(window)
+		self.right_button_selection.apply(window)
 	def _save(self, setting, visible):
 		save_visible_flag(self._settings, setting, visible)

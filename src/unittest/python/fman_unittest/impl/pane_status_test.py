@@ -145,11 +145,30 @@ class MainWindowPaneStatusTest(TestCase):
 		pane = QWidget()
 		pane.set_icon_size = MagicMock()
 		pane.set_scroll_margin = MagicMock()
+		pane.set_right_button_selection = MagicMock()
 		pane.set_status_line_visible = MagicMock()
 		pane.set_backgrounds = MagicMock()
 		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):
 			self.window.add_pane()
 		pane.set_status_line_visible.assert_called_once_with(False)
+
+	def test_right_button_selection_mode_is_applied_to_existing_panes(self):
+		self.window.set_right_button_selection(True)
+		self.assertTrue(self.window._right_button_selection)
+		self.left.set_right_button_selection.assert_called_once_with(True)
+		self.right.set_right_button_selection.assert_called_once_with(True)
+
+	def test_right_button_selection_mode_is_applied_when_a_pane_is_added(self):
+		self.window.set_right_button_selection(True)
+		pane = QWidget()
+		pane.set_icon_size = MagicMock()
+		pane.set_scroll_margin = MagicMock()
+		pane.set_right_button_selection = MagicMock()
+		pane.set_status_line_visible = MagicMock()
+		pane.set_backgrounds = MagicMock()
+		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):
+			self.window.add_pane()
+		pane.set_right_button_selection.assert_called_once_with(True)
 
 	def test_idle_text_is_routed_by_placement_flags(self):
 		self.window.set_pane_idle_status(

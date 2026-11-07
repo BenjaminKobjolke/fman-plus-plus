@@ -8,6 +8,17 @@ from types import SimpleNamespace
 
 class BuiltinPaneStatusCommandsTest(TestCase):
 
+	def test_right_button_selection_toggle_is_registered_and_shows_message(self):
+		window_chrome = MagicMock()
+		commands = self._application_commands(window_chrome=window_chrome)
+		self.assertIn('ToggleRightButtonSelection', commands)
+		window_chrome.right_button_selection.toggle.return_value = 'Selection on.'
+		window = SimpleNamespace(_widget=MagicMock())
+		commands['ToggleRightButtonSelection'](window)()
+		window_chrome.right_button_selection.toggle.assert_called_once_with(
+			window._widget)
+		window._widget.show_status_message.assert_called_once_with('Selection on.')
+
 	def test_registers_both_pane_status_commands_on_every_platform(self):
 		commands = []
 		args = [MagicMock() for _ in range(7)]
@@ -125,7 +136,7 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 		)()
 		self.assertEqual(1, dialog.minimize_count)
 
-	def _application_commands(self, tray=None):
+	def _application_commands(self, tray=None, window_chrome=None):
 		registered = []
 		args = [MagicMock() for _ in range(7)]
 		with patch.object(
@@ -135,7 +146,9 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 			patch.object(BuiltinPlugin, '_register_file_system'), \
 			patch.object(BuiltinPlugin, '_register_column'), \
 			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
-			BuiltinPlugin(None, None, None, MagicMock(), MagicMock(), tray, *args)
+			BuiltinPlugin(
+				None, None, None, window_chrome or MagicMock(), MagicMock(),
+				tray, *args)
 		return {command.__name__: command for command in registered}
 
 
