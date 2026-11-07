@@ -11,11 +11,8 @@ class ToggleIncognitoTest(TestCase):
 		incognito.set_incognito(False)
 		self.addCleanup(incognito.set_incognito, False)
 
-	def test_toggle_notifies_both_panes_and_updates_the_marker_and_message(self):
+	def _registered_commands(self, scripting_control):
 		commands = []
-		window_chrome = MagicMock()
-		args = [MagicMock() for _ in range(7)]
-		scripting_control = MagicMock()
 		with patch.object(
 			BuiltinPlugin, '_register_application_command',
 			side_effect=commands.append
@@ -23,14 +20,16 @@ class ToggleIncognitoTest(TestCase):
 			patch.object(BuiltinPlugin, '_register_file_system'), \
 			patch.object(BuiltinPlugin, '_register_column'), \
 			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
-			BuiltinPlugin(None, None, None, window_chrome, scripting_control,
-				None, *args)
+			BuiltinPlugin(None, None, None, MagicMock(), scripting_control,
+				None, *(MagicMock() for _ in range(7)))
+		return commands, {command.__name__: command for command in commands}
 
-		by_name = {command.__name__: command for command in commands}
+	def test_toggle_notifies_both_panes_and_updates_the_marker_and_message(self):
+		commands, by_name = self._registered_commands(MagicMock())
 		self.assertIn('ToggleIncognito', by_name)
 		self.assertEqual(
 			commands.index(by_name['ToggleIncognito']),
-			commands.index(by_name['ToggleStatusBar']) + 1)
+			commands.index(by_name['ToggleRightButtonSelection']) + 1)
 
 		window = MagicMock()
 		left = MagicMock(spec=DirectoryPane)
@@ -71,22 +70,9 @@ class ToggleIncognitoTest(TestCase):
 		self.assertEqual((), incognito.get_pane_states())
 
 	def test_toggle_scripting_api_shows_controller_message(self):
-		commands = []
-		window_chrome = MagicMock()
 		scripting_control = MagicMock()
 		scripting_control.toggle.return_value = 'Scripting API on'
-		args = [MagicMock() for _ in range(7)]
-		with patch.object(
-			BuiltinPlugin, '_register_application_command',
-			side_effect=commands.append
-		), patch.object(BuiltinPlugin, '_register_directory_pane_command'), \
-			patch.object(BuiltinPlugin, '_register_file_system'), \
-			patch.object(BuiltinPlugin, '_register_column'), \
-			patch('fman.impl.plugins.builtin.is_mac', return_value=False):
-			BuiltinPlugin(None, None, None, window_chrome, scripting_control,
-				None, *args)
-
-		by_name = {command.__name__: command for command in commands}
+		_, by_name = self._registered_commands(scripting_control)
 		command_class = by_name['ToggleScriptingApi']
 		self.assertEqual(('Toggle scripting API',), command_class.aliases)
 		window = MagicMock()
