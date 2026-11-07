@@ -45,6 +45,12 @@ def samefile(url1, url2):
 def copy(src_url, dst_url):
 	_get_mother_fs().copy(src_url, dst_url)
 
+def open(url, mode='r', encoding=None, errors=None, newline=None):
+	"""Open a file through its registered file system."""
+	return _get_mother_fs().open(
+		url, mode, encoding=encoding, errors=errors, newline=newline
+	)
+
 def prepare_copy(src_url, dst_url):
 	return _get_mother_fs().prepare_copy(src_url, dst_url)
 
@@ -180,6 +186,9 @@ class FileSystem:
 	def touch(self, path):
 		raise self._operation_not_implemented()
 	def copy(self, src_url, dst_url):
+		raise self._operation_not_implemented()
+	def open(self, path, mode):
+		"""Open a file in binary mode ('rb' or 'wb') as a context manager."""
 		raise self._operation_not_implemented()
 	def prepare_copy(self, src_url, dst_url):
 		if self.copy.__func__ is FileSystem.copy:

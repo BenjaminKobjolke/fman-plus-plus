@@ -126,6 +126,21 @@ class LocalFileSystemTest(TestCase):
 			self.assertFalse(b.exists(), 'Failed to delete symlink to folder')
 	def test_copy_file(self):
 		self._test_transfer_file(self._fs.copy, deletes_src=False)
+	def test_open_binary_file_for_reading_and_writing(self):
+		with TemporaryDirectory() as tmp_dir:
+			path = Path(tmp_dir, 'streamed.bin')
+			with self._fs.open(_urlpath(path), 'wb') as stream:
+				stream.write(b'\x00binary contents\xff')
+			with self._fs.open(_urlpath(path), 'rb') as stream:
+				self.assertEqual(b'\x00binary contents\xff', stream.read())
+	def test_open_directory_raises_directory_error(self):
+		with TemporaryDirectory() as tmp_dir:
+			with self.assertRaises((IsADirectoryError, PermissionError)):
+				self._fs.open(_urlpath(Path(tmp_dir)), 'rb')
+	def test_open_missing_file_raises_file_not_found(self):
+		with TemporaryDirectory() as tmp_dir:
+			with self.assertRaises(FileNotFoundError):
+				self._fs.open(_urlpath(Path(tmp_dir, 'missing')), 'rb')
 	def test_failed_copy_removes_partial_target_and_temporary_file(self):
 		with TemporaryDirectory() as tmp_dir:
 			src = Path(tmp_dir, 'src')

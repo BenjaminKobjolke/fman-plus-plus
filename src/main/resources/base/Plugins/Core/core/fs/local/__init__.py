@@ -17,6 +17,7 @@ from core.fs.local.transfers import (
 )
 
 import errno
+import io
 import os
 
 if PLATFORM == 'Windows':
@@ -45,6 +46,10 @@ class LocalFileSystem(LocalTransfers, FileSystem):
 	def exists(self, path):
 		os_path = self._url_to_os_path(path)
 		return self._isabs(os_path) and Path(os_path).exists()
+	def open(self, path, mode):
+		if mode not in ('rb', 'wb'):
+			raise ValueError("Mode must be 'rb' or 'wb'.")
+		return io.open(self._url_to_os_path(path), mode)
 	def iterdir(self, path):
 		os_path = self._url_to_os_path(path)
 		if not self._isabs(os_path):

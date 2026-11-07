@@ -181,6 +181,9 @@ class _7ZipFileSystem(FileSystem):
 		)]
 	def size_bytes(self, path):
 		return self._query_info_attr(path, 'size_bytes', None)
+	def open(self, path, mode):
+		from core.fs.archive_stream import open_entry
+		return open_entry(self, path, mode)
 	def modified_datetime(self, path):
 		return self._query_info_attr(path, 'mtime', None)
 	def _query_info_attr(self, path, attr, folder_default):

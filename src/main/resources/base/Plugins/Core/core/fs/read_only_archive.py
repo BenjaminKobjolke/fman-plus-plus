@@ -33,6 +33,11 @@ class _ReadOnly7ZipFileSystem(_7ZipFileSystem):
 	def prepare_delete(self, path):
 		raise UnsupportedOperation()
 
+	def open(self, path, mode):
+		if mode == 'wb':
+			self._refuse_write()
+		return super().open(path, mode)
+
 	def _refuse_write(self):
 		raise PermissionError(self.read_only_message)
 

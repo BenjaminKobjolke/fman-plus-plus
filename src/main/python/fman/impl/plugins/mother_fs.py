@@ -1,5 +1,9 @@
 from fman.impl.util import Event, filenotfounderror
 from fman.impl.plugins.column_sets import ColumnSets
+from fman.impl.plugins.stream_transfer import (
+	binary_mode, can_stream, is_text_mode, prepare_stream_copy,
+	prepare_stream_move, TextStream
+)
 from fman.url import splitscheme, basename, dirname
 from io import UnsupportedOperation
 from threading import Lock
@@ -109,7 +113,13 @@ class MotherFileSystem:
 				raise
 			else:
 				# Maybe the destination FS can handle the operation:
-				dst_fs.move(src_url, dst_url)
+				try:
+					dst_fs.move(src_url, dst_url)
+				except (UnsupportedOperation, NotImplementedError) as e:
+					if not can_stream(src_fs, dst_fs, for_move=True):
+						raise e from None
+					for task in prepare_stream_move(self, src_url, dst_url):
+						task()
 	def prepare_move(self, src_url, dst_url):
 		src_fs, src_path = self._split(src_url)
 		dst_fs, dst_path = self._split(dst_url)
@@ -122,6 +132,10 @@ class MotherFileSystem:
 				# Maybe the destination FS can handle the operation:
 				try:
 					return dst_fs.prepare_move(src_url, dst_url)
+				except (UnsupportedOperation, NotImplementedError) as e:
+					if not can_stream(src_fs, dst_fs, for_move=True):
+						raise e from None
+					return prepare_stream_move(self, src_url, dst_url)
 				except Exception as e:
 					# Don't show previous UnsupportedOperation in traceback.
 					raise e from None
@@ -156,6 +170,11 @@ class MotherFileSystem:
 				# Maybe the destination FS can handle the operation:
 				try:
 					dst_fs.copy(src_url, dst_url)
+				except (UnsupportedOperation, NotImplementedError) as e:
+					if not can_stream(src_fs, dst_fs):
+						raise e from None
+					for task in prepare_stream_copy(self, src_url, dst_url):
+						task()
 				except Exception as e:
 					# Don't show previous UnsupportedOperation in traceback.
 					raise e from None
@@ -171,9 +190,20 @@ class MotherFileSystem:
 				# Maybe the destination FS can handle the operation:
 				try:
 					return dst_fs.prepare_copy(src_url, dst_url)
+				except (UnsupportedOperation, NotImplementedError) as e:
+					if not can_stream(src_fs, dst_fs):
+						raise e from None
+					return prepare_stream_copy(self, src_url, dst_url)
 				except Exception as e:
 					# Don't show previous UnsupportedOperation in traceback.
 					raise e from None
+	def open(self, url, mode='r', encoding=None, errors=None, newline=None):
+		binary_stream_mode = binary_mode(mode)
+		child, path = self._split(url)
+		stream = child.open(path, binary_stream_mode)
+		if not is_text_mode(mode):
+			return stream
+		return TextStream(stream, encoding, errors, newline)
 	def get_parallel_transfers(self, src_url, dst_url):
 		src_fs = self._split(src_url)[0]
 		dst_fs = self._split(dst_url)[0]
