@@ -10,6 +10,21 @@ class DeleteTest(TestCase):
 	def test_delete_task_is_minimizable(self):
 		self.assertTrue(_Delete([], Mock()).minimizable)
 
+	def test_sharing_violation_reports_that_the_file_is_in_use(self):
+		delete_task = _Delete(['file:///locked.txt'], Mock())
+		worker = Mock()
+		task = Mock()
+		task.get_title.return_value = 'Deleting locked.txt'
+		error = OSError(5, 'Access is denied')
+		error.winerror = 32
+		with patch('core.commands.deletion.WorkerProgress'), \
+				patch.object(delete_task, '_run_with_dialog', side_effect=error), \
+				patch.object(delete_task, 'show_alert') as show_alert:
+			delete_task._run_one(worker, task, is_last=True)
+		show_alert.assert_called_once_with(
+			'Error deleting locked.txt: File is in use.'
+		)
+
 	def test_parallel_delete_runs_files_before_the_final_folder(self):
 		run_order = []
 		file_tasks = [

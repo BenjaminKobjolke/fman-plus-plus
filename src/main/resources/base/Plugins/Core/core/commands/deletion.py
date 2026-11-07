@@ -21,6 +21,7 @@ from core.commands.util import NO_SELECTION
 from core.transfer_workers import DONE, TransferWorkers, WorkerProgress
 from core.undo_history import TrashRecord, history
 from fman.url import splitscheme
+from errno import EBUSY
 from io import UnsupportedOperation
 from os import strerror
 from os.path import basename
@@ -30,6 +31,8 @@ from threading import Lock
 __all__ = ['DeletePermanently', 'MoveToTrash']
 
 _DELETE_UNSUPPORTED = 'Deleting files in {scheme} is not supported.'
+_FILE_IN_USE = 'File is in use'
+_FILE_IN_USE_WINDOWS_ERRORS = (32, 33)
 _TRASH_UNSUPPORTED = (
 	'The {trash} is not available in {scheme}. Nothing was deleted. '
 	'Use Delete permanently instead.'
@@ -155,7 +158,11 @@ class _Delete(Task):
 					return True
 				text = task.get_title()
 				message = 'Error ' + text[0].lower() + text[1:]
-				reason = e.strerror or ''
+				# Windows reports sharing and lock violations as access denied.
+				reason = _FILE_IN_USE if (
+					getattr(e, 'winerror', None) in _FILE_IN_USE_WINDOWS_ERRORS
+					or e.errno == EBUSY
+				) else e.strerror or ''
 				if not reason and e.errno is not None:
 					reason = strerror(e.errno)
 				if reason:
