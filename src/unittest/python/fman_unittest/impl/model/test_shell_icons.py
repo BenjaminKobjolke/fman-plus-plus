@@ -7,6 +7,7 @@ from shutil import copyfile
 from tempfile import TemporaryDirectory
 from threading import Thread
 from unittest import TestCase, skipIf
+from unittest.mock import patch
 import sys
 
 _APP = QApplication.instance() or QApplication([])
@@ -23,6 +24,20 @@ class ShellIconProviderTest(TestCase):
 			provider = ShellIconProvider()
 
 			self.assertIs(
+				provider.icon(QFileInfo(str(first))),
+				provider.icon(QFileInfo(str(second)))
+			)
+
+	def test_regular_files_get_individual_icons_when_overlays_are_enabled(self):
+		with TemporaryDirectory() as directory:
+			first = Path(directory, 'first.txt')
+			second = Path(directory, 'second.txt')
+			first.touch()
+			second.touch()
+			provider = ShellIconProvider()
+			provider.set_overlay_icons_enabled(True)
+
+			self.assertIsNot(
 				provider.icon(QFileInfo(str(first))),
 				provider.icon(QFileInfo(str(second)))
 			)

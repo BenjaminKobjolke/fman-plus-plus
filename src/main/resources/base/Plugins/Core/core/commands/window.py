@@ -2,7 +2,7 @@
 
 The window title starts with both panes' folder names and is rebuilt on every
 navigation, so `_format_window_title` is a pure string builder kept apart from
-the Qt access around it. The two icon toggles write settings the engine owns
+the Qt access around it. The icon toggles write settings the engine owns
 (`fman.impl.model.icon_provider`) and then reload the panes to redraw.
 """
 from core.commands.util import is_file_url
@@ -10,16 +10,17 @@ from core.panes import reload_panes
 from core.settings import get_setting, save_setting
 from fman import APP_NAME, ApplicationCommand, DirectoryPaneListener, \
 	PLATFORM, show_status_message
+from fman.impl.model.table import invalidate_icons
 # The engine owns these: it reads the settings the two icon toggles below
 # write, and never imports this plugin - so the names live there.
 from fman.impl.model.icon_provider import EXECUTABLE_ICONS_KEY, \
-	NETWORK_ICONS_KEY, SETTINGS_FILE as ICON_SETTINGS_FILE
+	NETWORK_ICONS_KEY, OVERLAY_ICONS_KEY, SETTINGS_FILE as ICON_SETTINGS_FILE
 from fman.impl.util.qt.thread import run_in_main_thread
 from fman.url import as_human_readable
 
 __all__ = [
 	'CenterWindow', 'LocationBarListener', 'Minimize', 'ToggleExecutableIcons',
-	'ToggleNetworkIcons', 'UpdateWindowTitle'
+	'ToggleNetworkIcons', 'ToggleOverlayIcons', 'UpdateWindowTitle'
 ]
 
 _WINDOW_TITLE_SUFFIX = ' - ' + APP_NAME
@@ -91,6 +92,7 @@ class _ToggleIconSetting(ApplicationCommand):
 		save_setting(
 			ICON_SETTINGS_FILE, self._SETTING_KEY, show_real_icons or None
 		)
+		invalidate_icons()
 		reload_panes(self.window)
 
 class ToggleNetworkIcons(_ToggleIconSetting):
@@ -107,6 +109,12 @@ class ToggleExecutableIcons(_ToggleIconSetting):
 	aliases = ('Toggle real icons for programs and shortcuts',)
 
 	_SETTING_KEY = EXECUTABLE_ICONS_KEY
+
+class ToggleOverlayIcons(_ToggleIconSetting):
+
+	aliases = ('Toggle overlay icons',)
+
+	_SETTING_KEY = OVERLAY_ICONS_KEY
 
 class LocationBarListener(DirectoryPaneListener):
 	def on_location_bar_clicked(self):

@@ -19,10 +19,15 @@ class ShellIconProvider:
 	def __init__(self) -> None:
 		self._provider = QFileIconProvider()
 		self._cache: dict[tuple[str, str], QIcon] = {}
+		self._overlay_icons_enabled = False
 		self._lock = Lock()
 
+	def set_overlay_icons_enabled(self, enabled: bool) -> None:
+		with self._lock:
+			self._overlay_icons_enabled = enabled
+
 	def icon(self, file_info: QFileInfo) -> QIcon:
-		key = self._cache_key(file_info)
+		key = None if self._overlay_icons_enabled else self._cache_key(file_info)
 		with self._lock:
 			if key is not None and key in self._cache:
 				return self._cache[key]

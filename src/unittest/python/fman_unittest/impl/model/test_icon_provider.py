@@ -1,5 +1,5 @@
 from fman import PLATFORM
-from fman.impl.model.icon_provider import IconProvider
+from fman.impl.model.icon_provider import IconProvider, overlay_icons_enabled
 from fman.impl.model.table import Row
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -12,9 +12,47 @@ _UNKNOWN = 'file://C:/dir/x.none'
 _ICO = 'file://C:/dir/favicon.ico'
 _EXE = 'file://C:/dir/adb.exe'
 _LNK = 'file://C:/dir/adb.lnk'
+_OTHER_TXT = 'file://C:/other/other.txt'
+_MODIFIED_TXT = 'file://C:/other/modified.txt'
+_NETWORK_TXT = 'file:////server/share/notes.txt'
 
 # "no icon set argument was passed", which is not the same as passing None.
 _UNSET = object()
+
+class OverlayIconSettingTest(TestCase):
+
+	def test_overlay_setting_is_enabled_on_windows(self):
+		with patch('fman.impl.model.icon_provider.PLATFORM', 'Windows'), patch(
+			'fman.impl.model.icon_provider.load_json',
+			return_value={'shell_overlay_icons': True}
+		):
+			self.assertTrue(overlay_icons_enabled())
+
+	def test_overlay_setting_is_ignored_off_windows(self):
+		with patch('fman.impl.model.icon_provider.PLATFORM', 'Linux'), patch(
+			'fman.impl.model.icon_provider.load_json',
+			return_value={'shell_overlay_icons': True}
+		):
+			self.assertFalse(overlay_icons_enabled())
+
+	def test_icon_provider_passes_overlay_setting_to_shell_provider(self):
+		class OverlayAwareProvider(_StubQtIconProvider):
+			def set_overlay_icons_enabled(self, enabled):
+				self.overlay_icons_enabled = enabled
+
+		qt_provider = OverlayAwareProvider()
+		with TemporaryDirectory() as directory, patch(
+			'fman.impl.model.icon_provider.PLATFORM', 'Windows'
+		), patch(
+			'fman.impl.model.icon_provider.load_json',
+			return_value={'shell_overlay_icons': True}
+		):
+			provider = IconProvider(
+				qt_provider, _StubFileSystem(), directory
+			)
+			provider.get_icon(_TXT)
+
+		self.assertTrue(qt_provider.overlay_icons_enabled)
 
 @skipIf(PLATFORM != 'Windows', 'Skip Windows-only test')
 class NetworkIconTest(TestCase):
@@ -149,6 +187,112 @@ class IconSetTest(TestCase):
 			_StubIconSet('svg')
 		)
 
+class IconSetOverlayTest(TestCase):
+
+	def test_enabled_overlay_is_composed_over_set_icon(self):
+		with patch(
+			'fman.impl.model.icon_provider.overlay_icons_enabled',
+			return_value=True
+		), patch(
+			'fman.impl.model.icon_provider.compose_overlay',
+			side_effect=lambda icon, overlay: (icon, overlay)
+		):
+			icon = self._provider.get_icon(_TXT)
+
+		self.assertEqual(('svg:text', 'overlay:2'), icon)
+		self.assertEqual(['C:/dir/notes.txt'], self._overlay_source.paths)
+
+	def test_composed_icon_is_cached_by_set_icon_and_overlay_index(self):
+		with patch(
+			'fman.impl.model.icon_provider.overlay_icons_enabled',
+			return_value=True
+		), patch(
+			'fman.impl.model.icon_provider.compose_overlay',
+			side_effect=lambda icon, overlay: (icon, overlay)
+		) as compose:
+			first = self._provider.get_icon(_TXT)
+			second = self._provider.get_icon(_OTHER_TXT)
+
+		self.assertIs(first, second)
+		compose.assert_called_once_with('svg:text', 'overlay:2')
+
+	def test_different_overlay_indexes_get_different_composed_icons(self):
+		with patch(
+			'fman.impl.model.icon_provider.overlay_icons_enabled',
+			return_value=True
+		), patch(
+			'fman.impl.model.icon_provider.compose_overlay',
+			side_effect=lambda icon, overlay: (icon, overlay)
+		):
+			first = self._provider.get_icon(_TXT)
+			second = self._provider.get_icon(_MODIFIED_TXT)
+
+		self.assertEqual(('svg:text', 'overlay:2'), first)
+		self.assertEqual(('svg:text', 'overlay:3'), second)
+
+	def test_disabled_overlays_do_not_query_the_shell(self):
+		with patch(
+			'fman.impl.model.icon_provider.overlay_icons_enabled',
+			return_value=False
+		):
+			self.assertEqual('svg:text', self._provider.get_icon(_TXT))
+
+		self.assertEqual([], self._overlay_source.paths)
+
+	def test_network_overlay_is_skipped_when_network_icons_are_disabled(self):
+		with patch(
+			'fman.impl.model.icon_provider.overlay_icons_enabled',
+			return_value=True
+		), patch(
+			'fman.impl.model.icon_provider._core_setting',
+			return_value=False
+		):
+			self._provider.get_icon(_NETWORK_TXT)
+
+		self.assertEqual([], self._overlay_source.paths)
+
+	def test_network_overlay_is_used_when_both_settings_are_enabled(self):
+		with patch(
+			'fman.impl.model.icon_provider.overlay_icons_enabled',
+			return_value=True
+		), patch(
+			'fman.impl.model.icon_provider._core_setting',
+			return_value=True
+		), patch(
+			'fman.impl.model.icon_provider.compose_overlay',
+			side_effect=lambda icon, overlay: (icon, overlay)
+		):
+			icon = self._provider.get_icon(_NETWORK_TXT)
+
+		self.assertEqual(('svg:text', 'overlay:2'), icon)
+		self.assertEqual(['//server/share/notes.txt'], self._overlay_source.paths)
+
+	def test_non_file_url_does_not_query_the_windows_shell(self):
+		with patch(
+			'fman.impl.model.icon_provider.overlay_icons_enabled',
+			return_value=True
+		):
+			self._provider.get_icon('sftp://host/dir/notes.txt')
+
+		self.assertEqual([], self._overlay_source.paths)
+
+	def setUp(self):
+		super().setUp()
+		self._cache_dir = TemporaryDirectory()
+		self.addCleanup(self._cache_dir.cleanup)
+		self._overlay_source = _StubOverlaySource()
+		self._provider = IconProvider(
+			_StubQtIconProvider(), _StubFileSystem(), self._cache_dir.name,
+			_StubIconSet('svg'), overlay_source=self._overlay_source
+		)
+		patcher = patch(
+			'fman.impl.model.icon_provider._load_icon',
+			side_effect=lambda p, color=None:
+				p if color is None else '%s@%s' % (p, color)
+		)
+		patcher.start()
+		self.addCleanup(patcher.stop)
+
 def _row():
 	"""
 	A pane row, the way Model builds one. Only its icon generation matters
@@ -190,3 +334,12 @@ class _StubIconSet:
 		if suffix == 'none':
 			return None
 		return self._prefix + ':' + {'txt': 'text'}.get(suffix, suffix)
+
+class _StubOverlaySource:
+	def __init__(self):
+		self.paths = []
+	def overlay_index(self, path):
+		self.paths.append(path)
+		return 3 if path.endswith('modified.txt') else 2
+	def pixmap(self, overlay_index):
+		return 'overlay:%s' % overlay_index

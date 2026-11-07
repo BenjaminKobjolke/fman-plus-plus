@@ -1,5 +1,6 @@
 from fman import load_json, PLATFORM
 from fman.impl.model.icon_tint import tint_image, TINT_RENDER_SIZE
+from fman.impl.model.overlay_compose import compose_overlay
 from fman.impl.model.table import invalidate_icons
 from fman.impl.util import filenotfounderror
 from fman.url import splitscheme
@@ -21,6 +22,8 @@ _LOG = logging.getLogger(__name__)
 SETTINGS_FILE = 'Core Settings.json'
 # Opting back in to real per-file icons on network drives.
 NETWORK_ICONS_KEY = 'network_file_icons'
+# Asking Windows per file can slow very large folders; keep it opt-in.
+OVERLAY_ICONS_KEY = 'shell_overlay_icons'
 # Opting back out of the icon set for programs and shortcuts, where the OS
 # icon says which program it is and a set's generic one does not.
 EXECUTABLE_ICONS_KEY = 'os_icons_for_executables'
@@ -32,7 +35,8 @@ _SELF_DEPICTING_SUFFIXES = ('.ico',)
 
 class IconProvider:
 	def __init__(
-		self, qt_icon_provider, fs, cache_dir, icon_set=None, icon_color=None
+		self, qt_icon_provider, fs, cache_dir, icon_set=None, icon_color=None,
+		overlay_source=None
 	):
 		self._qt_icon_provider = qt_icon_provider
 		self._fs = fs
@@ -45,12 +49,15 @@ class IconProvider:
 		self._icon_set = icon_set
 		self._icon_color = icon_color
 		self._icon_set_cache = {}
+		self._overlay_source = overlay_source
+		self._overlay_cache = {}
 	def set_icon_set(self, icon_set):
 		# Switching theme can switch the set (fman.impl.themes), so this
 		# happens while fman is running. The cache is keyed by file path,
 		# and two sets give the same path different icons - drop it.
 		self._icon_set = icon_set
 		self._icon_set_cache = {}
+		self._overlay_cache = {}
 		invalidate_icons()
 	def set_icon_color(self, icon_color):
 		# Same story as set_icon_set, and the same cache: one path tinted two
@@ -58,8 +65,14 @@ class IconProvider:
 		# keeping stale entries around.
 		self._icon_color = icon_color
 		self._icon_set_cache = {}
+		self._overlay_cache = {}
 		invalidate_icons()
 	def get_icon(self, url):
+		set_overlay_icons_enabled = getattr(
+			self._qt_icon_provider, 'set_overlay_icons_enabled', None
+		)
+		if set_overlay_icons_enabled is not None:
+			set_overlay_icons_enabled(overlay_icons_enabled())
 		scheme, path = splitscheme(url)
 		if scheme != 'file://':
 			url = self._fs.resolve(url)
@@ -98,7 +111,29 @@ class IconProvider:
 		if icon_file not in self._icon_set_cache:
 			self._icon_set_cache[icon_file] = \
 				_load_icon(icon_file, self._icon_color)
-		return self._icon_set_cache[icon_file]
+		icon = self._icon_set_cache[icon_file]
+		if not self._should_apply_overlay(url, path):
+			return icon
+		try:
+			overlay_index = self._overlay_source.overlay_index(path)
+			if not overlay_index:
+				return icon
+			cache_key = (icon_file, overlay_index)
+			if cache_key not in self._overlay_cache:
+				overlay = self._overlay_source.pixmap(overlay_index)
+				if overlay is None:
+					return icon
+				self._overlay_cache[cache_key] = compose_overlay(icon, overlay)
+			return self._overlay_cache[cache_key]
+		except Exception:
+			_LOG.exception('Could not obtain shell overlay for %s', path)
+			return icon
+	def _should_apply_overlay(self, url, path):
+		if self._overlay_source is None or not overlay_icons_enabled():
+			return False
+		if splitscheme(url)[0] != 'file://':
+			return False
+		return not _is_network_path(path) or _core_setting(NETWORK_ICONS_KEY)
 	def _get_file_icon(self, url, path):
 		if _is_network_path(path) and not _core_setting(NETWORK_ICONS_KEY):
 			# Asking the Windows shell for the icon of a file on a network share
@@ -210,6 +245,10 @@ def _core_setting(key):
 	settings file only carries the ones the user has turned on.
 	"""
 	return load_json(SETTINGS_FILE, default={}).get(key, False)
+
+def overlay_icons_enabled():
+	"""Whether Windows shell overlays should be fetched for each file."""
+	return PLATFORM == 'Windows' and _core_setting(OVERLAY_ICONS_KEY)
 
 def _load_icon(path, color=None):
 	# A seam for the tests, which have no QApplication to build a QIcon in -

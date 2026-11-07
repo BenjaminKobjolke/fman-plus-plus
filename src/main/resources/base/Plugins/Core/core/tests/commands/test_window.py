@@ -1,5 +1,6 @@
 from core.commands.window import _format_window_title
 from unittest import TestCase
+from unittest.mock import patch
 
 class FormatWindowTitleTest(TestCase):
 	def test_no_paths(self):
@@ -31,3 +32,24 @@ class FormatWindowTitleTest(TestCase):
 		self.assertEqual(
 			'other - fman++', _format_window_title(['D:\\other\\'])
 		)
+
+class ToggleOverlayIconsTest(TestCase):
+	def test_toggle_enables_setting_and_invalidates_before_reloading(self):
+		from core.commands.window import ToggleOverlayIcons
+		events = []
+		window = object()
+		with patch('core.commands.window._is_showing_icons', return_value=False), \
+				patch('core.commands.window.save_setting') as save_setting, \
+				patch('core.commands.window.invalidate_icons',
+					side_effect=lambda: events.append('invalidate')), \
+				patch('core.commands.window.reload_panes',
+					side_effect=lambda actual_window: events.append(
+						('reload', actual_window)
+					)):
+			command = ToggleOverlayIcons(window)
+			command()
+
+		save_setting.assert_called_once_with(
+			'Core Settings.json', 'shell_overlay_icons', True
+		)
+		self.assertEqual(['invalidate', ('reload', window)], events)

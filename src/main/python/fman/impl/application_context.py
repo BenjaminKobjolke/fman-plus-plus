@@ -232,6 +232,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 			tutorial = self.tutorial_factory(pane)
 			self.tour_controller.start(tutorial)
 	def on_main_window_close(self):
+		listener = self.__dict__.get('_shell_change_listener')
+		if listener is not None:
+			listener.close()
 		self.session_manager.on_close(self.main_window)
 	def on_quit(self):
 		hotkey = self.__dict__.get('global_hotkey')
@@ -321,12 +324,17 @@ class DevelopmentApplicationContext(ApplicationContext):
 			self.app.set_main_window(self._main_window)
 			if PLATFORM == 'Windows':
 				from fman.impl.build_shutdown import BuildShutdownFilter
+				from fman.impl.model.icon_provider import overlay_icons_enabled
+				from fman.impl.shell_change_notices import ShellChangeListener
 				# Kept on self: Qt does not own the filter, so Python's
 				# garbage collector would otherwise delete it.
 				self._build_shutdown_filter = BuildShutdownFilter(
 					self._main_window, self.app.exit
 				)
 				self.app.installNativeEventFilter(self._build_shutdown_filter)
+				self._shell_change_listener = ShellChangeListener(
+					self._main_window, overlay_icons_enabled
+				)
 		return self._main_window
 	def _get_main_window_title(self):
 		return APP_NAME
@@ -436,10 +444,14 @@ class DevelopmentApplicationContext(ApplicationContext):
 				else QFileIconProvider()
 		icons_dir = self._get_local_data_file('Cache', 'Icons')
 		makedirs(icons_dir, exist_ok=True)
+		overlay_source = None
+		if PLATFORM == 'Windows':
+			from fman.impl.model.shell_overlays import ShellOverlays
+			overlay_source = ShellOverlays()
 		return IconProvider(
 			qt_icon_provider, fs, icons_dir,
 			load_icon_set(self.theme_controller.get_icon_set(), self.icon_dirs),
-			self.theme_controller.get_icon_color()
+			self.theme_controller.get_icon_color(), overlay_source=overlay_source
 		)
 	@cached_property
 	def config(self):

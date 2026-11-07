@@ -64,6 +64,7 @@ EXPECTED = frozenset({
 	'SwapPanes', 'SwitchPanes', 'Symlink', 'ToggleDeselectAfterTransfer',
 	'PinFolderToTaskbar',
 	'ToggleExecutableIcons', 'ToggleHiddenFiles', 'ToggleMixedSorting',
+	'ToggleOverlayIcons',
 	'ToggleRememberLastVisited', 'LastVisitedListener',
 	'ToggleLockedFileCheck', 'ToggleReadOnlyReplaceQuestion',
 	'ToggleLocalFolderRefresh', 'ToggleNetworkFolderRefresh',

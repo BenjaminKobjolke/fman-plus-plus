@@ -158,6 +158,40 @@ color Qt understands.
   An icon set answers there without touching the wire, so it is the cheaper
   option, not a slower one.
 
+## Overlay icons
+
+Windows shell overlays show per-file status marks such as TortoiseSVN's
+modified indicator. They are **off by default** because Windows must look up
+each file's icon separately, which can slow very large folders. Use
+**Toggle overlay icons** in the command palette to turn them on; the setting
+is `shell_overlay_icons` in `Core Settings.json`.
+
+When enabled, the System set uses the file's own Windows icon. Other icon sets
+keep their chosen file-type icons and draw the Windows overlay over them. The
+overlay is composed at the icon's size and cached by icon and overlay type.
+Windows network paths stay excluded unless `network_file_icons` is also enabled,
+because shell lookups can read files over the network.
+
+fman listens for Windows shell change notices and batches them for 300 ms.
+After a commit or revert, it invalidates and reloads only panes showing an
+affected folder, without requiring Refresh. Turning overlays off suppresses
+these refreshes too.
+
+The implementation lives in:
+
+- `src/main/python/fman/impl/model/shell_icons.py` — per-file Windows icons
+- `src/main/python/fman/impl/model/shell_overlays.py` and
+  `overlay_compose.py` — overlay lookup and drawing for icon sets
+- `src/main/python/fman/impl/shell_change_notices.py` — Windows notices and
+  debounced pane refresh
+- `src/main/python/fman/impl/application_context.py` — Windows lifecycle wiring
+- `src/main/resources/base/Plugins/Core/core/commands/window.py` — setting
+  toggle command
+- `src/unittest/python/fman_unittest/impl/test_shell_change_notices.py`,
+  `impl/model/test_shell_overlays.py`, `test_overlay_compose.py`, and
+  `test_icon_provider.py` — focused coverage, run with
+  `tools\run_icon_tests.bat`
+
 ## Writing your own icon set
 
 An icon set is a **directory**, not a file. Put it in
