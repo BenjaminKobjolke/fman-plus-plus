@@ -1,7 +1,9 @@
 from core.commands.util import get_user, get_well_known_dirs, is_hidden
 from core.suggest_locations import SuggestLocations
+from core.palette_switch import COMMAND_PALETTE, GO_TO, palette_exit_keys, \
+	run_palette_switch
 from fman import DirectoryPaneCommand, show_quicksearch, PLATFORM, load_json, \
-	DirectoryPaneListener, is_incognito, translate
+	DirectoryPaneListener, is_incognito, translate, QuicksearchExit
 from fman.localization_keys import GOTO_TITLE
 from fman.fs import exists, resolve
 from fman.url import as_url, splitscheme, as_human_readable
@@ -20,7 +22,9 @@ __all__ = ['GoTo', 'GoToListener']
 class GoTo(DirectoryPaneCommand):
 	def __call__(self, query=''):
 		visited_paths = self._get_visited_paths()
-		quicksearch_kwargs = {}
+		quicksearch_kwargs = {
+			'exit_keys': palette_exit_keys(GO_TO, COMMAND_PALETTE)
+		}
 		if PLATFORM == 'Windows':
 			from core.network_suggestions import NetworkSuggestions
 			network = NetworkSuggestions(visited_paths)
@@ -38,6 +42,9 @@ class GoTo(DirectoryPaneCommand):
 		title=translate(GOTO_TITLE), **quicksearch_kwargs
 		)
 		if result:
+			if isinstance(result, QuicksearchExit):
+				run_palette_switch(self.pane, result)
+				return
 			url = self._get_target_location(*result)
 			if exists(url):
 				# Use OpenDirectory because it handles errors gracefully:

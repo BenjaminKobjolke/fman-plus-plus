@@ -3,6 +3,7 @@ from fman import translate
 from fman.localization_keys import QUICKSEARCH_TITLE
 from fman.impl.edge_grip import EdgeGrip, place_grips
 from fman.impl.quicksearch_elide import elide_title_left, shift_highlight
+from fman.impl.quicksearch_exit_keys import QuicksearchExit, find_exit_key
 from fman.impl.util.qt import Key_Tab, Key_Down, Key_Up, Key_PageDown, \
 	Key_Home, Key_End, Key_PageUp, Key_Return, Key_Enter, ShiftModifier, \
 	UserRole, AlignRight, AlignVCenter, NoFocus, FramelessWindowHint, \
@@ -21,7 +22,7 @@ class Quicksearch(QDialog):
 
 	def __init__(
 		self, parent, app, css, get_items, get_tab_completion=None, query='',
-		item=0, alt_accept=False, width_store=None, title=''
+		item=0, alt_accept=False, width_store=None, title='', exit_keys=None
 	):
 		if get_tab_completion is None:
 			get_tab_completion = lambda q, i: None
@@ -37,6 +38,7 @@ class Quicksearch(QDialog):
 		self._initial_item = item
 		self._title = title
 		self._alt_accept = alt_accept
+		self._exit_keys = exit_keys
 		self._width_store = width_store
 		self._curr_items = []
 		self._result = None
@@ -149,6 +151,21 @@ class Quicksearch(QDialog):
 			self._result += (alt,)
 		self.accept()
 	def _on_key_pressed(self, event):
+		# Exit bindings must run before QLineEdit consumes the key press.
+		if self._exit_keys:
+			binding = find_exit_key(
+				self._exit_keys, event.key(), event.modifiers()
+			)
+			if binding is not None:
+				command = self._exit_keys[binding]
+				if command is None:
+					self.reject()
+				else:
+					self._result = QuicksearchExit(
+						self._query.text(), command
+					)
+					self.accept()
+				return True
 		if self._alt_accept and event.key() in (Key_Return, Key_Enter) \
 				and event.modifiers() & ShiftModifier:
 			# Before QLineEdit turns the key press into returnPressed, which

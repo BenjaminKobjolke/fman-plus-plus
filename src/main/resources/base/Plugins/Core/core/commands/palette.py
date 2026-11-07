@@ -10,12 +10,14 @@ from core.command_titles import apply_custom_title
 from core.key_bindings import get_shortcuts_for_command as \
 	_get_shortcuts_for_command, format_shortcut_hint, KEY_BINDINGS_FILE
 from core.keyword_editor import edit_command_keywords
+from core.palette_switch import COMMAND_PALETTE, GO_TO, palette_exit_keys, \
+	run_palette_switch
 from core.quicksearch_matchers import bucket_count, contains_chars, \
 	contains_chars_after_separator, contains_chars_any_order, \
 	match_titles_or_keywords
 from fman import DirectoryPaneCommand, get_application_command_aliases, \
 	get_application_commands, load_json, QuicksearchItem, \
-	run_application_command, show_quicksearch, translate
+	run_application_command, show_quicksearch, translate, QuicksearchExit
 from fman.localization_keys import COMMAND_PALETTE_TITLE
 from itertools import chain
 
@@ -32,7 +34,10 @@ class CommandPalette(DirectoryPaneCommand):
 		super().__init__(*args, **kwargs)
 		self._last_query = ''
 		self._last_cmd_name = ''
-	def __call__(self):
+	def __call__(self, query=None):
+		if query is not None:
+			self._last_query = query
+			self._last_cmd_name = ''
 		# A loop, not a single call: editing an entry's keywords (Shift+Enter)
 		# reopens the palette where the user left it instead of dropping them
 		# back into the panes.
@@ -40,10 +45,15 @@ class CommandPalette(DirectoryPaneCommand):
 			result = show_quicksearch(
 				self._suggest_commands, query=self._last_query,
 				item=self._get_initial_item(), alt_accept=True,
-				title=translate(COMMAND_PALETTE_TITLE)
+				title=translate(COMMAND_PALETTE_TITLE),
+				exit_keys=palette_exit_keys(COMMAND_PALETTE, GO_TO)
 			)
 			if not result:
 				self._last_query = self._last_cmd_name = ''
+				return
+			if isinstance(result, QuicksearchExit):
+				self._last_query = self._last_cmd_name = ''
+				run_palette_switch(self.pane, result)
 				return
 			query, command, alt = result
 			if not command:

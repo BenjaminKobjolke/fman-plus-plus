@@ -6,7 +6,7 @@ from PyQt5.QtGui import QColor, QFont, QMouseEvent
 from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import QApplication, QWidget
 
-from fman import QuicksearchItem
+from fman import QuicksearchItem, QuicksearchExit
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.quicksearch_elide import elide_title_left, shift_highlight
 
@@ -95,6 +95,60 @@ class QuicksearchTest(TestCase):
 
 		self.assertEqual('Pack\nfiles', dialog._header.text())
 		self.assertTrue(dialog._header.isVisible())
+		dialog.close()
+
+	def test_exit_key_returns_query_and_switch_command(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [],
+			exit_keys={'Ctrl+P': 'go_to'}
+		)
+		dialog.show()
+		QTest.keyClicks(dialog._query, 'abc')
+		QTest.keyClick(dialog._query, Qt.Key_P, Qt.ControlModifier)
+		self.app.processEvents()
+
+		self.assertEqual(QuicksearchExit('abc', 'go_to'), dialog.get_result())
+		self.assertFalse(dialog.isVisible())
+		dialog.close()
+
+	def test_exit_key_mapped_to_none_closes_without_result(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [],
+			exit_keys={'Ctrl+Shift+P': None}
+		)
+		dialog.show()
+		QTest.keyClick(
+			dialog._query, Qt.Key_P, Qt.ControlModifier | Qt.ShiftModifier
+		)
+		self.app.processEvents()
+
+		self.assertIsNone(dialog.get_result())
+		self.assertFalse(dialog.isVisible())
+		dialog.close()
+
+	def test_exit_keys_do_not_intercept_plain_text(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [],
+			exit_keys={'Ctrl+P': 'go_to'}
+		)
+		dialog.show()
+		QTest.keyClick(dialog._query, Qt.Key_P)
+		self.app.processEvents()
+
+		self.assertEqual('p', dialog._query.text())
+		self.assertTrue(dialog.isVisible())
+		dialog.close()
+
+	def test_ctrl_p_without_exit_keys_keeps_normal_result_shape(self):
+		dialog = Quicksearch(self.parent, _StubApp(), _CSS, lambda _query: [])
+		dialog.show()
+		QTest.keyClicks(dialog._query, 'abc')
+		QTest.keyClick(dialog._query, Qt.Key_P, Qt.ControlModifier)
+		self.assertTrue(dialog.isVisible())
+		QTest.keyClick(dialog._query, Qt.Key_Return)
+		self.app.processEvents()
+
+		self.assertEqual(('abc', None), dialog.get_result())
 		dialog.close()
 
 	def test_single_long_item_is_fully_visible(self):

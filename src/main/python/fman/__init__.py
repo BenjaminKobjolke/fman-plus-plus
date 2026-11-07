@@ -6,6 +6,7 @@ from .impl.incognito import is_incognito
 from .localization import translate
 from .impl.portable import portable_data_directory
 from .impl.view.pane_mount import get_colors, mount_widget, unmount_widget
+from .impl.quicksearch_exit_keys import QuicksearchExit
 from contextlib import contextmanager
 from fbs_runtime import platform
 from os import getenv
@@ -21,7 +22,7 @@ __all__ = [
 	'show_alert', 'show_input', 'show_prompt',
 	'show_status_message', 'clear_status_message',
 	'show_file_open_dialog',
-	'show_quicksearch', 'QuicksearchItem',
+	'show_quicksearch', 'QuicksearchItem', 'QuicksearchExit',
 	'get_application_commands', 'run_application_command',
 	'log',
 	'get_application_command_aliases', 'load_plugin', 'unload_plugin',
@@ -397,11 +398,11 @@ def show_file_open_dialog(caption, dir_path, filter_text=''):
 
 def show_quicksearch(
 	get_items, get_tab_completion=None, query='', item=0, alt_accept=False,
-	set_refresh=None, title=''
+	set_refresh=None, title='', exit_keys=None
 ):
 	return _get_ui().show_quicksearch(
 		get_items, get_tab_completion, query, item, alt_accept,
-		set_refresh=set_refresh, title=title
+		set_refresh=set_refresh, title=title, exit_keys=exit_keys
 	)
 
 class QuicksearchItem:
