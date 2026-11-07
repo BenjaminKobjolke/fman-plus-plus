@@ -8,11 +8,13 @@ setlocal
 set ROOT=%~dp0..
 set PYTHONPATH=%ROOT%\src\main\python;%ROOT%\src\unittest\python;%ROOT%\src\main\resources\base\Plugins\Core
 if not "%~1"=="" goto focused
+echo Running Core test suite: discovering Core tests...
 call "%~dp0unittest_with_timeout.bat" discover -v ^
 	-s "%ROOT%\src\main\resources\base\Plugins\Core\core" ^
 	-t "%ROOT%\src\main\resources\base\Plugins\Core"
 exit /b %ERRORLEVEL%
 
 :focused
+echo Running Core test module: %*
 call "%~dp0unittest_with_timeout.bat" -v %*
 exit /b %ERRORLEVEL%

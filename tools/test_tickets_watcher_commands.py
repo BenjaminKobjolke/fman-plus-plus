@@ -63,6 +63,18 @@ class TicketsWatcherCommandsTest(unittest.TestCase):
             with self.subTest(arguments=arguments):
                 self.assertRegex(arguments, r"2\s*>\s*&\s*1\s*$")
 
+    def test_core_runner_prints_progress_before_test_commands(self):
+        script = (TOOLS / "run_core_tests.bat").read_text(encoding="utf-8")
+
+        self.assertRegex(
+            script,
+            re.compile(r"(?im)^echo\s+Running Core test suite: discovering Core tests"),
+        )
+        self.assertRegex(
+            script,
+            re.compile(r"(?im)^echo\s+Running Core test module: %\*"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
