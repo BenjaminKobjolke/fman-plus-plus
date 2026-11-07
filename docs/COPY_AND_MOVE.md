@@ -140,6 +140,14 @@ scan. The check is on by default on Windows; use the **Toggle locked file
 check** command to turn it off or back on. Its setting key is
 `check_locked_files` in `Core Settings.json`. Other platforms skip the check.
 
+Use **Toggle folder tree** (Alt+F10) to replace one pane's file list with a
+folder-only tree. Right and Left expand or collapse folders, Enter opens the
+selected folder in the other pane, and Esc restores the file list. Dragging
+onto a tree folder moves files; hold Ctrl to copy. **Toggle tree follows
+cursor** makes the other pane follow the selection after a short pause. It is
+off by default; `tree_follow_cursor` in `Core Settings.json` controls the
+default.
+
 On Windows, after you choose to overwrite an existing read-only file, Core asks
 whether to replace it anyway. Choose **Yes**, **Yes to all**, **No**, or
 **Abort**; the default is **No**. The question is enabled by default. Use
