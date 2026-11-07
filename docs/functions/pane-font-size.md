@@ -1,16 +1,21 @@
 # Pane font size
 
-Command palette entries (plus two default key bindings) to zoom the font size
-of both file panes in and out on the fly, and to reset it back to the theme's
+Command palette entries, keyboard shortcuts, and Ctrl+wheel zoom the font size
+of both file panes in and out on the fly, and reset it back to the theme's
 original size.
 
 ## Usage
 
 1. Press **Alt+Up** to make the text in both panes larger, **Alt+Down** to
    make it smaller. Both panes always change together.
-2. Open the command palette and search "font size" to run the same actions,
+2. Hold **Ctrl** and turn the mouse wheel over a file list to zoom one step per
+   wheel notch. On a touchpad, partial vertical scroll deltas accumulate into
+   whole steps. On Mac, hold **Cmd** instead.
+3. Press **Ctrl+=** or **Ctrl++** to zoom in and **Ctrl+-** to zoom out on
+   Windows and Linux. On Mac, use **Cmd+=**, **Cmd++**, or **Cmd+-**.
+4. Open the command palette and search "font size" to run the same actions,
    plus **Reset font size** (palette-only, no default key binding).
-3. The chosen size is remembered — it survives restarting fman.
+5. The chosen size is remembered — it survives restarting fman.
 
 This changes the **size** of the text, not the typeface. Which font
 family the UI is drawn in is a separate, independent setting — see
@@ -26,8 +31,8 @@ viewer.
 
 | Command name               | Palette label      | Keywords                            | Default key binding |
 |-----------------------------|---------------------|--------------------------------------|----------------------|
-| `increase_pane_font_size`   | Increase font size  | zoom in, larger pane font, bigger    | `Alt+Up`             |
-| `decrease_pane_font_size`   | Decrease font size  | zoom out, smaller pane font, smaller | `Alt+Down`           |
+| `increase_pane_font_size`   | Increase font size  | zoom in, larger pane font, bigger    | `Alt+Up`; `Ctrl+=` / `Ctrl++` (Windows/Linux), `Cmd+=` / `Cmd++` (Mac) |
+| `decrease_pane_font_size`   | Decrease font size  | zoom out, smaller pane font, smaller | `Alt+Down`; `Ctrl+-` (Windows/Linux), `Cmd+-` (Mac) |
 | `reset_pane_font_size`      | Reset font size     | default font size, reset zoom        | none (palette only)  |
 
 The other words listed under *Keywords* are hidden search terms: they find
@@ -66,6 +71,10 @@ These can be rebound in `Key Bindings.json` like any other command, e.g.:
   [Icons](../ICONS.md#it-follows-the-font-zoom).
 - The zoom is **not** stored as an icon size of its own: it is derived from
   `pane_font_size`, so *Set icon size* keeps showing the size you picked.
+- Ctrl+wheel only handles vertical wheel movement while Ctrl is held. Each
+  120-unit wheel notch changes the pane zoom once; smaller touchpad deltas are
+  accumulated, and the remainder resets when Ctrl is released. Horizontal-only
+  and unmodified wheel events keep their normal Qt behavior.
 - **The icon size also moves the row height**, so if the rows are taller than
   the font explains, that is where it comes from — see
   [Select icon set](select-icon-set.md). Unlike the font size, it is a theme
@@ -108,8 +117,11 @@ These can be rebound in `Key Bindings.json` like any other command, e.g.:
 - The starting size (before any zoom has ever been applied) is read directly
   off the live pane via `QFontInfo(view.font()).pointSize()`, so it reflects
   whatever theme is currently loaded rather than a hard-coded constant.
-- `src/main/resources/base/Plugins/Core/Key Bindings.json` — the two default
-  bindings above.
+- `src/main/resources/base/Plugins/Core/Key Bindings.json` — the two Alt+Up and
+  Alt+Down default bindings above.
+- `src/main/resources/base/Plugins/Core/Key Bindings (Windows).json` and
+  `Key Bindings (Linux).json` bind Ctrl+=, Ctrl++, and Ctrl+- to the pane zoom
+  commands; `Key Bindings (Mac).json` uses the matching Cmd shortcuts.
 - `src/main/resources/base/Plugins/Core/Key Bindings (Windows).json` and
   `Key Bindings (Linux).json` — `go_up` rebound from `Alt+Up` to `Ctrl+Up`.
   `Key Bindings (Mac).json` was not touched (`go_up` was already `Cmd+Up`).
@@ -138,3 +150,12 @@ These can be rebound in `Key Bindings.json` like any other command, e.g.:
   needed the exact same "get/set one key in a JSON settings file, `None`
   clears it" pattern under a different key
   (`text_viewer_font_size` vs. `pane_font_size`).
+- `src/main/python/fman/impl/util/qt/wheel_zoom.py` — `CtrlWheelZoom` converts
+  vertical Ctrl-wheel deltas into signed, whole-notch zoom steps and retains
+  partial touchpad deltas.
+- `src/main/python/fman/impl/view/__init__.py` and
+  `src/main/python/fman/impl/view/compact_view.py` — both file-list views expose
+  `wheel_event_filter` and pass unhandled wheel input to Qt.
+- `src/main/python/fman/impl/widgets.py` connects the pane's filter to
+  `Controller.on_zoom_step` in `src/main/python/fman/impl/controller.py`, which
+  runs the existing increase or decrease pane zoom command when available.

@@ -32,20 +32,24 @@ The viewer has its own scale zoom, independent of the
 [text viewer's font-size zoom](TEXT_VIEWER.md#zoom) and the file-list panes'
 zoom ([pane font size](../functions/pane-font-size.md)):
 
-1. Whatever key(s) you have **Increase font size** / **Decrease font size**
-   bound to (`Alt+Up` / `Alt+Down` by default, from `Key Bindings.json`) also
-   zoom the image — the same shortcut the text viewer reuses, so there's no
-   separate binding to learn.
-2. The viewer's own command palette (Ctrl+Shift+P) has **Zoom in** /
+1. The pane's **Increase font size** / **Decrease font size** shortcuts also
+   zoom the image — the same shortcuts the text viewer reuses, so there's no
+   separate binding to learn. Defaults are `Alt+Up` / `Alt+Down`, plus
+   `Ctrl+=` / `Ctrl++` and `Ctrl+-` on Windows and Linux, or the matching
+   `Cmd` shortcuts on Mac.
+2. Hold **Ctrl** and turn the mouse wheel to zoom the image one step per
+   vertical wheel notch; on Mac, hold **Cmd** instead. Partial touchpad deltas
+   accumulate into whole steps. Without Ctrl/Cmd, the wheel scrolls normally.
+3. The viewer's own command palette (Ctrl+Shift+P) has **Zoom in** /
    **Zoom out** (showing the same shortcut as a hint), plus **Fit to
    window** (which returns to fit mode) and **Actual size (100%)**.
-3. The chosen scale is remembered — survives closing/reopening the viewer
+4. The chosen scale is remembered — survives closing/reopening the viewer
    and restarting fman — until reset (or Fit to window) clears it back to
    fit mode.
-4. Zooming in from fit mode steps from whatever scale is *currently on
+5. Zooming in from fit mode steps from whatever scale is *currently on
    screen*, not a hardcoded value — so the image doesn't jump when you first
    zoom in.
-5. Every step reports where it landed in the
+6. Every step reports where it landed in the
    [status bar](../STATUSBAR.md) — `Zoom 125%`, or `Fit to window` — which is
    the only way to read the current scale as a number.
 

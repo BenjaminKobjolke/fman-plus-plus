@@ -159,16 +159,21 @@ Notes:
 The viewer has its own font-size zoom, independent of the file-list panes'
 zoom ([pane font size](../functions/pane-font-size.md)):
 
-1. Whatever key(s) you have **Increase font size** / **Decrease font size**
-   bound to (`Alt+Up` / `Alt+Down` by default, from `Key Bindings.json`) also
-   zoom the viewer's text — no separate binding to learn. This works in the
-   viewer whether or not it's in edit mode, and doesn't interfere with typing.
-2. The same **Increase font size** / **Decrease font size** actions are also
+1. The pane's **Increase font size** / **Decrease font size** shortcuts also
+   zoom the viewer's text — no separate binding to learn. Defaults are
+   `Alt+Up` / `Alt+Down`, plus `Ctrl+=` / `Ctrl++` and `Ctrl+-` on Windows and
+   Linux, or the matching `Cmd` shortcuts on Mac. This works in view and edit
+   mode without interfering with typing.
+2. Hold **Ctrl** and turn the mouse wheel to zoom the text one step per
+   vertical wheel notch; on Mac, hold **Cmd** instead. Partial touchpad deltas
+   accumulate into whole steps. Without Ctrl/Cmd, the wheel scrolls the text
+   normally.
+3. The same **Increase font size** / **Decrease font size** actions are also
    in the viewer's own command palette (Ctrl+Shift+P), each showing its
    current shortcut as a hint, plus a palette-only **Reset font size**.
-3. The chosen size is remembered separately from the pane list's own zoom —
+4. The chosen size is remembered separately from the pane list's own zoom —
    survives closing/reopening the viewer and restarting fman — until reset.
-4. Each step reports the size it settled on in the
+5. Each step reports the size it settled on in the
    [status bar](../STATUSBAR.md) (`Font size 12`, or `Font size reset`), from
    the key path as well as the palette — the clamp at 6pt/40pt is otherwise
    indistinguishable from a keystroke that didn't register.
