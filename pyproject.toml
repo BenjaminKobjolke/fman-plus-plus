@@ -23,6 +23,7 @@ dependencies = [
     "pgi; sys_platform == 'linux'",
     "osxtrash==1.6; sys_platform == 'darwin'",
     "pyobjc-core==12.1; sys_platform == 'darwin'",
+    "keyring==25.7.0",
 ]
 
 [dependency-groups]
