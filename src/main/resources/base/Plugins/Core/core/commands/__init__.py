@@ -22,7 +22,8 @@ from importlib import import_module as _import_module
 
 _COMMAND_MODULES = (
 	'app', 'archives', 'auto_update', 'clipboard', 'columns', 'deletion',
-	'deselect_after_transfer', 'drag_to_app', 'duplicate', 'fman_account',
+	'deselect_after_transfer', 'drag_to_app', 'duplicate',
+	'folder_tree', 'fman_account',
 	'console', 'drive_space', 'folder_refresh',
 	'editor', 'external', 'file_properties', 'file_types', 'goto',
 	'hidden_files', 'language',

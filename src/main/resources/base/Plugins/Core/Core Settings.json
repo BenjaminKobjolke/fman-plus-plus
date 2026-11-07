@@ -17,5 +17,6 @@
 		".tzst": "ctar://",
 		".tar": "tar://",
 		".rar": "rar://"
-	}
+	},
+	"tree_follow_cursor": false
 }

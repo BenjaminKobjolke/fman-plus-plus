@@ -51,5 +51,6 @@
 	{ "keys": ["Alt+F2"], "command": "show_volumes", "args": {"pane_index": 1} },
 	{ "keys": ["Num+Insert"], "command": "move_cursor_down", "args": {"toggle_selection": true} },
 	{ "keys": ["Alt+up"], "command": "increase_pane_font_size" },
-	{ "keys": ["Alt+down"], "command": "decrease_pane_font_size" }
+	{ "keys": ["Alt+down"], "command": "decrease_pane_font_size" },
+	{ "keys": ["Alt+F10"], "command": "toggle_folder_tree" }
 ]

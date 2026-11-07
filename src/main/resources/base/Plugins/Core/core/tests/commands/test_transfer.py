@@ -1,5 +1,5 @@
 from core.commands.transfer import Copy, Move, Symlink, _TreeCommand, \
-	_from_human_readable, get_dest_suggestion
+	drop_command, _from_human_readable, get_dest_suggestion
 from core.undo_history import CopyRecord, MoveRecord, history
 from core.tests import StubUI
 from core.util import filenotfounderror
@@ -10,6 +10,20 @@ from unittest.mock import Mock, patch
 
 import os
 import os.path
+
+class DropCommandTest(TestCase):
+	def test_uses_copy_move_flag_for_matching_schemes(self):
+		files = ['file:///source.txt']
+		dest_dir = 'file:///destination'
+		self.assertEqual('move', drop_command(files, dest_dir, False))
+		self.assertEqual('copy', drop_command(files, dest_dir, True))
+	def test_different_schemes_always_copy(self):
+		self.assertEqual(
+			'copy', drop_command(['zip:///archive/source.txt'], 'file:///dest', False)
+		)
+	def test_mixed_source_schemes_always_copy(self):
+		files = ['file:///source.txt', 'zip:///archive/other.txt']
+		self.assertEqual('copy', drop_command(files, 'file:///dest', False))
 
 class ConfirmTreeOperationTest(TestCase):
 

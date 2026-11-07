@@ -33,6 +33,7 @@ EXPECTED = frozenset({
 	'DragToLastUsedApp',
 	'DeletePermanently', 'Deselect', 'DoNothing', 'DragAndDropListener',
 	'FollowShortcut', 'GoBack', 'GoForward', 'GoHome', 'GoTo', 'GoToAppData',
+	'ToggleFolderTree', 'ToggleTreeFollowsCursor',
 	'GoToDesktop',
 	'FindLockingProcesses', 'GoToDocuments', 'GoToDownloads', 'GoToListener',
 	'GoToLocalAppData',
