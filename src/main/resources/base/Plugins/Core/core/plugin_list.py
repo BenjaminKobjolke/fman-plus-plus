@@ -9,7 +9,9 @@ import os
 
 class PluginSource(Enum):
 	CATALOG = 'catalog'
+	FORGEJO = 'forgejo'
 	GITHUB = 'github'
+	GITLAB = 'gitlab'
 
 
 class PluginOs(Enum):

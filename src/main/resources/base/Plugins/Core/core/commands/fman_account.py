@@ -2,11 +2,12 @@
 from core.fman_account import clear_token, sign_in, signed_in_client
 from core.fman_api import FmanApiAuthError, FmanApiClient, FmanApiError
 from core.github import GitHubRepo
+from core.plugin_hosts import repo_for_location
 from core.plugin_installation import (
 	_get_thirdparty_plugins, install_zip, load_installed_plugin,
 	record_installation, remove_plugin_dir,
 )
-from core.plugin_list import PluginOs, entry_for_installed
+from core.plugin_list import PluginOs, PluginSource, entry_for_installed
 from core.plugin_sync import SyncState, compute_sync
 from core.plugin_sync_dialog import PluginSyncDialog
 from fman import (
@@ -114,10 +115,15 @@ class SyncPlugins(ApplicationCommand):
 		selected = dialog.selected_entries()
 		for entry in selected:
 			try:
-				if entry.source.value == 'catalog':
+				if entry.source == PluginSource.CATALOG:
 					repo_url = entry.location
 					archive = client.download_release(entry.name, entry.version)
 					metadata_source = 'catalog'
+				elif entry.source in (PluginSource.GITLAB, PluginSource.FORGEJO):
+					repo = repo_for_location(entry.source, entry.location)
+					repo_url = entry.location
+					archive = repo.download_zipball(entry.version)
+					metadata_source = entry.source.value
 				else:
 					repo = GitHubRepo.fetch(entry.location)
 					repo_url = repo.url

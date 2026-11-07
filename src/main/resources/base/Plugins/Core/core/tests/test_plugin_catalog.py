@@ -44,6 +44,7 @@ class CatalogPluginTest(TestCase):
 		command._plugin_repos = [SimpleNamespace(
 			name='GitHubPlugin', description='GitHub', num_stars=3
 		)]
+		command._host_search = Mock(search=Mock(return_value=()))
 		command._catalog_results[''] = (
 			CatalogPlugin(Mock(), 'CatalogPlugin', 'Catalog'),
 			CatalogPlugin(Mock(), 'GitHubPlugin', 'Duplicate')

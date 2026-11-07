@@ -23,6 +23,17 @@ class PluginListEntryTest(TestCase):
 			'os': 'Linux', 'fman_version': '2.1.4'
 		}, entry.to_json())
 
+	def test_gitlab_and_forgejo_entries_round_trip(self):
+		for source, location in (
+			(PluginSource.GITLAB, 'https://gitlab.com/group/plugin'),
+			(PluginSource.FORGEJO, 'https://codeberg.org/team/plugin'),
+		):
+			entry = PluginListEntry(
+				'Example', source, location, 'v1.2.3', PluginOs.LINUX, '2.1.4'
+			)
+			self.assertEqual(entry, PluginListEntry.from_json(entry.to_json()))
+			self.assertEqual(source.value, entry.to_json()['source'])
+
 	def test_from_json_rejects_unknown_source(self):
 		with self.assertRaises(ValueError):
 			PluginListEntry.from_json(self._json(source='unknown'))
@@ -49,6 +60,17 @@ class PluginListEntryTest(TestCase):
 		self.assertEqual(PluginSource.CATALOG, entry.source)
 		self.assertEqual('Example', entry.location)
 		self.assertEqual('2.0', entry.version)
+
+	def test_entry_for_installed_reads_gitlab_and_forgejo_metadata(self):
+		for source, location in (
+			('gitlab', 'https://gitlab.com/group/plugin'),
+			('forgejo', 'https://codeberg.org/team/plugin'),
+		):
+			entry = self._installed_entry({
+				'source': source, 'location': location, 'ref': 'v1'
+			})
+			self.assertEqual(source, entry.source.value)
+			self.assertEqual(location, entry.location)
 
 	def test_entry_for_installed_reads_explicit_github_metadata(self):
 		entry = self._installed_entry({

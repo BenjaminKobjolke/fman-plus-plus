@@ -83,10 +83,15 @@ class FmanApiClient:
 		plugins = data.get('plugins')
 		if not isinstance(plugins, list):
 			raise FmanApiError('Invalid plugin list response: plugins must be a list')
-		try:
-			return tuple(PluginListEntry.from_json(plugin) for plugin in plugins)
-		except (TypeError, ValueError) as e:
-			raise FmanApiError('Invalid plugin list entry: %s' % e) from e
+		entries = []
+		for plugin in plugins:
+			try:
+				entries.append(PluginListEntry.from_json(plugin))
+			except ValueError:
+				# An older build must not lose its whole list over a source it
+				# does not know yet.
+				continue
+		return tuple(entries)
 
 	def put_plugin(self, entry: PluginListEntry) -> PluginListEntry:
 		if not isinstance(entry, PluginListEntry):

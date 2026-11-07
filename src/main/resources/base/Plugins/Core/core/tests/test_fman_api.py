@@ -23,6 +23,12 @@ class FmanApiClientTest(TestCase):
 			timeout=30
 		)
 
+	def test_skips_unknown_plugin_source_and_keeps_supported_entries(self):
+		valid = _entry_json()
+		unknown = dict(valid, name='Future', source='future-host')
+		self.session.get.return_value = _response({'plugins': [unknown, valid]})
+		self.assertEqual((_entry(),), self.client.get_plugin_list())
+
 	def test_put_plugin_sends_entry_json_and_returns_typed_entry(self):
 		self.session.put.return_value = _response(_entry_json())
 		self.assertEqual(_entry(), self.client.put_plugin(_entry()))

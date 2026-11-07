@@ -9,6 +9,7 @@ from core.github import find_repos, GitHubRepo
 from core.plugin_info_dialog import show_plugin_info
 from core.fman_api import FmanApiClient, FmanApiError
 from core.plugin_catalog import CatalogPlugin, search as search_catalog
+from core.plugin_hosts import HostSearch, configured_hosts
 from core.plugin_list import entry_for_installed
 from core.plugin_sync import record_install, record_remove
 from core.quicksearch_matchers import contains_chars
@@ -49,6 +50,7 @@ class InstallPlugin(ApplicationCommand):
 		self._plugin_repos = None
 		self._catalog_client = None
 		self._catalog_results = {}
+		self._host_search = None
 	def __call__(self, github_repo=None):
 		if github_repo:
 			with StatusMessage('Fetching GitHub repo %s...' % github_repo):
@@ -77,12 +79,12 @@ class InstallPlugin(ApplicationCommand):
 				zipball_contents = repo.download_zipball(ref)
 			plugin_dir = install_zip(repo.name, zipball_contents)
 			# Save some data in case we want to update the plugin later:
-			if isinstance(repo, CatalogPlugin):
+			if isinstance(repo, GitHubRepo):
+				record_installation(plugin_dir, repo.url, ref)
+			else:
 				record_installation(
 					plugin_dir, repo.location, ref, source=repo.source
 				)
-			else:
-				record_installation(plugin_dir, repo.url, ref)
 			success = load_installed_plugin(plugin_dir, self.window)
 			if success:
 				entry = entry_for_installed(plugin_dir)
@@ -106,20 +108,30 @@ class InstallPlugin(ApplicationCommand):
 			os.path.basename(plugin_dir)
 			for plugin_dir in _get_thirdparty_plugins()
 		)
-		github_names = set()
+		shown_names = set()
 		for repo in self._plugin_repos:
 			if repo.name in installed_plugins:
 				continue
 			match = _matches_query(repo.name, query)
 			if match is not None:
-				github_names.add(repo.name)
+				shown_names.add(repo.name)
 				hint = '%d ★' % repo.num_stars if repo.num_stars else ''
 				yield QuicksearchItem(
 					repo, repo.name, match, hint=hint,
 					description=repo.description
 				)
+		for repo in self._get_host_repos(query):
+			if repo.name in installed_plugins or repo.name in shown_names:
+				continue
+			match = _matches_query(repo.name, query)
+			if match is not None:
+				shown_names.add(repo.name)
+				yield QuicksearchItem(
+					repo, repo.name, match, hint=repo.hint,
+					description=repo.description
+				)
 		for plugin in self._get_catalog_plugins(query):
-			if plugin.name in installed_plugins or plugin.name in github_names:
+			if plugin.name in installed_plugins or plugin.name in shown_names:
 				continue
 			match = _matches_query(plugin.name, query)
 			if match is not None:
@@ -127,6 +139,10 @@ class InstallPlugin(ApplicationCommand):
 					plugin, plugin.name, match, hint='fman catalog',
 					description=plugin.description
 				)
+	def _get_host_repos(self, query):
+		if self._host_search is None:
+			self._host_search = HostSearch(configured_hosts())
+		return self._host_search.search(query)
 	def _get_catalog_plugins(self, query):
 		if query not in self._catalog_results:
 			if self._catalog_client is None:

@@ -15,7 +15,7 @@ class AccountCommandsTest(TestCase):
 			'show_status_message', 'entry_for_installed',
 			'_get_thirdparty_plugins', 'install_zip', 'record_installation',
 			'load_installed_plugin', 'remove_plugin_dir',
-			'run_application_command',
+			'run_application_command', 'repo_for_location',
 		):
 			p = patch('core.commands.fman_account.' + name)
 			self.patches[name] = p.start()
@@ -80,6 +80,25 @@ class AccountCommandsTest(TestCase):
 			'plugin-dir', 'Remote', 'v1', source='catalog'
 		)
 
+	def test_remote_gitlab_install_uses_location_and_source(self):
+		entry = _entry('Remote', source=PluginSource.GITLAB)
+		self.patches['compute_sync'].return_value = SyncPlan(to_install=(entry,))
+		dialog = self.patches['PluginSyncDialog'].return_value
+		dialog.exec_.return_value = 1
+		dialog.selected_entries.return_value = (entry,)
+		self.patches['install_zip'].return_value = 'plugin-dir'
+		self.patches['repo_for_location'].return_value = Mock(
+			download_zipball=Mock(return_value=b'zip')
+		)
+		self.command(silent=True)
+		self.patches['repo_for_location'].assert_called_once_with(
+			PluginSource.GITLAB, entry.location
+		)
+		self.patches['repo_for_location'].return_value.download_zipball.assert_called_once_with('v1')
+		self.patches['record_installation'].assert_called_once_with(
+			'plugin-dir', entry.location, 'v1', source='gitlab'
+		)
+
 	def test_declined_removal_leaves_plugin_installed(self):
 		self.patches['compute_sync'].return_value = SyncPlan(
 			to_remove=('Local',)
@@ -116,8 +135,12 @@ class AccountCommandsTest(TestCase):
 
 
 def _entry(name, source=PluginSource.GITHUB):
-	location = name if source == PluginSource.CATALOG else \
-		'https://github.com/example/' + name
+	if source == PluginSource.CATALOG:
+		location = name
+	elif source == PluginSource.GITLAB:
+		location = 'https://gitlab.com/example/' + name
+	else:
+		location = 'https://github.com/example/' + name
 	return PluginListEntry(
 		name, source, location, 'v1', PluginOs.WINDOWS, '2.1.4'
 	)
