@@ -1,7 +1,7 @@
 # Install plugin
 
 *Install plugin* is the command palette entry that finds third-party plugins
-on GitHub and in the fman catalog, downloads one, unpacks it into your data
+on GitHub, GitLab, Forgejo and in the fman catalog, downloads one, unpacks it into your data
 directory and loads it — without a restart. This page documents how it does
 that, including the GitHub endpoints it talks to.
 
@@ -10,7 +10,8 @@ For where plugins live, load order and the other plugin commands, see
 [`docs/PLUGINS_API.md`](PLUGINS_API.md).
 
 Implementation: `core/commands/plugins.py` (`InstallPlugin`),
-`core/plugin_catalog.py`, `core/github.py`, `core/net.py`.
+`core/plugin_catalog.py`, `core/plugin_hosts.py`, `core/github.py`,
+`core/gitlab.py`, `core/forgejo.py`, `core/net.py`.
 
 ## Running it
 
@@ -30,22 +31,23 @@ Implementation: `core/commands/plugins.py` (`InstallPlugin`),
 
 1. **Discover** — with no argument, fman queries GitHub's repository search
    for repos carrying *both* topics `fman` and `plugin`, excluding archived
-   repos, and searches the fman catalog for the current query. Catalog search
+   repos. It also searches GitLab and Forgejo hosts, then the fman catalog for
+   the current query. Catalog search
    is sent to the fman API; fman does not download the full catalog to search
-   it. GitHub and catalog results are cached per query for the lifetime of the
-   command object. Archived GitHub repos are read-only, so installing one
+   it. Search results are cached for the lifetime of the command object.
+   Archived GitHub repos are read-only, so installing one
    would pin a plugin that can never receive an update.
 2. **Pick** — the results are shown together in a quicksearch picker. GitHub
-   results show the repo description and star count (`123 ★`); catalog results
-   show their description and the *fman catalog* source. Already-installed
+   results show the repo description and star count (`123 ★`); GitLab and
+   Forgejo results show their host and star count; catalog results show their
+   description and the *fman catalog* source. Already-installed
    plugins are filtered out, matched by directory name in
    `Plugins\Third-party\`. See
    [Ordering](#ordering) for the sort.
 
 3. **Review** — after a selection, fman loads `description.md` from the
-   repository's default branch at `raw.githubusercontent.com` and renders it
-   with Markdown formatting. If the file is missing, the request fails or the
-   user is offline, the screen shows the plugin name, its short GitHub summary
+   repository's default branch and renders it with Markdown formatting. If the file is missing, the request fails or the
+   user is offline, the screen shows the plugin name, its short repository summary
    when available and *No description available.* Back (or Escape) returns to
    the picker with the search text kept; Install continues the normal install.
    This screen is only part of the picker flow. Passing `github_repo` directly
@@ -55,13 +57,13 @@ Implementation: `core/commands/plugins.py` (`InstallPlugin`),
    the newest commit on the default branch. So an unreleased plugin still
    installs; it is just pinned to a commit.
 
-5. **Download** — GitHub plugins use the zipball for that ref. Catalog plugins
-   use the release selected from the catalog; fman checks the downloaded ZIP
+5. **Download** — GitHub, GitLab and Forgejo plugins use the archive for that
+   ref. Catalog plugins use the release selected from the catalog; fman checks the downloaded ZIP
    against the SHA-256 value returned by the API before installing it.
 6. **Unpack** — into `%APPDATA%\fman\Plugins\Third-party\<repo name>`.
-7. **Record** — the repo's API URL and installed ref are written into a
-   GitHub plugin's `Plugin.json`. A catalog plugin records its catalog source
-   and release version there.
+7. **Record** — the repository URL and installed ref are recorded in
+   `Plugin.json` with the source (`github`, `gitlab` or `forgejo`). A catalog
+   plugin records its catalog source and release version there.
 
 8. **Load** — the plugin is loaded in place, at its correct position in the
    load order, and you get a *Plugin 'X' was successfully installed.* alert.
@@ -108,9 +110,39 @@ To show an explanation in fman's install screen, put a `description.md` file
 in the repository root on its default branch. fman renders it as Markdown;
 the file is optional.
 
+### GitLab and Forgejo hosts
+
+fman always searches GitLab.com for projects with both the `fman` and `plugin`
+topics. It searches Codeberg (which runs Forgejo) for `fman`-topic repositories
+and keeps those that also have the `plugin` topic. GitLab search uses the
+current picker text; Forgejo's search API cannot combine a topic and text
+query, so fman downloads its first page once per host and filters names in the
+picker. GitLab and Codeberg are queried before any configured hosts, in that
+order. GitHub results come first and the fman catalog comes last; the first
+result with a given plugin name wins.
+
+To search self-hosted GitLab or Forgejo servers, add a `plugin_hosts` array to
+`Core Settings.json`:
+
+```json
+{
+  "plugin_hosts": [
+    {"type": "gitlab", "url": "https://gitlab.example.com"},
+    {"type": "forgejo", "url": "https://git.example.org"}
+  ]
+}
+```
+
+Each URL is the HTTPS server root. Invalid entries and duplicate server URLs
+are ignored. Self-hosted GitLab installations served below a URL sub-path are
+not supported. A host that is offline or returns an invalid response is
+skipped so results from the other sources remain available. Bitbucket has no
+public topic search and remains available through the fman catalog when its
+author publishes a catalog release.
+
 ### Ordering
 
-The picker lists **most recently modified first, most-starred first among
+GitHub results list **most recently modified first, most-starred first among
 equally recent ones**. `find_repos` sorts the results on the tuple
 `(pushed_at, stargazers_count)`, descending, before handing them to the picker:
 
@@ -132,6 +164,9 @@ Two things this deliberately is not:
   `updated_at`, which any metadata change bumps — renaming the repo or editing
   its description would float an abandoned plugin to the top. `pushed_at` moves
   only when someone commits.
+
+After GitHub, host results follow the configured host order and use each
+provider's search order. Catalog results follow host results.
 
 `pushed_at` is an ISO-8601 UTC string, so sorting it as text is already
 chronological; no date parsing is involved. A repo that has never been pushed

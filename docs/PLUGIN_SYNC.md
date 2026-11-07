@@ -19,10 +19,10 @@ delete the shared list.
 ## Install and remove hooks
 
 When signed in, a successful *Install plugin* adds or replaces that plugin's
-entry in the shared list. *Remove plugin* deletes its entry. GitHub entries
-store the repository URL and the installed release tag or commit SHA. Catalog
-entries store the catalog plugin name and release version. Both include the
-operating system and fman version that saved the entry. A plugin without
+entry in the shared list. *Remove plugin* deletes its entry. GitHub, GitLab and
+Forgejo entries store the repository URL and the installed release tag or
+commit SHA. Catalog entries store the catalog plugin name and release version.
+Both include the operating system and fman version that saved the entry. A plugin without
 source metadata, such as one copied into the third-party folder by hand, is
 not uploaded.
 
@@ -70,7 +70,12 @@ Account list operations require a Bearer access token:
   contains `name`, `source`, `location`, `version`, `os` and `fman_version`.
 - `DELETE /api/v1/plugin-list/{name}` removes the named entry.
 
-`source` is `github` or `catalog`. `os` is `Windows`, `Mac` or `Linux`.
+`source` is `github`, `catalog`, `gitlab` or `forgejo`. `os` is `Windows`,
+`Mac` or `Linux`.
 GitHub `location` is a repository URL such as
 `https://github.com/owner/repository`; catalog `location` is the catalog
-plugin name. The API isolates each list to the signed-in account.
+plugin name. GitLab and Forgejo `location` values are HTTPS repository web
+URLs, including for self-hosted servers. When reading the account list, this
+client skips entries with an unknown or invalid source so one newer entry does
+not prevent older entries from syncing. The API isolates each list to the
+signed-in account.
