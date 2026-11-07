@@ -535,6 +535,12 @@ bar while minimized. When no icon is set, fman uses its default icon. A task
 that keeps focus cannot be minimized; tasks with neither option keep the
 existing non-modal behavior.
 
+Commands that perform file transfers can use
+`fman.run_in_transfer_queue(title, fn)` to run their operation in the shared
+Copy/Move/Robocopy queue. The call blocks the command's own thread until the
+operation reaches the head, then runs `fn` and returns `True`. If the user
+removes the waiting operation, it returns `False` without running `fn`.
+
 ```python
 from fman import Task
 from PyQt5.QtGui import QIcon

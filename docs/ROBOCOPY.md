@@ -15,11 +15,14 @@ Press Enter to accept it, or type another absolute drive or UNC folder path. The
 destination receives each selected item by name, including empty subfolders.
 Unselected siblings are left alone.
 
-Only one operation can run at a time, including destination selection and cleanup.
-Another invocation reports **“A Robocopy operation is already active.”** Cancel
-kills the running `robocopy.exe`; completed and partial filesystem changes are
-kept. If fman itself crashes during a transfer, `robocopy.exe` keeps running:
-the plug-in does not use a Windows Job Object, as with 7-Zip today.
+With the transfer queue off, only one operation can run at a time, including
+destination selection and cleanup. A second invocation reports **“A Robocopy
+operation is already active.”** With queueing on, a second Robocopy operation
+waits in the shared transfer queue; its settings loading, planning, transfer
+and pane refresh run when it reaches the head. Cancel kills the running
+`robocopy.exe`; completed and partial filesystem changes are kept. If fman
+itself crashes during a transfer, `robocopy.exe` keeps running: the plug-in
+does not use a Windows Job Object, as with 7-Zip today.
 
 ## Native behavior and limits
 

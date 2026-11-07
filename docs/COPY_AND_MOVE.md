@@ -12,6 +12,28 @@ are separate and described in [ROBOCOPY.md](ROBOCOPY.md).
 Core copy and move progress dialogs can be minimized with `–` and restored
 from their status bar icon.
 
+## Transfer queue
+
+Copy and Move run through one global transfer queue by default. A transfer
+starts after the one ahead of it finishes, including copies and moves started
+by drag-and-drop or clipboard paste. The setting is `queue_transfers` in
+`Core Settings.json`; use **Toggle transfer queue** in the command palette to
+switch queueing off or back on. Changing the setting affects transfers started
+after the change. Transfers already waiting remain in the queue.
+
+When transfers are waiting, a status bar icon opens the queue window. The
+**Show transfer queue** command opens the same window. It lists the running
+transfer first and the waiting transfers after it. The running transfer is the
+head of the queue and cannot be moved or removed there; cancel it from its
+progress dialog. Waiting transfers can be moved up or down, or removed before
+they start. A transfer that has to wait also shows a **Transfer queued: …**
+status message briefly. Symlink, Delete, Pack, Rename and Undo do not use this
+queue.
+
+Copy and Move take their destination snapshot for Undo only when their turn
+starts. This keeps a destination created by an earlier queued transfer from
+being recorded as a new file by the next transfer.
+
 ## Two threads: gathering and transferring
 
 Copying a folder means walking the tree first: which files are there, does the
