@@ -73,6 +73,22 @@ that an item appeared; it does not compare file contents. 7-Zip reports failed
 writes, while a content digest would read every moved file a second time.
 Moving an item within the same archive remains a rename.
 
+## Opening archive entries as streams
+
+Reading a file inside a writable archive extracts that one entry into a
+temporary directory and removes the temporary files when the stream closes.
+Writing stages the bytes in a temporary file; closing the stream normally adds
+that file to the archive through the regular copy path. The archive is left
+unchanged when the stream's context exits with an exception, and temporary
+files are cleaned up either way. The entry's parent directory must already
+exist. Since adding an entry updates the archive, writing many files this way
+can rewrite a large archive once per file. RAR and compressed TAR filesystems
+remain read-only and refuse write streams, as they do other changes.
+
+These streams let the generic copy and move fallback transfer archive entries
+to other file systems. See [Copy and Move](COPY_AND_MOVE.md#streaming-fallback-with-open)
+for when that fallback runs.
+
 ## 7-Zip 26 compatibility
 
 7-Zip 26 adds fractional seconds to some `Modified` values in its technical

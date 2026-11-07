@@ -257,6 +257,31 @@ walk and one per worker. The FTP plugin does this, so a server that limits
 connections per IP may refuse some. The user can press `−` in the progress
 dialog.
 
+## Streaming fallback with `open()`
+
+When the source and destination file systems both decline a native copy or move
+with `UnsupportedOperation` or `NotImplementedError`, fman can copy the files
+through binary streams. It uses this fallback only when both file systems
+implement `open(path, mode)`; for a move, the source must also implement
+`delete(path)`. A move copies each file first and deletes that source file only
+after the copy succeeds. Existing native transfer methods keep priority.
+
+Implement `open(path, mode)` for `'rb'` and `'wb'`. The path has no URL scheme,
+as with the other `FileSystem` methods. Return a context manager that reads or
+writes bytes; the public `fman.fs.open(...)` function handles text encoding.
+The copy task reads and writes 16 KiB chunks. A file system may implement
+`size_bytes(path)` to give the progress dialog an initial size estimate; when
+the size is unavailable or unknown, the transfer still works and progress is
+updated as bytes arrive. Cancel is checked between chunks. If reading,
+writing, or cancellation fails after the destination was opened, fman makes a
+best-effort attempt to delete the partial destination. The source remains in
+place unless its copy completed successfully.
+
+Native copy and move methods continue to handle cases they support, so this
+fallback is for cross-file-system combinations that neither side can handle
+directly. See [Opening files](PLUGINS_API.md#opening-files) for the public API
+and plugin contract.
+
 ## Tests
 
 `core/tests/test_fileoperations.py` covers overwrite and error prompts, abort
@@ -275,6 +300,9 @@ but holds back the later ones.
 
 `core/tests/test_transfer_completion.py` covers per-item completion across
 parallel tasks and skipped or failed work.
+
+`fman_unittest.impl.plugins.test_stream_transfer` covers the stream-based
+cross-file-system copy and move fallback.
 
 The FTP plugin's side is checked by its own scripts, without fman running:
 `test_copy_single_dialog.py` covers the per-file move tasks, the flags, the

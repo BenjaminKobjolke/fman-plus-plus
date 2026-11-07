@@ -104,6 +104,28 @@ Qt keys free; and the viewer has no version of its own. The flag is inherited,
 so subclasses that do not fit must set it back to `False`. A pane exposes the
 registered opted-in names through `pane.get_viewer_commands()`.
 
+## Opening files
+
+Use `fman.fs.open(url, mode='r', encoding=None, errors=None, newline=None)` to
+open a file through its registered file system. Text modes `'r'` and `'w'` use
+the supplied text options; binary modes `'rb'` and `'wb'` read and write bytes.
+The default mode is text read. The returned stream is a context manager:
+
+```python
+with fman.fs.open(url, 'r', encoding='utf-8') as stream:
+	contents = stream.read()
+	consume(contents)
+```
+
+A plugin that implements a `FileSystem` can provide `open(path, mode)` for
+binary reads and writes. `path` is the file-system path without its URL scheme,
+and the returned stream must support the corresponding read or write
+operations and context manager. Text wrapping is handled by `fman.fs.open`, so
+file systems only need to implement `'rb'` and `'wb'`. The base implementation
+raises `NotImplementedError`, which keeps existing plugins compatible. The
+streaming cross-file-system copy fallback and its requirements are described in
+[Copy and Move](COPY_AND_MOVE.md#streaming-fallback-with-open).
+
 ## Choosing columns
 
 `fman.fs` lets a plugin choose the columns shown by a file system, either as a
