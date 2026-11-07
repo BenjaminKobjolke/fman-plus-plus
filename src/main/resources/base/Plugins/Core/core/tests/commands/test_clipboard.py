@@ -197,8 +197,37 @@ class PasteVirtualFilesTest(TestCase):
 		pane = Mock(spec=DirectoryPane)
 		with patch('core.commands.clipboard.clipboard.get_files', return_value=[]), \
 				patch('core.commands.clipboard.get_clipboard_data_object',
-					return_value=None):
+					return_value=None), \
+				patch('core.commands.clipboard.clipboard.get_text', return_value=''):
 			self.assertFalse(Paste(pane).is_visible())
+
+class PastePathTest(TestCase):
+	def test_pastes_a_path_by_navigating_to_its_parent_and_selecting_it(self):
+		pane = Mock(spec=DirectoryPane)
+		path = 'file://C:/folder/file.txt'
+		callback = None
+		def set_path(_parent, on_path_set=None):
+			nonlocal callback
+			callback = on_path_set
+		pane.set_path.side_effect = set_path
+		with patch(
+			'core.commands.clipboard.clipboard.get_files', return_value=[]
+		), patch(
+			'core.commands.clipboard.get_clipboard_data_object', return_value=None
+		), patch(
+			'core.commands.clipboard.clipboard.get_text',
+			return_value='C:\\folder\\file.txt'
+		), patch(
+			'core.commands.clipboard.exists', return_value=True
+		):
+			command = Paste(pane)
+			self.assertTrue(command.is_visible())
+			command()
+		pane.set_path.assert_called_once()
+		parent, _callback = pane.set_path.call_args.args
+		self.assertEqual('file://C:/folder', parent)
+		callback()
+		pane.place_cursor_at.assert_called_once_with(path)
 
 class ReportClipboardActionTest(TestCase):
 

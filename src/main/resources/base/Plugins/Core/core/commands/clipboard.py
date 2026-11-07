@@ -10,7 +10,7 @@ Copy file name and Copy file path copy one item's name or path as text.
 from fman import ApplicationCommand, clipboard, DirectoryPaneCommand, \
 	PLATFORM, show_alert, show_status_message
 from fman.fs import exists
-from fman.url import as_human_readable, basename
+from fman.url import as_human_readable, basename, as_url, dirname
 from fman.impl.virtual_files import get_clipboard_data_object, \
 	has_virtual_files, save_virtual_files
 from core.commands.util import NO_SELECTION
@@ -123,6 +123,12 @@ class Paste(DirectoryPaneCommand):
 		if not files:
 			data_object = get_clipboard_data_object()
 			if not has_virtual_files(data_object):
+				path = _get_existing_clipboard_path()
+				if path:
+					self.pane.set_path(
+						dirname(path),
+						lambda: self.pane.place_cursor_at(path)
+					)
 				return
 			files = save_virtual_files(data_object)
 		elif clipboard.files_were_cut():
@@ -132,7 +138,14 @@ class Paste(DirectoryPaneCommand):
 		self.pane.run_command('copy', {'files': files, 'dest_dir': dest})
 	def is_visible(self):
 		return bool(clipboard.get_files()) or has_virtual_files(
-			get_clipboard_data_object())
+			get_clipboard_data_object()) or bool(_get_existing_clipboard_path())
+
+def _get_existing_clipboard_path():
+	text = clipboard.get_text().strip()
+	if not text or '\n' in text or '\r' in text:
+		return None
+	path = as_url(text)
+	return path if exists(path) else None
 
 class PasteCut(DirectoryPaneCommand):
 	def __call__(self):
