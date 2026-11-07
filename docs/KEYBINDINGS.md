@@ -152,6 +152,7 @@ it and both keep working.
 | `Ctrl+R` | `reload` |
 | `Ctrl+F1`/`F2`/`F3` | `sort_by_column` (name/size/date) |
 | `Ctrl+Up` | `go_up` |
+| `Ctrl+U` | `swap_panes` |
 | `Alt+Enter` | `show_explorer_properties` |
 | `Ctrl+\` | `go_to_root_of_current_drive` |
 
@@ -182,6 +183,7 @@ it and both keep working.
 | `Cmd+M` | `minimize` |
 | `Cmd+Q` | `quit` |
 | `Cmd+Up` | `go_up` |
+| `Cmd+U` | `swap_panes` |
 | `Shift+Space` | `quick_look` |
 | `Cmd+Enter` | `open_selected_files` |
 | `Cmd+Ctrl+F` | `toggle_fullscreen` |
@@ -209,6 +211,7 @@ it and both keep working.
 | `Ctrl+R` | `reload` |
 | `Ctrl+F1`/`F2`/`F3` | `sort_by_column` (name/size/date) |
 | `Ctrl+Up` | `go_up` |
+| `Ctrl+U` | `swap_panes` |
 
 ## Navigation commands without a binding
 

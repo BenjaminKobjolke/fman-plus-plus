@@ -24,6 +24,7 @@
 	{ "keys": ["Cmd+M"], "command": "minimize" },
 	{ "keys": ["Cmd+Q"], "command": "quit" },
 	{ "keys": ["Cmd+Up"], "command": "go_up" },
+	{ "keys": ["Cmd+U"], "command": "swap_panes" },
 	{ "keys": ["Shift+Space"], "command": "quick_look" },
 	{ "keys": ["Cmd+Enter"], "command": "open_selected_files" },
 	{ "keys": ["Cmd+Ctrl+F"], "command": "toggle_fullscreen" }

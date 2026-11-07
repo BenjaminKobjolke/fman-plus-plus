@@ -61,7 +61,7 @@ EXPECTED = frozenset({
 	'SetHiddenAttribute', 'SetWindowOpacity', 'ShowAllPanes', 'ShowExplorerProperties',
 	'ShowConsole', 'ShowConsoleWindow', 'ShowOnlyActivePane', 'ShowReleaseNotes',
 	'ShowVolumes', 'SortByColumn',
-	'SwitchPanes', 'Symlink', 'ToggleDeselectAfterTransfer',
+	'SwapPanes', 'SwitchPanes', 'Symlink', 'ToggleDeselectAfterTransfer',
 	'PinFolderToTaskbar',
 	'ToggleExecutableIcons', 'ToggleHiddenFiles', 'ToggleMixedSorting',
 	'ToggleRememberLastVisited', 'LastVisitedListener',
