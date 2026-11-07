@@ -35,6 +35,7 @@ __all__ = [
 	'get_window_opacity', 'set_window_opacity',
 	'clipboard',
 	'submit_task', 'Task',
+	'run_in_transfer_queue',
 	'PLATFORM', 'FMAN_VERSION', 'APP_NAME', 'DATA_DIRECTORY',
 	'OK', 'CANCEL', 'YES', 'NO', 'YES_TO_ALL', 'NO_TO_ALL', 'ABORT', 'RETRY'
 ]
@@ -707,6 +708,14 @@ def submit_task(task):
 	finally:
 		dialog.cancel()
 		task._dialog = dialog_before
+
+def run_in_transfer_queue(title, fn):
+	"""Run ``fn`` in the UI's transfer queue.
+
+	This blocks the calling command thread until its turn and returns whether
+	``fn`` ran (it may have been removed while waiting).
+	"""
+	return _get_ui().get_transfer_queue().run(title, fn)
 
 def _get_plugin_support():
 	return _get_app_ctxt().plugin_support

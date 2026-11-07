@@ -459,6 +459,16 @@ class MainWindow(QMainWindow):
 		self._incognito_marker.hide()
 		self._status_bar.addPermanentWidget(self._incognito_marker)
 		self._tool_windows = ToolWindows(self._status_bar)
+		from fman.impl.transfer_queue import TransferQueue
+		from fman.impl.transfer_queue_window import (
+			TransferQueueButton, TransferQueueWindow,
+		)
+		self._transfer_queue = TransferQueue()
+		self._transfer_queue_window = None
+		self._transfer_queue_window_class = TransferQueueWindow
+		self._transfer_queue_button = TransferQueueButton(
+			self._status_bar, self._transfer_queue, self.show_transfer_queue,
+			self.show_status_message)
 		self._status_bar.setSizeGripEnabled(False)
 		self.setStatusBar(self._status_bar)
 		self._timer = QTimer(self)
@@ -626,6 +636,14 @@ class MainWindow(QMainWindow):
 		return dialog
 	def get_tool_windows(self):
 		return self._tool_windows
+	def get_transfer_queue(self):
+		return self._transfer_queue
+	@run_in_main_thread
+	def show_transfer_queue(self):
+		if self._transfer_queue_window is None:
+			self._transfer_queue_window = self._transfer_queue_window_class(
+				self, self._transfer_queue)
+		self._transfer_queue_window.show_queue()
 	def get_open_dialog(self):
 		return self._dialog
 	@run_in_main_thread

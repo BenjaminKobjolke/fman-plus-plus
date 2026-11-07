@@ -1,5 +1,5 @@
-from core.commands.transfer import Copy, Move, Symlink, _from_human_readable, \
-	get_dest_suggestion
+from core.commands.transfer import Copy, Move, Symlink, _TreeCommand, \
+	_from_human_readable, get_dest_suggestion
 from core.undo_history import CopyRecord, MoveRecord, history
 from core.tests import StubUI
 from core.util import filenotfounderror
@@ -306,6 +306,85 @@ class TransferRecordingTest(TestCase):
 		)
 		command._call = Mock(return_value=None)
 		return _CommandContext(command, exists)
+
+
+class QueuedTransferTest(TestCase):
+	_SRC = 'file:///src/a.txt'
+	_DEST = 'file:///dest/a.txt'
+
+	def setUp(self):
+		history.clear()
+
+	def tearDown(self):
+		history.clear()
+
+	def test_copy_defers_snapshot_submission_and_undo_until_its_turn(self):
+		self._assert_queued_body(Copy, CopyRecord)
+
+	def test_move_defers_snapshot_submission_and_undo_until_its_turn(self):
+		self._assert_queued_body(Move, MoveRecord)
+
+	def test_symlink_runs_directly(self):
+		command = Symlink(Mock())
+		command._confirm_tree_operation = Mock(
+			return_value=('file:///dest', None)
+		)
+		command._call = Mock()
+		with (
+			patch('core.commands.transfer.run_queued') as run_queued,
+			patch('core.commands.transfer.fman.fs.exists', return_value=True),
+		):
+			_TreeCommand.__call__(
+				command, files=[self._SRC], dest_dir='file:///dest'
+			)
+		run_queued.assert_not_called()
+		command._call.assert_called_once_with(
+			[self._SRC], 'file:///dest', None
+		)
+
+	def _assert_queued_body(self, command_type, record_type):
+		command = command_type(Mock())
+		command._confirm_tree_operation = Mock(
+			return_value=('file:///dest', None)
+		)
+		queued = []
+		operation = Mock(renamed_dests={})
+		with (
+			patch(
+				'core.commands.transfer.run_queued',
+				side_effect=lambda title, fn: queued.append((title, fn)) or True
+			) as run_queued,
+			patch('core.commands.transfer.fman.fs.exists',
+				side_effect=[False, False, True]) as exists,
+			patch('core.commands.transfer.makedirs') as makedirs,
+			patch('core.commands.transfer.elevation.copy', return_value=False),
+			patch('core.commands.transfer.elevation.move', return_value=False),
+			patch('core.commands.transfer.CopyFiles', return_value=operation),
+			patch('core.commands.transfer.MoveFiles', return_value=operation),
+			patch('core.commands.transfer.submit_task') as submit_task,
+		):
+			command(files=[self._SRC], dest_dir='file:///dest')
+
+			run_queued.assert_called_once()
+			self.assertEqual(1, len(queued))
+			verb = 'Copy' if command_type is Copy else 'Move'
+			self.assertEqual(
+				'%s "a.txt" to %s' % (
+					verb, as_human_readable('file:///dest')
+				), queued[0][0]
+			)
+			exists.assert_not_called()
+			makedirs.assert_not_called()
+			submit_task.assert_not_called()
+			self.assertIsNone(history.pop())
+
+			queued[0][1]()
+
+		self.assertEqual(3, exists.call_count)
+		submit_task.assert_called_once_with(operation)
+		self.assertEqual(
+			record_type(((self._SRC, self._DEST),)), history.pop()
+		)
 
 
 class _CommandContext:

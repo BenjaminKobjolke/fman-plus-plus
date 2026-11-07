@@ -16,6 +16,7 @@ from core.commands.deselect_after_transfer import is_enabled as \
 	deselect_after_transfer_enabled
 from core.fileoperations import CopyFiles, MoveFiles
 from core.path_completion import complete_path
+from core.transfer_queue import run_queued
 from core.util import is_parent
 from core.undo_history import CopyRecord, MoveRecord, record_transfer
 from fman import DirectoryPaneCommand, DirectoryPaneListener, NO, YES, \
@@ -51,6 +52,7 @@ class _TreeCommand(DirectoryPaneCommand):
 	# Copy, Move and Symlink all operate on the viewed file.
 	usable_in_viewer = True
 	_files_from_selection = False
+	_queued = True
 
 	def __call__(self, files=None, dest_dir=None):
 		self._files_from_selection = files is None
@@ -65,23 +67,43 @@ class _TreeCommand(DirectoryPaneCommand):
 				(file_, join(dest_dir, dest_name or basename(file_)))
 				for file_ in files
 			)
-			destinations_that_existed = {
-				dest_url for _, dest_url in transfers
-				if fman.fs.exists(dest_url)
-			}
-			operation = None
-			if not self._call_elevated(files, dest_dir, dest_name):
-				if not fman.fs.exists(dest_dir):
-					makedirs(dest_dir, exist_ok=True)
-				operation = self._call(files, dest_dir, dest_name)
-			if operation is not None:
-				transfers = tuple(
-					(src, operation.renamed_dests.get(dest, dest))
-					for src, dest in transfers
+			if self._queued:
+				run_queued(
+					self._queue_title(transfers),
+					partial(self._run, files, dest_dir, dest_name, transfers)
 				)
-			self._record_operation(
-				transfers, destinations_that_existed
+			else:
+				self._run(files, dest_dir, dest_name, transfers)
+	def _run(self, files, dest_dir, dest_name, transfers):
+		# Check destination state when this operation reaches the queue head.
+		destinations_that_existed = {
+			dest_url for _, dest_url in transfers
+			if fman.fs.exists(dest_url)
+		}
+		operation = None
+		if not self._call_elevated(files, dest_dir, dest_name):
+			if not fman.fs.exists(dest_dir):
+				makedirs(dest_dir, exist_ok=True)
+			operation = self._call(files, dest_dir, dest_name)
+		if operation is not None:
+			transfers = tuple(
+				(src, operation.renamed_dests.get(dest, dest))
+				for src, dest in transfers
 			)
+		self._record_operation(transfers, destinations_that_existed)
+	@classmethod
+	def _queue_title(cls, transfers):
+		verb = cls._verb().capitalize()
+		if len(transfers) == 1:
+			_, dest_url = transfers[0]
+			dest_dir, dest_name = _split(dest_url)
+			return '%s "%s" to %s' % (
+				verb, dest_name, as_human_readable(dest_dir)
+			)
+		return '%s %d files to %s' % (
+			verb, len(transfers),
+			as_human_readable(_split(transfers[0][1])[0])
+		)
 	def _record_operation(self, transfers, destinations_that_existed):
 		pass
 	def _call(self, files, dest_dir, dest_name=None):

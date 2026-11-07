@@ -38,8 +38,21 @@ def _refresh(pane: DirectoryPaneCommand) -> None:
 		item.reload()
 
 
+def _queue_enabled() -> bool:
+	"""Read Core's setting lazily; the Robocopy test runner omits Core's path."""
+	from core.transfer_queue import is_enabled
+	return is_enabled()
+
+
+def _run_queued(title: str, fn) -> bool:
+	"""Dispatch lazily because the Robocopy tests run without Core on sys.path."""
+	from core.transfer_queue import run_queued
+	return run_queued(title, fn)
+
+
 def _invoke(action: str, command: DirectoryPaneCommand) -> None:
-	if not _lock.acquire(blocking=False):
+	queue_enabled = _queue_enabled()
+	if not queue_enabled and not _lock.acquire(blocking=False):
 		fman.show_alert(_BUSY_MESSAGE)
 		return
 	try:
@@ -52,23 +65,33 @@ def _invoke(action: str, command: DirectoryPaneCommand) -> None:
 			_prompt_text(action, selected), _other_pane_path(command), 0, None)
 		if not destination:
 			return
-		settings = Settings.load(fman.load_json(_SETTINGS_NAME, {}))
-		executable = windows.executable()
-		log_path = (
-			logs.choose_path(fman.DATA_DIRECTORY)
-			if settings.log_enabled else None
-		)
-		plan = planner.prepare(pane.get_path(), selected, destination, executable,
-			settings, move=action == 'move', log=log_path)
-		planner.probe(executable, settings)
 		title = 'Move with robocopy' if action == 'move' else 'Copy with robocopy'
-		transfer = Transfer(title, plan, log_path, executable)
-		fman.submit_task(transfer)
-		_refresh(command)
+		queue_title = '%s to %s' % (title, destination)
+
+		def run_transfer():
+			settings = Settings.load(fman.load_json(_SETTINGS_NAME, {}))
+			executable = windows.executable()
+			log_path = (
+				logs.choose_path(fman.DATA_DIRECTORY)
+				if settings.log_enabled else None
+			)
+			plan = planner.prepare(
+				pane.get_path(), selected, destination, executable, settings,
+				move=action == 'move', log=log_path)
+			planner.probe(executable, settings)
+			transfer = Transfer(title, plan, log_path, executable)
+			fman.submit_task(transfer)
+			_refresh(command)
+
+		if queue_enabled:
+			_run_queued(queue_title, run_transfer)
+		else:
+			run_transfer()
 	except (OSError, ValueError, RuntimeError) as error:
 		fman.show_alert(str(error))
 	finally:
-		_lock.release()
+		if not queue_enabled:
+			_lock.release()
 
 
 class CopyWithRobocopy(DirectoryPaneCommand):

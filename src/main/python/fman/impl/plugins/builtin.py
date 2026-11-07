@@ -49,6 +49,11 @@ class BuiltinPlugin(Plugin):
 			def __call__(self):
 				window_chrome.toggle_title_bar(self.window._widget)
 
+		class ShowTransferQueue(ApplicationCommand):
+			aliases = ('Show transfer queue',)
+			def __call__(self):
+				self.window._widget.show_transfer_queue()
+
 		class ToggleStatusBar(ApplicationCommand):
 			aliases = ('Toggle status bar',)
 			def __call__(self):
@@ -174,6 +179,7 @@ class BuiltinPlugin(Plugin):
 		self._register_directory_pane_command(CleanupGuide)
 		self._register_application_command(ToggleFullscreen)
 		self._register_application_command(ToggleTitleBar)
+		self._register_application_command(ShowTransferQueue)
 		self._register_application_command(ToggleStatusBar)
 		self._register_application_command(ToggleRightButtonSelection)
 		self._register_application_command(ToggleIncognito)

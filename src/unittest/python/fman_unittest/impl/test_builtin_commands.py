@@ -8,6 +8,23 @@ from types import SimpleNamespace
 
 class BuiltinPaneStatusCommandsTest(TestCase):
 
+	def test_show_transfer_queue_command_is_registered_and_opens_the_queue(self):
+		commands = self._application_commands()
+		self.assertIn('ShowTransferQueue', commands)
+		window = MagicMock()
+		commands['ShowTransferQueue'](SimpleNamespace(_widget=window))()
+		window.show_transfer_queue.assert_called_once_with()
+
+	def test_run_in_transfer_queue_delegates_to_the_main_window_queue(self):
+		from fman import run_in_transfer_queue
+		work = object()
+		queue = MagicMock()
+		queue.run.return_value = False
+		with patch('fman._get_ui') as get_ui:
+			get_ui.return_value.get_transfer_queue.return_value = queue
+			self.assertFalse(run_in_transfer_queue('Copy item', work))
+		queue.run.assert_called_once_with('Copy item', work)
+
 	def test_right_button_selection_toggle_is_registered_and_shows_message(self):
 		window_chrome = MagicMock()
 		commands = self._application_commands(window_chrome=window_chrome)

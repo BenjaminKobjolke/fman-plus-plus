@@ -67,7 +67,7 @@ EXPECTED = frozenset({
 	'ToggleExecutableIcons', 'ToggleHiddenFiles', 'ToggleMixedSorting',
 	'ToggleOverlayIcons',
 	'ToggleRememberLastVisited', 'LastVisitedListener',
-	'ToggleLockedFileCheck', 'ToggleReadOnlyReplaceQuestion',
+	'ToggleLockedFileCheck', 'ToggleReadOnlyReplaceQuestion', 'ToggleTransferQueue',
 	'ToggleLocalFolderRefresh', 'ToggleNetworkFolderRefresh',
 	'ToggleFtpFolderRefresh', 'ToggleOverwriteDetails', 'DeselectGroup',
 	'ToggleAutomaticUpdates',

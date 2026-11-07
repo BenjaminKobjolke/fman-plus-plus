@@ -14,6 +14,7 @@ __all__ = ['Symlink']
 
 class Symlink(_TreeCommand):
 	aliases = ('Symlink',)
+	_queued = False
 
 	def is_visible(self):
 		if not super().is_visible():
