@@ -50,6 +50,27 @@ class WindowRemovePaneTest(TestCase):
 		self.pane.unmount_widget.assert_called_once()
 
 
+class WindowPaneSizesTest(TestCase):
+	def setUp(self):
+		self.widget = MagicMock(spec=MainWindow)
+		self.window = Window(self.widget, MagicMock())
+		self.window._panes = [MagicMock(), MagicMock()]
+
+	def test_get_pane_sizes_returns_percentages_from_splitter_widths(self):
+		self.widget.get_pane_widths.return_value = [300, 100]
+		self.assertEqual([75.0, 25.0], self.window.get_pane_sizes())
+
+	def test_set_pane_sizes_scales_relative_sizes_to_current_width(self):
+		self.widget.get_pane_widths.return_value = [200, 200]
+		self.window.set_pane_sizes([75, 25])
+		self.widget.set_pane_widths.assert_called_once_with([300, 100])
+
+	def test_set_pane_sizes_rejects_a_wrong_count_before_setting_widths(self):
+		with self.assertRaisesRegex(ValueError, 'Expected 2 pane sizes'):
+			self.window.set_pane_sizes([75, 25, 10])
+		self.widget.set_pane_widths.assert_not_called()
+
+
 class UnregisterPaneTest(TestCase):
 	def test_plugin_support_unregisters_pane(self):
 		support = PluginSupport.__new__(PluginSupport)

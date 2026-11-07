@@ -51,7 +51,7 @@ EXPECTED = frozenset({
 	'OpenWithSystemDefault', 'Pack', 'PackHere', 'PackWithPassword',
 	'Paste', 'PasteCut', 'Quit', 'Reload', 'ReloadPlugins',
 	'RefreshDriveSpace', 'RefreshFolders', 'RememberSortSettings', 'RemovePane',
-	'RemovePlugin',
+	'RemovePlugin', 'SetPaneSizes', 'NarrowActivePane', 'WidenActivePane',
 	'Rename', 'RenameListener',
 	'ResetFont', 'ResetPaneFontSize', 'SelectAll', 'SelectFont', 'SelectGroup',
 	'TaskbarJumpListListener', 'UnpinFolderFromTaskbar',

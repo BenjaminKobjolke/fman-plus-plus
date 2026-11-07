@@ -34,6 +34,7 @@ class ViewerCommandFlagTest(TestCase):
 			'ShowExplorerProperties', 'Pack', 'PackWithPassword', 'OpenWith',
 			'ShowConsole', 'ShowConsoleWindow', 'ShowOnlyActivePane', 'ShowAllPanes',
 			'SetTextEditor', 'DuplicateFile', 'PackHere',
+			'SetPaneSizes', 'WidenActivePane', 'NarrowActivePane',
 		}
 		actual = {
 			name for name in dir(core)

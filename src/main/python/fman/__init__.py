@@ -8,9 +8,11 @@ from .impl.portable import portable_data_directory
 from .impl.view.pane_mount import get_colors, mount_widget, unmount_widget
 from .impl.quicksearch_exit_keys import QuicksearchExit
 from contextlib import contextmanager
+from numbers import Real
 from fbs_runtime import platform
 from os import getenv
 from os.path import join, expanduser
+from typing import Sequence
 from PyQt5.QtWidgets import QMessageBox
 
 import re
@@ -275,6 +277,23 @@ class Window:
 		self._panes.remove(pane)
 		_get_controller().unregister_pane(pane._widget, pane)
 		self._widget.remove_pane(pane._widget)
+	def get_pane_sizes(self) -> list[float]:
+		"""Return pane widths as percentages, in get_panes() order.
+
+		Hidden panes have a size of 0.
+		"""
+		from fman.impl.pane_sizes import to_percentages
+		return to_percentages(self._widget.get_pane_widths())
+	def set_pane_sizes(self, sizes: Sequence[Real]) -> None:
+		"""Set pane widths from one positive relative size per pane.
+
+		For example, [75, 25] gives two panes a 75/25 split and [1, 1, 1]
+		gives three panes equal widths. Raises ValueError for invalid sizes.
+		"""
+		from fman.impl.pane_sizes import to_pixels, validate_sizes
+		pane_sizes = validate_sizes(sizes, len(self.get_panes()))
+		widths = self._widget.get_pane_widths()
+		self._widget.set_pane_widths(to_pixels(pane_sizes, sum(widths)))
 
 class DirectoryPaneCommand:
 	# True promises the command acts on the viewed file, its folder, or layout;

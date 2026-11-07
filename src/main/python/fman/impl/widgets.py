@@ -713,6 +713,12 @@ class MainWindow(QMainWindow):
 	def get_panes(self):
 		return self._panes
 	@run_in_main_thread
+	def get_pane_widths(self) -> list[int]:
+		return self._splitter.sizes()
+	@run_in_main_thread
+	def set_pane_widths(self, widths: list[int]) -> None:
+		self._splitter.setSizes(widths)
+	@run_in_main_thread
 	def remove_pane(self, pane_widget):
 		self._panes.remove(pane_widget)
 		pane_widget.shutdown()

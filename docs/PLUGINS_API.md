@@ -222,6 +222,12 @@ other = panes[(panes.index(pane) + 1) % len(panes)]
 There are two panes by default, but the count comes from the saved session, so
 never assume exactly two.
 
+`pane.window.get_pane_sizes()` returns percentages in `get_panes()` order.
+`pane.window.set_pane_sizes(sizes)` accepts one positive relative value per
+pane; `[75, 25]` sets a 75/25 split and `[1, 1, 1]` sets three equal panes.
+It raises `ValueError` when the list has the wrong number of values or contains
+an invalid size. Hidden panes are reported as 0 by the getter.
+
 ### Editing a file name in place
 
 `pane.edit_name(file_url, selection_start=0, selection_end=None, callback=None)`
