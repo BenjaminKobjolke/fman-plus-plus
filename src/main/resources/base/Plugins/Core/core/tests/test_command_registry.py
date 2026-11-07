@@ -23,7 +23,7 @@ import inspect
 
 EXPECTED = frozenset({
 	'About', 'AddPane', 'ArchiveOpenListener', 'CenterWindow', 'ChangeLanguage',
-	'CheckForUpdates', 'SetAutomaticUpdateInterval',
+	'CheckForUpdates', 'SetAutomaticUpdateInterval', 'PluginSyncOnStartup',
 	'ClearHiddenAttribute',
 	'ClearLastVisitedHistory',
 	'CommandPalette', 'CompareDirectories', 'Copy', 'CopyFileName', 'CopyFilePath',
@@ -51,7 +51,8 @@ EXPECTED = frozenset({
 	'OpenWithSystemDefault', 'Pack', 'PackHere', 'PackWithPassword',
 	'Paste', 'PasteCut', 'Quit', 'Reload', 'ReloadPlugins',
 	'RefreshDriveSpace', 'RefreshFolders', 'RememberSortSettings', 'RemovePane',
-	'RemovePlugin', 'SetPaneSizes', 'NarrowActivePane', 'WidenActivePane',
+	'RemovePlugin', 'SignInToFmanAccount', 'SignOutOfFmanAccount', 'SyncPlugins',
+	'SetPaneSizes', 'NarrowActivePane', 'WidenActivePane',
 	'Rename', 'RenameListener',
 	'ResetFont', 'ResetPaneFontSize', 'SelectAll', 'SelectFont', 'SelectGroup',
 	'TaskbarJumpListListener', 'UnpinFolderFromTaskbar',

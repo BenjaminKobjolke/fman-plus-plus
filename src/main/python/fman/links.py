@@ -17,3 +17,4 @@ CUSTOM_SHORTCUTS = 'https://fman.io/docs/custom-shortcuts?s=f'
 MACOS_DOCS       = 'https://fman.io/docs/macos?s=f'
 GITHUB_REPO      = 'BenjaminKobjolke/fman'
 RELEASES         = 'https://github.com/%s/releases/latest' % GITHUB_REPO
+FMAN_API         = 'https://fman.workflow-tools.com/'

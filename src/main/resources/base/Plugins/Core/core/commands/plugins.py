@@ -7,14 +7,20 @@ the location displaying it down with it.
 """
 from core.github import find_repos, GitHubRepo
 from core.plugin_info_dialog import show_plugin_info
+from core.fman_api import FmanApiClient, FmanApiError
+from core.plugin_catalog import CatalogPlugin, search as search_catalog
+from core.plugin_list import entry_for_installed
+from core.plugin_sync import record_install, record_remove
 from core.quicksearch_matchers import contains_chars
-from core.util import listdir_absolute
-from fman import ApplicationCommand, DATA_DIRECTORY, DirectoryPaneCommand, \
+from core.plugin_installation import (
+	PreservePanePaths, _get_plugins, _get_thirdparty_plugins,
+	_get_user_plugins, install_zip, load_installed_plugin,
+	record_installation, remove_plugin_dir
+)
+from fman import ApplicationCommand, DirectoryPaneCommand, \
 	QuicksearchItem, clear_status_message, load_plugin, show_alert, \
 	show_quicksearch, show_status_message, unload_plugin
-from fman.fs import copy, delete, exists, iterdir
-from fman.url import as_url, join
-from tempfile import TemporaryDirectory
+from fman.url import as_url
 from urllib.error import URLError
 
 import json
@@ -41,6 +47,8 @@ class InstallPlugin(ApplicationCommand):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self._plugin_repos = None
+		self._catalog_client = None
+		self._catalog_results = {}
 	def __call__(self, github_repo=None):
 		if github_repo:
 			with StatusMessage('Fetching GitHub repo %s...' % github_repo):
@@ -62,13 +70,24 @@ class InstallPlugin(ApplicationCommand):
 				try:
 					ref = repo.get_latest_release()
 				except LookupError:
+					if isinstance(repo, CatalogPlugin):
+						show_alert('Plugin %r has no released versions.' % repo.name)
+						return
 					ref = repo.get_latest_commit()
 				zipball_contents = repo.download_zipball(ref)
-			plugin_dir = self._install_plugin(repo.name, zipball_contents)
+			plugin_dir = install_zip(repo.name, zipball_contents)
 			# Save some data in case we want to update the plugin later:
-			self._record_plugin_installation(plugin_dir, repo.url, ref)
-			success = self._load_installed_plugin(plugin_dir)
+			if isinstance(repo, CatalogPlugin):
+				record_installation(
+					plugin_dir, repo.location, ref, source=repo.source
+				)
+			else:
+				record_installation(plugin_dir, repo.url, ref)
+			success = load_installed_plugin(plugin_dir, self.window)
 			if success:
+				entry = entry_for_installed(plugin_dir)
+				if entry is not None:
+					record_install(entry)
 				show_alert('Plugin %r was successfully installed.' % repo.name)
 	def _pick_repo(self):
 		query = ''
@@ -87,61 +106,38 @@ class InstallPlugin(ApplicationCommand):
 			os.path.basename(plugin_dir)
 			for plugin_dir in _get_thirdparty_plugins()
 		)
+		github_names = set()
 		for repo in self._plugin_repos:
 			if repo.name in installed_plugins:
 				continue
 			match = _matches_query(repo.name, query)
 			if match is not None:
+				github_names.add(repo.name)
 				hint = '%d ★' % repo.num_stars if repo.num_stars else ''
 				yield QuicksearchItem(
 					repo, repo.name, match, hint=hint,
 					description=repo.description
 				)
-	def _install_plugin(self, name, zipball_contents):
-		os.makedirs(_THIRDPARTY_PLUGINS_DIR, exist_ok=True)
-		dest_dir = os.path.join(_THIRDPARTY_PLUGINS_DIR, name)
-		dest_dir_url = as_url(dest_dir)
-		if exists(dest_dir_url):
-			raise ValueError('Plugin %s seems to already be installed.' % name)
-		# We purposely don't use Python's ZipFile here because it does not
-		# preserve the executable bit of extracted files. This would present a
-		# problem for plugins shipping with their own binaries.
-		with TemporaryDirectory() as tmp_dir:
-			zip_path = os.path.join(tmp_dir, 'plugin.zip')
-			with open(zip_path, 'wb') as f:
-				f.write(zipball_contents)
-			zip_url = as_url(zip_path, 'zip://')
-			dir_in_zip, = iterdir(zip_url)
-			copy(join(zip_url, dir_in_zip), dest_dir_url)
-		return dest_dir
-	def _load_installed_plugin(self, plugin_dir):
-		# Unload plugins later than the given plugin in the load order, load
-		# the plugin, then load the unloaded plugins again. This inserts the
-		# given plugin in the correct place in the load order.
-		plugins = _get_plugins()
-		plugin_index = plugins.index(plugin_dir)
-		to_unload = plugins[plugin_index + 1:]
-		with PreservePanePaths(self.window):
-			for plugin in reversed(to_unload):
-				try:
-					unload_plugin(plugin)
-				except ValueError:
-					pass
-			result = load_plugin(plugin_dir)
-			for plugin in to_unload:
-				load_plugin(plugin)
-		return result
-	def _record_plugin_installation(self, plugin_dir, repo_url, ref):
-		plugin_json = os.path.join(plugin_dir, 'Plugin.json')
-		if os.path.exists(plugin_json):
-			with open(plugin_json, 'r') as f:
-				data = json.load(f)
-		else:
-			data = {}
-		data['url'] = repo_url
-		data['ref'] = ref
-		with open(plugin_json, 'w') as f:
-			json.dump(data, f)
+		for plugin in self._get_catalog_plugins(query):
+			if plugin.name in installed_plugins or plugin.name in github_names:
+				continue
+			match = _matches_query(plugin.name, query)
+			if match is not None:
+				yield QuicksearchItem(
+					plugin, plugin.name, match, hint='fman catalog',
+					description=plugin.description
+				)
+	def _get_catalog_plugins(self, query):
+		if query not in self._catalog_results:
+			if self._catalog_client is None:
+				self._catalog_client = FmanApiClient()
+			try:
+				self._catalog_results[query] = search_catalog(
+					self._catalog_client, query
+				)
+			except FmanApiError:
+				self._catalog_results[query] = ()
+		return self._catalog_results[query]
 
 def _fallback_description(repo):
 	parts = ['# ' + repo.name]
@@ -149,17 +145,6 @@ def _fallback_description(repo):
 		parts.extend(('', repo.description))
 	parts.extend(('', '*' + _NO_DESCRIPTION + '*'))
 	return '\n'.join(parts)
-
-_THIRDPARTY_PLUGINS_DIR = os.path.join(DATA_DIRECTORY, 'Plugins', 'Third-party')
-
-def _get_thirdparty_plugins():
-	return _list_plugins(_THIRDPARTY_PLUGINS_DIR)
-
-def _list_plugins(dir_path):
-	try:
-		return list(filter(os.path.isdir, listdir_absolute(dir_path)))
-	except FileNotFoundError:
-		return []
 
 class RemovePlugin(ApplicationCommand):
 
@@ -177,14 +162,12 @@ class RemovePlugin(ApplicationCommand):
 			if result:
 				plugin_dir = result[1]
 				if plugin_dir:
-					try:
-						unload_plugin(plugin_dir)
-					except ValueError:
-						pass
-					delete(as_url(plugin_dir))
+					plugin_name = os.path.basename(plugin_dir)
+					remove_plugin_dir(plugin_dir)
+					record_remove(plugin_name)
 					show_alert(
 						'Plugin %r was successfully removed.'
-						% os.path.basename(plugin_dir)
+						% plugin_name
 					)
 	def _get_matching_plugins(self, query):
 		for plugin_dir in self._installed_plugins:
@@ -209,38 +192,6 @@ class ReloadPlugins(ApplicationCommand):
 		show_status_message(
 			'Reloaded %d plugin%s.' % (num_plugins, plural), timeout_secs=2
 		)
-
-class PreservePanePaths:
-	# When a pane is currently displaying a location with a file system that
-	# is "reloaded", its location gets lost. So save the locations and
-	# restore them later.
-	def __init__(self, window):
-		self._window = window
-		self._paths_before = []
-	def __enter__(self):
-		self._paths_before = \
-			[pane.get_path() for pane in (self._window.get_panes())]
-		return self
-	def __exit__(self, exc_type, exc_val, exc_tb):
-		for pane, path in zip(self._window.get_panes(), self._paths_before):
-			pane.set_path(path)
-
-def _get_plugins():
-	return _get_thirdparty_plugins() + _get_user_plugins()
-
-def _get_user_plugins():
-	result = []
-	settings_plugin = ''
-	user_plugins_dir = os.path.join(DATA_DIRECTORY, 'Plugins', 'User')
-	for plugin_dir in _list_plugins(user_plugins_dir):
-		if os.path.basename(plugin_dir) == 'Settings':
-			settings_plugin = plugin_dir
-		else:
-			result.append(plugin_dir)
-	# According to the fman docs, the Settings plugin is loaded last:
-	if settings_plugin:
-		result.append(settings_plugin)
-	return result
 
 class ListPlugins(DirectoryPaneCommand):
 	def __call__(self):
