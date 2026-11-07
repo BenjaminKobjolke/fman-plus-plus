@@ -32,6 +32,16 @@ one of its hidden keywords, below), pick from the filtered list, press Enter.
   How dark that scrim is, is the theme's `scrim_bg` — see
   [`docs/THEMES.md`](THEMES.md#dimming-behind-dialogs).
 
+## Switching to Go To
+
+While the Command Palette is open, press the Go To shortcut (`Ctrl+P` on
+Windows/Linux or `Cmd+P` on macOS) to switch to Go To with the same text
+already entered. The text is selected, so typing replaces it; press End or
+Right to continue it. Press the Command Palette's own shortcut to close it,
+just like Escape. Go To works the same way in reverse: its own shortcut closes
+it, and the Command Palette shortcut switches back with the text preserved.
+Both shortcuts follow your current key bindings.
+
 Commands worth knowing about that have no default key binding, so the
 palette is the only way to reach them:
 

@@ -545,6 +545,10 @@ then always a triple, `(query, value, alt)`, with `alt` telling the two apart.
 Every other caller keeps the pair — see
 [Command palette keywords](COMMAND_PALETTE_KEYWORDS.md) for what the palettes
 do with it.
+Pass `exit_keys` as a mapping of key bindings to command names to close the
+dialog and switch commands. A value of `None` closes it like Escape; a command
+name returns a `QuicksearchExit(query, command)` instead of the usual pair or
+triple. This result is only returned by callers that pass `exit_keys`.
 Pass `set_refresh=f` to receive a thread-safe function that re-runs `get_items`
 for the current query text. Call it when asynchronous results arrive to update
 the open list; calling it after the quicksearch dialog has closed does nothing.
