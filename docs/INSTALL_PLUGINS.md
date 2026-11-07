@@ -1,16 +1,16 @@
 # Install plugin
 
-*Install plugin* is the command palette entry that finds fman plugins on
-GitHub, downloads one, unpacks it into your data directory and loads it —
-without a restart. This page documents how it does that, including exactly
-which GitHub endpoints it talks to.
+*Install plugin* is the command palette entry that finds third-party plugins
+on GitHub and in the fman catalog, downloads one, unpacks it into your data
+directory and loads it — without a restart. This page documents how it does
+that, including the GitHub endpoints it talks to.
 
 For where plugins live, load order and the other plugin commands, see
 [`docs/PLUGINS.md`](PLUGINS.md). For writing one, see
 [`docs/PLUGINS_API.md`](PLUGINS_API.md).
 
 Implementation: `core/commands/plugins.py` (`InstallPlugin`),
-`core/github.py`, `core/net.py`.
+`core/plugin_catalog.py`, `core/github.py`, `core/net.py`.
 
 ## Running it
 
@@ -30,13 +30,16 @@ Implementation: `core/commands/plugins.py` (`InstallPlugin`),
 
 1. **Discover** — with no argument, fman queries GitHub's repository search
    for repos carrying *both* topics `fman` and `plugin`, excluding archived
-   repos, and caches the result for the lifetime of the command object (one
-   fetch per fman run). Archived repos are read-only, so installing one would
-   pin a plugin that can never receive an update.
-2. **Pick** — the results are shown in a quicksearch picker: plugin name,
-   the repo description as the subtitle, and the star count as the hint
-   (`123 ★`). Already-installed plugins are filtered out, matched by
-   directory name in `Plugins\Third-party\`. See
+   repos, and searches the fman catalog for the current query. Catalog search
+   is sent to the fman API; fman does not download the full catalog to search
+   it. GitHub and catalog results are cached per query for the lifetime of the
+   command object. Archived GitHub repos are read-only, so installing one
+   would pin a plugin that can never receive an update.
+2. **Pick** — the results are shown together in a quicksearch picker. GitHub
+   results show the repo description and star count (`123 ★`); catalog results
+   show their description and the *fman catalog* source. Already-installed
+   plugins are filtered out, matched by directory name in
+   `Plugins\Third-party\`. See
    [Ordering](#ordering) for the sort.
 
 3. **Review** — after a selection, fman loads `description.md` from the
@@ -52,10 +55,13 @@ Implementation: `core/commands/plugins.py` (`InstallPlugin`),
    the newest commit on the default branch. So an unreleased plugin still
    installs; it is just pinned to a commit.
 
-5. **Download** — the zipball for that ref.
+5. **Download** — GitHub plugins use the zipball for that ref. Catalog plugins
+   use the release selected from the catalog; fman checks the downloaded ZIP
+   against the SHA-256 value returned by the API before installing it.
 6. **Unpack** — into `%APPDATA%\fman\Plugins\Third-party\<repo name>`.
-7. **Record** — the repo's API URL and the installed ref are written into the
-   plugin's `Plugin.json`.
+7. **Record** — the repo's API URL and installed ref are written into a
+   GitHub plugin's `Plugin.json`. A catalog plugin records its catalog source
+   and release version there.
 
 8. **Load** — the plugin is loaded in place, at its correct position in the
    load order, and you get a *Plugin 'X' was successfully installed.* alert.
@@ -207,6 +213,21 @@ disk, so remove the directory (or use *Remove plugin*) before retrying.
 | Nothing in the picker | No repo carries both the `fman` and `plugin` topics without being archived, or every one of them is already installed. |
 | *Plugin X seems to already be installed.* | `Plugins\Third-party\<name>` exists. Remove it first. |
 | HTTP 403 | GitHub rate limit — wait, or install by `github_repo` to spend fewer requests. |
+
+## Catalog plugins and account sync
+
+Catalog results come from the fman API and appear alongside GitHub results in
+the same picker. Their description comes from the catalog, and fman installs
+the selected catalog release version. The downloaded release is checked
+against its SHA-256 header before it is unpacked. Catalog plugin metadata
+stores its source, catalog name and installed version in `Plugin.json`.
+
+When signed in to a fman account, a successful plugin install adds or updates
+that plugin in the account's shared list, and *Remove plugin* deletes it from
+the list. Existing GitHub installations recorded with `url` and `ref` are
+recognized. Plugins with no recorded source are local-only and are not
+uploaded. Sync behavior, sign-in and removal confirmations are described in
+[`docs/PLUGIN_SYNC.md`](PLUGIN_SYNC.md).
 
 ## Installing without GitHub
 
