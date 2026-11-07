@@ -22,6 +22,7 @@ class CompactFileView(
 		super().__init__(file_view.parentWidget())
 		self._file_view = file_view
 		self.key_press_event_filter = file_view.key_press_event_filter
+		self.wheel_event_filter = file_view.wheel_event_filter
 		self.setIconSize(file_view.iconSize())
 		self.setViewMode(self.ListMode)
 		self.setFlow(self.TopToBottom)
@@ -151,6 +152,12 @@ class CompactFileView(
 				return
 		if not self.key_press_event_filter(event):
 			super().keyPressEvent(event)
+
+	def wheelEvent(self, event):
+		if self.wheel_event_filter(event):
+			event.accept()
+		else:
+			super().wheelEvent(event)
 
 	def edit_name(self, file_url, selection_start=0, selection_end=None):
 		def on_editor_shown(editor):

@@ -13,6 +13,7 @@ from core.font_size import change_font_size, effective_font_size, \
 	get_saved_font_size, reset_font_size, save_font_size
 from core.key_bindings import get_shortcuts_for_command, global_command_row
 from core.viewer_status import viewer_status
+from fman.impl.util.qt.wheel_zoom import CtrlWheelZoom
 
 _SETTING_KEY = 'text_viewer_font_size'
 # The two global pane font-size commands every viewer's zoom follows (the
@@ -38,6 +39,11 @@ def change_view_font_size(view, apply_size, delta):
 		view._nav.pane,
 		'Font size %d'
 		% change_font_size(_SETTING_KEY, view.font, apply_size, delta)
+	)
+
+def wheel_zoom_for(view, apply_size):
+	return CtrlWheelZoom(
+		lambda delta: change_view_font_size(view, apply_size, delta)
 	)
 
 def reset_view_font_size(view, apply_size):

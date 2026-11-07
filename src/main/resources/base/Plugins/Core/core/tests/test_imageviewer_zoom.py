@@ -1,8 +1,9 @@
 from core.imageviewer_zoom import (
 	MAX_SCALE, MIN_SCALE, change_image_scale, clamp_scale, reset_image_scale,
-	zoom_message,
+	wheel_zoom_for, zoom_message,
 )
 from unittest import TestCase
+from unittest.mock import patch
 
 class _FakeView:
 	# Stands in for PaneImageView.effective_scale() - the "what's actually
@@ -80,3 +81,18 @@ class ResetImageScaleTest(TestCase):
 		self.assertIsNone(result['saved'])
 		self.assertIsNone(result['applied'])
 		self.assertEqual([('Fit to window', 3)], view._nav.pane.status_messages)
+
+class WheelZoomTest(TestCase):
+	class _WheelEvent:
+		def modifiers(self):
+			from PyQt5.QtCore import Qt
+			return Qt.ControlModifier
+		def angleDelta(self):
+			return type('Delta', (), {'y': lambda _self: 120})()
+
+	def test_ctrl_wheel_changes_image_scale(self):
+		view = _FakeView()
+		with patch('core.imageviewer_zoom.change_image_scale') as change:
+			wheel = wheel_zoom_for(view, 'apply scale')
+			self.assertTrue(wheel.handle(self._WheelEvent()))
+		change.assert_called_once_with(view, 'apply scale', +1)

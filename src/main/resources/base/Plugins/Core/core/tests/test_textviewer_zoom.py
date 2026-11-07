@@ -1,10 +1,13 @@
 from core.textviewer_zoom import (
-	change_view_font_size, reset_view_font_size, zoom_actions, zoom_delta_for,
+	change_view_font_size, reset_view_font_size, wheel_zoom_for, zoom_actions,
+	zoom_delta_for,
 )
 from core.viewer_navigation import ViewerAction
 from core.tests.viewer_stubs import StubPane
 from fman.impl.util.qt.key_event import QtKeyEvent
 from PyQt5.QtCore import Qt
+from pathlib import Path
+import json
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -39,6 +42,42 @@ class ZoomDeltaForTest(TestCase):
 		new_shortcut = QtKeyEvent(Qt.Key_K, Qt.ControlModifier)
 		self.assertIsNone(zoom_delta_for(old_default, rebound))
 		self.assertEqual(+1, zoom_delta_for(new_shortcut, rebound))
+
+	def test_matches_control_plus_zoom_shortcuts(self):
+		bindings = self._BINDINGS + [
+			{'keys': ['Ctrl+='], 'command': 'increase_pane_font_size'},
+			{'keys': ['Ctrl++'], 'command': 'increase_pane_font_size'},
+		]
+		for key in (Qt.Key_Equal, Qt.Key_Plus):
+			with self.subTest(key=key):
+				event = QtKeyEvent(key, Qt.ControlModifier)
+				self.assertEqual(+1, zoom_delta_for(event, bindings))
+
+	def test_matches_control_minus_zoom_shortcut(self):
+		bindings = self._BINDINGS + [
+			{'keys': ['Ctrl+-'], 'command': 'decrease_pane_font_size'},
+		]
+		event = QtKeyEvent(Qt.Key_Minus, Qt.ControlModifier)
+		self.assertEqual(-1, zoom_delta_for(event, bindings))
+
+	def test_platform_files_define_zoom_shortcuts(self):
+		plugin_dir = Path(__file__).resolve().parents[2]
+		for platform, modifier in (
+			('Windows', 'Ctrl'), ('Linux', 'Ctrl'), ('Mac', 'Cmd'),
+		):
+			with self.subTest(platform=platform):
+				path = plugin_dir / ('Key Bindings (%s).json' % platform)
+				bindings = json.loads(path.read_text(encoding='utf-8'))
+				for shortcut, command in (
+					('%s+=' % modifier, 'increase_pane_font_size'),
+					('%s++' % modifier, 'increase_pane_font_size'),
+					('%s+-' % modifier, 'decrease_pane_font_size'),
+				):
+					self.assertTrue(any(
+						shortcut in binding['keys']
+						and binding['command'] == command
+						for binding in bindings
+					))
 
 class ZoomActionsTest(TestCase):
 	# Same fake merged Key Bindings.json as above.
@@ -94,3 +133,17 @@ class ZoomStatusMessageTest(TestCase):
 		with patch('core.textviewer_zoom.reset_font_size'):
 			reset_view_font_size(view, lambda size: None)
 		self.assertEqual([('Font size reset', 3)], view._nav.pane.status_messages)
+
+class WheelZoomTest(TestCase):
+	class _WheelEvent:
+		def modifiers(self):
+			return Qt.ControlModifier
+		def angleDelta(self):
+			return type('Delta', (), {'y': lambda _self: 120})()
+
+	def test_ctrl_wheel_changes_text_view_font_size(self):
+		view = object()
+		with patch('core.textviewer_zoom.change_view_font_size') as change:
+			wheel = wheel_zoom_for(view, 'apply size')
+			self.assertTrue(wheel.handle(self._WheelEvent()))
+		change.assert_called_once_with(view, 'apply size', +1)

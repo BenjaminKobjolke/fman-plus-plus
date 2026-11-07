@@ -13,6 +13,7 @@ touching real settings I/O - see core/tests/test_imageviewer_zoom.py.
 """
 from core.settings import get_setting, save_setting
 from core.viewer_status import viewer_status
+from fman.impl.util.qt.wheel_zoom import CtrlWheelZoom
 
 _SETTING_KEY = 'image_viewer_zoom'
 MIN_SCALE = 0.1
@@ -33,6 +34,11 @@ def zoom_message(scale):
 	# One formatter so PaneImageView._actual_size, which sets 1.0 directly
 	# rather than through change_image_scale, still says it the same way.
 	return 'Zoom %d%%' % round(scale * 100)
+
+def wheel_zoom_for(view, apply_scale):
+	return CtrlWheelZoom(
+		lambda delta: change_image_scale(view, apply_scale, delta)
+	)
 
 def change_image_scale(
 	view, apply_scale, delta, get_saved=get_saved_scale, save=save_scale

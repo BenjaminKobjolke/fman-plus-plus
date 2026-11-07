@@ -15,6 +15,7 @@ from fman.impl.quicksearch import Quicksearch
 from fman.impl.prompt_popup import Prompt
 from fman.impl.util.qt import disable_window_animations_mac, Key_Escape, \
 	NoFocus, Key_Backspace, DisplayRole
+from fman.impl.util.qt.wheel_zoom import CtrlWheelZoom
 from fman.impl.util.qt.thread import run_in_main_thread
 from fman.impl.view.backgrounds import PAINTER, set_transparent
 from fman.impl.view.location_bar import LocationBar
@@ -98,6 +99,10 @@ class DirectoryPaneWidget(QWidget):
 		self._connect_selection_changes()
 		self._file_view.doubleClicked.connect(self._on_doubleclicked)
 		self._file_view.key_press_event_filter = self._on_key_pressed
+		self._wheel_zoom = CtrlWheelZoom(
+			lambda delta: controller.on_zoom_step(self, delta)
+		)
+		self._file_view.wheel_event_filter = self._wheel_zoom.handle
 		self._status_line = PaneStatusLine(self)
 		self.setLayout(Layout(
 			self._location_bar, self._file_view, self._status_line))

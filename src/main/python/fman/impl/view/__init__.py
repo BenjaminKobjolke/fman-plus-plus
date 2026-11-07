@@ -28,6 +28,7 @@ class FileListView(
 		super().__init__(parent)
 		self._get_context_menu = get_context_menu
 		self.key_press_event_filter = lambda event: False
+		self.wheel_event_filter = lambda event: False
 		self.setShowGrid(False)
 		self.setSortingEnabled(True)
 		self.setAttribute(WA_MacShowFocusRect, 0)
@@ -175,6 +176,11 @@ class FileListView(
 			return
 		if not self.key_press_event_filter(event):
 			super().keyPressEvent(event)
+	def wheelEvent(self, event):
+		if self.wheel_event_filter(event):
+			event.accept()
+		else:
+			super().wheelEvent(event)
 	def setModel(self, model):
 		old_model = self.model()
 		if old_model:

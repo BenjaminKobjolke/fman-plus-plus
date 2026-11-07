@@ -9,7 +9,7 @@ confirm_close() tolerating a view with no `_editing` attribute of its own.
 """
 from core.imageviewer_zoom import (
 	change_image_scale, get_saved_scale, reset_image_scale, save_scale,
-	zoom_message,
+	wheel_zoom_for, zoom_message,
 )
 from core.key_bindings import (
 	dispatch_bindable_command, KEY_BINDINGS_FILE, VIEWER_KEY_BINDINGS_FILE,
@@ -49,6 +49,7 @@ class PaneImageView(QScrollArea):
 		# follows the pane's cursor, which _Rename moves to the new name.
 		self._nav = ViewerNavigator(pane, 'image', on_close)
 		self._scale = get_saved_scale()
+		self._wheel_zoom = wheel_zoom_for(self, self._apply_scale)
 		self._movie = None
 		self._pixmap = None
 		self._label = QLabel()
@@ -89,6 +90,12 @@ class PaneImageView(QScrollArea):
 	def resizeEvent(self, event):
 		super().resizeEvent(event)
 		self._render()
+
+	def wheelEvent(self, event):
+		if self._wheel_zoom.handle(event):
+			event.accept()
+		else:
+			super().wheelEvent(event)
 
 	def keyPressEvent(self, event):
 		if (event.key() == Qt.Key_P and event.modifiers() & Qt.ControlModifier

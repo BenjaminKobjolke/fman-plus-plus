@@ -19,6 +19,9 @@
 	{ "keys": ["Ctrl+F2"], "command": "sort_by_column", "args": {"column_index": 1}},
 	{ "keys": ["Ctrl+F3"], "command": "sort_by_column", "args": {"column_index": 2}},
 	{ "keys": ["Ctrl+Up"], "command": "go_up" },
+	{ "keys": ["Ctrl+="], "command": "increase_pane_font_size" },
+	{ "keys": ["Ctrl++"], "command": "increase_pane_font_size" },
+	{ "keys": ["Ctrl+-"], "command": "decrease_pane_font_size" },
 	{ "keys": ["Ctrl+U"], "command": "swap_panes" },
 	{ "keys": ["Alt+Enter"], "command": "show_explorer_properties" },
 	{ "keys": ["Ctrl+\\"], "command": "go_to_root_of_current_drive" }

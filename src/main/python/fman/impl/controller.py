@@ -34,6 +34,16 @@ class Controller:
 		pane = self._panes.get(pane_widget)
 		if pane is not None:
 			pane._broadcast('on_selection_changed')
+	def on_zoom_step(self, pane_widget, delta):
+		pane = self._panes.get(pane_widget)
+		if pane is None or not delta:
+			return
+		if delta > 0:
+			command = 'increase_pane_font_size'
+		else:
+			command = 'decrease_pane_font_size'
+		if command in pane.get_commands():
+			pane.run_command(command)
 	def on_activated(self, pane_widget):
 		self._panes[pane_widget]._broadcast('on_activated')
 	def on_location_bar_clicked(self, pane_widget):

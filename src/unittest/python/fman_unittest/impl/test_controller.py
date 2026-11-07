@@ -106,6 +106,42 @@ class ControllerEditNameTest(TestCase):
 		self._pane._widget.edit_name.assert_called_once_with(self._URL, 1, 3)
 
 
+class ControllerZoomTest(TestCase):
+
+	def setUp(self):
+		self.controller = Controller(
+			MagicMock(), MagicMock(), MagicMock(), MagicMock(), MagicMock()
+		)
+		self.pane_widget = MagicMock()
+		self.pane = MagicMock()
+		self.controller._panes[self.pane_widget] = self.pane
+
+	def test_positive_step_runs_increase_command(self):
+		self.pane.get_commands.return_value = {'increase_pane_font_size'}
+
+		self.controller.on_zoom_step(self.pane_widget, 1)
+
+		self.pane.run_command.assert_called_once_with(
+			'increase_pane_font_size'
+		)
+
+	def test_negative_step_runs_decrease_command(self):
+		self.pane.get_commands.return_value = {'decrease_pane_font_size'}
+
+		self.controller.on_zoom_step(self.pane_widget, -1)
+
+		self.pane.run_command.assert_called_once_with(
+			'decrease_pane_font_size'
+		)
+
+	def test_missing_zoom_command_is_ignored(self):
+		self.pane.get_commands.return_value = set()
+
+		self.controller.on_zoom_step(self.pane_widget, 1)
+
+		self.pane.run_command.assert_not_called()
+
+
 class _RecordingListener:
 	def __init__(self):
 		self.calls = []

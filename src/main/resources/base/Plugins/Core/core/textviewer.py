@@ -28,7 +28,7 @@ from core.textviewer_watch import (
 )
 from core.textviewer_zoom import (
 	get_saved_view_font_size, change_view_font_size, reset_view_font_size,
-	zoom_actions, zoom_delta_for, RESET_COMMAND,
+	wheel_zoom_for, zoom_actions, zoom_delta_for, RESET_COMMAND,
 )
 from core.viewer_navigation import open_viewer_palette, ViewerNavigator
 from core.viewer_status import viewer_status
@@ -57,9 +57,15 @@ class PaneTextView(QPlainTextEdit):
 		self._editing = False
 		self._watcher = None
 		self._tail = False
+		self._wheel_zoom = wheel_zoom_for(self, self._apply_font_size)
 		self._set_read_only()
 		self.setLineWrapMode(QPlainTextEdit.WidgetWidth)
 		self.setStyleSheet(caret_fix_css(bg, fg, get_saved_view_font_size()))
+	def wheelEvent(self, event):
+		if self._wheel_zoom.handle(event):
+			event.accept()
+		else:
+			super().wheelEvent(event)
 	def keyPressEvent(self, event):
 		if (event.key() == Qt.Key_P and event.modifiers() & Qt.ControlModifier
 				and event.modifiers() & Qt.ShiftModifier):
