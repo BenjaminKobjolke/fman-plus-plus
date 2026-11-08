@@ -257,6 +257,13 @@ class QuicksearchTest(TestCase):
 	def test_resize_to_caps_at_parent_width(self):
 		self.dialog._resize_to(5000)
 		self.assertEqual(self.parent.width(), self.dialog.width())
+	def test_default_dialog_width_fits_narrow_parent(self):
+		self.parent.resize(300, 900)
+		dialog = Quicksearch(
+			self.parent, _StubApp(), {}, lambda _query: [], title='Go To'
+		)
+		self.assertLessEqual(dialog._default_dialog_width, self.parent.width())
+		dialog.close()
 
 	def test_request_refresh_updates_items_for_current_query_and_keeps_selection(self):
 		items = [QuicksearchItem('first'), QuicksearchItem('selected')]

@@ -103,8 +103,21 @@ class Quicksearch(QDialog):
 		self._items.ensurePolished()
 		self._default_list_width = self._items.minimumWidth()
 		self.adjustSize()
-		self._default_dialog_width = self.width()
 		self._dialog_chrome_width = self.width() - self._items.width()
+		parent = self.parentWidget()
+		if parent is not None:
+			list_width = max(
+				0, parent.width() - self._dialog_chrome_width
+			)
+			self._default_list_width = min(
+				self._default_list_width, list_width
+			)
+			self._items.setMinimumWidth(self._default_list_width)
+			self._items.setMaximumWidth(list_width)
+			self.setMaximumWidth(parent.width())
+			self.layout().activate()
+			self.adjustSize()
+		self._default_dialog_width = self.width()
 		self._left_grip = EdgeGrip(
 			self, 'left', self._resize_to, self._on_resize_released
 		)
@@ -126,6 +139,9 @@ class Quicksearch(QDialog):
 		minimum_width = min(self._default_dialog_width, parent_width)
 		width = max(minimum_width, min(width, parent_width))
 		center_x = self.x() + self.width() / 2
+		self._items.setMaximumWidth(
+			max(0, parent_width - self._dialog_chrome_width)
+		)
 		self._items.setMinimumWidth(max(
 			self._default_list_width, width - self._dialog_chrome_width
 		))
