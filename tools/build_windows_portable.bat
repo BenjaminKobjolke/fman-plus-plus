@@ -6,6 +6,7 @@ call "%~dp0build_windows.bat"
 cd "%~dp0.."
 call "%FMAN_PYTHON%" build.py portable_zip
 @set "RESULT=%ERRORLEVEL%"
+@if "%RESULT%"=="0" echo Portable ZIP: %CD%\target\fmanPortable.zip
 :done
 cd "%~dp0"
 @exit /b %RESULT%
