@@ -2,6 +2,7 @@ from core.commands import plugins as plugins_module
 from core.github import GitHubRepo
 from unittest import TestCase
 from unittest.mock import Mock, patch
+from types import SimpleNamespace
 
 
 def _repo(name='Plugin'):
@@ -89,10 +90,14 @@ class PickRepoTest(TestCase):
 			self, status, install_zip, record_installation,
 			load_installed_plugin, show_alert):
 		repo = _host_repo('Host', 'GitLab · 3 ★', source='gitlab')
-		repo.get_latest_release = Mock(return_value='v1')
-		repo.download_zipball = Mock(return_value=b'zip')
+		repo.get_latest_release = Mock(spec=['get_latest_release'],
+			return_value='v1')
+		repo.download_zipball = Mock(spec=['download_zipball'],
+			return_value=b'zip')
 		command = plugins_module.InstallPlugin(None)
-		command._pick_repo = Mock(return_value=repo)
+		command._plugin_repos = []
+		command._pick_repo = Mock(spec=plugins_module.InstallPlugin._pick_repo,
+			return_value=repo)
 
 		command()
 
@@ -103,14 +108,10 @@ class PickRepoTest(TestCase):
 
 
 def _host_repo(name, hint, source='forgejo'):
-	repo = Mock()
-	repo.name = name
-	repo.description = name
-	repo.num_stars = 3
-	repo.hint = hint
-	repo.source = source
-	repo.location = 'https://gitlab.example/team/' + name
-	return repo
+	return SimpleNamespace(
+		name=name, description=name, num_stars=3, hint=hint, source=source,
+		location='https://gitlab.example/team/' + name
+	)
 
 
 class MockSearch:

@@ -1,5 +1,7 @@
 from core.plugin_catalog import CatalogPlugin, search
 from core.commands.plugins import InstallPlugin
+from core.fman_api import FmanApiClient
+from core.plugin_hosts import HostSearch
 from unittest import TestCase
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
@@ -7,9 +9,9 @@ from unittest.mock import Mock, patch
 
 class CatalogPluginTest(TestCase):
 	def test_plugin_adapts_catalog_releases_and_downloads(self):
-		client = Mock()
+		client = Mock(spec=FmanApiClient)
 		client.get_catalog_releases.return_value = (
-			Mock(version='2.0'), Mock(version='1.0')
+			SimpleNamespace(version='2.0'), SimpleNamespace(version='1.0')
 		)
 		client.download_release.return_value = b'zip bytes'
 		client.catalog_plugin_url.return_value = 'https://example.test/api/v1/plugins/Example'
@@ -27,7 +29,7 @@ class CatalogPluginTest(TestCase):
 		client.catalog_plugin_url.assert_called_once_with('Example')
 
 	def test_search_wraps_each_api_result(self):
-		client = Mock()
+		client = Mock(spec=FmanApiClient)
 		client.search_catalog.return_value = [
 			SimpleNamespace(name='Example', description='Example description')
 		]
@@ -44,10 +46,11 @@ class CatalogPluginTest(TestCase):
 		command._plugin_repos = [SimpleNamespace(
 			name='GitHubPlugin', description='GitHub', num_stars=3
 		)]
-		command._host_search = Mock(search=Mock(return_value=()))
+		command._host_search = Mock(spec=HostSearch)
+		command._host_search.search.return_value = ()
 		command._catalog_results[''] = (
-			CatalogPlugin(Mock(), 'CatalogPlugin', 'Catalog'),
-			CatalogPlugin(Mock(), 'GitHubPlugin', 'Duplicate')
+			CatalogPlugin(Mock(spec=FmanApiClient), 'CatalogPlugin', 'Catalog'),
+			CatalogPlugin(Mock(spec=FmanApiClient), 'GitHubPlugin', 'Duplicate')
 		)
 
 		items = list(command._get_matching_repos(''))
@@ -65,12 +68,14 @@ class CatalogPluginTest(TestCase):
 	def test_install_records_catalog_source_and_location(
 			self, status, install_zip, record_installation,
 			load_installed_plugin, show_alert):
-		client = Mock()
+		client = Mock(spec=FmanApiClient)
 		client.get_catalog_releases.return_value = [SimpleNamespace(version='2.0')]
 		client.download_release.return_value = b'zip bytes'
 		plugin = CatalogPlugin(client, 'Example', 'Catalog plugin')
 		command = InstallPlugin(None)
-		command._pick_repo = Mock(return_value=plugin)
+		command._plugin_repos = []
+		command._pick_repo = Mock(spec=InstallPlugin._pick_repo,
+			return_value=plugin)
 
 		command()
 
@@ -83,7 +88,7 @@ class CatalogPluginTest(TestCase):
 	@patch('core.commands.plugins.search_catalog', return_value=())
 	def test_catalog_search_is_cached_per_distinct_query(self, search_catalog):
 		command = InstallPlugin(None)
-		command._catalog_client = Mock()
+		command._catalog_client = Mock(spec=FmanApiClient)
 
 		command._get_catalog_plugins('one')
 		command._get_catalog_plugins('one')
