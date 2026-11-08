@@ -130,10 +130,10 @@ def _remember_base_pane_font_size(pane):
 		_base_pane_font_size = effective_font_size(lambda: _pane_font(pane))
 
 def _apply_zoom_scale(size):
-	# The palette grows by the same number of points as the pane font, keeping
-	# its original size difference. The icons still scale proportionally from
-	# whatever size the theme or user picked; one factor keeps "Set icon size
-	# 48" zooming from 48 rather than Qt's 16.
+	# The palette and window chrome grow by the same number of points as the
+	# pane font. The icons still scale proportionally from whatever size the
+	# theme or user picked; one factor keeps "Set icon size 48" zooming from
+	# 48 rather than Qt's 16.
 	if size is None or not _base_pane_font_size:
 		factor = 1.0
 		offset_pts = 0

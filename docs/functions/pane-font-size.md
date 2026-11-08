@@ -21,7 +21,8 @@ This changes the **size** of the text, not the typeface. Which font
 family the UI is drawn in is a separate, independent setting — see
 [Select font](select-font.md) and [`docs/FONTS.md`](../FONTS.md).
 
-This zooms the two file-list panes and the command palette. The
+This zooms the two file-list panes, the command palette and its title, and
+the path bar, column headers and status bar. The
 [text viewer](../views/TEXT_VIEWER.md#zoom)
 has its own, independent zoom that reuses these same shortcuts (whatever
 they're currently bound to) and adds matching palette entries scoped to the
@@ -50,10 +51,10 @@ These can be rebound in `Key Bindings.json` like any other command, e.g.:
 - The font size is stored in `Core Settings.json` under the `pane_font_size`
   key. Running **Reset font size** removes that key entirely rather than
   writing back a hard-coded default.
-- The two file-list panes and the command palette are affected — the status
-  bar, location bar and column headers keep their own font size. The palette
-  grows by the same number of points as the pane text, so the palette stays
-  three points larger at every zoom; **Reset font size** puts it back. Its
+- The two file-list panes, status bar, location bar and column headers grow
+  with the pane font. The palette and its title grow by the same number of
+  points as the pane text, so the palette stays three points larger at every
+  zoom; **Reset font size** puts it back. Its
   result list keeps a seven-row minimum when the window has room, and shrinks
   as needed in a short window so the dialog stays inside it while showing at
   least one full row. Go To and text prompts with suggestions use the same

@@ -161,10 +161,10 @@ class ThemeController:
 
 	def set_palette_font_offset(self, offset_pts):
 		"""
-		Adds `offset_pts` to the command palette's font sizes, so the palette
-		follows the pane font zoom by the same number of points. Zero leaves
-		the palette unchanged. Not remembered here, for the same reason - see
-		set_icon_scale.
+		Adds `offset_pts` to the command palette and window chrome (path bar,
+		column headers and status bar), so they follow the pane font zoom by
+		the same number of points. Zero leaves them unchanged. Not remembered
+		here, for the same reason - see set_icon_scale.
 
 		Separate from set_icon_scale rather than folded into it: the palette
 		uses a point offset while icons use a proportional scale, and a plugin

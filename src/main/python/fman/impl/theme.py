@@ -65,11 +65,12 @@ class Theme:
 		return self._quicksearch_item_css
 	def set_font_offset(self, offset_pts):
 		"""
-		Adds `offset_pts` to every command palette font size, so it grows by
-		the same number of points as the pane font. Zero leaves its sizes
-		unchanged. Deliberately not remembered here: the zoom that decides
-		this offset is the Core plugin's pane_font_size, which persists and is
-		re-applied on startup already.
+		Adds `offset_pts` to the command palette and window chrome (path bar,
+		column headers and status bar), so they grow by the same number of
+		points as the pane font. Zero leaves their sizes unchanged.
+		Deliberately not remembered here: the zoom that decides this offset is
+		the Core plugin's pane_font_size, which persists and is re-applied on
+		startup already.
 		"""
 		self._font_offset_pts = offset_pts
 		self._quicksearch_item_css = self._get_quicksearch_item_css()
@@ -149,21 +150,46 @@ class Theme:
 	def _zoom_pts(self, pts):
 		return max(1, round(pts + self._font_offset_pts))
 	def _get_font_zoom_qss(self):
-		# The palette's items are painted by hand from
-		# get_quicksearch_item_css, but its query line is a real widget, so
-		# its share of the zoom has to land as QSS - last, which is what
-		# makes it win over the theme's own rule for the same selector.
+		# The palette's rows are painted by hand from
+		# get_quicksearch_item_css. These QSS rules zoom its other widgets and
+		# the window chrome, and come last so they win over theme rules.
 		if self._font_offset_pts == 0 or not self._css_rules:
 			return ''
-		try:
-			pts = self._zoom_pts(
-				self._css_engine().parse_pts('.quicksearch-query', 'font-size')
+		zoomed_selectors = (
+			('*', 'Quicksearch #header, Quicksearch QListView', None),
+			('th', self._CSS_TO_QSS['th'], None),
+			('.statusbar', self._CSS_TO_QSS['.statusbar'], None),
+			('.quicksearch-query', self._CSS_TO_QSS['.quicksearch-query'], None),
+			('.locationbar', self._CSS_TO_QSS['.locationbar'], '*'),
+		)
+		result = ''
+		for css_selector, qss_selector, fallback in zoomed_selectors:
+			specific_rules = [
+				rule
+				for rules in self._css_rules.values()
+				for rule in rules
+				if css_selector in rule.selectors
+			]
+			try:
+				pts = CSSEngine(specific_rules).parse_pts(
+					css_selector, 'font-size'
+				)
+			except ValueError:
+				if fallback is None:
+					continue
+				try:
+					pts = CSSEngine([
+						rule
+						for rules in self._css_rules.values()
+						for rule in rules
+						if fallback in rule.selectors
+					]).parse_pts(fallback, 'font-size')
+				except ValueError:
+					continue
+			result += '\n%s {\n\tfont-size: %dpt;\n}' % (
+				qss_selector, self._zoom_pts(pts)
 			)
-		except ValueError:
-			# No theme loaded so far says how big the query line is; there is
-			# then nothing to scale, and Qt's own default applies.
-			return ''
-		return '\nQuicksearch QLineEdit {\n\tfont-size: %dpt;\n}' % pts
+		return result
 	def _css_rule_to_qss(self, rule):
 		qss_selectors = self._get_qss_selectors(rule.selectors)
 		if not qss_selectors:

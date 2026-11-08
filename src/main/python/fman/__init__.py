@@ -585,10 +585,11 @@ def set_icon_scale(factor):
 
 def set_palette_font_offset(offset_pts):
 	"""
-	Adds `offset_pts` to the command palette's font sizes, so it follows a
-	font zoom by the same number of points. Like set_icon_scale this is not
-	remembered: whatever decides the offset is expected to be saved and
-	re-applied itself. Zero means no change.
+	Adds `offset_pts` to the command palette and window chrome (path bar,
+	column headers and status bar), so they follow a font zoom by the same
+	number of points. Like set_icon_scale this is not remembered: whatever
+	decides the offset is expected to be saved and re-applied itself. Zero
+	means no change.
 	"""
 	return _get_app_ctxt().theme_controller.set_palette_font_offset(offset_pts)
 

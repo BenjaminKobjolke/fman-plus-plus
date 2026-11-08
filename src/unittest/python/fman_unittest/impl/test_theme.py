@@ -24,6 +24,15 @@ _QUICKSEARCH_CSS = """
 .quicksearch-item-hint { font-size: 8pt; color: $bright_fg; }
 .quicksearch-item-description { font-size: 8pt; color: $muted_fg; }
 """
+_CORE_LIKE_ZOOM_CSS = """
+* { font-size: 9pt; }
+th { font-size: 8pt; }
+.statusbar { font-size: 8pt; }
+.locationbar { font-size: 9pt; }
+""" + _QUICKSEARCH_CSS.replace(
+	'.quicksearch-query { font-size: 10pt; }',
+	'.quicksearch-query { font-size: 12pt; }'
+)
 
 class StubApp:
 	def __init__(self):
@@ -117,6 +126,45 @@ class ThemeTest(TestCase):
 			stylesheet.index('font-size: 10pt'),
 			stylesheet.index('font-size: 13pt')
 		)
+	def test_font_offset_zooms_window_chrome_and_palette_header(self):
+		theme = self._make_theme()
+		theme.load(self._write('Theme.css', _CORE_LIKE_ZOOM_CSS))
+		theme.enable_updates()
+		theme.set_font_offset(3)
+		stylesheet = self._app.stylesheet
+		for selector, size in (
+			('Quicksearch #header, Quicksearch QListView', 12),
+			('LocationBar:read-only', 12),
+			('QTableView QHeaderView::section', 11),
+			('QStatusBar, QStatusBar QLabel, PaneStatusLine', 11),
+			('Quicksearch QLineEdit', 15),
+		):
+			self.assertIn(
+				'%s {\n\tfont-size: %dpt;' % (selector, size), stylesheet
+			)
+	def test_zero_font_offset_does_not_add_zoom_rules(self):
+		theme = self._make_theme()
+		theme.load(self._write('Theme.css', _CORE_LIKE_ZOOM_CSS))
+		theme.enable_updates()
+		theme.set_font_offset(0)
+		self.assertEqual('', theme._get_font_zoom_qss())
+	def test_font_offset_skips_only_selectors_without_a_base_size(self):
+		css = _CORE_LIKE_ZOOM_CSS.replace('th { font-size: 8pt; }', '')
+		theme = self._make_theme()
+		theme.load(self._write('Theme.css', css))
+		theme.enable_updates()
+		theme.set_font_offset(3)
+		stylesheet = self._app.stylesheet
+		self.assertNotIn('QTableView QHeaderView::section {', stylesheet)
+		for selector, size in (
+			('Quicksearch #header, Quicksearch QListView', 12),
+			('LocationBar:read-only', 12),
+			('QStatusBar, QStatusBar QLabel, PaneStatusLine', 11),
+			('Quicksearch QLineEdit', 15),
+		):
+			self.assertIn(
+				'%s {\n\tfont-size: %dpt;' % (selector, size), stylesheet
+			)
 	def test_resetting_the_font_offset_drops_the_override(self):
 		theme = self._make_theme()
 		theme.load(self._write('Theme.css', _QUICKSEARCH_CSS))
