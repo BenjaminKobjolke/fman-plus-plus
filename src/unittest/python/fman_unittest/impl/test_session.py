@@ -144,11 +144,16 @@ class _Pane:
 	def __init__(self, location, col_widths, compact_view=False):
 		self._location = location
 		self._col_widths = col_widths
-		self._widget = _VisibilityWidget(hidden=True, compact_view=compact_view)
+		self.hidden = True
+		self.compact_view = compact_view
 	def get_location(self):
 		return self._location
 	def get_column_widths(self):
 		return self._col_widths
+	def isHidden(self):
+		return self.hidden
+	def is_compact_view(self):
+		return self.compact_view
 
 class _StartupWindow:
 	def __init__(self):

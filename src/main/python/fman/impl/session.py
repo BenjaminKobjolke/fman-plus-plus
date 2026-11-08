@@ -182,8 +182,8 @@ class SessionManager:
 		return {
 			'location': location if location is not None else pane.get_location(),
 			'col_widths': pane.get_column_widths(),
-			'hidden': pane._widget.isHidden(),
-			'compact_view': pane._widget.is_compact_view()
+			'hidden': pane.isHidden(),
+			'compact_view': pane.is_compact_view()
 		}
 
 def _apply_pane_visibility(panes, pane_infos, single_pane):
