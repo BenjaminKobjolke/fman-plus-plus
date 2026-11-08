@@ -159,6 +159,7 @@ The release notes folder and tag must use the bumped version.
 ```bat
 tools\build_windows.bat          :: python build.py freeze  -> target\fman\
 tools\build_windows_installer.bat:: python build.py installer -> target\fmanSetup.exe (fbs's own NSIS template)
+tools\build_windows_portable.bat :: freeze + python build.py portable_zip -> target\fmanPortable.zip (unsigned, for testing)
 ```
 
 `build.py` also exposes the full fbs pipeline for an actual public release:
