@@ -74,6 +74,7 @@ One command per well-known destination, all reachable from the
 | `go_to_downloads` | Go to downloads | your Downloads | all |
 | `go_to_app_data` | Go to AppData | `%APPDATA%`; `~/Library/Application Support` on macOS; `$XDG_CONFIG_HOME` or `~/.config` on Linux | all |
 | `go_to_plugins_directory` | Go to fman++ plugins directory | the plugins folder in fman's data directory (`%APPDATA%\fman\Plugins`, `~/Library/Application Support/fman/Plugins`, `~/.config/fman/Plugins`; follows `FMAN_DATA_DIRECTORY`) | all |
+| `open_settings` | Open Settings, Open Preferences | your Settings folder (`Plugins/User/Settings` in fman's data directory, where your key bindings and settings files live) | all |
 | `go_to_temp` | Go to temp | `%TEMP%`, `/tmp` | all |
 | `go_to_local_app_data` | Go to local AppData | `%LOCALAPPDATA%` | Windows |
 | `go_to_program_data` | Go to ProgramData | `%PROGRAMDATA%` | Windows |

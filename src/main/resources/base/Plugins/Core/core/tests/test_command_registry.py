@@ -48,7 +48,7 @@ EXPECTED = frozenset({
 	'MoveCursorPageUp', 'MoveCursorUp', 'MoveToTrash', 'Open',
 	'OpenDataDirectory', 'OpenDirectory', 'OpenFile', 'OpenInLeftPane',
 	'OpenInRightPane', 'OpenListener', 'OpenNativeFileManager', 'OpenOrView',
-	'OpenSelectedFiles', 'OpenTerminal', 'OpenWith', 'OpenWithEditor',
+	'OpenSelectedFiles', 'OpenSettings', 'OpenTerminal', 'OpenWith', 'OpenWithEditor',
 	'OpenWithSystemDefault', 'Pack', 'PackHere', 'PackWithPassword',
 	'Paste', 'PasteCut', 'Quit', 'Reload', 'ReloadPlugins',
 	'RefreshDriveSpace', 'RefreshFolders', 'RememberSortSettings', 'RemovePane',

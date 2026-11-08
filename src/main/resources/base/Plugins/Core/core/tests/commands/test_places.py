@@ -17,6 +17,20 @@ class GoToPluginsDirectoryTest(TestCase):
 			GoToPluginsDirectory(None).get_directory()
 		)
 
+class OpenSettingsTest(TestCase):
+	def test_is_settings_folder_in_data_directory(self):
+		from core.commands.places import OpenSettings
+
+		self.assertEqual(
+			os.path.join(DATA_DIRECTORY, 'Plugins', 'User', 'Settings'),
+			OpenSettings(None).get_directory()
+		)
+
+	def test_aliases(self):
+		from core.commands.places import OpenSettings
+
+		self.assertEqual(('Open Settings', 'Open Preferences'), OpenSettings.aliases)
+
 class EnvDirTest(TestCase):
 	def test_unset_variable_is_none(self):
 		# None means "no such place on this machine", which is what makes the

@@ -19,7 +19,7 @@ import os
 
 __all__ = [
 	'GoHome', 'GoToAppData', 'GoToDesktop', 'GoToDocuments', 'GoToDownloads',
-	'GoToPluginsDirectory', 'GoToTemp'
+	'GoToPluginsDirectory', 'OpenSettings', 'GoToTemp'
 ]
 
 def _env_dir(name):
@@ -86,6 +86,13 @@ class GoToPluginsDirectory(_GoToDirectory):
 
 	def get_directory(self):
 		return os.path.join(DATA_DIRECTORY, 'Plugins')
+
+class OpenSettings(_GoToDirectory):
+
+	aliases = ('Open Settings', 'Open Preferences')
+
+	def get_directory(self):
+		return os.path.join(DATA_DIRECTORY, 'Plugins', 'User', 'Settings')
 
 class GoToTemp(_GoToDirectory):
 
