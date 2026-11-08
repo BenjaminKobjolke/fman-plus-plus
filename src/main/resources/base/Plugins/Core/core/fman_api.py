@@ -1,6 +1,7 @@
 """Typed client for the fman account and plugin catalog API."""
-from core.plugin_list import PluginListEntry
+from core.plugin_list import PluginListEntry, PluginOs
 from dataclasses import dataclass
+from datetime import datetime
 from urllib.parse import quote
 from typing import Any
 
@@ -18,6 +19,14 @@ class FmanApiError(Exception):
 
 class FmanApiAuthError(FmanApiError):
 	"""The stored account token was rejected by the API."""
+
+
+class FmanApiConflictError(FmanApiError):
+	"""A settings save was based on an outdated revision."""
+
+	def __init__(self, current: 'SyncedSettingsDocument | None') -> None:
+		super().__init__('The synced settings have changed on another installation')
+		self.current = current
 
 
 @dataclass(frozen=True)
@@ -41,6 +50,57 @@ class CatalogPluginInfo:
 @dataclass(frozen=True)
 class CatalogReleaseInfo:
 	version: str
+
+
+@dataclass(frozen=True)
+class SyncedSettingsDocument:
+	os: str
+	kind: str
+	revision: int
+	content: list | dict
+	updated_at: str
+
+	@classmethod
+	def from_json(cls, data: Any) -> 'SyncedSettingsDocument':
+		if not isinstance(data, dict):
+			raise FmanApiError('Invalid synced settings response: expected an object')
+		try:
+			os_name = data['os']
+			kind = data['kind']
+			revision = data['revision']
+			content = data['content']
+			updated_at = data['updated_at']
+		except (KeyError, TypeError) as e:
+			raise FmanApiError(
+				'Invalid synced settings response: missing fields'
+			) from e
+		valid_os = {item.value for item in PluginOs}
+		valid_kinds = {
+			'key_bindings', 'viewer_key_bindings', 'command_titles',
+			'command_keywords'
+		}
+		if (
+			not isinstance(os_name, str) or os_name not in valid_os
+			or not isinstance(kind, str) or kind not in valid_kinds
+		):
+			raise FmanApiError('Invalid synced settings response: unknown os or kind')
+		if isinstance(revision, bool) or not isinstance(revision, int) or revision < 1:
+			raise FmanApiError('Invalid synced settings response: invalid revision')
+		if kind in ('key_bindings', 'viewer_key_bindings'):
+			valid_content = isinstance(content, list)
+		else:
+			valid_content = isinstance(content, dict)
+		if not valid_content:
+			raise FmanApiError('Invalid synced settings response: invalid content')
+		if not isinstance(updated_at, str):
+			raise FmanApiError('Invalid synced settings response: invalid updated_at')
+		try:
+			datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+		except ValueError as e:
+			raise FmanApiError(
+				'Invalid synced settings response: invalid updated_at'
+			) from e
+		return cls(os_name, kind, revision, content, updated_at)
 
 
 class FmanApiClient:
@@ -103,6 +163,27 @@ class FmanApiClient:
 	def delete_plugin(self, name: str) -> None:
 		path = _API_V1 + '/plugin-list/' + quote(name, safe='')
 		self._request('delete', path)
+
+	def get_settings(self, os_name: str, kind: str) -> SyncedSettingsDocument | None:
+		path = _API_V1 + '/settings/%s/%s' % (
+			quote(os_name, safe=''), quote(kind, safe='')
+		)
+		response = self._request('get', path, allow_not_found=True)
+		if response is None:
+			return None
+		return SyncedSettingsDocument.from_json(self._json_object(response))
+
+	def put_settings(
+		self, os_name: str, kind: str, base_revision: int | None, content: list | dict
+	) -> SyncedSettingsDocument:
+		path = _API_V1 + '/settings/%s/%s' % (
+			quote(os_name, safe=''), quote(kind, safe='')
+		)
+		response = self._request(
+			'put', path, json={'base_revision': base_revision, 'content': content},
+			settings_conflict=True
+		)
+		return SyncedSettingsDocument.from_json(self._json_object(response))
 
 	def search_catalog(
 		self, query: str, limit: int = 20
@@ -167,6 +248,8 @@ class FmanApiClient:
 
 	def _request(self, method: str, path: str, authenticated: bool = True,
 			**kwargs: Any) -> Any:
+		allow_not_found = kwargs.pop('allow_not_found', False)
+		settings_conflict = kwargs.pop('settings_conflict', False)
 		url = self._base_url + path
 		headers = dict(kwargs.pop('headers', {}))
 		if authenticated:
@@ -181,6 +264,18 @@ class FmanApiClient:
 			raise FmanApiError('Could not reach the fman API: %s' % e) from e
 		if response.status_code == 401:
 			raise FmanApiAuthError('The fman account token was rejected')
+		if response.status_code == 404 and allow_not_found:
+			return None
+		if response.status_code == 409 and settings_conflict:
+			data = self._json_object(response)
+			if 'current' not in data:
+				raise FmanApiError(
+					'Invalid settings conflict response: missing current'
+				)
+			current = data['current']
+			if current is not None:
+				current = SyncedSettingsDocument.from_json(current)
+			raise FmanApiConflictError(current)
 		if not 200 <= response.status_code < 300:
 			raise FmanApiError(
 				'fman API returned HTTP %d: %s' % (

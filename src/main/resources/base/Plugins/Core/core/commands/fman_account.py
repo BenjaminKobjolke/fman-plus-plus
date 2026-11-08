@@ -10,6 +10,7 @@ from core.plugin_installation import (
 from core.plugin_list import PluginOs, PluginSource, entry_for_installed
 from core.plugin_sync import SyncState, compute_sync
 from core.plugin_sync_dialog import PluginSyncDialog
+from core.settings_sync_runner import sync_settings
 from fman import (
 	ApplicationCommand, DirectoryPaneListener, NO, PLATFORM,
 	YES, run_application_command, show_alert, show_status_message,
@@ -20,7 +21,7 @@ from urllib.error import URLError
 
 __all__ = [
 	'PluginSyncOnStartup', 'SignInToFmanAccount', 'SignOutOfFmanAccount',
-	'SyncPlugins',
+	'SyncPlugins', 'SyncSettings',
 ]
 
 _STARTUP_SYNC_STARTED = False
@@ -29,6 +30,7 @@ _REMOVE_MESSAGE = (
 	'computer. Remove them here too?\n\n%s'
 )
 _NETWORK_ERROR = 'Could not sync plugins: %s'
+_SETTINGS_NETWORK_ERROR = 'Could not sync settings: %s'
 
 
 class SignInToFmanAccount(ApplicationCommand):
@@ -44,6 +46,7 @@ class SignInToFmanAccount(ApplicationCommand):
 		if result.email:
 			message += ': ' + result.email
 		show_status_message(message)
+		run_application_command('sync_settings')
 
 
 class SignOutOfFmanAccount(ApplicationCommand):
@@ -52,6 +55,22 @@ class SignOutOfFmanAccount(ApplicationCommand):
 	def __call__(self):
 		clear_token()
 		show_status_message('Signed out of fman account')
+
+
+class SyncSettings(ApplicationCommand):
+	aliases = ('Sync settings',)
+
+	def __call__(self, silent=False):
+		try:
+			client = signed_in_client()
+		except FmanApiError as error:
+			show_status_message(_SETTINGS_NETWORK_ERROR % error)
+			return
+		if client is None:
+			if not silent:
+				show_status_message('Signed out of fman account')
+			return
+		sync_settings(client)
 
 
 class SyncPlugins(ApplicationCommand):
@@ -163,6 +182,7 @@ class PluginSyncOnStartup(DirectoryPaneListener):
 			return
 		_STARTUP_SYNC_STARTED = True
 		run_application_command('sync_plugins', {'silent': True})
+		run_application_command('sync_settings', {'silent': True})
 
 
 def _entry_for_installed(plugin_dir):

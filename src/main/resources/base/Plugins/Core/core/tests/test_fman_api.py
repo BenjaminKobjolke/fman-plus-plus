@@ -1,4 +1,7 @@
-from core.fman_api import FmanApiAuthError, FmanApiClient, FmanApiError
+from core.fman_api import (
+	FmanApiAuthError, FmanApiClient, FmanApiConflictError, FmanApiError,
+	SyncedSettingsDocument,
+)
 from core.plugin_list import PluginListEntry, PluginOs, PluginSource
 from unittest import TestCase
 from unittest.mock import Mock
@@ -111,6 +114,55 @@ class FmanApiClientTest(TestCase):
 			client.catalog_plugin_url('Example Plugin')
 		)
 
+	def test_get_settings_sends_bearer_header_and_parses_document(self):
+		self.session.get.return_value = _response(_settings_json())
+
+		self.assertEqual(
+			_settings_document(), self.client.get_settings('Windows', 'key_bindings')
+		)
+		self.session.get.assert_called_once_with(
+			'https://fman.workflow-tools.com/api/v1/settings/Windows/key_bindings',
+			headers={'Authorization': 'Bearer access-token'}, timeout=30
+		)
+
+	def test_get_settings_returns_none_for_404(self):
+		self.session.get.return_value = _response(
+			{'message': 'not found'}, status_code=404
+		)
+
+		self.assertIsNone(self.client.get_settings('Windows', 'key_bindings'))
+
+	def test_put_settings_sends_base_revision_and_content(self):
+		self.session.put.return_value = _response(_settings_json())
+
+		self.assertEqual(
+			_settings_document(),
+			self.client.put_settings('Windows', 'key_bindings', 2, [{'keys': 'Ctrl+A'}])
+		)
+		self.session.put.assert_called_once_with(
+			'https://fman.workflow-tools.com/api/v1/settings/Windows/key_bindings',
+			json={'base_revision': 2, 'content': [{'keys': 'Ctrl+A'}]},
+			headers={'Authorization': 'Bearer access-token'}, timeout=30
+		)
+
+	def test_put_settings_raises_conflict_with_current_document(self):
+		self.session.put.return_value = _response(
+			{'current': _settings_json()}, status_code=409
+		)
+
+		with self.assertRaises(FmanApiConflictError) as caught:
+			self.client.put_settings('Windows', 'key_bindings', 2, [])
+
+		self.assertEqual(_settings_document(), caught.exception.current)
+
+	def test_put_settings_raises_conflict_with_null_current_document(self):
+		self.session.put.return_value = _response({'current': None}, status_code=409)
+
+		with self.assertRaises(FmanApiConflictError) as caught:
+			self.client.put_settings('Windows', 'key_bindings', None, [])
+
+		self.assertIsNone(caught.exception.current)
+
 
 class FmanApiAuthTest(TestCase):
 	def test_auth_init_and_callback_are_typed(self):
@@ -136,6 +188,17 @@ def _entry():
 
 def _entry_json():
 	return _entry().to_json()
+
+
+def _settings_document():
+	return SyncedSettingsDocument.from_json(_settings_json())
+
+
+def _settings_json():
+	return {
+		'os': 'Windows', 'kind': 'key_bindings', 'revision': 3,
+		'content': [{'keys': 'Ctrl+A'}], 'updated_at': '2026-11-08T20:00:00+00:00'
+	}
 
 
 def _response(data, status_code=200, content=b'', headers=None):

@@ -15,7 +15,7 @@ class AccountCommandsTest(TestCase):
 			'show_status_message', 'entry_for_installed',
 			'_get_thirdparty_plugins', 'install_zip', 'record_installation',
 			'load_installed_plugin', 'remove_plugin_dir',
-			'run_application_command', 'repo_for_location',
+			'run_application_command', 'repo_for_location', 'sync_settings',
 		):
 			p = patch('core.commands.fman_account.' + name)
 			self.patches[name] = p.start()
@@ -36,10 +36,24 @@ class AccountCommandsTest(TestCase):
 		self.patches['show_status_message'].assert_called_once_with(
 			'Signed in to fman account: person@example.com'
 		)
+		self.patches['run_application_command'].assert_called_once_with(
+			'sync_settings'
+		)
 
 	def test_sign_out_clears_token(self):
 		commands.SignOutOfFmanAccount(None)()
 		self.patches['clear_token'].assert_called_once_with()
+
+	def test_sync_settings_command_uses_signed_in_client(self):
+		command = commands.SyncSettings(None)
+		command()
+		self.patches['sync_settings'].assert_called_once_with(self.client)
+
+	def test_sync_settings_command_is_quiet_when_silent_and_signed_out(self):
+		self.patches['signed_in_client'].return_value = None
+		commands.SyncSettings(None)(silent=True)
+		self.patches['show_status_message'].assert_not_called()
+		self.patches['sync_settings'].assert_not_called()
 
 	def test_no_work_is_quiet(self):
 		self.command(silent=True)
@@ -135,8 +149,12 @@ class AccountCommandsTest(TestCase):
 		listener = commands.PluginSyncOnStartup(None)
 		listener.on_path_changed()
 		listener.on_path_changed()
-		self.patches['run_application_command'].assert_called_once_with(
-			'sync_plugins', {'silent': True}
+		self.assertEqual(
+			self.patches['run_application_command'].call_args_list,
+			[
+				(("sync_plugins", {'silent': True}),),
+				(("sync_settings", {'silent': True}),),
+			]
 		)
 		commands._STARTUP_SYNC_STARTED = False
 

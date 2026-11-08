@@ -1,8 +1,8 @@
 # Syncing plugins between computers
 
 Sign in to a fman account to keep one list of third-party plugins across your
-computers. fman syncs plugin names, sources and versions only; it does not
-sync plugin settings or other files.
+computers. This page covers that plugin list. For keyboard shortcuts and
+command palette names, see [Syncing settings between computers](SETTINGS_SYNC.md).
 
 ## Sign in and sign out
 

@@ -1,6 +1,6 @@
 from core.command_titles import COMMAND_TITLES_FILE
+from core.command_keywords import COMMAND_KEYWORDS_FILE
 from core.keyword_editor import EntryMenu, edit_command_keywords
-from core.quicksearch_screen import QuicksearchScreen
 from unittest import TestCase
 from unittest.mock import ANY, patch
 
@@ -18,6 +18,7 @@ class _Screens:
 		self.titles = dict(titles or {})
 		self._prompt = prompt
 		self.shown = []
+		self.sync_calls = []
 	def show_quicksearch(self, get_items, *_args, **_kwargs):
 		options = [item.value for item in get_items('')]
 		self.shown.append(options)
@@ -56,6 +57,9 @@ def _run(
 		'core.command_titles.get_setting', side_effect=screens.get_title
 	), patch(
 		'core.keyword_editor.save_setting', side_effect=screens.save_setting
+	), patch(
+		'core.keyword_editor.record_settings_change',
+		side_effect=lambda file_name: screens.sync_calls.append(file_name)
 	):
 		edit_command_keywords(command, title)
 	return screens
@@ -102,6 +106,7 @@ class RenameTest(TestCase):
 	def test_rename_writes_the_new_title(self):
 		screens = _run(['Rename to...'], {}, prompt='Exit')
 		self.assertEqual({'video_mute': 'Exit'}, screens.titles)
+		self.assertEqual([COMMAND_TITLES_FILE], screens.sync_calls)
 	def test_title_is_stripped(self):
 		screens = _run(['Rename to...'], {}, prompt='  Exit  ')
 		self.assertEqual({'video_mute': 'Exit'}, screens.titles)
@@ -123,6 +128,7 @@ class RenameTest(TestCase):
 	def test_reset_removes_the_custom_title(self):
 		screens = _run(['Reset name'], {}, titles={'video_mute': 'Exit'})
 		self.assertEqual({}, screens.titles)
+		self.assertEqual([COMMAND_TITLES_FILE], screens.sync_calls)
 
 class AddKeywordTest(TestCase):
 
@@ -132,6 +138,7 @@ class AddKeywordTest(TestCase):
 			{'video_mute': ['sound']}, prompt='volume'
 		)
 		self.assertEqual(['sound', 'volume'], screens.keywords['video_mute'])
+		self.assertEqual([COMMAND_KEYWORDS_FILE], screens.sync_calls)
 	def test_keyword_is_lowercased_and_stripped(self):
 		screens = _run(
 			['Change keywords for "Mute"', 'Add keyword...', None], {},
@@ -177,6 +184,7 @@ class DeleteKeywordTest(TestCase):
 			{'video_mute': ['sound', 'volume']}
 		)
 		self.assertEqual(['volume'], screens.keywords['video_mute'])
+		self.assertEqual([COMMAND_KEYWORDS_FILE], screens.sync_calls)
 	def test_deleting_the_last_keyword_writes_an_empty_list(self):
 		# Not None: that would pop the key, and popping one the shipped file
 		# still defines makes the differential write raise ValueError.

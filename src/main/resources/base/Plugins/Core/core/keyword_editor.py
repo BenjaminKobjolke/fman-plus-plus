@@ -17,6 +17,7 @@ from core.command_keywords import COMMAND_KEYWORDS_FILE
 from core.command_titles import COMMAND_TITLES_FILE, get_custom_title
 from core.key_bindings import KEY_BINDINGS_FILE
 from core.quicksearch_screen import QuicksearchScreen
+from core.settings_sync_runner import record_settings_change
 from core.settings import get_setting, save_setting
 from fman import show_input, show_status_message
 
@@ -51,6 +52,7 @@ def _save(command_name, keywords):
 	# list for a command, and popping a key that a lower-priority file still
 	# defines makes the differential write raise ValueError.
 	save_setting(COMMAND_KEYWORDS_FILE, command_name, keywords)
+	record_settings_change(COMMAND_KEYWORDS_FILE)
 
 class EntryMenu(QuicksearchScreen):
 
@@ -90,6 +92,7 @@ class EntryMenu(QuicksearchScreen):
 			# title, so nothing lower-priority is left for the differential
 			# write to trip over.
 			save_setting(COMMAND_TITLES_FILE, self._command_name, None)
+			record_settings_change(COMMAND_TITLES_FILE)
 	def _rename(self):
 		title = show_input('New name for "%s":' % self._title)
 		if title is None:
@@ -97,6 +100,7 @@ class EntryMenu(QuicksearchScreen):
 		title = title.strip()
 		if title:
 			save_setting(COMMAND_TITLES_FILE, self._command_name, title)
+			record_settings_change(COMMAND_TITLES_FILE)
 
 class KeywordList(QuicksearchScreen):
 

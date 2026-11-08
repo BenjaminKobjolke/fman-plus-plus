@@ -11,6 +11,7 @@ which reloads the Settings plugin, so a new shortcut works immediately.
 """
 from core.key_bindings import binds, command_for_shortcut, DO_NOTHING
 from core.quicksearch_screen import QuicksearchScreen
+from core.settings_sync_runner import record_settings_change
 from core.shortcut_capture import capture_shortcut
 from core.user_bindings import (
 	load_user_bindings, save_user_bindings, shortcuts_for,
@@ -75,6 +76,7 @@ class BindingList(QuicksearchScreen):
 			save_user_bindings(self._bindings_file, [
 				{'keys': [shortcut], 'command': self._command_name}
 			] + bindings)
+			record_settings_change(self._bindings_file)
 		self.show()
 	def _is_taken(self, shortcut):
 		occupant = command_for_shortcut(
@@ -118,6 +120,7 @@ class BindingMenu(QuicksearchScreen):
 				binding for binding in bindings
 				if not binds([binding], self._shortcut, self._command_name)
 			])
+			record_settings_change(self._bindings_file)
 		else:
 			# A shipped default cannot be deleted - fman never writes to those
 			# files - so it is shadowed by a higher-priority binding that does
@@ -125,3 +128,4 @@ class BindingMenu(QuicksearchScreen):
 			save_user_bindings(self._bindings_file, [
 				{'keys': [self._shortcut], 'command': DO_NOTHING}
 			] + bindings)
+			record_settings_change(self._bindings_file)

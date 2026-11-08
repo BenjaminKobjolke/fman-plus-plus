@@ -53,6 +53,7 @@ EXPECTED = frozenset({
 	'Paste', 'PasteCut', 'Quit', 'Reload', 'ReloadPlugins',
 	'RefreshDriveSpace', 'RefreshFolders', 'RememberSortSettings', 'RemovePane',
 	'RemovePlugin', 'SignInToFmanAccount', 'SignOutOfFmanAccount', 'SyncPlugins',
+	'SyncSettings',
 	'SetPaneSizes', 'NarrowActivePane', 'WidenActivePane',
 	'Rename', 'RenameListener',
 	'ResetFont', 'ResetPaneFontSize', 'SelectAll', 'SelectFont', 'SelectGroup',

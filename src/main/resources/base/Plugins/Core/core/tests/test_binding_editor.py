@@ -22,6 +22,7 @@ class _Screens:
 		self._confirm = confirm
 		self.shown = []
 		self.alerts = []
+		self.sync_calls = []
 	def show_quicksearch(self, get_items, *_args, **_kwargs):
 		options = [item.value for item in get_items('')]
 		self.shown.append(options)
@@ -72,6 +73,9 @@ def _run(
 		'core.binding_editor.YES', 1
 	), patch(
 		'core.binding_editor.NO', 2
+	), patch(
+		'core.binding_editor.record_settings_change',
+		side_effect=lambda file_name: screens.sync_calls.append(file_name)
 	):
 		edit_key_bindings(command, title, bindings_file)
 	return screens
@@ -102,6 +106,7 @@ class AddShortcutTest(TestCase):
 	def test_adds_the_captured_shortcut(self):
 		screens = _run(['Add shortcut...', None], [], captured=['Ctrl+Alt+P'])
 		self.assertEqual([_binding('Ctrl+Alt+P')], screens.user)
+		self.assertEqual([KEY_BINDINGS_FILE], screens.sync_calls)
 	def test_the_new_binding_is_prepended(self):
 		# fman dispatches first match wins, so a new binding only beats an
 		# existing one if it comes first.
@@ -160,6 +165,7 @@ class RemoveShortcutTest(TestCase):
 			['M  (yours)', 'Remove', None], [_binding('M'), _binding('N')]
 		)
 		self.assertEqual([_binding('N')], screens.user)
+		self.assertEqual([KEY_BINDINGS_FILE], screens.sync_calls)
 	def test_removing_a_shipped_default_shadows_it(self):
 		# The shipped files are never written to, so the only way to unbind is
 		# a higher-priority binding that does nothing.
