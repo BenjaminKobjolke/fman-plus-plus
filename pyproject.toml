@@ -27,11 +27,13 @@ dependencies = [
 ]
 
 [dependency-groups]
-# Recording demo screenshots/GIFs (tools/create_media/). Never part of a release build.
+# Installed by every `uv sync`; excluded from the freeze in base.json.
 demos = ["automated-screenshot-connector"]
 
 [tool.uv]
 package = false
+# Keep the screenshot recorder connector installed across routine syncs.
+default-groups = ["demos"]
 # PyQt5-Qt5 after 5.15.2 ships no Windows wheels; make the lock pick one that has them.
 required-environments = ["sys_platform == 'win32' and platform_machine == 'AMD64'"]
 

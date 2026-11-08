@@ -162,16 +162,16 @@ wrong is the tell. Nothing clears the desktop when you run
 
 ## Install (once)
 
-Demo mode needs the app-side connector library. It is **not** a normal
-dependency — it is in the `demos` dependency group of `pyproject.toml`, so it
-never enters a release build. From the repo root:
+Demo mode needs the app-side connector library. It is in the `demos` dependency
+group of `pyproject.toml`, which is a default uv group, so every plain `uv sync`
+installs it and routine app starts keep it installed. The release freeze
+explicitly excludes it in `src/build/settings/base.json`. From the repo root:
 
-    uv sync --group demos
+    uv sync
 
 This installs [automated-screenshot-connector](https://github.com/BenjaminKobjolke/automated-application-screenshots-python-connector)
 from GitHub. To work on a local checkout of it instead:
 `uv pip install -e ../automated-application-screenshots-python-connector`
-(a later plain `uv sync` removes it again).
 
 The recording tool itself is a separate checkout and runs with
 [uv](https://docs.astral.sh/uv/). Expected at
@@ -253,6 +253,9 @@ composing stale inputs.
   demo whose PNGs are committed - the themes demo's are an intermediate.
 - **2 `themes`** — one still per bundled theme, joined into the README's
   `media/demos/themes/themes.gif`. Records no video at all.
+- **11 `dialogs`** — stills of the copy prompt, overwrite question and delete
+  confirmation, with and without the title bar. This exists so the automated
+  screenshot check can judge dialog changes.
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |
@@ -600,6 +603,8 @@ start, and end with a `Pause(1.0)` so the recording doesn't cut off abruptly.
    (`id`, `name`, `fps`, `width`, `height`, `formats`). Ids ≥ 3 automatically
    get the scratch fixture folders. A stills-only demo like `themes` sets
    `"formats": []`.
+   A demo intended for visual checks should include `Screenshot` steps for each
+   UI state those checks need to judge.
 3. **Set its `group`**, which is what decides where it ends up — the name
    prefix only shapes the filename:
 

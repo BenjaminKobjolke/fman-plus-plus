@@ -60,6 +60,7 @@
 		"--additional-hooks-dir", "${project_dir}/src/build/pyinstaller_hooks",
 		"--exclude-module", "boto3",
 		"--exclude-module", "botocore",
-		"--exclude-module", "s3transfer"
+		"--exclude-module", "s3transfer",
+		"--exclude-module", "automated_screenshot_connector"
 	]
 }

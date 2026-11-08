@@ -25,6 +25,7 @@ from automated_screenshot_connector import (
 	Command, DemoScript, Pause, PressKey, Screenshot, TypeText,
 )
 
+from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
 from fman.impl.demo_scripts_tour import TOUR_CHAPTERS
 
 # Every recording starts translucent, so fman is shown the way it is meant to
@@ -202,6 +203,9 @@ PLUGIN_CLIPS = {
 }
 
 DEMOS.update(PLUGIN_CLIPS)
+
+# Dialog stills let the automated visual check judge dialog changes.
+DEMOS.update(DIALOG_CLIPS)
 
 def build_themes_script(names):
 	"""The themes demo for the installed themes `names`, one still each.
