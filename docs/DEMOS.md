@@ -61,9 +61,12 @@ The four artifacts the README shows are the four entries in `fman.json`'s
 `goto.gif`. The plugin step carries its own tighter encoder settings — see
 [DEMOS_PLUGINS.md](DEMOS_PLUGINS.md).
 
-fman itself never captures or encodes anything. It only posts key events and
-sends `demo_started` / `screenshot` / `demo_ended` over a socket; the tool grabs
-the window region with pyautogui and writes the GIF/MP4.
+fman renders each `Screenshot` still itself with Qt and sends it in the
+`screenshot` event as a base64 `png` field. The tool still grabs the window
+region with pyautogui for GIF/MP4 frames. The `themes` and `dialogs` stills-only
+demos therefore work on a locked or disconnected desktop when the tool supports
+uploaded stills; an older tool ignores the field and captures the desktop as
+before.
 
 ### Panes and the demo profile
 
@@ -421,7 +424,7 @@ Three things make it look nothing like the other demos:
 | choice | why |
 |--------|-----|
 | `"formats": []` in `fman.json` | the tool then writes only the PNG stills, so the command palette it uses to switch themes never lands in the GIF — and the frames it holds in RAM are thrown away |
-| `"fps": 2` | `Recorder.request_still` saves the *next captured* frame, so at 2 fps a still lands within 0.5 s of the event — inside the 1.2 s the script keeps the palette closed afterwards |
+| `"fps": 2` | When the tool captures the still itself (older tool), `Recorder.request_still` saves the *next captured* frame, so at 2 fps a still lands within 0.5 s of the event — inside the 1.2 s the script keeps the palette closed afterwards. With uploaded stills, the image is the window at the event. |
 | **bundled** themes only | `theme_dirs` also holds the demo profile's `Themes`, which `run_fman_demo.bat` mirrors from `%APPDATA%` — so a repo asset would otherwise carry your private themes. Hence `bundled_theme_dirs` |
 
 The `stills_gif` compose step then joins `media/demos/themes/*.png` in name
@@ -489,7 +492,7 @@ atomic actions, and the delay attached to each action elapses **before** it runs
 | `PressKey(chord)` | one key press+release after 60 ms | must be a single Qt chord (`'Ctrl+Shift+P'`, `'Down'`, `'Ins'`, `'Alt+F5'`) |
 | `TypeText(text)` | one press+release per char, 60 ms apart, carrying the char as text | drives the inline filter and any focused `QLineEdit` |
 | `Command(line)` | `TypeText(line)` + Return | **does not open the palette** — precede it with `PressKey('Ctrl+Shift+P')` |
-| `Screenshot(name)` | a `screenshot` event after 400 ms of settle | writes `media/demos/<demo>/<name>.png` |
+| `Screenshot(name)` | a `screenshot` event with fman's rendered PNG after 400 ms of settle | writes `media/demos/<demo>/<name>.png` |
 
 Player constants live in `demo.py`: `START_DELAY_MS = 500` before the first
 action, `END_HOLD_MS = 1000` after the last one.

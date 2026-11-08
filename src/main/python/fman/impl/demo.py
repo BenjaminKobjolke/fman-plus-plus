@@ -3,7 +3,8 @@
 fman opts into that tool's contract (see the tool repo's
 docs/AUTOMATION_INTERFACE.md): in demo mode it plays a scripted sequence of UI
 actions and reports demo_started/screenshot/demo_ended events over a socket so
-the tool can record a GIF/MP4 plus PNG stills.
+the tool can record a GIF/MP4 plus PNG stills. fman renders each still itself
+with Qt and uploads it inline; video frames are still captured by the tool.
 
 The reusable step model, socket client and CLI parser come from the stdlib-only
 core of the ``automated_screenshot_connector`` library (installed via
@@ -36,12 +37,13 @@ class DemoPlayer(QObject):
 	the UI paints exactly as it would for human input.
 	"""
 
-	def __init__(self, window, client, script, hwnd):
+	def __init__(self, window, client, script, hwnd, screenshots):
 		super().__init__(window)
 		self._window = window
 		self._client = client
 		self._script = script
 		self._hwnd = hwnd
+		self._screenshots = screenshots
 		self._actions = flatten(script.steps)
 		self._index = 0
 		self._check_chords()
@@ -75,7 +77,8 @@ class DemoPlayer(QObject):
 		elif isinstance(action, SendKey):
 			self._send_chord(action.chord)
 		elif isinstance(action, SendScreenshot):
-			self._client.send_screenshot(action.name)
+			self._client.send_screenshot(
+				action.name, png=self._screenshots.screenshot_png())
 		elif isinstance(action, CustomStep):
 			# fman defines no custom steps; a Wait's delay already elapsed.
 			pass

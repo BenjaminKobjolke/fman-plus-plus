@@ -174,7 +174,8 @@ class DevelopmentApplicationContext(ApplicationContext):
 		script = localize_script(script, dict(options.demo_texts))
 		client = DemoClient(options.demo_port)
 		player = DemoPlayer(
-			self.main_window, client, script, int(self.main_window.winId())
+			self.main_window, client, script, int(self.main_window.winId()),
+			AutomationActions(self.main_window, self.plugin_support)
 		)
 		player.start()
 		return self.app.exec_()
