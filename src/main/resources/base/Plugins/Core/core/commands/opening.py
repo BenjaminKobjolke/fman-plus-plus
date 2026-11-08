@@ -43,7 +43,7 @@ class Open(DirectoryPaneCommand):
 					if not dialogs.get('open_app_hint_shown', False):
 						show_alert(
 							'Quick tip: Apps in macOS are directories. When '
-							'you press '
+							'you press ' +
 							highlight('Enter') + ', ' +
 							APP_NAME + ' therefore browses them. If you want to ' +
 							'launch the app instead, press ' +
