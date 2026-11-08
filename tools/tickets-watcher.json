@@ -30,7 +30,7 @@
       "test": "green"
     },
     "tools\\run_core_tests.bat": {
-      "test": "green"
+      "test": "failed"
     },
     "tools\\run_robocopy_tests.bat": {
       "test": "green"
@@ -160,5 +160,10 @@
     "tools\\run_automation_tests.bat": "test"
   },
   "project_id": 251,
-  "analysis_test_timeout_seconds": 740
+  "analysis_test_timeout_seconds": 740,
+  "analysis_command_failing_tests": {
+    "tools\\run_core_tests.bat": [
+      "(failures=1, skipped=3)"
+    ]
+  }
 }
