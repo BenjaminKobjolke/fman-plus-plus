@@ -11,10 +11,10 @@ if not "%~1"=="" goto focused
 echo Running Core test suite: discovering Core tests...
 call "%~dp0unittest_with_timeout.bat" discover -v ^
 	-s "%ROOT%\src\main\resources\base\Plugins\Core\core" ^
-	-t "%ROOT%\src\main\resources\base\Plugins\Core"
+	-t "%ROOT%\src\main\resources\base\Plugins\Core" 2>&1
 exit /b %ERRORLEVEL%
 
 :focused
 echo Running Core test module: %*
-call "%~dp0unittest_with_timeout.bat" -v %*
+call "%~dp0unittest_with_timeout.bat" -v %* 2>&1
 exit /b %ERRORLEVEL%

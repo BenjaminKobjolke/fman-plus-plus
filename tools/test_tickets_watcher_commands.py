@@ -7,6 +7,7 @@ TOOLS = Path(__file__).parent
 COMMANDS = (
     "find_build_python.bat",
     "run_build_shutdown_tests.bat",
+    "run_core_tests.bat",
     "run_tests.bat",
     "unittest_with_timeout.bat",
     "update_windrop.bat",
@@ -74,6 +75,22 @@ class TicketsWatcherCommandsTest(unittest.TestCase):
             script,
             re.compile(r"(?im)^echo\s+Running Core test module: %\*"),
         )
+
+    def test_core_runner_streams_test_progress_to_stdout(self):
+        script = (TOOLS / "run_core_tests.bat").read_text(encoding="utf-8")
+        suite_call = re.search(
+            r'(?im)^call\s+"%~dp0unittest_with_timeout\.bat"\s+discover[^\r\n]*(?:\r?\n[^\r\n]*){0,2}',
+            script,
+        )
+        module_call = re.search(
+            r'(?im)^call\s+"%~dp0unittest_with_timeout\.bat"\s+-v\s+%\*[^\r\n]*',
+            script,
+        )
+
+        self.assertIsNotNone(suite_call, script)
+        self.assertRegex(suite_call.group(), r"2\s*>\s*&\s*1\s*$")
+        self.assertIsNotNone(module_call, script)
+        self.assertRegex(module_call.group(), r"2\s*>\s*&\s*1\s*$")
 
 
 if __name__ == "__main__":
