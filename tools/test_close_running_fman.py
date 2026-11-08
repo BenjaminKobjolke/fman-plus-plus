@@ -11,26 +11,48 @@ from pathlib import Path
 
 
 SCRIPT = Path(__file__).with_name("close_running_fman.ps1")
+HELPER_TIMEOUT_SECONDS = 90
+PROGRESS_INTERVAL_SECONDS = 30
 
 
 def report_progress(message):
     print(message, flush=True)
 
 
-def run_helper(directory, timeout_seconds):
-    return subprocess.run(
-        [
-            "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
-            "-File", str(SCRIPT), "-Directory", str(directory),
-            "-TimeoutSeconds", str(timeout_seconds), "-CountdownSeconds", "1",
-        ],
+def run_helper(directory, timeout_seconds, progress_message):
+    command = [
+        "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+        "-File", str(SCRIPT), "-Directory", str(directory),
+        "-TimeoutSeconds", str(timeout_seconds), "-CountdownSeconds", "1",
+    ]
+    with subprocess.Popen(
+        command,
         stdin=subprocess.DEVNULL,
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         text=True,
-        # A run normally takes 2 s, but PowerShell startup and Add-Type
-        # sometimes stall for 20-30 s on this machine (AV scanning).
-        timeout=90,
-    )
+    ) as process:
+        started = time.monotonic()
+        while True:
+            elapsed = time.monotonic() - started
+            remaining = HELPER_TIMEOUT_SECONDS - elapsed
+            if remaining <= 0:
+                process.kill()
+                stdout, stderr = process.communicate()
+                raise subprocess.TimeoutExpired(
+                    command, HELPER_TIMEOUT_SECONDS, output=stdout, stderr=stderr
+                )
+            try:
+                stdout, stderr = process.communicate(
+                    timeout=min(PROGRESS_INTERVAL_SECONDS, remaining)
+                )
+                break
+            except subprocess.TimeoutExpired:
+                elapsed = int(time.monotonic() - started)
+                report_progress(
+                    f"{progress_message} (still running after {elapsed} s)"
+                )
+    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
 def start_cmd(directory):
@@ -128,13 +150,15 @@ def check_close_running_fman():
         directory = Path(temporary)
 
         report_progress("Checking a missing build directory")
-        result = run_helper(directory / "missing", 1)
+        result = run_helper(
+            directory / "missing", 1, "Checking a missing build directory"
+        )
         assert result.returncode == 0, result.stdout + result.stderr
 
         report_progress("Checking a process that does not answer")
         process = start_cmd(directory)
         try:
-            result = run_helper(directory, 1)
+            result = run_helper(directory, 1, "Checking a process that does not answer")
             assert result.returncode == 1, result.stdout + result.stderr
             assert str(process.pid) in result.stdout + result.stderr
             assert process.poll() is None, "The helper must not kill a process"
@@ -146,7 +170,9 @@ def check_close_running_fman():
         close_stdin = threading.Timer(0.5, process.stdin.close)
         try:
             close_stdin.start()
-            result = run_helper(directory, 10)
+            result = run_helper(
+                directory, 10, "Checking a process that closes its input"
+            )
             assert result.returncode == 0, result.stdout + result.stderr
         finally:
             close_stdin.cancel()
@@ -157,7 +183,9 @@ def check_close_running_fman():
         process = start_countdown_window(directory, "exit")
         try:
             time.sleep(1)
-            result = run_helper(directory, 10)
+            result = run_helper(
+                directory, 10, "Checking fman closing after its countdown"
+            )
             assert result.returncode == 0, result.stdout + result.stderr
             assert "closes in 1 s" in result.stdout, result.stdout
         finally:
@@ -167,7 +195,7 @@ def check_close_running_fman():
         process = start_countdown_window(directory, "cancel")
         try:
             time.sleep(1)
-            result = run_helper(directory, 1)
+            result = run_helper(directory, 1, "Checking fman canceling its countdown")
             assert result.returncode == 1, result.stdout + result.stderr
             assert "countdown was canceled" in result.stdout, result.stdout
             assert process.poll() is None, "The helper must not kill a process"
@@ -178,7 +206,11 @@ def check_close_running_fman():
         process = start_dll_user(directory)
         try:
             time.sleep(1)
-            result = run_helper(directory, 1)
+            result = run_helper(
+                directory,
+                1,
+                "Checking a process that loaded a DLL from the build directory",
+            )
             assert result.returncode == 1, result.stdout + result.stderr
             assert str(process.pid) in result.stdout + result.stderr
             assert process.poll() is None, "The helper must not kill a process"
