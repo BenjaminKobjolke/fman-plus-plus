@@ -1,4 +1,6 @@
-from fman.impl.shell_change_notices import ShellChangeBatch, ShellChangeListener
+from ctypes import addressof
+from fman.impl.shell_change_notices import ShellChangeBatch, \
+	ShellChangeListener, _CHANGE_MESSAGE, _MSG, _ShellChangeNotificationSource
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 from unittest.mock import Mock, patch
@@ -82,6 +84,45 @@ class ShellChangeListenerTest(TestCase):
 			pane.reload.assert_not_called()
 		finally:
 			listener.close()
+
+
+class ShellChangeNotificationSourceTest(TestCase):
+	"""PyQt calls nativeEventFilter(event_type, message) and expects (bool, int)."""
+
+	def setUp(self):
+		self.callback = Mock()
+		self.source = _ShellChangeNotificationSource(self.callback)
+
+	def tearDown(self):
+		self.source.close()
+
+	def test_ignores_other_event_types(self):
+		msg = _MSG(self.source._hwnd, _CHANGE_MESSAGE, 0, 0)
+		self.assertEqual(
+			(False, 0),
+			self.source.nativeEventFilter(b'windows_other_MSG', addressof(msg))
+		)
+		self.callback.assert_not_called()
+
+	def test_ignores_other_messages(self):
+		msg = _MSG(self.source._hwnd, _CHANGE_MESSAGE + 1, 0, 0)
+		self.assertEqual(
+			(False, 0),
+			self.source.nativeEventFilter(b'windows_generic_MSG', addressof(msg))
+		)
+		self.callback.assert_not_called()
+
+	def test_reports_changed_paths_of_its_own_message(self):
+		msg = _MSG(self.source._hwnd, _CHANGE_MESSAGE, 0, 0)
+		with patch(
+			'fman.impl.shell_change_notices._paths_from_notification',
+			return_value=([r'C:\work\one.txt'], 4)
+		):
+			result = self.source.nativeEventFilter(
+				b'windows_generic_MSG', addressof(msg)
+			)
+		self.assertEqual((False, 0), result)
+		self.callback.assert_called_once_with([r'C:\work\one.txt'], 4)
 
 
 class _NotificationSource:

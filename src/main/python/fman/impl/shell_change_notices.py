@@ -116,18 +116,18 @@ class _ShellChangeNotificationSource(QAbstractNativeEventFilter):
 			self._window.close()
 			raise ctypes.WinError(ctypes.get_last_error())
 
-	def nativeEventFilter(self, event_type, message, result):
+	def nativeEventFilter(self, event_type, message):
 		if bytes(event_type) != b'windows_generic_MSG':
-			return False
-		msg = ctypes.cast(message, ctypes.POINTER(_MSG)).contents
+			return False, 0
+		msg = _MSG.from_address(int(message))
 		if msg.hwnd != self._hwnd or msg.message != _CHANGE_MESSAGE:
-			return False
+			return False, 0
 		paths, event_id = _paths_from_notification(
 			self._shell32, msg.wParam, msg.lParam
 		)
 		if paths:
 			self._callback(paths, event_id)
-		return False
+		return False, 0
 
 	def close(self):
 		if self._registration:
