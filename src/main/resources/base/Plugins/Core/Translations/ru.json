@@ -1,5 +1,9 @@
 {
   "quicksearch_title": "Быстрый поиск",
+  "quicksearch_key_enter": "Enter",
+  "quicksearch_run": "Выполнить",
+  "quicksearch_key_shift_enter": "Shift+Enter",
+  "quicksearch_more_actions": "Другие действия",
   "command_palette_title": "Палитра команд",
   "goto_title": "Перейти",
   "status_ready": "Готово.",

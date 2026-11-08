@@ -138,6 +138,11 @@ Quicksearch #header {
 	padding: 6px 7px 2px 7px;
 }
 
+Quicksearch #footer {
+	color: $muted_fg;
+	padding: 2px 7px 5px 7px;
+}
+
 QDialogButtonBox {
 	qproperty-centerButtons: true;
 }

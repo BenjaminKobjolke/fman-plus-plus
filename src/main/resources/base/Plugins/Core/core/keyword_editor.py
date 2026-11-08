@@ -74,6 +74,8 @@ class EntryMenu(QuicksearchScreen):
 		yield self._RENAME
 		if get_custom_title(self._command_name):
 			yield self._RESET_NAME
+	def get_title(self):
+		return 'More actions for "%s"' % self._title
 	def on_selected(self, option):
 		if option == self._change_keywords:
 			KeywordList(self._command_name, self._title).show()

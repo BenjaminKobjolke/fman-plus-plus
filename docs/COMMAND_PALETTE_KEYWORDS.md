@@ -12,8 +12,8 @@ palette (below) or by editing the JSON file by hand.
 ## Editing keywords from the palette
 
 Open the palette (`Ctrl+Shift+P`), find the row you want, then press
-**Shift+Enter** instead of Enter. Enter runs a command; Shift+Enter opens a
-menu about it.
+**Shift+Enter** (or click **⋯** on the selected or hovered row) instead of
+Enter. Enter runs a command; Shift+Enter opens the *More actions* menu.
 
 Three screens, each a normal fuzzy-searchable list:
 

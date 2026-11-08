@@ -21,6 +21,9 @@ def _write_catalog(directory, locale, values):
 
 CATALOG_DIR = Path(__file__).parents[4] / 'main' / 'resources' / 'base' \
 	/ 'Plugins' / 'Core' / 'Translations'
+KEY_LABELS_SHARED_ACROSS_LOCALES = {
+	'quicksearch_key_enter', 'quicksearch_key_shift_enter',
+}
 
 
 class BuiltinCatalogTest(TestCase):
@@ -31,7 +34,8 @@ class BuiltinCatalogTest(TestCase):
 			with self.subTest(key=key):
 				self.assertEqual(ENGLISH_TEXT[key], english.t(key))
 				self.assertNotEqual(key, russian.t(key))
-				self.assertNotEqual(english.t(key), russian.t(key))
+				if key not in KEY_LABELS_SHARED_ACROSS_LOCALES:
+					self.assertNotEqual(english.t(key), russian.t(key))
 
 	def test_unknown_key_is_returned_as_is(self):
 		registry = CatalogRegistry('ru', CATALOG_DIR)

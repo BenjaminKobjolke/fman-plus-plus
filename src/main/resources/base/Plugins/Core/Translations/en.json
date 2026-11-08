@@ -1,5 +1,9 @@
 {
   "quicksearch_title": "Quicksearch",
+  "quicksearch_key_enter": "Enter",
+  "quicksearch_run": "Run",
+  "quicksearch_key_shift_enter": "Shift+Enter",
+  "quicksearch_more_actions": "More actions",
   "command_palette_title": "Command Palette",
   "goto_title": "Go To",
   "status_ready": "Ready.",

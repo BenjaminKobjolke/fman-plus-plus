@@ -18,12 +18,16 @@ class QuicksearchScreen:
 
 	def show(self):
 		options = list(self.get_options())
-		choice = show_quicksearch(lambda q: self._filter_options(options, q))
+		choice = show_quicksearch(
+			lambda q: self._filter_options(options, q), title=self.get_title()
+		)
 		if choice:
 			option = choice[1]
 			self.on_selected(option)
 		else:
 			self.on_cancelled()
+	def get_title(self):
+		return ''
 	def get_options(self):
 		raise NotImplementedError()
 	def on_selected(self, option):

@@ -1,7 +1,8 @@
 from core.command_titles import COMMAND_TITLES_FILE
-from core.keyword_editor import edit_command_keywords
+from core.keyword_editor import EntryMenu, edit_command_keywords
+from core.quicksearch_screen import QuicksearchScreen
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 class _Screens:
 
@@ -60,6 +61,15 @@ def _run(
 	return screens
 
 class EditCommandKeywordsTest(TestCase):
+	def test_entry_menu_title_describes_its_actions(self):
+		self.assertEqual(
+			'More actions for "Copy"', EntryMenu('copy', 'Copy').get_title()
+		)
+	def test_screen_passes_its_title_to_quicksearch(self):
+		with patch('core.quicksearch_screen.show_quicksearch') as show:
+			EntryMenu('copy', 'Copy').show()
+
+		show.assert_called_once_with(ANY, title='More actions for "Copy"')
 
 	def test_entry_menu_offers_changing_the_keywords(self):
 		screens = _run([None], {'video_mute': ['sound']})

@@ -5,14 +5,17 @@ from fman.impl.edge_grip import EdgeGrip, place_grips
 from fman.impl.quicksearch_elide import elide_title_left, shift_highlight
 from fman.impl.quicksearch_height import fit_list_min_height
 from fman.impl.quicksearch_exit_keys import QuicksearchExit, find_exit_key
+from fman.impl.quicksearch_more_actions import (
+	MORE_GLYPH, footer_text, is_more_click, more_button_rect,
+)
 from fman.impl.util.qt import Key_Tab, Key_Down, Key_Up, Key_PageDown, \
 	Key_Home, Key_End, Key_PageUp, Key_Return, Key_Enter, ShiftModifier, \
 	UserRole, AlignRight, AlignVCenter, NoFocus, FramelessWindowHint, \
 	AlignTop, AccessibleTextRole
 from PyQt5.QtCore import QAbstractListModel, QVariant, QModelIndex, QSize, Qt, \
 	QPointF, QRectF, QPoint, pyqtSignal
-from PyQt5.QtGui import QFont, QFontMetrics, QTextLayout, QTextCharFormat, \
-	QBrush, QKeySequence
+from PyQt5.QtGui import QCursor, QFont, QFontMetrics, QTextLayout, \
+	QTextCharFormat, QBrush, QKeySequence
 from PyQt5.QtWidgets import QDialog, QLayout, QFrame, QVBoxLayout, QLineEdit, \
 	QListView, QStyledItemDelegate, QApplication, QStyle, QLabel
 
@@ -88,7 +91,9 @@ class Quicksearch(QDialog):
 		self._items.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		self._items.setUniformItemSizes(True)
 		self._items.setModel(QuicksearchListModel(self))
-		self._items.setItemDelegate(QuicksearchItemDelegate(self, self._css))
+		self._items.setItemDelegate(QuicksearchItemDelegate(
+			self, self._css, show_more=self._alt_accept
+		))
 		self._items.setFocusPolicy(NoFocus)
 		self._items.clicked.connect(self._on_item_clicked)
 		div = lambda widget: self._layout_vertically(Div(), widget)
@@ -96,9 +101,13 @@ class Quicksearch(QDialog):
 		query_container.setObjectName('query-container')
 		items_container = div(self._items)
 		items_container.setObjectName('items-container')
-		self._layout_vertically(
-			self, self._header, query_container, items_container
-		)
+		widgets = [self._header, query_container, items_container]
+		if self._alt_accept:
+			self._footer = QLabel(footer_text(), self)
+			self._footer.setObjectName('footer')
+			widgets.append(self._footer)
+			self._items.setMouseTracking(True)
+		self._layout_vertically(self, *widgets)
 		self.layout().setContentsMargins(*self._outer_margins())
 		self.layout().setSizeConstraint(QLayout.SetNoConstraint)
 		self._items.ensurePolished()
@@ -166,7 +175,18 @@ class Quicksearch(QDialog):
 	def _on_return_pressed(self):
 		self._accept(self._items.currentIndex())
 	def _on_item_clicked(self, index):
+		if self._alt_accept:
+			font = QFont(self._items.font())
+			font.setPointSize(int(self._css['hint']['font-size_pts']))
+			if is_more_click(
+				self._items.visualRect(index), self._last_click_pos(),
+				self._css['padding-right_px'], font
+			):
+				self._accept(index, alt=True)
+				return
 		self._accept(index)
+	def _last_click_pos(self):
+		return self._items.viewport().mapFromGlobal(QCursor.pos())
 	def _accept(self, index, alt=False):
 		value = self._curr_items[index.row()].value if index.isValid() else None
 		self._result = self._query.text(), value
@@ -320,9 +340,10 @@ class QuicksearchListModel(QAbstractListModel):
 ItemRole = UserRole
 
 class QuicksearchItemDelegate(QStyledItemDelegate):
-	def __init__(self, parent, css):
+	def __init__(self, parent, css, show_more=False):
 		super().__init__(parent)
 		self._css = css
+		self._show_more = show_more
 	def paint(self, painter, option, index):
 		self._get_renderer(option, index).render(painter)
 	def sizeHint(self, option, index):
@@ -330,10 +351,12 @@ class QuicksearchItemDelegate(QStyledItemDelegate):
 	def _get_renderer(self, option, index):
 		item = index.data(ItemRole)
 		self.initStyleOption(option, index)
-		return QuicksearchItemRenderer(item, option, self._css)
+		return QuicksearchItemRenderer(
+			item, option, self._css, show_more=self._show_more
+		)
 
 class QuicksearchItemRenderer:
-	def __init__(self, item, option, css):
+	def __init__(self, item, option, css, show_more=False):
 		# Convert to str(...) in case the (fman API) user didn't pass a string:
 		self._title = str(item.title)
 		self._hint = str(item.hint)
@@ -342,6 +365,7 @@ class QuicksearchItemRenderer:
 		self._highlight = item.highlight
 		self._option = option
 		self._css = css
+		self._show_more = show_more
 		self._widget = option.widget
 		style = self._widget.style() if self._widget else QApplication.style()
 		self._proxy = style.proxy()
@@ -351,6 +375,7 @@ class QuicksearchItemRenderer:
 		self._draw_background(painter)
 		self._draw_title(painter)
 		self._draw_hint(painter)
+		self._draw_more(painter)
 		self._draw_description(painter)
 		painter.restore()
 	def sizeHint(self):
@@ -396,6 +421,18 @@ class QuicksearchItemRenderer:
 		painter.setPen(self._css['hint']['color'])
 		rect = self._get_title_rect()
 		painter.drawText(rect, AlignRight | AlignVCenter, self._hint)
+	def _draw_more(self, painter):
+		if not self._show_more or not self._option.state & (
+			QStyle.State_Selected | QStyle.State_MouseOver
+		):
+			return
+		font = QFont(self._option.font)
+		font.setPointSize(int(self._css['hint']['font-size_pts']))
+		painter.setFont(font)
+		painter.setPen(self._css['hint']['color'])
+		painter.drawText(
+			self._more_button_rect(font), Qt.AlignCenter, MORE_GLYPH
+		)
 	def _draw_description(self, painter):
 		if not self._description:
 			return
@@ -417,7 +454,15 @@ class QuicksearchItemRenderer:
 		height = self._layout_title()[1]
 		padding_width = self._padding_left + self._padding_right
 		width = self._option.rect.width() - padding_width
+		if self._show_more:
+			font = QFont(self._option.font)
+			font.setPointSize(int(self._css['hint']['font-size_pts']))
+			width -= self._more_button_rect(font).width()
 		return QRectF(x, y, width, height)
+	def _more_button_rect(self, font):
+		return more_button_rect(
+			self._option.rect, self._padding_right, font
+		)
 	def _layout_text(self, text, font):
 		layout = QTextLayout(text, font)
 		height = 0

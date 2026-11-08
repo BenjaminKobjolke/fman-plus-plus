@@ -1,14 +1,17 @@
 from unittest import TestCase
 import threading
 
-from PyQt5.QtCore import QEvent, QPoint, QPointF, Qt
+from PyQt5.QtCore import QEvent, QPoint, QPointF, QRect, Qt
 from PyQt5.QtGui import QColor, QFont, QMouseEvent
 from PyQt5.QtTest import QTest
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QStyleOptionViewItem, QWidget
 
 from fman import QuicksearchItem, QuicksearchExit
-from fman.impl.quicksearch import Quicksearch
+from fman.impl.quicksearch import Quicksearch, QuicksearchItemRenderer
 from fman.impl.quicksearch_elide import elide_title_left, shift_highlight
+from fman.impl.quicksearch_more_actions import (
+	footer_text, is_more_click, more_button_rect,
+)
 
 
 _CSS = {
@@ -104,6 +107,79 @@ class QuicksearchTest(TestCase):
 		self.assertEqual('', self.dialog._header.text())
 		self.assertFalse(self.dialog._header.isVisible())
 		self.assertEqual('Quicksearch', self.dialog.windowTitle())
+	def test_footer_is_visible_only_when_alternate_accept_is_enabled(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [], alt_accept=True
+		)
+		dialog.show()
+		self.app.processEvents()
+
+		self.assertTrue(dialog._footer.isVisible())
+		self.assertIn('Enter', dialog._footer.text())
+		self.assertIn('Shift+Enter', dialog._footer.text())
+		self.assertIn('More actions', dialog._footer.text())
+		self.assertFalse(hasattr(self.dialog, '_footer'))
+		dialog.close()
+	def test_footer_text_names_both_keys_and_actions(self):
+		self.assertEqual(
+			'Enter  Run    Shift+Enter  More actions', footer_text()
+		)
+	def test_more_button_hit_test_only_matches_the_button_area(self):
+		row = QRect(10, 20, 300, 40)
+		button = more_button_rect(row, 7, QFont())
+
+		self.assertTrue(is_more_click(row, button.center(), 7, QFont()))
+		self.assertFalse(is_more_click(row, QPointF(20, 40), 7, QFont()))
+	def test_renderer_only_reserves_more_button_width_when_enabled(self):
+		option = QStyleOptionViewItem()
+		option.rect = QRect(0, 0, 300, 40)
+		option.font = QFont()
+		item = QuicksearchItem('command', hint='Ctrl+X')
+		plain = QuicksearchItemRenderer(item, option, _CSS)
+		with_more = QuicksearchItemRenderer(item, option, _CSS, show_more=True)
+
+		self.assertEqual(286, plain._get_title_rect().width())
+		self.assertLess(
+			with_more._get_title_rect().width(),
+			plain._get_title_rect().width(),
+		)
+	def test_clicking_more_button_uses_alternate_accept(self):
+		item = QuicksearchItem('command', title='Command')
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [item],
+			alt_accept=True
+		)
+		dialog.show()
+		self.app.processEvents()
+		index = dialog._items.model().index(0, 0)
+		row = dialog._items.visualRect(index)
+		font = QFont(dialog._items.font())
+		font.setPointSize(int(_CSS['hint']['font-size_pts']))
+		button = more_button_rect(row, 7, font)
+		dialog._last_click_pos = lambda: button.center()
+
+		dialog._on_item_clicked(index)
+
+		self.assertEqual(('', 'command', True), dialog.get_result())
+		dialog.close()
+	def test_clicking_title_uses_normal_accept(self):
+		item = QuicksearchItem('command', title='Command')
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [item],
+			alt_accept=True
+		)
+		dialog.show()
+		self.app.processEvents()
+		index = dialog._items.model().index(0, 0)
+		row = dialog._items.visualRect(index)
+		dialog._last_click_pos = lambda: QPointF(
+			row.left() + 10, row.center().y()
+		)
+
+		dialog._on_item_clicked(index)
+
+		self.assertEqual(('', 'command', False), dialog.get_result())
+		dialog.close()
 
 	def test_header_shows_a_two_line_title(self):
 		dialog = Quicksearch(
@@ -205,6 +281,29 @@ class QuicksearchTest(TestCase):
 			dialog._items.mapTo(dialog, dialog._items.rect().bottomLeft()).y(),
 			dialog.height(),
 		)
+	def test_alternate_accept_footer_fits_short_parent_with_one_full_row(self):
+		self.parent.resize(1600, 300)
+		css = {
+			**_CSS,
+			'title': {**_CSS['title'], 'font-size_pts': 33},
+			'hint': {**_CSS['hint'], 'font-size_pts': 27},
+			'description': {
+				**_CSS['description'], 'font-size_pts': 27
+			},
+		}
+		dialog = Quicksearch(
+			self.parent, _StubApp(), css,
+			lambda _query: [QuicksearchItem(str(i)) for i in range(60)],
+			alt_accept=True,
+		)
+		dialog.show()
+		self.app.processEvents()
+		row_height = dialog._items.sizeHintForRow(0)
+
+		self.assertTrue(dialog._footer.isVisible())
+		self.assertLessEqual(dialog.height(), self.parent.height())
+		self.assertGreaterEqual(dialog._items.viewport().height(), row_height)
+		dialog.close()
 
 	def test_long_title_row_fits_the_list_width(self):
 		dialog = self._dialog_with_long_items(1)

@@ -1,6 +1,10 @@
 """Keys for text owned by fman and its built-in Core plugin."""
 
 QUICKSEARCH_TITLE = 'quicksearch_title'
+QUICKSEARCH_KEY_ENTER = 'quicksearch_key_enter'
+QUICKSEARCH_RUN = 'quicksearch_run'
+QUICKSEARCH_KEY_SHIFT_ENTER = 'quicksearch_key_shift_enter'
+QUICKSEARCH_MORE_ACTIONS = 'quicksearch_more_actions'
 COMMAND_PALETTE_TITLE = 'command_palette_title'
 GOTO_TITLE = 'goto_title'
 READY = 'status_ready'
@@ -54,6 +58,10 @@ COMMAND_TITLES = {
 
 ENGLISH_TEXT = {
 	QUICKSEARCH_TITLE: 'Quicksearch',
+	QUICKSEARCH_KEY_ENTER: 'Enter',
+	QUICKSEARCH_RUN: 'Run',
+	QUICKSEARCH_KEY_SHIFT_ENTER: 'Shift+Enter',
+	QUICKSEARCH_MORE_ACTIONS: 'More actions',
 	COMMAND_PALETTE_TITLE: 'Command Palette',
 	GOTO_TITLE: 'Go To',
 	READY: 'Ready.',

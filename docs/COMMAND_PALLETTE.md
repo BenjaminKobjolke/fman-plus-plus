@@ -18,6 +18,9 @@ one of its hidden keywords, below), pick from the filtered list, press Enter.
 - **Shortcut hints:** each entry shows the key it's currently bound to (if
   any), read live from the merged `Key Bindings.json` — rebind a command and
   the hint updates.
+- **Enter and Shift+Enter:** the footer names Enter (run) and Shift+Enter
+  (more actions); the selected or hovered row's **⋯** button opens that same
+  *More actions* menu.
 - **Remembers your last pick:** reopening the palette pre-selects the command
   you last ran, so repeating an action is Open → Enter.
 - **Scope:** lists every command visible for the active pane plus global
@@ -118,14 +121,15 @@ are never displayed: typing *transparency* selects the row that still reads
 }
 ```
 
-Press **Shift+Enter** on any palette row to add or delete that command's
-keywords without leaving fman. The screens, the ranking rules and where your
-edits are stored are in
+Press **Shift+Enter** (or click **⋯**) on any palette row to open its *More
+actions* menu and add or delete that command's keywords without leaving fman.
+The screens, the ranking rules and where your edits are stored are in
 [`docs/COMMAND_PALETTE_KEYWORDS.md`](COMMAND_PALETTE_KEYWORDS.md).
 
 ## Changing a command's shortcut
 
-The same **Shift+Enter** menu offers *Change key bindings for "…"*: a list of
+The same *More actions* menu, opened with **Shift+Enter** or **⋯**, offers
+*Change key bindings for "…"*: a list of
 the shortcuts that currently run the command, where *Add shortcut…* records the
 next combination you **press** and picking one offers *Remove*. Bindings take
 effect immediately and are stored in your own `Key Bindings (<OS>).json` — see
@@ -133,7 +137,7 @@ effect immediately and are stored in your own `Key Bindings (<OS>).json` — see
 
 ## Renaming a command
 
-The same **Shift+Enter** menu offers *Rename to…*: call **Quit** *Exit* and the
+The same *More actions* menu offers *Rename to…*: call **Quit** *Exit* and the
 palette lists **Exit**, while `quit` still finds it (the original name becomes
 one of its keywords). *Reset name* puts fman's own name back. Renames are
 stored in `Command Titles.json` — see
@@ -154,7 +158,9 @@ different commands — the ones that make sense for what you're viewing:
 Notes:
 
 - The viewer palette is built on the same `show_quicksearch` API as the
-  global one, so it fuzzy-searches and shows shortcut hints the same way.
+  global one, so it fuzzy-searches and shows shortcut hints the same way. Its
+  footer also names Enter and Shift+Enter, and the selected or hovered row's
+  **⋯** button opens the same *More actions* menu.
 - The entry set changes with context — e.g. the text viewer shows different
   entries in view mode vs. edit mode, and *Exit search mode* only while its
   [search](views/TEXT_VIEWER.md#search) is on.
