@@ -27,7 +27,7 @@
       "code_quality": "green"
     },
     "tools\\run_tests.bat": {
-      "test": "failed"
+      "test": "green"
     },
     "tools\\run_core_tests.bat": {
       "test": "green"
@@ -42,7 +42,7 @@
       "test": "green"
     },
     "uv run python tools\\test_close_running_fman.py": {
-      "test": "failed"
+      "test": "green"
     },
     "uv run python tools\\test_release_version.py": {
       "test": "green"
