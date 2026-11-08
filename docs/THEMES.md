@@ -93,7 +93,7 @@ and bevel in the quicksearch popup.
 | `pane_selected_fg` | Text of selected files |
 | `pane_cursor_bg` | Cursor row, and the pane's focus rectangle |
 | `header_bg` | Column-header gradient, input borders |
-| `muted_fg` | Header text, labels, checkboxes, item descriptions |
+| `muted_fg` | Header text, labels, checkboxes, item descriptions, Command Palette / Go To caption |
 | `bright_fg` | Input text, status-bar text, highlighted matches |
 | `border` | Overlay / filter-bar border, status-bar top edge |
 | `input_bg` | Text fields (rename editor, prompts) |

@@ -149,7 +149,7 @@ class TourStep:
 		if not self._title:
 			return ''
 		return "<center style='line-height: 130%'>" \
-					"<h2 style='color: #bbbbbb;'>" + self._title + "</h2>" \
+					"<h2>" + highlight(self._title) + "</h2>" \
 				"</center>"
 	def _get_body_html(self):
 		result = ''

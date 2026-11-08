@@ -14,6 +14,7 @@ from core.viewers import viewer_for
 from fman import APP_NAME, DirectoryPaneCommand, DirectoryPaneListener, \
 	NO, PLATFORM, YES, load_json, save_json, show_alert
 from fman.fs import is_dir, resolve
+from fman.impl.html_style import highlight
 from fman.url import as_human_readable, as_url, dirname, splitscheme
 
 import errno
@@ -43,10 +44,10 @@ class Open(DirectoryPaneCommand):
 						show_alert(
 							'Quick tip: Apps in macOS are directories. When '
 							'you press '
-							'<span style="color: white;">Enter</span>, ' +
+							highlight('Enter') + ', ' +
 							APP_NAME + ' therefore browses them. If you want to ' +
 							'launch the app instead, press ' +
-							'<span style="color: white;">Cmd+Enter</span>.'
+							highlight('Cmd+Enter') + '.'
 						)
 						dialogs['open_app_hint_shown'] = True
 						save_json('Core Dialogs.json')

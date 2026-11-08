@@ -134,7 +134,7 @@ Quicksearch {
 }
 
 Quicksearch #header {
-	color: $popup_input_fg;
+	color: $muted_fg;
 	padding: 6px 7px 2px 7px;
 }
 
