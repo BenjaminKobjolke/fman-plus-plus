@@ -95,6 +95,33 @@ class CompactFileViewTest(TestCase):
 		self.app.processEvents()
 		update.assert_called_once_with()
 
+	def test_data_changed_does_not_schedule_grid_width_update(self):
+		update = Mock(wraps=self.view.set_grid_width)
+		self.view.set_grid_width = update
+		self.model.item(0).setData('changed name', Qt.DisplayRole)
+		self.app.processEvents()
+		update.assert_not_called()
+
+	def test_unchanged_grid_size_does_not_trigger_relayout(self):
+		set_grid_size = Mock(wraps=self.view.setGridSize)
+		self.view.setGridSize = set_grid_size
+
+		self.view.set_grid_width()
+
+		set_grid_size.assert_not_called()
+
+	def test_removing_longest_name_shrinks_grid_width(self):
+		self.model.item(0).setText(
+			'an-extremely-long-filename-that-cannot-fit-in-the-pane.txt'
+		)
+		self.view.set_grid_width()
+		self.assertEqual(self.view.viewport().width(), self.view.gridSize().width())
+
+		self.model.removeRow(0)
+		self.app.processEvents()
+
+		self.assertLess(self.view.gridSize().width(), self.view.viewport().width())
+
 	def test_double_click_invokes_pane_callback(self):
 		callback = Mock()
 		view = CompactFileView(self.file_view, callback)

@@ -1,6 +1,9 @@
 from core.commands.view_mode import ToggleCompactView
+from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 from unittest.mock import Mock
+
+_APP = QApplication.instance() or QApplication([])
 
 
 class ToggleCompactViewTest(TestCase):

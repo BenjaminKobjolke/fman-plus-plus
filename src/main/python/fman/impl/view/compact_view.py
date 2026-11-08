@@ -54,12 +54,12 @@ class CompactFileView(
 		old_model = self.model()
 		if old_model is not None:
 			old_model.rowsInserted.disconnect(self.schedule_grid_width)
-			old_model.dataChanged.disconnect(self.schedule_grid_width)
+			old_model.rowsRemoved.disconnect(self.schedule_grid_width)
 			old_model.modelReset.disconnect(self.schedule_grid_width)
 		super().setModel(model)
 		if model is not None:
 			model.rowsInserted.connect(self.schedule_grid_width)
-			model.dataChanged.connect(self.schedule_grid_width)
+			model.rowsRemoved.connect(self.schedule_grid_width)
 			model.modelReset.connect(self.schedule_grid_width)
 			self.schedule_grid_width()
 
@@ -89,7 +89,9 @@ class CompactFileView(
 		)
 		width = max(1, width)
 		height = max(metrics.height(), self.iconSize().height()) + 6
-		self.setGridSize(QSize(width, height))
+		grid_size = QSize(width, height)
+		if grid_size != self.gridSize():
+			self.setGridSize(grid_size)
 
 	def tooltip_text(self, index):
 		if not index.isValid():
