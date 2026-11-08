@@ -71,7 +71,10 @@ def confirm_delete(urls):
 	description = _describe(urls, 'these %d items')
 	message = \
 	translate(DELETE_CONFIRM) % description
-	return bool(show_alert(message, YES | NO, YES) & YES)
+	return bool(show_alert(
+		message, YES | NO, YES,
+		button_texts={YES: 'Delete', NO: 'Cancel'}
+	) & YES)
 
 def _trash_name():
 	key = TRASH_LABEL_RECYCLE_BIN if PLATFORM == 'Windows' else TRASH_LABEL_TRASH

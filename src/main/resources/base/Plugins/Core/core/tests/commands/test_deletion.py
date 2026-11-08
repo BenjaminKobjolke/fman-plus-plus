@@ -149,7 +149,10 @@ class TrashTest(TestCase):
 		)
 		with patch('core.commands.deletion.show_alert', return_value=YES) as alert:
 			self.assertTrue(deletion.confirm_delete(urls))
-		alert.assert_called_once_with(message, deletion.YES | deletion.NO, deletion.YES)
+		alert.assert_called_once_with(
+			message, deletion.YES | deletion.NO, deletion.YES,
+			button_texts={deletion.YES: 'Delete', deletion.NO: 'Cancel'}
+		)
 		with patch('core.commands.deletion.show_alert', return_value=deletion.NO):
 			self.assertFalse(deletion.confirm_delete(urls))
 
