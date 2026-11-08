@@ -13,7 +13,7 @@ from core.font_size import change_font_size, effective_font_size, \
 from fman import DirectoryPaneCommand, DirectoryPaneListener
 # Not in fman's __all__, so a star import would not bring these in - the same
 # reason commands/theme.py names the icon functions explicitly.
-from fman import set_icon_scale, set_palette_font_scale
+from fman import set_icon_scale, set_palette_font_offset
 from fman.impl.util.qt.thread import run_in_main_thread
 
 __all__ = [
@@ -130,18 +130,18 @@ def _remember_base_pane_font_size(pane):
 		_base_pane_font_size = effective_font_size(lambda: _pane_font(pane))
 
 def _apply_zoom_scale(size):
-	# The icons and the command palette zoom with the pane text, from
-	# whatever size the theme or the user picked for them: the engine
-	# multiplies its own resolved icon size (and the palette's own font
-	# sizes) by this, so "Set icon size 48" zooms from 48 rather than from
-	# Qt's 16. One factor for both, computed once - they can only disagree
-	# if something derives it twice.
+	# The palette grows by the same number of points as the pane font, keeping
+	# its original size difference. The icons still scale proportionally from
+	# whatever size the theme or user picked; one factor keeps "Set icon size
+	# 48" zooming from 48 rather than Qt's 16.
 	if size is None or not _base_pane_font_size:
 		factor = 1.0
+		offset_pts = 0
 	else:
 		factor = size / _base_pane_font_size
+		offset_pts = round(size - _base_pane_font_size)
 	set_icon_scale(factor)
-	set_palette_font_scale(factor)
+	set_palette_font_offset(offset_pts)
 
 def _apply_to_all_panes(window, size):
 	for pane in window.get_panes():

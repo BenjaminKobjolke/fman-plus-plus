@@ -29,8 +29,8 @@ class Theme:
 		self._quicksearch_item_css = ''
 		# The pane font zoom, so the command palette grows and shrinks with
 		# the panes. Pushed by ThemeController, never saved here - see
-		# set_font_scale.
-		self._font_scale = 1.0
+		# set_font_offset.
+		self._font_offset_pts = 0
 		self._updates_enabled = False
 	def set_tokens(self, tokens):
 		"""
@@ -63,15 +63,15 @@ class Theme:
 		self._update_app()
 	def get_quicksearch_item_css(self):
 		return self._quicksearch_item_css
-	def set_font_scale(self, factor):
+	def set_font_offset(self, offset_pts):
 		"""
-		Scales every font size the command palette draws by `factor`, so it
-		follows the pane font zoom. Deliberately not remembered here, for the
-		same reason ThemeController.set_icon_scale isn't: the zoom that
-		decides `factor` is the Core plugin's pane_font_size, which persists
-		and is re-applied on startup already.
+		Adds `offset_pts` to every command palette font size, so it grows by
+		the same number of points as the pane font. Zero leaves its sizes
+		unchanged. Deliberately not remembered here: the zoom that decides
+		this offset is the Core plugin's pane_font_size, which persists and is
+		re-applied on startup already.
 		"""
-		self._font_scale = factor
+		self._font_offset_pts = offset_pts
 		self._quicksearch_item_css = self._get_quicksearch_item_css()
 		self._update_app()
 	def enable_updates(self):
@@ -112,8 +112,8 @@ class Theme:
 			raise ThemeError(error_message) from None
 	def _get_quicksearch_item_css(self):
 		engine = self._css_engine()
-		def scaled_pts(selector):
-			return self._scale_pts(engine.parse_pts(selector, 'font-size'))
+		def zoomed_pts(selector):
+			return self._zoom_pts(engine.parse_pts(selector, 'font-size'))
 		return {
 			'padding-top_px':
 				engine.parse_px('.quicksearch-item', 'padding-top'),
@@ -126,7 +126,7 @@ class Theme:
 			'border-bottom-width_px':
 				engine.parse_border_width('.quicksearch-item', 'border-bottom'),
 			'title': {
-				'font-size_pts': scaled_pts('.quicksearch-item-title'),
+				'font-size_pts': zoomed_pts('.quicksearch-item-title'),
 				'color': engine.parse_color('.quicksearch-item-title', 'color'),
 				'highlight': {
 					'color': engine.parse_color(
@@ -135,28 +135,28 @@ class Theme:
 				}
 			},
 			'hint': {
-				'font-size_pts': scaled_pts('.quicksearch-item-hint'),
+				'font-size_pts': zoomed_pts('.quicksearch-item-hint'),
 				'color': engine.parse_color('.quicksearch-item-hint', 'color')
 			},
 			'description': {
-				'font-size_pts': scaled_pts('.quicksearch-item-description'),
+				'font-size_pts': zoomed_pts('.quicksearch-item-description'),
 				'color':
 					engine.parse_color('.quicksearch-item-description', 'color')
 			}
 		}
 	def _css_engine(self):
 		return CSSEngine([r for rs in self._css_rules.values() for r in rs])
-	def _scale_pts(self, pts):
-		return max(1, round(pts * self._font_scale))
-	def _get_font_scale_qss(self):
+	def _zoom_pts(self, pts):
+		return max(1, round(pts + self._font_offset_pts))
+	def _get_font_zoom_qss(self):
 		# The palette's items are painted by hand from
 		# get_quicksearch_item_css, but its query line is a real widget, so
 		# its share of the zoom has to land as QSS - last, which is what
 		# makes it win over the theme's own rule for the same selector.
-		if self._font_scale == 1.0 or not self._css_rules:
+		if self._font_offset_pts == 0 or not self._css_rules:
 			return ''
 		try:
-			pts = self._scale_pts(
+			pts = self._zoom_pts(
 				self._css_engine().parse_pts('.quicksearch-query', 'font-size')
 			)
 		except ValueError:
@@ -185,7 +185,7 @@ class Theme:
 		if not self._updates_enabled:
 			return
 		qss = self._qss_base + ''.join(self._extra_qss_from_css.values()) + \
-			  self._get_font_scale_qss()
+			  self._get_font_zoom_qss()
 		self._app.set_style_sheet(qss)
 
 class ThemeError(Exception):

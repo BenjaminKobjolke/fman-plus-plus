@@ -92,41 +92,49 @@ class ThemeTest(TestCase):
 		theme.enable_updates()
 		# Would raise KeyError if unload had left the raw source behind:
 		theme.set_tokens(self._tokens(popup_item_fg='#abcdef'))
-	def test_font_scale_zooms_the_palette_items(self):
+	def test_font_offset_grows_the_palette_items_by_points(self):
 		# The items are painted by hand, so their sizes travel in the css
 		# dict rather than in the stylesheet.
 		theme = self._make_theme()
 		theme.load(self._write('Theme.css', _QUICKSEARCH_CSS))
 		theme.enable_updates()
-		theme.set_font_scale(2.0)
+		theme.set_font_offset(3)
 		css = theme.get_quicksearch_item_css()
-		self.assertEqual(20, css['title']['font-size_pts'])
-		self.assertEqual(16, css['hint']['font-size_pts'])
-	def test_font_scale_zooms_the_query_line(self):
+		self.assertEqual(13, css['title']['font-size_pts'])
+		self.assertEqual(11, css['hint']['font-size_pts'])
+	def test_font_offset_overrides_the_query_line_qss(self):
 		# The query line is a real widget, so its size has to reach QSS -
 		# and after the theme's own rule for the same selector.
 		theme = self._make_theme()
 		theme.load(self._write('Theme.css', _QUICKSEARCH_CSS))
 		theme.enable_updates()
-		theme.set_font_scale(2.0)
+		theme.set_font_offset(3)
 		stylesheet = self._app.stylesheet
 		self.assertIn(
-			'Quicksearch QLineEdit {\n\tfont-size: 20pt;', stylesheet
+			'Quicksearch QLineEdit {\n\tfont-size: 13pt;', stylesheet
 		)
 		self.assertLess(
 			stylesheet.index('font-size: 10pt'),
-			stylesheet.index('font-size: 20pt')
+			stylesheet.index('font-size: 13pt')
 		)
-	def test_resetting_the_font_scale_drops_the_override(self):
+	def test_resetting_the_font_offset_drops_the_override(self):
 		theme = self._make_theme()
 		theme.load(self._write('Theme.css', _QUICKSEARCH_CSS))
 		theme.enable_updates()
-		theme.set_font_scale(2.0)
-		theme.set_font_scale(1.0)
-		self.assertNotIn('font-size: 20pt', self._app.stylesheet)
+		theme.set_font_offset(3)
+		theme.set_font_offset(0)
+		self.assertNotIn('font-size: 13pt', self._app.stylesheet)
 		self.assertEqual(
 			10, theme.get_quicksearch_item_css()['title']['font-size_pts']
 		)
+	def test_font_offset_clamps_palette_items_to_one_point(self):
+		theme = self._make_theme()
+		theme.load(self._write('Theme.css', _QUICKSEARCH_CSS))
+		theme.enable_updates()
+		theme.set_font_offset(-20)
+		css = theme.get_quicksearch_item_css()
+		self.assertEqual(1, css['title']['font-size_pts'])
+		self.assertEqual(1, css['hint']['font-size_pts'])
 	def setUp(self):
 		super().setUp()
 		self._app = StubApp()

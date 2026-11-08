@@ -63,6 +63,25 @@ class QuicksearchTest(TestCase):
 		self.addCleanup(dialog.close)
 		return dialog
 
+	def _dialog_with_large_items(self, count, scale):
+		css = {
+			**_CSS,
+			'title': {**_CSS['title'], 'font-size_pts': 11 * scale},
+			'hint': {**_CSS['hint'], 'font-size_pts': 9 * scale},
+			'description': {
+				**_CSS['description'], 'font-size_pts': 9 * scale
+			},
+		}
+		items = [QuicksearchItem('Command %d' % i, hint='Ctrl+X')
+			for i in range(count)]
+		dialog = Quicksearch(
+			self.parent, _StubApp(), css, lambda _query: items
+		)
+		dialog.show()
+		self.app.processEvents()
+		self.addCleanup(dialog.close)
+		return dialog
+
 	def test_long_title_does_not_add_a_horizontal_scrollbar(self):
 		dialog = self._dialog_with_long_items(1)
 		self.assertFalse(dialog._items.horizontalScrollBar().isVisible())
@@ -164,6 +183,28 @@ class QuicksearchTest(TestCase):
 			3 * dialog._items.sizeHintForRow(0),
 		)
 		self.assertFalse(dialog._items.verticalScrollBar().isVisible())
+
+	def test_large_font_keeps_seven_rows_visible(self):
+		dialog = self._dialog_with_large_items(60, 2)
+		row_height = dialog._items.sizeHintForRow(0)
+
+		self.assertGreaterEqual(dialog._items.viewport().height(), 7 * row_height)
+		self.assertLessEqual(
+			dialog._items.mapTo(dialog, dialog._items.rect().bottomLeft()).y(),
+			dialog.height(),
+		)
+
+	def test_large_font_dialog_fits_short_parent_with_one_full_row(self):
+		self.parent.resize(1600, 300)
+		dialog = self._dialog_with_large_items(60, 3)
+		row_height = dialog._items.sizeHintForRow(0)
+
+		self.assertLessEqual(dialog.height(), self.parent.height())
+		self.assertGreaterEqual(dialog._items.viewport().height(), row_height)
+		self.assertLessEqual(
+			dialog._items.mapTo(dialog, dialog._items.rect().bottomLeft()).y(),
+			dialog.height(),
+		)
 
 	def test_long_title_row_fits_the_list_width(self):
 		dialog = self._dialog_with_long_items(1)

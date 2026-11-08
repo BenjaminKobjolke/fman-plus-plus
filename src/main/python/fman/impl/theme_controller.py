@@ -159,17 +159,18 @@ class ThemeController:
 		self._icon_scale = factor
 		self._apply_icon_size(self.get_icon_size())
 
-	def set_palette_font_scale(self, factor):
+	def set_palette_font_offset(self, offset_pts):
 		"""
-		Scales the command palette's font sizes by `factor`, so the palette
-		follows the pane font zoom the way the icons do. Not remembered here
-		either, and for the same reason - see set_icon_scale.
+		Adds `offset_pts` to the command palette's font sizes, so the palette
+		follows the pane font zoom by the same number of points. Zero leaves
+		the palette unchanged. Not remembered here, for the same reason - see
+		set_icon_scale.
 
-		Separate from set_icon_scale rather than folded into it: both take
-		the same factor, but one is an image size and the other a stylesheet
-		value, and a plugin may well want one without the other.
+		Separate from set_icon_scale rather than folded into it: the palette
+		uses a point offset while icons use a proportional scale, and a plugin
+		may well want one without the other.
 		"""
-		self._ctxt.theme.set_font_scale(factor)
+		self._ctxt.theme.set_font_offset(offset_pts)
 
 	def get_icon_color(self):
 		return self._get(_ICON_COLOR, self.get_theme())

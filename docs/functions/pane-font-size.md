@@ -52,8 +52,12 @@ These can be rebound in `Key Bindings.json` like any other command, e.g.:
   writing back a hard-coded default.
 - The two file-list panes and the command palette are affected — the status
   bar, location bar and column headers keep their own font size. The palette
-  zooms by the same factor the icons do, so a pane zoomed one step larger
-  opens a palette one step larger too; **Reset font size** puts it back.
+  grows by the same number of points as the pane text, so the palette stays
+  three points larger at every zoom; **Reset font size** puts it back. Its
+  result list keeps a seven-row minimum when the window has room, and shrinks
+  as needed in a short window so the dialog stays inside it while showing at
+  least one full row. Go To and text prompts with suggestions use the same
+  list sizing.
 - **Respects a custom theme.** If you have your own
   `Theme.css` (e.g. `%APPDATA%/fman/Plugins/User/Settings/Theme.css` on
   Windows) that sets a different base `font-size`, the first zoom press steps
@@ -93,17 +97,17 @@ These can be rebound in `Key Bindings.json` like any other command, e.g.:
   (`DirectoryPaneListener`) which re-applies a saved size when fman starts
   (mirrors the existing `InitHiddenFilesFilter` pattern).
 - **How the icons and the palette follow it:** the same three code paths call
-  `_apply_zoom_scale`, which computes one plain factor — the current size over
-  the theme's own — and hands it to both `fman.set_icon_scale` and
-  `fman.set_palette_font_scale`. The engine multiplies its resolved icon size
-  by it (`themes.scale_icon_size`), and `Theme.set_font_scale` multiplies every
-  font size the palette draws: the item title, hint and description it paints
-  by hand (`get_quicksearch_item_css`) plus a `Quicksearch QLineEdit`
-  font-size rule appended last to the app stylesheet, which is what makes it
-  beat the theme's own `.quicksearch-query` rule. Neither is saved, because
-  `pane_font_size` already persists and is already re-applied on startup;
-  saving it twice would give one zoom two homes that could disagree.
-- The factor's baseline is captured by `_remember_base_pane_font_size`, once
+  `_apply_zoom_scale`. It gives `fman.set_icon_scale` the current pane size
+  divided by the theme's original pane size, so icons retain proportional
+  scaling. It gives `fman.set_palette_font_offset` the rounded difference in
+  points, so the palette grows by the same number of points as the panes.
+  `Theme.set_font_offset` applies that offset to the item title, hint and
+  description it paints by hand (`get_quicksearch_item_css`) and appends a
+  `Quicksearch QLineEdit` font-size rule after the theme's own
+  `.quicksearch-query` rule. Neither zoom is saved here, because
+  `pane_font_size` already persists and is re-applied on startup; saving it
+  twice would give one zoom two homes that could disagree.
+- The zoom baseline is captured by `_remember_base_pane_font_size`, once
   per session, **before** any override stylesheet is set. After that the view
   reports the override, so the theme's own size is no longer readable — which
   is why `InitPaneFontSize` records it unconditionally, even when there is no

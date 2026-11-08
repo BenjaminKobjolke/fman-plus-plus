@@ -3,6 +3,7 @@ from fman import translate
 from fman.localization_keys import QUICKSEARCH_TITLE
 from fman.impl.edge_grip import EdgeGrip, place_grips
 from fman.impl.quicksearch_elide import elide_title_left, shift_highlight
+from fman.impl.quicksearch_height import fit_list_min_height
 from fman.impl.quicksearch_exit_keys import QuicksearchExit, find_exit_key
 from fman.impl.util.qt import Key_Tab, Key_Down, Key_Up, Key_PageDown, \
 	Key_Home, Key_End, Key_PageUp, Key_Return, Key_Enter, ShiftModifier, \
@@ -226,7 +227,21 @@ class Quicksearch(QDialog):
 		else:
 			min_height = 0
 		self._items.setMinimumHeight(min_height)
+		items_layout = self._items.parentWidget().layout()
+		items_layout.activate()
 		self.layout().activate()
+		parent = self.parentWidget()
+		if parent is not None:
+			overflow = max(
+				0, self.layout().sizeHint().height() - parent.height()
+			)
+			min_height = fit_list_min_height(
+				self._items.minimumHeight(), overflow, row_height
+			)
+			if min_height != self._items.minimumHeight():
+				self._items.setMinimumHeight(min_height)
+				items_layout.activate()
+				self.layout().activate()
 		self.setFixedHeight(self.layout().sizeHint().height())
 	def _layout_vertically(self, parent, *widgets):
 		layout = QVBoxLayout()

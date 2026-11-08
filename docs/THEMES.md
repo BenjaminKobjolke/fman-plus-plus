@@ -426,12 +426,12 @@ parsed separately by a small CSS engine and read back by the popup's own
 paint code via `Theme.get_quicksearch_item_css()`, rather than becoming QSS.)
 
 Every font size in that group — the four above plus `.quicksearch-query` —
-is multiplied by the [pane font zoom](functions/pane-font-size.md), which the
-Core plugin pushes in through `Theme.set_font_scale()`. The four painted ones
-are scaled in the dict; the query line gets a `Quicksearch QLineEdit`
-font-size rule appended *after* everything else in the app stylesheet, which
-is what makes the zoom beat your own `.quicksearch-query` rule. The sizes you
-author stay the palette's 1.0 baseline.
+gets the same point offset from the [pane font zoom](functions/pane-font-size.md),
+which the Core plugin pushes in through `Theme.set_font_offset()`. The four
+painted ones get the offset in the dict; the query line gets a
+`Quicksearch QLineEdit` font-size rule appended *after* everything else in
+the app stylesheet, which is what makes the zoom beat your own
+`.quicksearch-query` rule. The sizes you author stay the palette's baseline.
 
 Your `Theme.css` may contain `$` freely — substitution leaves unknown names
 alone. To use a theme's color in it, write the token: `color: $pane_fg;`.

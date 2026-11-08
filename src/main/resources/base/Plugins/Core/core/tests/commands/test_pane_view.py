@@ -169,6 +169,34 @@ class ApplyPaneFontSizeTest(TestCase):
 
 		pane._widget.set_file_list_style_sheet.assert_called_once_with('')
 
+class ApplyZoomScaleTest(TestCase):
+	def setUp(self):
+		self.previous_base_size = pane_view._base_pane_font_size
+		self.addCleanup(self._restore_base_size)
+	def _restore_base_size(self):
+		pane_view._base_pane_font_size = self.previous_base_size
+	def test_uses_point_offset_and_keeps_icon_scaling_proportional(self):
+		pane_view._base_pane_font_size = 9
+		with patch.object(pane_view, 'set_icon_scale') as set_icon_scale, \
+				patch.object(pane_view, 'set_palette_font_offset') as set_font_offset:
+			pane_view._apply_zoom_scale(12)
+		set_icon_scale.assert_called_once_with(12 / 9)
+		set_font_offset.assert_called_once_with(3)
+	def test_zero_offset_keeps_proportional_icon_scaling(self):
+		pane_view._base_pane_font_size = 12
+		with patch.object(pane_view, 'set_icon_scale') as set_icon_scale, \
+				patch.object(pane_view, 'set_palette_font_offset') as set_font_offset:
+			pane_view._apply_zoom_scale(12)
+		set_icon_scale.assert_called_once_with(1.0)
+		set_font_offset.assert_called_once_with(0)
+	def test_unavailable_zoom_resets_both_scales(self):
+		pane_view._base_pane_font_size = None
+		with patch.object(pane_view, 'set_icon_scale') as set_icon_scale, \
+				patch.object(pane_view, 'set_palette_font_offset') as set_font_offset:
+			pane_view._apply_zoom_scale(18)
+		set_icon_scale.assert_called_once_with(1.0)
+		set_font_offset.assert_called_once_with(0)
+
 class ShowAllPanesTest(TestCase):
 	def test_restores_all_panes(self):
 		window, active, other = _two_pane_window()
