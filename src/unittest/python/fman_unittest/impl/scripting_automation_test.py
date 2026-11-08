@@ -4,6 +4,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from PyQt5.QtCore import QEvent
+from PyQt5.QtGui import QImage
 from PyQt5.QtWidgets import QApplication, QDialog, QMessageBox, QWidget
 
 from fman.impl.scripting.automation import AutomationActions, UnknownFile
@@ -32,13 +33,16 @@ class ScriptingAutomationTest(TestCase):
 		with self.assertRaises(ValueError):
 			parse_chord('Ctrl+A, Ctrl+B')
 
-	def test_screenshot_returns_png_bytes(self):
+	def test_screenshot_returns_a_decodable_png_of_the_window(self):
 		window = QWidget()
-		window.resize(40, 30)
+		window.setFixedSize(40, 30)
 		window.show()
 		self.addCleanup(window.close)
 		data = AutomationActions(window, None).screenshot_png()
 		self.assertTrue(data.startswith(b'\x89PNG\r\n\x1a\n'))
+		image = QImage.fromData(data, 'PNG')
+		self.assertFalse(image.isNull())
+		self.assertEqual(window.grab().size(), image.size())
 
 	def test_get_dialog_returns_none_without_an_active_modal_widget(self):
 		actions = AutomationActions(_Window(), None)
