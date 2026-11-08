@@ -2,10 +2,14 @@
 
 from fman.impl.prompt_suggestions import PromptSuggestions
 from fman.impl.prompt_popup import Prompt
+from fman.localization import translate
+from fman.localization_keys import PROMPT_CANCEL, PROMPT_OK
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtTest import QTest
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit
+from PyQt5.QtWidgets import (
+	QApplication, QDialog, QDialogButtonBox, QWidget, QLineEdit
+)
 from threading import Event, get_ident
 from unittest import TestCase
 
@@ -133,6 +137,47 @@ class PromptPopupTest(TestCase):
 		self.prompt._query.setText('exact destination')
 		self.prompt._on_return_pressed()
 		self.assertEqual(('exact destination', None), self.prompt.get_result())
+	def test_has_ok_and_cancel_buttons(self):
+		buttons = self.prompt.findChild(QDialogButtonBox, 'buttons')
+		self.assertIsNotNone(buttons)
+		self.assertEqual(
+			{QDialogButtonBox.Ok, QDialogButtonBox.Cancel},
+			{buttons.standardButton(button) for button in buttons.buttons()}
+		)
+		self.assertEqual(
+			translate(PROMPT_OK), buttons.button(QDialogButtonBox.Ok).text()
+		)
+		self.assertEqual(
+			translate(PROMPT_CANCEL),
+			buttons.button(QDialogButtonBox.Cancel).text()
+		)
+	def test_ok_button_accepts_exact_field_text(self):
+		self.prompt._query.setText('exact destination')
+		self.prompt.findChild(
+			QDialogButtonBox, 'buttons'
+		).button(QDialogButtonBox.Ok).click()
+		self.assertEqual(('exact destination', None), self.prompt.get_result())
+		self.assertEqual(QDialog.Accepted, self.prompt.result())
+	def test_cancel_button_rejects(self):
+		self.prompt.findChild(
+			QDialogButtonBox, 'buttons'
+		).button(QDialogButtonBox.Cancel).click()
+		self.assertIsNone(self.prompt.get_result())
+		self.assertEqual(QDialog.Rejected, self.prompt.result())
+	def test_buttons_take_no_focus_and_are_not_default(self):
+		buttons = self.prompt.findChild(QDialogButtonBox, 'buttons')
+		for button in buttons.buttons():
+			self.assertEqual(Qt.NoFocus, button.focusPolicy())
+			self.assertFalse(button.autoDefault())
+			self.assertFalse(button.isDefault())
+	def test_popup_height_includes_buttons(self):
+		self.assertGreaterEqual(
+			self.prompt.height(), self.prompt.layout().sizeHint().height()
+		)
+		self.prompt.show()
+		QTest.qWait(10)
+		buttons = self.prompt.findChild(QDialogButtonBox, 'buttons')
+		self.assertTrue(self.prompt.rect().contains(buttons.geometry()))
 
 	def test_down_selects_a_suggestion_and_updates_text_and_click_does_not_accept(self):
 		self.prompt._set_suggestions('typed', ['alpha/', 'beta/'])

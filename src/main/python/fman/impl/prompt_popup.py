@@ -4,8 +4,10 @@ from fman import QuicksearchItem
 from fman.impl.prompt_completion import PromptTabCompletion
 from fman.impl.prompt_suggestions import PromptSuggestions
 from fman.impl.quicksearch import Quicksearch
-from fman.impl.util.qt import Key_Down, Key_Up
-from PyQt5.QtWidgets import QDialog, QLineEdit
+from fman.impl.util.qt import Key_Down, Key_Up, NoFocus
+from fman.localization import translate
+from fman.localization_keys import PROMPT_CANCEL, PROMPT_OK
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLineEdit
 
 
 class Prompt(Quicksearch):
@@ -38,6 +40,23 @@ class Prompt(Quicksearch):
 			self.finished.connect(self._suggestions.close)
 			self._suggestions.request(default)
 		self._items.setCurrentIndex(self._items.model().index(-1, 0))
+		self._buttons = QDialogButtonBox(
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self
+		)
+		self._buttons.setObjectName('buttons')
+		self._buttons.setCenterButtons(True)
+		self._buttons.button(QDialogButtonBox.Ok).setText(translate(PROMPT_OK))
+		self._buttons.button(QDialogButtonBox.Cancel).setText(
+			translate(PROMPT_CANCEL)
+		)
+		for button in self._buttons.buttons():
+			button.setFocusPolicy(NoFocus)
+			button.setAutoDefault(False)
+			button.setDefault(False)
+		self._buttons.accepted.connect(self._on_return_pressed)
+		self._buttons.rejected.connect(self.reject)
+		self.layout().addWidget(self._buttons)
+		self._adjust_item_list_ize()
 	def setTextValue(self, text):
 		self._query.setText(text)
 	def textValue(self):

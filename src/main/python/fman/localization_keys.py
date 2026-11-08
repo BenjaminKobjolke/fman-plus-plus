@@ -5,6 +5,8 @@ COMMAND_PALETTE_TITLE = 'command_palette_title'
 GOTO_TITLE = 'goto_title'
 READY = 'status_ready'
 ERROR_DISMISS = 'error_dismiss'
+PROMPT_OK = 'prompt_ok'
+PROMPT_CANCEL = 'prompt_cancel'
 ERROR_OPEN_CONSOLE = 'error_open_console'
 ERROR_COPY = 'error_copy'
 ERROR_COPIED = 'error_copied'
@@ -56,6 +58,8 @@ ENGLISH_TEXT = {
 	GOTO_TITLE: 'Go To',
 	READY: 'Ready.',
 	ERROR_DISMISS: 'Dismiss',
+	PROMPT_OK: 'OK',
+	PROMPT_CANCEL: 'Cancel',
 	ERROR_OPEN_CONSOLE: 'Open in console',
 	ERROR_COPY: 'Copy error',
 	ERROR_COPIED: 'Error copied to clipboard.',

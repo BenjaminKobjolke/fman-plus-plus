@@ -4,6 +4,8 @@
   "goto_title": "Перейти",
   "status_ready": "Готово.",
   "error_dismiss": "Закрыть",
+  "prompt_ok": "ОК",
+  "prompt_cancel": "Отмена",
   "error_open_console": "Открыть консоль",
   "error_copy": "Копировать ошибку",
   "error_copied": "Ошибка скопирована в буфер обмена.",

@@ -177,6 +177,10 @@ Quicksearch QListView::item:selected {
 	background-color: $popup_selected_bg;
 }
 
+Prompt #buttons {
+	padding: 4px 7px 7px 7px;
+}
+
 QLineEdit:read-only {
 	color: $readonly_fg;
 }

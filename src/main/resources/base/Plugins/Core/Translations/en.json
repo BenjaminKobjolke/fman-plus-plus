@@ -4,6 +4,8 @@
   "goto_title": "Go To",
   "status_ready": "Ready.",
   "error_dismiss": "Dismiss",
+  "prompt_ok": "OK",
+  "prompt_cancel": "Cancel",
   "error_open_console": "Open in console",
   "error_copy": "Copy error",
   "error_copied": "Error copied to clipboard.",
