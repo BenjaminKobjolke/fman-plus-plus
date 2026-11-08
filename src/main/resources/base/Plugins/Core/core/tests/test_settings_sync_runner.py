@@ -207,7 +207,9 @@ class SettingsSyncRunnerTest(TestCase):
 		local = [{'keys': 'Ctrl+A'}]
 		self.write_local(local)
 		self.client.get_settings.side_effect = FmanApiError('offline')
-		with patch('core.settings_sync_runner.signed_in_client', return_value=self.client):
+		with patch(
+			'core.settings_sync_runner.signed_in_client', return_value=self.client
+		):
 			settings_sync_runner.record_settings_change(self.kind.file_name)
 
 		self.assertEqual(local, self.read_local())
