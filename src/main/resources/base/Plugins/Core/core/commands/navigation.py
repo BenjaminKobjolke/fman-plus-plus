@@ -89,8 +89,15 @@ def go_up(pane):
 		pass
 
 class SelectAll(DirectoryPaneCommand):
-	def __call__(self):
+	def __call__(self, files_only=False):
 		self.pane.select_all()
+		if files_only:
+			url = self.pane.get_path()
+			directories = (
+				join(url, name) for name in iterdir(url)
+				if not _is_file(join(url, name))
+			)
+			self.pane.deselect(directories)
 
 class Deselect(DirectoryPaneCommand):
 	def __call__(self):

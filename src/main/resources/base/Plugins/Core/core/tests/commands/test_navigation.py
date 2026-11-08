@@ -154,3 +154,19 @@ class InvertSelectionTest(TestCase):
 			navigation.InvertSelection(pane)(files_only=True)
 		self.assertEqual(['file:///dir/other.txt'], pane.selected)
 		self.assertEqual(['file:///dir/selected.txt'], pane.deselected)
+
+class SelectAllTest(TestCase):
+	def test_files_only_deselects_directories_after_selecting_everything(self):
+		pane = FakePane(url='file:///dir')
+		pane.get_path = lambda: 'file:///dir'
+		pane.select_all = lambda: setattr(pane, 'selected_all', True)
+		pane.deselect = lambda urls: setattr(pane, 'deselected', list(urls))
+		with patch('core.commands.navigation.iterdir', return_value=[
+				'folder', 'file.txt']), \
+				patch(
+					'core.commands.navigation.is_dir',
+					side_effect=lambda url: url.endswith('/folder'),
+				):
+			navigation.SelectAll(pane)(files_only=True)
+		self.assertTrue(pane.selected_all)
+		self.assertEqual(['file:///dir/folder'], pane.deselected)
