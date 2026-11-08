@@ -30,7 +30,7 @@
       "test": "green"
     },
     "tools\\run_core_tests.bat": {
-      "test": "failed"
+      "test": "green"
     },
     "tools\\run_robocopy_tests.bat": {
       "test": "green"
@@ -42,13 +42,13 @@
       "test": "green"
     },
     "uv run python tools\\test_close_running_fman.py": {
-      "test": "failed"
+      "test": "green"
     },
     "uv run python tools\\test_release_version.py": {
       "test": "green"
     },
     "uv run python tools\\test_unittest_with_timeout.py": {
-      "test": "failed"
+      "test": "green"
     },
     "uv run python tools\\test_fman_ui.py": {
       "test": "green"
@@ -160,10 +160,5 @@
     "tools\\run_automation_tests.bat": "test"
   },
   "project_id": 251,
-  "analysis_test_timeout_seconds": 740,
-  "analysis_command_failing_tests": {
-    "tools\\run_core_tests.bat": [
-      "(failures=2, skipped=3)"
-    ]
-  }
+  "analysis_test_timeout_seconds": 740
 }
