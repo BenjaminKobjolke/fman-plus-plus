@@ -3,8 +3,10 @@ from fman.impl.widgets import LOADING_MESSAGE, LOADING_MESSAGE_NETWORK, \
 from fman.impl.prompt_popup import Prompt
 from fman.impl.widgets import MainWindow
 from PyQt5.QtCore import QRect, QSize
-from PyQt5.QtWidgets import QApplication, QLineEdit, QWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QWidget
 from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 class PromptTest(TestCase):
 	@classmethod
@@ -94,7 +96,7 @@ class ShowPromptCompatTest(TestCase):
 			def show_input(self, *args, **kwargs):
 				self.arguments = (args, kwargs)
 				return self.result
-			def exec_dialog(self, dialog, in_window=False):
+			def exec_dialog(self, dialog):
 				return self.result is not None
 
 		arguments = {
@@ -110,3 +112,80 @@ class ShowPromptCompatTest(TestCase):
 					expected, MainWindow.show_prompt(window, 'Name:', **arguments)
 				)
 				self.assertEqual((('Name:',), arguments), window.arguments)
+
+
+class ExecDialogTest(TestCase):
+	@classmethod
+	def setUpClass(cls):
+		cls.app = QApplication.instance() or QApplication([])
+
+	def _window(self):
+		window = QWidget()
+		window.before_dialog = MagicMock()
+		window._app = self.app
+		window._dialog = None
+		window._match_title_bar = MagicMock()
+		return window
+
+	def test_embeds_dialog_when_no_modal_widget_is_active(self):
+		window = self._window()
+		dialog = QDialog()
+		with patch(
+			'fman.impl.widgets.QApplication.activeModalWidget', return_value=None
+		), \
+				patch(
+					'fman.impl.widgets.exec_in_window',
+					return_value=QDialog.Accepted
+			) as embedded:
+			self.assertEqual(
+				QDialog.Accepted, MainWindow.exec_dialog.__wrapped__(window, dialog)
+			)
+		embedded.assert_called_once_with(dialog, window)
+		self.assertIsNone(window._dialog)
+		window.close()
+
+	def test_show_alert_uses_embedded_dialog_when_no_modal_widget_is_active(self):
+		window = self._window()
+		window._theme = MagicMock()
+		window._app = self.app
+		window.before_dialog = MagicMock()
+		window._dialog = None
+		window._match_title_bar = MagicMock()
+		exec_dialog = MainWindow.exec_dialog.__wrapped__
+		window.exec_dialog = lambda dialog: exec_dialog(window, dialog)
+		with patch(
+			'fman.impl.widgets.QApplication.activeModalWidget', return_value=None
+		), \
+				patch(
+					'fman.impl.widgets.exec_in_window',
+					return_value=QDialog.Accepted
+			) as embedded:
+			self.assertEqual(
+				QDialog.Accepted,
+				MainWindow.show_alert.__wrapped__(
+					window, 'Delete this file?'
+				)
+			)
+		embedded.assert_called_once()
+		self.assertIs(window, embedded.call_args.args[1])
+		window.close()
+
+	def test_modal_fallback_is_frameless_with_either_title_bar_setting(self):
+		for visible in (True, False):
+			with self.subTest(title_bar_visible=visible):
+				window = self._window()
+				window._match_title_bar = MagicMock()
+				dialog = QDialog()
+				dialog.exec = MagicMock(return_value=QDialog.Rejected)
+				with patch(
+					'fman.impl.widgets.QApplication.activeModalWidget',
+					return_value=QDialog()
+				), \
+						patch('fman.impl.widgets.Scrim'):
+					self.assertEqual(
+						QDialog.Rejected,
+						MainWindow.exec_dialog.__wrapped__(window, dialog)
+					)
+				self.assertTrue(dialog.windowFlags() & Qt.FramelessWindowHint)
+				self.assertTrue(dialog.property('frameless'))
+				window.close()

@@ -71,6 +71,23 @@ class InWindowDialogTest(TestCase):
 		self.assertEqual((self.parent.rect(), dialog.pos()), observed[0])
 		self.assertEqual((0, 0), (dialog.x(), dialog.y()))
 
+	def test_dialog_resize_recenters_it_in_parent(self):
+		dialog = QDialog()
+		dialog.resize(200, 100)
+		observed = []
+		def resize_and_check():
+			dialog.resize(300, 180)
+			self.app.processEvents()
+			observed.append(dialog.pos())
+			dialog.reject()
+		QTimer.singleShot(0, resize_and_check)
+		self.assertEqual(QDialog.Rejected, exec_in_window(dialog, self.parent))
+		self.assertEqual(
+			((self.parent.width() - dialog.width()) // 2,
+			 (self.parent.height() - dialog.height()) // 2),
+			(observed[0].x(), observed[0].y())
+		)
+
 	def test_focus_returns_to_widget_focused_before_call(self):
 		dialog = QDialog()
 		QTimer.singleShot(0, dialog.accept)

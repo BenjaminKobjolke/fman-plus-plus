@@ -8,7 +8,7 @@ from fman.impl.quicksearch import Quicksearch
 from fman.impl.util.qt import Key_Down, Key_Up, NoFocus
 from fman.localization import translate
 from fman.localization_keys import PROMPT_CANCEL, PROMPT_OK
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLineEdit, QStyle
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLabel, QLineEdit, QStyle
 
 
 class Prompt(Quicksearch):
@@ -25,10 +25,16 @@ class Prompt(Quicksearch):
 		selection_end=None, get_completions=None, password=False,
 		width_store=None
 	):
+		self._message = message
+		title, _, detail = message.partition('\n')
 		super().__init__(
 			parent, app, css, lambda _query: [], query=default,
-			width_store=width_store, title=message
+			width_store=width_store, title=title
 		)
+		if detail:
+			self._detail = QLabel(detail, self)
+			self._detail.setObjectName('detail')
+			self.layout().insertWidget(1, self._detail)
 		self._selection_start = selection_start
 		self._selection_end = selection_end
 		self._request_immediate_repaint = False
@@ -53,7 +59,6 @@ class Prompt(Quicksearch):
 			QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self
 		)
 		self._buttons.setObjectName('buttons')
-		self._buttons.setCenterButtons(True)
 		self._buttons.button(QDialogButtonBox.Ok).setText(translate(PROMPT_OK))
 		self._buttons.button(QDialogButtonBox.Cancel).setText(
 			translate(PROMPT_CANCEL)
@@ -74,7 +79,7 @@ class Prompt(Quicksearch):
 	def textValue(self):
 		return self._query.text()
 	def labelText(self):
-		return self._header.text()
+		return self._message
 	def setVisible(self, visible):
 		if visible:
 			self._query.end(False)

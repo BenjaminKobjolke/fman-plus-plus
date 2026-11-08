@@ -15,6 +15,7 @@ def exec_in_window(dialog, parent):
 	_position(dialog, parent)
 	resize_filter = _ResizeFilter(parent, scrim, dialog)
 	parent.installEventFilter(resize_filter)
+	dialog.installEventFilter(resize_filter)
 	event_loop = QEventLoop()
 	dialog.finished.connect(event_loop.quit)
 	try:
@@ -25,6 +26,7 @@ def exec_in_window(dialog, parent):
 		dialog.setFocus()
 		event_loop.exec()
 	finally:
+		dialog.removeEventFilter(resize_filter)
 		parent.removeEventFilter(resize_filter)
 		scrim.close()
 		if previous_focus is not None and not sip.isdeleted(previous_focus):
@@ -46,9 +48,11 @@ class _ResizeFilter(QObject):
 		self._scrim = scrim
 		self._dialog = dialog
 	def eventFilter(self, watched, event):
-		if watched is self._parent and event.type() == QEvent.Resize:
-			self._scrim.setGeometry(self._parent.rect())
-			_position(self._dialog, self._parent)
+		if event.type() == QEvent.Resize:
+			if watched is self._parent:
+				self._scrim.setGeometry(self._parent.rect())
+			if watched is self._parent or watched is self._dialog:
+				_position(self._dialog, self._parent)
 		return False
 
 

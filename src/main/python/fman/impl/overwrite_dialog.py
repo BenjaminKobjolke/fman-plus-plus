@@ -53,6 +53,7 @@ class OverwriteDialog(QDialog):
 
 		layout = QVBoxLayout(self)
 		message = QLabel(str(text), self)
+		message.setObjectName('title')
 		message.setWordWrap(True)
 		layout.addWidget(message)
 		if details is not None:
@@ -73,6 +74,7 @@ class OverwriteDialog(QDialog):
 		):
 			row = QHBoxLayout()
 			self.button_rows.append(row)
+			row.addStretch()
 			for choice in choices:
 				button = QPushButton(BUTTON_LABELS[choice.name], self)
 				button.setObjectName(choice.name.lower())
@@ -81,6 +83,7 @@ class OverwriteDialog(QDialog):
 				)
 				self.buttons[choice] = button
 				row.addWidget(button)
+			row.addStretch()
 			layout.addLayout(row)
 
 		self.buttons[OverwriteChoice.OVERWRITE].setDefault(True)

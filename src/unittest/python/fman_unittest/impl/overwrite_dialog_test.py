@@ -21,8 +21,11 @@ class OverwriteDialogTest(TestCase):
 		self.dialog.close()
 
 	def test_has_four_buttons_in_first_row_and_three_in_second(self):
-		self.assertEqual(4, self.dialog.button_rows[0].count())
-		self.assertEqual(3, self.dialog.button_rows[1].count())
+		self.assertEqual(6, self.dialog.button_rows[0].count())
+		self.assertEqual(5, self.dialog.button_rows[1].count())
+		for row in self.dialog.button_rows:
+			self.assertIsNotNone(row.itemAt(0).spacerItem())
+			self.assertIsNotNone(row.itemAt(row.count() - 1).spacerItem())
 
 	def test_each_button_returns_its_choice(self):
 		for choice in OverwriteChoice:

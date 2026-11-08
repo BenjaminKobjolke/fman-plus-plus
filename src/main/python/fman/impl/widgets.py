@@ -602,7 +602,7 @@ class MainWindow(QMainWindow):
 			self, self._app, css, text_str, default, selection_start,
 			selection_end, get_completions=get_completions, password=password
 		)
-		result = self.exec_dialog(dialog, in_window=True)
+		result = self.exec_dialog(dialog)
 		if result:
 			return dialog.textValue()
 		return None
@@ -619,7 +619,7 @@ class MainWindow(QMainWindow):
 		)
 		if set_refresh is not None:
 			set_refresh(dialog.request_refresh)
-		self.exec_dialog(dialog, in_window=True)
+		self.exec_dialog(dialog)
 		return dialog.get_result()
 	def _match_title_bar(self, dialog):
 		# Dialogs that are always frameless, e.g. Quicksearch, keep their look.
@@ -647,15 +647,15 @@ class MainWindow(QMainWindow):
 	def get_open_dialog(self):
 		return self._dialog
 	@run_in_main_thread
-	def exec_dialog(self, dialog, in_window=False):
+	def exec_dialog(self, dialog):
 		self._dialog = dialog
 		try:
 			self.before_dialog.emit(dialog)
 			dialog.moveToThread(self._app.thread())
-			if in_window and QApplication.activeModalWidget() is None:
+			if QApplication.activeModalWidget() is None:
 				return exec_in_window(dialog, self)
 			dialog.setParent(self)
-			self._match_title_bar(dialog)
+			make_frameless(dialog)
 			# Embedded dialogs share the window's opacity. Top-level dialogs
 			# remain fully opaque to keep prompts and progress readable.
 			if is_mac():
@@ -882,9 +882,6 @@ class MessageBox(QMessageBox):
 		super().__init__(parent)
 		self._allow_escape = allow_escape
 		self._width_floor_applied = False
-		# Qt right-aligns the buttons on Windows/Linux, which looks lopsided
-		# in our narrow, icon-less message boxes:
-		self.findChild(QDialogButtonBox).setCenterButtons(True)
 	def _apply_layout_fixes(self):
 		"""
 		Give the message text a minimum width, and left-align it when it spans

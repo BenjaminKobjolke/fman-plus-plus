@@ -11,6 +11,7 @@ from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import (
 	QApplication, QDialog, QDialogButtonBox, QWidget, QLineEdit, QStyle
 )
+from PyQt5.QtWidgets import QLabel
 from threading import Event, get_ident
 from unittest import TestCase
 
@@ -138,6 +139,17 @@ class PromptPopupTest(TestCase):
 		self.prompt._query.setText('exact destination')
 		self.prompt._on_return_pressed()
 		self.assertEqual(('exact destination', None), self.prompt.get_result())
+	def test_two_line_message_has_title_and_detail_and_keeps_full_label_text(self):
+		prompt = Prompt(self.parent, _StubApp(), self.css, 'Copy file to\nC:/target')
+		self.assertEqual('Copy file to', prompt._header.text())
+		self.assertEqual('C:/target', prompt.findChild(QLabel, 'detail').text())
+		self.assertEqual('Copy file to\nC:/target', prompt.labelText())
+		prompt.close()
+	def test_one_line_message_has_no_detail_label(self):
+		prompt = Prompt(self.parent, _StubApp(), self.css, 'Destination:')
+		self.assertIsNone(prompt.findChild(QLabel, 'detail'))
+		self.assertEqual('Destination:', prompt.labelText())
+		prompt.close()
 	def test_has_ok_and_cancel_buttons(self):
 		buttons = self.prompt.findChild(QDialogButtonBox, 'buttons')
 		self.assertIsNotNone(buttons)

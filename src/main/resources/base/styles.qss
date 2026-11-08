@@ -138,6 +138,21 @@ Quicksearch #header {
 	padding: 6px 7px 2px 7px;
 }
 
+QDialogButtonBox {
+	qproperty-centerButtons: true;
+}
+
+Prompt #header,
+OverwriteDialog #title,
+MessageBox #qt_msgbox_label {
+	color: $bright_fg;
+}
+
+Prompt #detail {
+	color: $muted_fg;
+	padding: 0 7px 6px 7px;
+}
+
 Quicksearch #query-container {
 	/*
 	 * The sole purpose of this Div is to draw an extra border at the bottom.
@@ -259,7 +274,13 @@ QRadioButton::checked {
 
 /* A dialog without a title bar, because the main window hides its own. */
 *[frameless="true"] {
+	background-color: $popup_bg;
 	border: 1px solid $border;
+}
+
+MessageBox QScrollArea,
+MessageBox QScrollArea > QWidget > QWidget {
+	background: transparent;
 }
 
 ProgressDialog {
