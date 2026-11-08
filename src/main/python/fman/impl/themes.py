@@ -31,7 +31,7 @@ See docs/THEMES.md for the token reference and how to add a theme.
 from fman.impl.background import normalize_backgrounds
 from fbs_runtime import platform
 from fman.impl.model.icon_set import is_valid_icon_set_name
-from glob import glob
+from glob import escape, glob
 from os.path import basename, join, splitext
 from PyQt5.QtGui import QColor, QPalette
 from string import Template
@@ -291,7 +291,7 @@ def list_themes(dirs):
 	# what it is) and must stay reachable even if `dirs` are missing.
 	result = {DEFAULT_THEME}
 	for dir_ in dirs:
-		for path in glob(join(dir_, '*.json')):
+		for path in glob(join(escape(dir_), '*.json')):
 			result.add(splitext(basename(path))[0])
 	return sorted(result)
 

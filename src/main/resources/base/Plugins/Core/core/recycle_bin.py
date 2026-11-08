@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from glob import glob
+from glob import escape, glob
 from os import remove, rename
 from os.path import basename, dirname, isdir, join, lexists
 import ntpath
@@ -72,7 +72,7 @@ def iter_entries(original_path):
 	bin_directory = _recycle_bin_directory(original_path, sid)
 	if not isdir(bin_directory):
 		return
-	for info_path in glob(join(bin_directory, '$I*')):
+	for info_path in glob(join(escape(bin_directory), '$I*')):
 		try:
 			entry = parse_entry(info_path)
 		except (OSError, ValueError):

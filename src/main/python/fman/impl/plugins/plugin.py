@@ -6,7 +6,7 @@ from fman.impl.incognito import ON_INCOGNITO_CHANGED
 from fman.localization import register_plugin_catalog, \
 	unregister_plugin_catalog
 from fman.impl.util import listdir_absolute
-from glob import glob
+from glob import escape, glob
 from importlib.machinery import SourceFileLoader
 from inspect import getmro
 from json import JSONDecodeError
@@ -162,7 +162,7 @@ class ExternalPlugin(Plugin):
 		# Recursive so a plugin can group its fonts (and their licences)
 		# in a directory instead of scattering .ttf files beside its code
 		# - which is what the Core plugin's Fonts/<Family>/ does.
-		for font in glob(join(self._path, '**', '*.ttf'), recursive=True):
+		for font in glob(join(escape(self._path), '**', '*.ttf'), recursive=True):
 			self._load_font(font)
 		for css_file in self._config.locate('Theme.css', self._path):
 			try:

@@ -12,7 +12,7 @@ Deliberately shaped like fman.impl.themes: same list_/load_ pair, same
 that one set rather than fman's startup. Which set is active is a theme
 property - see docs/THEMES.md.
 """
-from glob import glob
+from glob import escape, glob
 from json import load
 from os.path import basename, dirname, isfile, join
 
@@ -58,7 +58,7 @@ def list_icon_sets(dirs):
 	# reachable even if `dirs` are missing.
 	result = {DEFAULT_ICON_SET}
 	for dir_ in dirs:
-		for path in glob(join(dir_, '*', _MANIFEST)):
+		for path in glob(join(escape(dir_), '*', _MANIFEST)):
 			result.add(basename(dirname(path)))
 	return sorted(result)
 

@@ -16,6 +16,7 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 import json
+import os
 import re
 
 _PROJECT_DIR = dirname(dirname(dirname(dirname(dirname(dirname(
@@ -145,6 +146,13 @@ class TemplatesTest(TestCase):
 			self.assertEqual(value, DEFAULT_TOKENS[token], token)
 
 class BundledThemesTest(TestCase):
+	def test_list_themes_matches_a_directory_with_brackets(self):
+		with TemporaryDirectory() as dir_:
+			themes_dir = join(dir_, '[x] Themes')
+			os.mkdir(themes_dir)
+			with open(join(themes_dir, 'Foo.json'), 'w') as f:
+				json.dump({}, f)
+			self.assertIn('Foo', list_themes([themes_dir]))
 	def test_default_theme_file_is_empty(self):
 		# Monokai == DEFAULT_COLORS. An empty file is the only way to say
 		# that without repeating every color.
