@@ -64,7 +64,8 @@ class SyncPlugins(ApplicationCommand):
 			show_status_message(_NETWORK_ERROR % error)
 			return
 		if client is None:
-			show_status_message('Signed out of fman account')
+			if not silent:
+				show_status_message('Signed out of fman account')
 			return
 		state = SyncState.load()
 		try:

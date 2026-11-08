@@ -33,6 +33,9 @@ You can also run *Sync plugins* from the command palette. It compares the
 account list, installed third-party plugins and the last sync state saved on
 this computer:
 
+When no account is signed in, this startup sync does nothing and shows no
+message; running *Sync plugins* by hand reports that you are signed out.
+
 - A plugin in the account list but not installed here is offered in one
   checklist. Entries saved on this operating system start checked; entries
   saved on another operating system start unchecked and show that system.

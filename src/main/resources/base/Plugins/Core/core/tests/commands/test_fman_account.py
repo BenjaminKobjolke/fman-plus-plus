@@ -48,10 +48,17 @@ class AccountCommandsTest(TestCase):
 
 	def test_signed_out_shows_status_and_stops(self):
 		self.patches['signed_in_client'].return_value = None
-		self.command(silent=True)
+		self.command()
 		self.patches['show_status_message'].assert_called_once_with(
 			'Signed out of fman account'
 		)
+		self.patches['compute_sync'].assert_not_called()
+
+	def test_silent_signed_out_is_quiet_and_stops(self):
+		self.patches['signed_in_client'].return_value = None
+		self.command(silent=True)
+		self.patches['show_status_message'].assert_not_called()
+		self.patches['show_alert'].assert_not_called()
 		self.patches['compute_sync'].assert_not_called()
 
 	def test_upload_and_remote_delete_are_applied_without_prompts(self):
