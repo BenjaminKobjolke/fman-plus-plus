@@ -173,12 +173,12 @@ Quicksearch QListView {
 	margin-right: 4px;
 }
 
-Quicksearch QListView::item:selected {
-	background-color: $popup_selected_bg;
+Prompt QListView {
+	min-width: 0;
 }
 
-Prompt #buttons {
-	padding: 4px 7px 7px 7px;
+Quicksearch QListView::item:selected {
+	background-color: $popup_selected_bg;
 }
 
 QLineEdit:read-only {

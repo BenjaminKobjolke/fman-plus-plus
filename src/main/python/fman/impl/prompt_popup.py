@@ -3,14 +3,23 @@
 from fman import QuicksearchItem
 from fman.impl.prompt_completion import PromptTabCompletion
 from fman.impl.prompt_suggestions import PromptSuggestions
+from fman.impl.frameless_dialog import make_frameless, text_width_floor
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.util.qt import Key_Down, Key_Up, NoFocus
 from fman.localization import translate
 from fman.localization_keys import PROMPT_CANCEL, PROMPT_OK
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLineEdit
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLineEdit, QStyle
 
 
 class Prompt(Quicksearch):
+	def _outer_margins(self):
+		make_frameless(self)
+		return tuple(self.style().pixelMetric(metric, None, self) for metric in (
+			QStyle.PM_LayoutLeftMargin, QStyle.PM_LayoutTopMargin,
+			QStyle.PM_LayoutRightMargin, QStyle.PM_LayoutBottomMargin
+		))
+	def _list_min_width(self):
+		return text_width_floor(self)
 	def __init__(
 		self, parent, app, css, message='', default='', selection_start=0,
 		selection_end=None, get_completions=None, password=False,
@@ -55,6 +64,9 @@ class Prompt(Quicksearch):
 			button.setDefault(False)
 		self._buttons.accepted.connect(self._on_return_pressed)
 		self._buttons.rejected.connect(self.reject)
+		self.layout().addSpacing(
+			self.style().pixelMetric(QStyle.PM_LayoutVerticalSpacing, None, self)
+		)
 		self.layout().addWidget(self._buttons)
 		self._adjust_item_list_ize()
 	def setTextValue(self, text):

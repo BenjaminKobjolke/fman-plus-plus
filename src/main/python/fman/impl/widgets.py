@@ -3,7 +3,8 @@ from fman import OK
 from fman import translate
 from fman.localization_keys import READY
 from fman.impl.background import chrome_is_transparent, for_window
-from fman.impl.frameless_dialog import make_frameless
+from fman.impl.frameless_dialog import _MAX_SCREEN_SHARE, _MIN_TEXT_CHARS, \
+	make_frameless, text_width_floor
 from fman.impl.incognito import MARKER_TEXT
 from fman.impl.in_window_dialog import Scrim, exec_in_window
 from fman.impl.model import SortedFileSystemModel
@@ -599,8 +600,7 @@ class MainWindow(QMainWindow):
 		css = self._theme.get_quicksearch_item_css()
 		dialog = Prompt(
 			self, self._app, css, text_str, default, selection_start,
-			selection_end, get_completions=get_completions, password=password,
-			width_store=self._quicksearch_width
+			selection_end, get_completions=get_completions, password=password
 		)
 		result = self.exec_dialog(dialog, in_window=True)
 		if result:
@@ -872,10 +872,10 @@ class MessageBox(QMessageBox):
 	# Width floor for the message text, in characters. Wide enough that a short
 	# sentence is not broken up, narrow enough that a one-line message does not
 	# produce a comically wide box.
-	_MIN_TEXT_CHARS = 44
+	_MIN_TEXT_CHARS = _MIN_TEXT_CHARS
 	# Never claim more than this share of the screen, so the floor cannot push
 	# the box off-screen under a large theme font.
-	_MAX_SCREEN_SHARE = .5
+	_MAX_SCREEN_SHARE = _MAX_SCREEN_SHARE
 	_MAX_TEXT_HEIGHT_SCREEN_SHARE = .8
 
 	def __init__(self, parent, allow_escape=True):
@@ -915,12 +915,7 @@ class MessageBox(QMessageBox):
 			label.setAlignment(Qt.AlignCenter)
 		if not self._width_floor_applied:
 			self._width_floor_applied = True
-			char_width = label.fontMetrics().horizontalAdvance('0')
-			screen = self.screen() or QApplication.primaryScreen()
-			width = min(
-				char_width * self._MIN_TEXT_CHARS,
-				int(screen.availableGeometry().width() * self._MAX_SCREEN_SHARE)
-			)
+			width = text_width_floor(label)
 			layout = self.layout()
 			layout.addItem(
 				QSpacerItem(width, 0, QSizePolicy.Minimum, QSizePolicy.Fixed),

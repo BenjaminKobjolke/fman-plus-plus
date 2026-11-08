@@ -2,13 +2,14 @@
 
 from fman.impl.prompt_suggestions import PromptSuggestions
 from fman.impl.prompt_popup import Prompt
+from fman.impl.frameless_dialog import text_width_floor
 from fman.localization import translate
 from fman.localization_keys import PROMPT_CANCEL, PROMPT_OK
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import (
-	QApplication, QDialog, QDialogButtonBox, QWidget, QLineEdit
+	QApplication, QDialog, QDialogButtonBox, QWidget, QLineEdit, QStyle
 )
 from threading import Event, get_ident
 from unittest import TestCase
@@ -178,6 +179,32 @@ class PromptPopupTest(TestCase):
 		QTest.qWait(10)
 		buttons = self.prompt.findChild(QDialogButtonBox, 'buttons')
 		self.assertTrue(self.prompt.rect().contains(buttons.geometry()))
+	def test_prompt_uses_frameless_style_margins(self):
+		self.assertTrue(self.prompt.property('frameless'))
+		margins = self.prompt.layout().contentsMargins()
+		style = self.prompt.style()
+		expected = tuple(style.pixelMetric(metric, None, self.prompt) for metric in (
+			QStyle.PM_LayoutLeftMargin, QStyle.PM_LayoutTopMargin,
+			QStyle.PM_LayoutRightMargin, QStyle.PM_LayoutBottomMargin
+		))
+		self.assertEqual(
+			expected,
+			(
+				margins.left(), margins.top(), margins.right(), margins.bottom()
+			),
+		)
+		self.assertTrue(all(margin > 0 for margin in expected))
+	def test_prompt_list_uses_message_box_width_floor(self):
+		self.assertEqual(
+			text_width_floor(self.prompt), self.prompt._items.minimumWidth()
+		)
+		palette_width = self.prompt.fontMetrics().height() * 40
+		self.assertLess(self.prompt._items.minimumWidth(), palette_width)
+	def test_buttons_are_inside_prompt_frame(self):
+		self.prompt.adjustSize()
+		buttons = self.prompt.findChild(QDialogButtonBox, 'buttons')
+		self.assertGreater(self.prompt.layout().contentsMargins().bottom(), 0)
+		self.assertLess(buttons.geometry().bottom(), self.prompt.height() - 1)
 
 	def test_down_selects_a_suggestion_and_updates_text_and_click_does_not_accept(self):
 		self.prompt._set_suggestions('typed', ['alpha/', 'beta/'])

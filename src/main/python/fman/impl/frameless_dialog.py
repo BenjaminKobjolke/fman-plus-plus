@@ -11,11 +11,13 @@ theme's stylesheet.
 """
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QStyle
+from PyQt5.QtWidgets import QApplication, QStyle
 
 _PROPERTY = 'frameless'
 
 _EXTRA_MARGIN = 8
+_MIN_TEXT_CHARS = 44
+_MAX_SCREEN_SHARE = .5
 
 _MARGINS = (
 	QStyle.PM_LayoutLeftMargin, QStyle.PM_LayoutTopMargin,
@@ -32,3 +34,11 @@ def extra_margin(metric, widget):
 			widget.property(_PROPERTY):
 		return _EXTRA_MARGIN
 	return 0
+
+def text_width_floor(widget):
+	char_width = widget.fontMetrics().horizontalAdvance('0')
+	screen = widget.screen() or QApplication.primaryScreen()
+	return min(
+		char_width * _MIN_TEXT_CHARS,
+		int(screen.availableGeometry().width() * _MAX_SCREEN_SHARE)
+	)

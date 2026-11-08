@@ -99,8 +99,12 @@ class Quicksearch(QDialog):
 		self._layout_vertically(
 			self, self._header, query_container, items_container
 		)
+		self.layout().setContentsMargins(*self._outer_margins())
 		self.layout().setSizeConstraint(QLayout.SetNoConstraint)
 		self._items.ensurePolished()
+		list_min_width = self._list_min_width()
+		if list_min_width is not None:
+			self._items.setMinimumWidth(list_min_width)
 		self._default_list_width = self._items.minimumWidth()
 		self.adjustSize()
 		self._dialog_chrome_width = self.width() - self._items.width()
@@ -130,6 +134,10 @@ class Quicksearch(QDialog):
 			stored_width = self._width_store.get()
 			if stored_width is not None:
 				self._resize_to(stored_width)
+	def _outer_margins(self):
+		return 0, 0, 0, 0
+	def _list_min_width(self):
+		return None
 	def resizeEvent(self, event):
 		super().resizeEvent(event)
 		if hasattr(self, '_grips'):
