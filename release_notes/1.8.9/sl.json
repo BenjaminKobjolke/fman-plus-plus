@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Zmogljivejše upravljanje datotek in prilagajanje",
+  "notes": [
+    "Novo: Brskajte po mapah v namenskem drevesnem prikazu map, odpirajte arhive TAR kot mape samo za branje ter ustvarjajte ali odpirajte z geslom zaščitene arhive ZIP in 7z.",
+    "Novo: Iščite in nameščajte vtičnike iz GitLaba in Forgeja, sinhronizirajte vtičnike drugih ponudnikov s svojim računom fman ter odprite mapo z nastavitvami iz palete ukazov.",
+    "Izboljšano: Operacije z datotekami zdaj podpirajo globalno čakalno vrsto prenosov, boljše upravljanje zaklenjenih datotek in preklicanih premikov, vzporedno brisanje ter zanesljivejšo podporo za odložišče in navidezne datoteke.",
+    "Izboljšano: Prilagodite podokna in sezname datotek s kompaktnimi večstolpčnimi postavitvami, skupnim razvrščanjem datotek in map, več stolpci, skritimi stolpci vtičnikov ter ukazi za delitev podoken.",
+    "Izboljšano: Integracija z Windows zdaj vključuje prekrivne ikone lupine, način zamenjave Raziskovalca, skočne sezname opravilne vrstice, ločene gumbe opravilne vrstice za posamezna okna in boljše upravljanje poti."
+  ]
+}

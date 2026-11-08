@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "More powerful file management and customization",
+  "notes": [
+    "New: Browse folders in a dedicated folder tree, open TAR archives as read-only folders, and create or open password-protected ZIP and 7z archives.",
+    "New: Search for and install plugins from GitLab and Forgejo, sync third-party plugins with your fman account, and open the settings folder from the command palette.",
+    "Improved: File operations now have a global transfer queue, better handling of locked files and canceled moves, parallel deletion, and more reliable clipboard and virtual-file support.",
+    "Improved: Customize panes and file lists with compact multi-column layouts, mixed file-and-folder sorting, more columns, hidden plugin columns, and pane-division commands.",
+    "Improved: Windows integration now includes shell overlay icons, Explorer replacement mode, taskbar jump lists, per-window taskbar buttons, and better path handling."
+  ]
+}

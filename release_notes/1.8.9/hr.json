@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Naprednije upravljanje datotekama i prilagodba",
+  "notes": [
+    "Novo: Pregledavajte mape u zasebnom stablu mapa, otvarajte TAR arhive kao mape samo za čitanje te stvarajte ili otvarajte ZIP i 7z arhive zaštićene lozinkom.",
+    "Novo: Pretražujte dodatke na GitLabu i Forgeju i instalirajte ih, sinkronizirajte dodatke trećih strana sa svojim fman računom te otvorite mapu s postavkama iz palete naredbi.",
+    "Poboljšano: Operacije s datotekama sada imaju globalni red čekanja prijenosa, bolje upravljanje zaključanim datotekama i otkazanim premještanjima, paralelno brisanje te pouzdaniju podršku za međuspremnik i virtualne datoteke.",
+    "Poboljšano: Prilagodite okna i popise datoteka kompaktnim višestupčanim rasporedima, zajedničkim sortiranjem datoteka i mapa, većim brojem stupaca, skrivenim stupcima dodataka i naredbama za podjelu okana.",
+    "Poboljšano: Integracija sa sustavom Windows sada uključuje ikone preklapanja ljuske, način zamjene Explorera, popise za skok na programskoj traci, zasebne gumbe programske trake za svaki prozor i bolje rukovanje putanjama."
+  ]
+}

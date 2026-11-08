@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Une gestion des fichiers et une personnalisation plus poussées",
+  "notes": [
+    "Nouveau : Parcourez les dossiers dans une arborescence dédiée, ouvrez les archives TAR comme des dossiers en lecture seule, et créez ou ouvrez des archives ZIP et 7z protégées par mot de passe.",
+    "Nouveau : Recherchez et installez des plugins depuis GitLab et Forgejo, synchronisez les plugins tiers avec votre compte fman et ouvrez le dossier des paramètres depuis la palette de commandes.",
+    "Améliorations : Les opérations sur les fichiers disposent désormais d’une file d’attente globale des transferts, d’une meilleure gestion des fichiers verrouillés et des déplacements annulés, de la suppression en parallèle, ainsi que d’une prise en charge plus fiable du presse-papiers et des fichiers virtuels.",
+    "Améliorations : Personnalisez les volets et les listes de fichiers avec des dispositions compactes à plusieurs colonnes, un tri mêlant fichiers et dossiers, davantage de colonnes, des colonnes de plugins masquées et des commandes de division des volets.",
+    "Améliorations : L’intégration à Windows comprend désormais des icônes de superposition du shell, un mode de remplacement de l’Explorateur, des listes de raccourcis dans la barre des tâches, des boutons de barre des tâches pour chaque fenêtre et une meilleure gestion des chemins."
+  ]
+}

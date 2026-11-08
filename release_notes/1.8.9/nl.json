@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Krachtiger bestandsbeheer en meer aanpassingsmogelijkheden",
+  "notes": [
+    "Nieuw: Blader door mappen in een aparte mappenstructuur, open TAR-archieven als alleen-lezenmappen en maak met een wachtwoord beveiligde ZIP- en 7z-archieven aan of open ze.",
+    "Nieuw: Zoek naar plug-ins op GitLab en Forgejo en installeer ze, synchroniseer plug-ins van derden met je fman-account en open de instellingenmap vanuit het opdrachtpalet.",
+    "Verbeterd: Bestandsbewerkingen beschikken nu over een globale overdrachtswachtrij, betere afhandeling van vergrendelde bestanden en geannuleerde verplaatsingen, parallel verwijderen en betrouwbaardere ondersteuning voor het klembord en virtuele bestanden.",
+    "Verbeterd: Pas deelvensters en bestandslijsten aan met compacte indelingen met meerdere kolommen, sortering waarbij bestanden en mappen worden gecombineerd, meer kolommen, verborgen plug-inkolommen en opdrachten voor de indeling van deelvensters.",
+    "Verbeterd: De Windows-integratie omvat nu overlaypictogrammen in de shell, een modus voor het vervangen van Verkenner, jumplijsten op de taakbalk, afzonderlijke taakbalkknoppen per venster en betere padverwerking."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Gestione dei file e personalizzazione più potenti",
+  "notes": [
+    "Novità: sfoglia le cartelle in un albero dedicato, apri gli archivi TAR come cartelle di sola lettura e crea o apri archivi ZIP e 7z protetti da password.",
+    "Novità: cerca e installa plugin da GitLab e Forgejo, sincronizza i plugin di terze parti con il tuo account fman e apri la cartella delle impostazioni dalla palette dei comandi.",
+    "Miglioramenti: le operazioni sui file dispongono ora di una coda di trasferimento globale, una gestione migliore dei file bloccati e degli spostamenti annullati, l'eliminazione parallela e un supporto più affidabile per gli appunti e i file virtuali.",
+    "Miglioramenti: personalizza i pannelli e gli elenchi di file con layout compatti a più colonne, ordinamento combinato di file e cartelle, più colonne, colonne dei plugin nascoste e comandi per dividere i pannelli.",
+    "Miglioramenti: l'integrazione con Windows ora include icone di sovrapposizione della shell, la modalità di sostituzione di Esplora file, le Jump List della barra delle applicazioni, pulsanti della barra delle applicazioni per ogni finestra e una gestione dei percorsi migliore."
+  ]
+}

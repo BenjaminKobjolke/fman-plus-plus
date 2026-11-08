@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Jaudīgāka failu pārvaldība un pielāgošana",
+  "notes": [
+    "Jauns: Pārlūkojiet mapes īpašā mapju kokā, atveriet TAR arhīvus kā mapes tikai lasīšanai un izveidojiet vai atveriet ar paroli aizsargātus ZIP un 7z arhīvus.",
+    "Jauns: Meklējiet un instalējiet spraudņus no GitLab un Forgejo, sinhronizējiet trešo pušu spraudņus ar savu fman kontu un atveriet iestatījumu mapi no komandu paletes.",
+    "Uzlabots: Failu darbībām tagad ir globāla pārsūtīšanas rinda, uzlabota bloķētu failu un atcelto pārvietošanas darbību apstrāde, paralēla dzēšana, kā arī uzticamāks starpliktuves un virtuālo failu atbalsts.",
+    "Uzlabots: Pielāgojiet rūtis un failu sarakstus, izmantojot kompaktus vairāku kolonnu izkārtojumus, jauktu failu un mapju kārtošanu, papildu kolonnas, slēptas spraudņu kolonnas un rūšu sadalīšanas komandas.",
+    "Uzlabots: Windows integrācija tagad ietver čaulas pārklājuma ikonas, Explorer aizstāšanas režīmu, uzdevumjoslas pārlēcienu sarakstus, atsevišķas uzdevumjoslas pogas katram logam un uzlabotu ceļu apstrādi."
+  ]
+}

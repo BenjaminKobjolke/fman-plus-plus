@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Võimsam failihaldus ja kohandamine",
+  "notes": [
+    "Uus: Sirvi kaustu spetsiaalses kaustapuus, ava TAR-arhiive kirjutuskaitstud kaustadena ning loo või ava parooliga kaitstud ZIP- ja 7z-arhiive.",
+    "Uus: Otsi ja installi pluginaid GitLabi ja Forgejo kaudu, sünkrooni kolmandate osapoolte pluginaid oma fmani kontoga ning ava seadete kaust käsupaletist.",
+    "Täiustatud: Failitoimingutel on nüüd globaalne ülekannete järjekord, lukustatud failide ja tühistatud teisaldamiste parem käsitlemine, paralleelkustutamine ning töökindlam lõikelaua- ja virtuaalfailide tugi.",
+    "Täiustatud: Kohanda paane ja faililoendeid kompaktsete mitmeveeruliste paigutuste, failide ja kaustade ühise sortimise, lisaveergude, peidetud pluginaveergude ning paanide jaotamise käskudega.",
+    "Täiustatud: Windowsi integratsioon sisaldab nüüd shelli ülekatteikoone, Exploreri asendamise režiimi, tegumiriba hüppeloendeid, iga akna jaoks eraldi tegumiriba nuppe ning paremat radade käsitlemist."
+  ]
+}

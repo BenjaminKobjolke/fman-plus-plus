@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Hatékonyabb fájlkezelés és testreszabás",
+  "notes": [
+    "Újdonság: Böngéssz mappák között egy külön mappafában, nyiss meg TAR-archívumokat csak olvasható mappaként, és hozz létre vagy nyiss meg jelszóval védett ZIP- és 7z-archívumokat.",
+    "Újdonság: Keress és telepíts bővítményeket a GitLabról és a Forgejóból, szinkronizáld a külső fejlesztésű bővítményeket az fman-fiókoddal, és nyisd meg a beállítások mappáját a parancspalettáról.",
+    "Továbbfejlesztve: A fájlműveletek mostantól globális átviteli várólistával, a zárolt fájlok és a megszakított áthelyezések jobb kezelésével, párhuzamos törléssel, valamint megbízhatóbb vágólap- és virtuálisfájl-támogatással rendelkeznek.",
+    "Továbbfejlesztve: A paneleket és fájllistákat tömör, többoszlopos elrendezésekkel, fájlok és mappák közös rendezésével, több oszloppal, rejtett bővítményoszlopokkal és panelosztó parancsokkal szabhatod testre.",
+    "Továbbfejlesztve: A Windows-integráció mostantól rendszerhéj-átfedő ikonokat, az Intéző lecserélését lehetővé tevő módot, tálcás ugrólistákat, ablakonkénti tálcagombokat és jobb útvonalkezelést is tartalmaz."
+  ]
+}

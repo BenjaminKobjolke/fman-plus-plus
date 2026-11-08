@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Gestión de archivos y personalización más potentes",
+  "notes": [
+    "Novedad: Explora carpetas en un árbol dedicado, abre archivos TAR como carpetas de solo lectura y crea o abre archivos ZIP y 7z protegidos con contraseña.",
+    "Novedad: Busca e instala complementos desde GitLab y Forgejo, sincroniza complementos de terceros con tu cuenta de fman y abre la carpeta de ajustes desde la paleta de comandos.",
+    "Mejoras: Las operaciones con archivos ahora cuentan con una cola global de transferencias, una mejor gestión de archivos bloqueados y movimientos cancelados, eliminación en paralelo y una compatibilidad más fiable con el portapapeles y los archivos virtuales.",
+    "Mejoras: Personaliza los paneles y las listas de archivos con diseños compactos de varias columnas, ordenación conjunta de archivos y carpetas, más columnas, columnas de complementos ocultas y comandos para dividir los paneles.",
+    "Mejoras: La integración con Windows ahora incluye iconos superpuestos del shell, un modo para sustituir el Explorador, listas de accesos directos en la barra de tareas, botones de la barra de tareas para cada ventana y una mejor gestión de las rutas."
+  ]
+}

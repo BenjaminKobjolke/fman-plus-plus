@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Daha güçlü dosya yönetimi ve özelleştirme",
+  "notes": [
+    "Yeni: Klasörlere özel bir klasör ağacından göz atın, TAR arşivlerini salt okunur klasörler olarak açın ve parola korumalı ZIP ve 7z arşivleri oluşturup açın.",
+    "Yeni: GitLab ve Forgejo'daki eklentileri arayıp yükleyin, üçüncü taraf eklentilerini fman hesabınızla eşitleyin ve ayarlar klasörünü komut paletinden açın.",
+    "İyileştirildi: Dosya işlemleri artık genel bir aktarım kuyruğuna sahip. Kilitli dosyalar ve iptal edilen taşıma işlemleri daha iyi yönetiliyor; silme işlemleri paralel yürütülüyor ve pano ile sanal dosya desteği daha güvenilir çalışıyor.",
+    "İyileştirildi: Panelleri ve dosya listelerini kompakt çok sütunlu düzenlerle, dosya ve klasörleri birlikte sıralama seçeneğiyle, daha fazla sütunla, gizli eklenti sütunlarıyla ve panel bölme komutlarıyla özelleştirin.",
+    "İyileştirildi: Windows tümleştirmesi artık kabuk kaplama simgelerini, Explorer'ın yerine geçme modunu, görev çubuğu atlama listelerini, her pencere için ayrı görev çubuğu düğmelerini ve daha iyi yol yönetimini içeriyor."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Galingesnis failų tvarkymas ir daugiau tinkinimo galimybių",
+  "notes": [
+    "Nauja: Naršykite aplankus specialiame aplankų medyje, atidarykite TAR archyvus kaip tik skaityti skirtus aplankus ir kurkite arba atidarykite slaptažodžiu apsaugotus ZIP bei 7z archyvus.",
+    "Nauja: Ieškokite papildinių „GitLab“ ir „Forgejo“ platformose bei juos įdiekite, sinchronizuokite trečiųjų šalių papildinius su savo „fman“ paskyra ir atidarykite nustatymų aplanką iš komandų paletės.",
+    "Patobulinta: Failų operacijos dabar turi bendrą perkėlimo eilę, geriau tvarko užrakintus failus ir atšauktus perkėlimus, palaiko lygiagretų trynimą ir patikimiau veikia su iškarpine bei virtualiaisiais failais.",
+    "Patobulinta: Tinkinkite sritis ir failų sąrašus naudodami kompaktišką kelių stulpelių išdėstymą, bendrą failų ir aplankų rūšiavimą, daugiau stulpelių, paslėptus papildinių stulpelius ir sričių padalijimo komandas.",
+    "Patobulinta: „Windows“ integracija dabar apima apvalkalo perdangos piktogramas, „Explorer“ pakeitimo režimą, užduočių juostos peršokimų sąrašus, atskirus kiekvieno lango užduočių juostos mygtukus ir patikimesnį kelių tvarkymą."
+  ]
+}

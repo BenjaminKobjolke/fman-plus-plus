@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Gestão de ficheiros mais poderosa e maior personalização",
+  "notes": [
+    "Novo: Explore pastas numa árvore de pastas dedicada, abra arquivos TAR como pastas só de leitura e crie ou abra arquivos ZIP e 7z protegidos por palavra-passe.",
+    "Novo: Pesquise e instale plugins do GitLab e do Forgejo, sincronize plugins de terceiros com a sua conta fman e abra a pasta de definições a partir da paleta de comandos.",
+    "Melhorado: As operações com ficheiros têm agora uma fila global de transferências, um melhor tratamento de ficheiros bloqueados e movimentações canceladas, eliminação paralela e suporte mais fiável para a área de transferência e ficheiros virtuais.",
+    "Melhorado: Personalize os painéis e as listas de ficheiros com esquemas compactos de várias colunas, ordenação conjunta de ficheiros e pastas, mais colunas, colunas de plugins ocultas e comandos para dividir painéis.",
+    "Melhorado: A integração com o Windows inclui agora ícones de sobreposição do shell, modo de substituição do Explorador, listas de atalhos da barra de tarefas, botões da barra de tarefas por janela e melhor gestão de caminhos."
+  ]
+}

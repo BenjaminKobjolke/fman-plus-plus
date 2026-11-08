@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Kraftfullare filhantering och anpassning",
+  "notes": [
+    "Nytt: Bläddra bland mappar i ett särskilt mappträd, öppna TAR-arkiv som skrivskyddade mappar och skapa eller öppna lösenordsskyddade ZIP- och 7z-arkiv.",
+    "Nytt: Sök efter och installera plugin-program från GitLab och Forgejo, synkronisera plugin-program från tredje part med ditt fman-konto och öppna inställningsmappen från kommandopaletten.",
+    "Förbättrat: Filåtgärder har nu en global överföringskö, bättre hantering av låsta filer och avbrutna flyttningar, parallell borttagning samt tillförlitligare stöd för urklipp och virtuella filer.",
+    "Förbättrat: Anpassa paneler och fillistor med kompakta layouter med flera kolumner, sortering där filer och mappar blandas, fler kolumner, dolda plugin-kolumner och kommandon för att dela upp paneler.",
+    "Förbättrat: Windows-integrationen omfattar nu överläggsikoner i skalet, läge för att ersätta Utforskaren, hopplistor i aktivitetsfältet, separata aktivitetsfältsknappar för varje fönster och bättre hantering av sökvägar."
+  ]
+}

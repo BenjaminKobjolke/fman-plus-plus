@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Bardziej zaawansowane zarządzanie plikami i dostosowywanie",
+  "notes": [
+    "Nowość: Przeglądaj foldery w dedykowanym drzewie, otwieraj archiwa TAR jako foldery tylko do odczytu oraz twórz i otwieraj archiwa ZIP i 7z chronione hasłem.",
+    "Nowość: Wyszukuj i instaluj wtyczki z GitLaba i Forgejo, synchronizuj wtyczki innych firm ze swoim kontem fman oraz otwieraj folder ustawień z poziomu palety poleceń.",
+    "Ulepszenia: Operacje na plikach korzystają teraz z globalnej kolejki transferów, lepiej obsługują zablokowane pliki i anulowane przenoszenie, umożliwiają równoległe usuwanie oraz zapewniają bardziej niezawodną obsługę schowka i plików wirtualnych.",
+    "Ulepszenia: Dostosuj panele i listy plików za pomocą kompaktowych układów wielokolumnowych, wspólnego sortowania plików i folderów, większej liczby kolumn, ukrytych kolumn wtyczek oraz poleceń dzielenia paneli.",
+    "Ulepszenia: Integracja z systemem Windows obejmuje teraz ikony nakładkowe powłoki, tryb zastępowania Eksploratora, listy szybkiego dostępu na pasku zadań, osobne przyciski paska zadań dla każdego okna oraz lepszą obsługę ścieżek."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Quản lý tệp mạnh mẽ hơn và nhiều tùy chọn tùy chỉnh",
+  "notes": [
+    "Mới: Duyệt thư mục trong cây thư mục riêng, mở kho lưu trữ TAR dưới dạng thư mục chỉ đọc, đồng thời tạo hoặc mở kho lưu trữ ZIP và 7z được bảo vệ bằng mật khẩu.",
+    "Mới: Tìm kiếm và cài đặt plugin từ GitLab và Forgejo, đồng bộ plugin của bên thứ ba với tài khoản fman, và mở thư mục cài đặt từ bảng lệnh.",
+    "Cải tiến: Các thao tác tệp hiện có hàng đợi truyền tệp dùng chung, xử lý tốt hơn các tệp bị khóa và thao tác di chuyển bị hủy, xóa song song, cùng khả năng hỗ trợ bảng nhớ tạm và tệp ảo đáng tin cậy hơn.",
+    "Cải tiến: Tùy chỉnh các khung và danh sách tệp bằng bố cục nhiều cột gọn gàng, sắp xếp kết hợp tệp và thư mục, nhiều cột hơn, ẩn các cột của plugin và dùng lệnh chia khung.",
+    "Cải tiến: Tích hợp với Windows hiện có biểu tượng lớp phủ của shell, chế độ thay thế Explorer, danh sách tác vụ trên thanh tác vụ, nút thanh tác vụ riêng cho từng cửa sổ và khả năng xử lý đường dẫn tốt hơn."
+  ]
+}

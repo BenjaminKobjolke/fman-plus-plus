@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Tehokkaampi tiedostojen hallinta ja mukauttaminen",
+  "notes": [
+    "Uutta: Selaa kansioita omassa kansiopuussa, avaa TAR-arkistoja vain luku -kansioina ja luo tai avaa salasanalla suojattuja ZIP- ja 7z-arkistoja.",
+    "Uutta: Etsi ja asenna lisäosia GitLabista ja Forgejosta, synkronoi kolmannen osapuolen lisäosat fman-tilisi kanssa ja avaa asetuskansio komentopaletista.",
+    "Parannettu: Tiedostotoiminnoissa on nyt maailmanlaajuinen siirtojono, parempi lukittujen tiedostojen ja peruutettujen siirtojen käsittely, rinnakkainen poistaminen sekä luotettavampi leikepöytä- ja virtuaalitiedostotuki.",
+    "Parannettu: Mukauta paneeleja ja tiedostoluetteloita tiiviillä monisarakkeisilla asetteluilla, tiedostojen ja kansioiden yhdistetyllä lajittelulla, useammilla sarakkeilla, piilotetuilla lisäosasarakkeilla ja paneelien jakamiskomennoilla.",
+    "Parannettu: Windows-integraatioon kuuluvat nyt Resurssienhallinnan kuvakepeittokuvat, Resurssienhallinnan korvaava tila, tehtäväpalkin pikavalikot, ikkunakohtaiset tehtäväpalkkipainikkeet ja parempi polkujen käsittely."
+  ]
+}

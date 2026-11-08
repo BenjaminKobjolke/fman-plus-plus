@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Gestionare și personalizare mai puternice ale fișierelor",
+  "notes": [
+    "Nou: Răsfoiți folderele într-un arbore dedicat, deschideți arhive TAR ca foldere doar pentru citire și creați sau deschideți arhive ZIP și 7z protejate prin parolă.",
+    "Nou: Căutați și instalați pluginuri din GitLab și Forgejo, sincronizați pluginurile terțe cu contul fman și deschideți folderul de setări din paleta de comenzi.",
+    "Îmbunătățit: Operațiile cu fișierele au acum o coadă globală de transfer, o gestionare mai bună a fișierelor blocate și a mutărilor anulate, ștergere paralelă și suport mai fiabil pentru clipboard și fișiere virtuale.",
+    "Îmbunătățit: Personalizați panourile și listele de fișiere cu aspecte compacte pe mai multe coloane, sortare mixtă a fișierelor și folderelor, mai multe coloane, coloane de plugin ascunse și comenzi de divizare a panourilor.",
+    "Îmbunătățit: Integrarea cu Windows include acum pictograme suprapuse pentru shell, modul de înlocuire a Explorerului, liste de salt în bara de activități, butoane distincte în bara de activități pentru fiecare fereastră și gestionarea îmbunătățită a căilor."
+  ]
+}

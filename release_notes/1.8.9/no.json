@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Mer effektiv filbehandling og tilpasning",
+  "notes": [
+    "Nytt: Bla gjennom mapper i et eget mappetre, åpne TAR-arkiver som skrivebeskyttede mapper, og opprett eller åpne passordbeskyttede ZIP- og 7z-arkiver.",
+    "Nytt: Søk etter og installer programtillegg fra GitLab og Forgejo, synkroniser tredjepartsprogramtillegg med fman-kontoen din, og åpne innstillingsmappen fra kommandopaletten.",
+    "Forbedret: Filoperasjoner har nå en global overføringskø, bedre håndtering av låste filer og avbrutte flyttinger, parallell sletting og mer pålitelig støtte for utklippstavle og virtuelle filer.",
+    "Forbedret: Tilpass ruter og fillister med kompakte oppsett med flere kolonner, sortering av filer og mapper sammen, flere kolonner, skjulte kolonner fra programtillegg og kommandoer for å dele ruter.",
+    "Forbedret: Windows-integrasjonen inkluderer nå ikoner som vises som overlegg i skallet, modus for å erstatte Explorer, snarveislister på oppgavelinjen, egne oppgavelinjeknapper for hvert vindu og bedre håndtering av filbaner."
+  ]
+}

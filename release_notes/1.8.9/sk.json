@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Výkonnejšia správa súborov a prispôsobenie",
+  "notes": [
+    "Novinka: Prehliadajte priečinky v samostatnom strome priečinkov, otvárajte archívy TAR ako priečinky iba na čítanie a vytvárajte alebo otvárajte archívy ZIP a 7z chránené heslom.",
+    "Novinka: Vyhľadávajte a inštalujte pluginy z GitLabu a Forgeja, synchronizujte pluginy tretích strán so svojím účtom fman a otvárajte priečinok s nastaveniami z palety príkazov.",
+    "Vylepšenie: Operácie so súbormi teraz využívajú globálny front prenosov, lepšie pracujú so zamknutými súbormi a zrušenými presunmi, podporujú paralelné odstraňovanie a spoľahlivejšiu schránku a virtuálne súbory.",
+    "Vylepšenie: Prispôsobte si panely a zoznamy súborov pomocou kompaktného viacstĺpcového rozloženia, spoločného radenia súborov a priečinkov, ďalších stĺpcov, skrytých stĺpcov pluginov a príkazov na rozdelenie panelov.",
+    "Vylepšenie: Integrácia so systémom Windows teraz zahŕňa prekryvné ikony v prostredí shellu, režim nahradenia Prieskumníka, zoznamy odkazov na paneli úloh, samostatné tlačidlá na paneli úloh pre jednotlivé okná a lepšie spracovanie ciest."
+  ]
+}

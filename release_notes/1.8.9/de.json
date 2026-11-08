@@ -1,0 +1,12 @@
+{
+  "version": "1.8.9",
+  "date": "2026-11-08",
+  "title": "Leistungsfähigere Dateiverwaltung und mehr Anpassungsmöglichkeiten",
+  "notes": [
+    "Neu: Ordner in einem eigenen Verzeichnisbaum durchsuchen, TAR-Archive als schreibgeschützte Ordner öffnen und passwortgeschützte ZIP- und 7z-Archive erstellen oder öffnen.",
+    "Neu: Plugins auf GitLab und Forgejo suchen und installieren, Plugins von Drittanbietern mit deinem fman-Konto synchronisieren und den Einstellungsordner über die Befehlspalette öffnen.",
+    "Verbessert: Dateioperationen verfügen jetzt über eine globale Warteschlange für Übertragungen, eine bessere Behandlung gesperrter Dateien und abgebrochener Verschiebungen, paralleles Löschen sowie eine zuverlässigere Unterstützung für die Zwischenablage und virtuelle Dateien.",
+    "Verbessert: Bereiche und Dateilisten lassen sich mit kompakten mehrspaltigen Layouts, einer gemeinsamen Sortierung von Dateien und Ordnern, zusätzlichen Spalten, versteckten Plugin-Spalten und Befehlen zur Bereichsaufteilung anpassen.",
+    "Verbessert: Die Windows-Integration umfasst jetzt Shell-Overlay-Symbole, einen Modus zum Ersetzen des Explorers, Taskleisten-Sprunglisten, eigene Taskleistenschaltflächen für jedes Fenster und eine bessere Pfadverarbeitung."
+  ]
+}
