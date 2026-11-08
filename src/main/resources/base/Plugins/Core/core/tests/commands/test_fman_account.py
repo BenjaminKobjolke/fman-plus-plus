@@ -129,7 +129,7 @@ class AccountCommandsTest(TestCase):
 		listener.on_path_changed()
 		listener.on_path_changed()
 		self.patches['run_application_command'].assert_called_once_with(
-			'Sync plugins', {'silent': True}
+			'sync_plugins', {'silent': True}
 		)
 		commands._STARTUP_SYNC_STARTED = False
 

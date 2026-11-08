@@ -161,7 +161,7 @@ class PluginSyncOnStartup(DirectoryPaneListener):
 		if _STARTUP_SYNC_STARTED:
 			return
 		_STARTUP_SYNC_STARTED = True
-		run_application_command('Sync plugins', {'silent': True})
+		run_application_command('sync_plugins', {'silent': True})
 
 
 def _entry_for_installed(plugin_dir):
