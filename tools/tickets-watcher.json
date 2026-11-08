@@ -24,10 +24,10 @@
       "code_quality": "green"
     },
     "tools\\analyze_changed_and_new_files.bat": {
-      "code_quality": "failed"
+      "code_quality": "green"
     },
     "tools\\run_tests.bat": {
-      "test": "green"
+      "test": "failed"
     },
     "tools\\run_core_tests.bat": {
       "test": "green"
@@ -42,7 +42,7 @@
       "test": "green"
     },
     "uv run python tools\\test_close_running_fman.py": {
-      "test": "green"
+      "test": "failed"
     },
     "uv run python tools\\test_release_version.py": {
       "test": "green"
@@ -160,5 +160,5 @@
     "tools\\run_automation_tests.bat": "test"
   },
   "project_id": 251,
-  "analysis_test_timeout_seconds": 740
+  "analysis_test_timeout_seconds": 1040
 }
