@@ -110,7 +110,7 @@ class TransferWorkers:
 		return self._connection_count()
 	def _can_add(self):
 		return not (self._finished or self._aborted) and \
-			len(self._workers) < _MAX_WORKERS
+			len(self._active_workers()) < _MAX_WORKERS
 	def _can_remove(self):
 		# At least one worker always stays.
 		return len(self._active_workers()) > 1
