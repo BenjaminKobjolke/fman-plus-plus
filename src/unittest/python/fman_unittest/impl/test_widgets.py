@@ -114,6 +114,20 @@ class ShowPromptCompatTest(TestCase):
 				self.assertEqual((('Name:',), arguments), window.arguments)
 
 
+class TitleBarWindowActivationTest(TestCase):
+	def test_reactivates_the_window_after_changing_title_bar(self):
+		window = MagicMock()
+		window.is_title_bar_visible.return_value = True
+		window.isVisible.return_value = True
+		window.geometry.return_value = QRect(0, 0, 640, 480)
+		window.frameGeometry.return_value = QRect(0, 0, 640, 480)
+		window.windowOpacity.return_value = 1.0
+
+		MainWindow.set_title_bar_visible.__wrapped__(window, False)
+
+		window.activateWindow.assert_called_once_with()
+
+
 class ExecDialogTest(TestCase):
 	@classmethod
 	def setUpClass(cls):

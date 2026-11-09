@@ -797,6 +797,7 @@ class MainWindow(QMainWindow):
 			self.setGeometry(geometry)
 			self.setWindowOpacity(opacity)
 			self.show()
+			self.activateWindow()
 	@run_in_main_thread
 	def set_status_bar_visible(self, visible):
 		# An ordinary child widget, unlike the other two bars: no window flags,
