@@ -86,10 +86,12 @@ class TrashTest(TestCase):
 
 	def test_trash_can_skip_recording_for_undo(self):
 		with patch('core.commands.deletion.elevation.delete', return_value=True), \
-				patch('core.commands.deletion.exists') as exists, \
+				patch('core.commands.deletion.exists', return_value=False) as exists, \
+				patch('core.commands.deletion.remove_comments') as remove_comments, \
 				patch('core.commands.deletion.history.record') as record:
 			deletion.trash(['file:///a.txt'], undoable=False)
-		exists.assert_not_called()
+		exists.assert_called_once_with('file:///a.txt')
+		remove_comments.assert_called_once_with(('file:///a.txt',))
 		record.assert_not_called()
 
 	def test_trash_does_not_record_files_that_still_exist(self):
@@ -170,6 +172,7 @@ class TrashTest(TestCase):
 
 	def test_delete_skips_background_task_when_elevation_succeeds(self):
 		with patch('core.commands.deletion.elevation.delete', return_value=True), \
+				patch('core.commands.deletion.exists', return_value=False), \
 				patch('core.commands.deletion.submit_task') as submit_task:
 			deletion.delete(['file:///a.txt'])
 		submit_task.assert_not_called()

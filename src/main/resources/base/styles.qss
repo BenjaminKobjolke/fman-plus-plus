@@ -148,6 +148,7 @@ QDialogButtonBox {
 }
 
 Prompt #header,
+TextInputPrompt #header,
 OverwriteDialog #title,
 MessageBox #qt_msgbox_label {
 	color: $bright_fg;
@@ -156,6 +157,16 @@ MessageBox #qt_msgbox_label {
 Prompt #detail {
 	color: $muted_fg;
 	padding: 0 7px 6px 7px;
+}
+
+TextInputPrompt #detail {
+	color: $muted_fg;
+	padding: 0 7px 6px 7px;
+}
+
+TextInputPrompt #footer {
+	color: $muted_fg;
+	padding: 2px 7px 5px 7px;
 }
 
 Quicksearch #query-container {
@@ -180,6 +191,16 @@ Quicksearch QLineEdit {
 	border-top-color: $popup_input_border_top;
 	border-left-color: $popup_input_border_left;
 	border-right-color: $popup_input_border_right;
+}
+
+TextInputPrompt QPlainTextEdit {
+	color: $popup_input_fg;
+	background-color: $popup_input_bg;
+	border: 1px solid $popup_input_border;
+	border-top-color: $popup_input_border_top;
+	border-left-color: $popup_input_border_left;
+	border-right-color: $popup_input_border_right;
+	padding: 4px;
 }
 
 Quicksearch #items-container {

@@ -10,6 +10,8 @@
   "error_dismiss": "Dismiss",
   "prompt_ok": "OK",
   "prompt_cancel": "Cancel",
+  "text_input_save": "Save",
+  "text_input_new_line": "New line",
   "error_open_console": "Open in console",
   "error_copy": "Copy error",
   "error_copied": "Error copied to clipboard.",
@@ -33,6 +35,10 @@
   "link_target_prompt": "New target for %s:",
   "link_target_missing_confirm": "%s does not exist. Point the link there anyway?",
   "link_target_failed": "Could not change the target of %s: %s",
+  "file_comment_title": "Comment for %s",
+  "file_comment_title_multiple": "Comment for %s files",
+  "file_comment_local_only": "Comments can only be edited for local files.",
+  "file_comment_save_failed": "Could not save file comment: %s",
   "save_changes_before_closing": "Save changes before closing?",
   "command_help": "Help",
   "command_do_nothing": "Do nothing",
@@ -56,5 +62,6 @@
   "command_select_icon_set": "Select icon set",
   "command_open_with": "Open with...",
   "command_copy": "Copy",
-  "command_paste": "Paste"
+  "command_paste": "Paste",
+  "command_edit_comment": "Edit comment"
 }

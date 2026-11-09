@@ -206,7 +206,7 @@ class TransferRecordingTest(TestCase):
 		history.clear()
 
 	def test_move_records_a_successful_destination(self):
-		with self._move_command(exists=[False, False, True]) as command:
+		with self._move_command(exists=[False, False, True, False]) as command:
 			command(files=[self._SRC], dest_dir='file:///dest')
 		self.assertEqual(MoveRecord(((self._SRC, self._DEST),)), history.pop())
 
@@ -245,7 +245,7 @@ class TransferRecordingTest(TestCase):
 	def _assert_renamed_destination_is_recorded(self, command_type, record_type):
 		renamed_dest = 'file:///dest/a (2).txt'
 		with self._command(
-			command_type, exists=[False, False, True]
+			command_type, exists=[False, False, True, False]
 		) as command:
 			command._call.return_value = Mock(
 				renamed_dests={self._DEST: renamed_dest}
@@ -369,7 +369,7 @@ class QueuedTransferTest(TestCase):
 				side_effect=lambda title, fn: queued.append((title, fn)) or True
 			) as run_queued,
 			patch('core.commands.transfer.fman.fs.exists',
-				side_effect=[False, False, True]) as exists,
+				side_effect=[False, False, True, False]) as exists,
 			patch('core.commands.transfer.makedirs') as makedirs,
 			patch('core.commands.transfer.elevation.copy', return_value=False),
 			patch('core.commands.transfer.elevation.move', return_value=False),
@@ -394,7 +394,8 @@ class QueuedTransferTest(TestCase):
 
 			queued[0][1]()
 
-		self.assertEqual(3, exists.call_count)
+		expected_exists_calls = 3 if command_type.__name__ == 'Copy' else 4
+		self.assertEqual(expected_exists_calls, exists.call_count)
 		submit_task.assert_called_once_with(operation)
 		self.assertEqual(
 			record_type(((self._SRC, self._DEST),)), history.pop()

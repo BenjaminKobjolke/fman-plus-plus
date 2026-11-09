@@ -10,6 +10,8 @@
   "error_dismiss": "Закрыть",
   "prompt_ok": "ОК",
   "prompt_cancel": "Отмена",
+  "text_input_save": "Сохранить",
+  "text_input_new_line": "Новая строка",
   "error_open_console": "Открыть консоль",
   "error_copy": "Копировать ошибку",
   "error_copied": "Ошибка скопирована в буфер обмена.",
@@ -33,6 +35,10 @@
   "link_target_prompt": "Новая цель для %s:",
   "link_target_missing_confirm": "%s не существует. Всё равно направить ссылку туда?",
   "link_target_failed": "Не удалось изменить цель %s: %s",
+  "file_comment_title": "Комментарий к %s",
+  "file_comment_title_multiple": "Комментарий к %s файлам",
+  "file_comment_local_only": "Комментарии можно редактировать только для локальных файлов.",
+  "file_comment_save_failed": "Не удалось сохранить комментарий к файлу: %s",
   "save_changes_before_closing": "Сохранить изменения перед закрытием?",
   "command_help": "Справка",
   "command_do_nothing": "Ничего не делать",
@@ -56,5 +62,6 @@
   "command_select_icon_set": "Выбрать набор значков",
   "command_open_with": "Открыть с помощью...",
   "command_copy": "Копировать",
-  "command_paste": "Вставить"
+  "command_paste": "Вставить",
+  "command_edit_comment": "Изменить комментарий"
 }

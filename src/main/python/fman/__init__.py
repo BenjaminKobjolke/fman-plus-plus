@@ -21,7 +21,7 @@ __all__ = [
 	'ApplicationCommand', 'DirectoryPaneCommand', 'DirectoryPaneListener',
 	'Viewer', 'find_viewer', 'viewer_for_category',
 	'load_json', 'save_json',
-	'show_alert', 'show_input', 'show_prompt',
+	'show_alert', 'show_input', 'show_prompt', 'show_text_input',
 	'show_status_message', 'clear_status_message',
 	'show_file_open_dialog',
 	'show_quicksearch', 'QuicksearchItem', 'QuicksearchExit',
@@ -406,6 +406,9 @@ def show_input(
 		text, default, selection_start, selection_end,
 		get_completions=get_completions, password=password
 	)
+
+def show_text_input(text, default=''):
+	return _get_ui().show_text_input(text, default)
 
 def show_status_message(text, timeout_secs=None):
 	return _get_ui().show_status_message(text, timeout_secs)

@@ -32,7 +32,7 @@ EXPECTED = frozenset({
 	'CreateAndEditFile', 'CreateDirectory', 'Cut', 'DecreasePaneFontSize',
 	'DragToLastUsedApp',
 	'DeletePermanently', 'Deselect', 'DoNothing', 'DragAndDropListener',
-	'EditLinkTarget',
+	'EditComment', 'EditLinkTarget',
 	'FollowShortcut', 'GoBack', 'GoForward', 'GoHome', 'GoTo', 'GoToAppData',
 	'ToggleFolderTree', 'ToggleTreeFollowsCursor',
 	'GoToDesktop',
@@ -81,6 +81,7 @@ EXPECTED = frozenset({
 	'ToggleModifiedColumn', 'ToggleNetworkIcons', 'ToggleSelection',
 	'ToggleFixedColumnWidths',
 	'ToggleVersionColumn', 'ToggleExtensionColumn', 'ToggleNameWithoutExtension',
+	'ToggleCommentColumn',
 	'ToggleAttributesColumn', 'ToggleCompactView',
 	'ToggleSizeColumn', 'Undo', 'UpdateWindowTitle', 'ViewFile',
 	'ViewFileInOtherPane', 'ZenOfFman', 'none'

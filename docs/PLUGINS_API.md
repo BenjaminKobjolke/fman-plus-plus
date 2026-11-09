@@ -509,6 +509,19 @@ and keeps Tab cycling through `f(text)`; the callback runs off the GUI thread.
 The prompt message stays visible above the input. Arrow keys and clicks copy a
 suggestion into the field, and Enter accepts exactly the text currently in it.
 
+`fman.show_text_input(text, default='')` opens a multiline editor using fman's
+input-dialog styling. Enter accepts the text; Shift+Enter inserts a line break.
+It returns the accepted text, including an empty string, or `None` when the user
+cancels.
+
+```python
+import fman
+
+comment = fman.show_text_input('Comment', default='Existing note')
+if comment is not None:
+	save_comment(comment)
+```
+
 A `FileSystem` can return more than 1 from
 `get_parallel_transfers(src_url, dst_url)` to have Copy and Move transfer that
 many files at once. The progress dialog then lists the workers, and the user

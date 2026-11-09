@@ -18,8 +18,10 @@ from fman.fs import (
 )
 from core import elevation
 from core.commands.util import NO_SELECTION
+from core.commands import show_file_comment_error
 from core.transfer_workers import DONE, TransferWorkers, WorkerProgress
 from core.undo_history import TrashRecord, history
+from core.descript_ion import remove_comments
 from fman.url import splitscheme
 from errno import EBUSY
 from io import UnsupportedOperation
@@ -81,19 +83,40 @@ def _trash_name():
 	return translate(key)
 
 def trash(urls, undoable=True):
-	if not elevation.delete(urls, to_trash=True):
-		submit_task(_Delete(urls, prepare_trash, _TRASH_UNSUPPORTED))
-	if undoable:
-		deleted_urls = tuple(
-			url for url in urls
-			if splitscheme(url)[0] == 'file://' and not exists(url)
-		)
-		if deleted_urls:
-			history.record(TrashRecord(deleted_urls))
+	def record_deleted(deleted_urls):
+		comments = _remove_file_comments(deleted_urls)
+		if undoable and deleted_urls:
+			history.record(TrashRecord(deleted_urls, tuple(comments)))
+	if elevation.delete(urls, to_trash=True):
+		record_deleted(_deleted_local_urls(urls))
+	else:
+		submit_task(_Delete(
+			urls, prepare_trash, _TRASH_UNSUPPORTED,
+			on_deleted=record_deleted,
+		))
 
 def delete(urls):
-	if not elevation.delete(urls, to_trash=False):
-		submit_task(_Delete(urls, prepare_delete))
+	if elevation.delete(urls, to_trash=False):
+		_remove_file_comments(_deleted_local_urls(urls))
+	else:
+		submit_task(_Delete(
+			urls, prepare_delete, on_deleted=_remove_file_comments,
+		))
+
+def _deleted_local_urls(urls):
+	return tuple(
+		url for url in urls
+		if splitscheme(url)[0] == 'file://' and not exists(url)
+	)
+
+def _remove_file_comments(urls):
+	if not urls:
+		return []
+	try:
+		return remove_comments(urls)
+	except OSError as error:
+		show_file_comment_error(error)
+		return []
 
 class DeletePermanently(DirectoryPaneCommand):
 	def __call__(self, urls=None):
@@ -108,12 +131,14 @@ class DeletePermanently(DirectoryPaneCommand):
 class _Delete(Task):
 	minimizable = True
 
-	def __init__(self, urls, prepare_fn, unsupported=_DELETE_UNSUPPORTED):
+	def __init__(self, urls, prepare_fn, unsupported=_DELETE_UNSUPPORTED,
+			on_deleted=None):
 		super().__init__('Deleting ' + _describe(urls))
 		self._urls = urls
 		self._num_urls_prepared = 0
 		self._prepare_fn = prepare_fn
 		self._unsupported = unsupported
+		self._on_deleted = on_deleted
 		self._tasks = []
 		self._progress_lock = Lock()
 		self._alert_lock = Lock()
@@ -144,6 +169,8 @@ class _Delete(Task):
 			self.show_workers(workers)
 		workers.start()
 		workers.join()
+		if self._on_deleted is not None:
+			self._on_deleted(_deleted_local_urls(self._urls))
 	def _run_one(self, worker, task, is_last):
 		self.check_canceled()
 		progress = WorkerProgress(

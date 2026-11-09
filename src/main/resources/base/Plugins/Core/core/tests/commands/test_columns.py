@@ -1,14 +1,22 @@
 from core.commands.columns import (
-	_get_hidden_flags, SortByColumn, ToggleFixedColumnWidths,
+	_apply_column_visibility, _get_hidden_flags, SortByColumn, ToggleCommentColumn,
+	ToggleFixedColumnWidths,
 )
 from unittest import TestCase
 from unittest.mock import Mock, call, patch
 
 class GetHiddenFlagsTest(TestCase):
+	def test_comment_column_is_hidden_without_comments_and_shown_with_comments(self):
+		columns = ['core.Name', 'core.file_columns.Comment']
+		with patch('core.commands.columns.has_comments', return_value=False):
+			self.assertEqual([False, True], _get_hidden_flags(columns, 'file:///empty'))
+		with patch('core.commands.columns.has_comments', return_value=True):
+			self.assertEqual([False, False], _get_hidden_flags(columns, 'file:///notes'))
+
 	def test_hides_size_and_modified_columns(self):
 		with patch('core.column_visibility.get_setting', return_value=True):
 			flags = _get_hidden_flags(
-				['core.Name', 'core.Size', 'core.Modified']
+				['core.Name', 'core.Size', 'core.Modified'], 'file:///folder'
 			)
 		self.assertEqual([False, True, True], flags)
 
@@ -24,7 +32,7 @@ class GetHiddenFlagsTest(TestCase):
 				True if key != 'hidden_columns' else []
 			),
 		):
-			flags = _get_hidden_flags(columns)
+			flags = _get_hidden_flags(columns, 'file:///folder')
 		self.assertEqual([False, False, False], flags)
 
 	def test_plugin_column_can_be_hidden_but_column_zero_stays_visible(self):
@@ -33,7 +41,9 @@ class GetHiddenFlagsTest(TestCase):
 			side_effect=lambda _file, key, default: ['plugin.Status']
 			if key == 'hidden_columns' else default,
 		):
-			flags = _get_hidden_flags(['plugin.Name', 'plugin.Status'])
+			flags = _get_hidden_flags(
+				['plugin.Name', 'plugin.Status'], 'file:///folder'
+			)
 		self.assertEqual([False, True], flags)
 
 class SortByColumnTest(TestCase):
@@ -43,6 +53,7 @@ class SortByColumnTest(TestCase):
 		class Pane:
 			def get_columns(self):
 				return ['core.Name', 'core.Extension', 'core.Modified']
+			def get_path(self): return 'file:///folder'
 			def get_sort_column(self): return 'core.Modified', True
 		pane = Pane()
 		with patch(
@@ -57,6 +68,24 @@ class SortByColumnTest(TestCase):
 		self.assertEqual(
 			['core.Name', 'core.Modified'], [item.value for item in get_items('')]
 		)
+
+class ApplyColumnVisibilityTest(TestCase):
+	def test_uses_current_path_for_comment_visibility(self):
+		pane = Mock()
+		pane.get_columns.return_value = [
+			'core.Name', 'core.file_columns.Comment'
+		]
+		pane.get_path.return_value = 'file:///folder'
+		with patch(
+			'core.commands.columns._get_hidden_flags', return_value=[False, True]
+		) as get_hidden_flags:
+			_apply_column_visibility.__wrapped__(pane)
+		get_hidden_flags.assert_called_once_with(
+			['core.Name', 'core.file_columns.Comment'], 'file:///folder'
+		)
+		pane._widget._file_view.setColumnHidden.assert_has_calls([
+			call(0, False), call(1, True)
+		])
 
 class ToggleFixedColumnWidthsTest(TestCase):
 	def test_toggles_setting_and_reapplies_visibility_to_every_pane(self):
@@ -79,4 +108,19 @@ class ToggleFixedColumnWidthsTest(TestCase):
 		self.assertEqual(
 			[call(pane) for pane in panes] * 2,
 			apply_visibility.call_args_list,
+		)
+
+class ToggleCommentColumnTest(TestCase):
+	def test_toggles_comment_setting(self):
+		window = Mock()
+		pane = Mock(window=window)
+		window.get_panes.return_value = []
+		with patch(
+			'core.commands.columns.is_column_hidden', side_effect=[False, True]
+		), patch('core.commands.columns.set_column_hidden') as set_hidden, patch(
+			'core.panes.reload_panes'
+		):
+			ToggleCommentColumn(pane)()
+		self.assertEqual(
+			call('core.file_columns.Comment', True), set_hidden.call_args,
 		)

@@ -1,6 +1,7 @@
 """Additional columns for filesystems backed by file metadata."""
 from core import Name
 from core.column_visibility import is_column_hidden
+from core.descript_ion import get_comment
 from core.file_extension import split_extension
 from core.overwrite_details import file_version
 from fman import PLATFORM
@@ -66,6 +67,23 @@ class Attributes(DirsFirstColumn, Column):
 		except OSError:
 			is_dir = False
 		return is_dir ^ is_ascending, self.get_str(url)
+
+class Comment(DirsFirstColumn, Column):
+	def __init__(self, fs=fman.fs):
+		super().__init__()
+		self._fs = fs
+	def get_str(self, url):
+		try:
+			comment = get_comment(url)
+		except OSError:
+			return ''
+		return comment.splitlines()[0] if comment else ''
+	def get_sort_value(self, url, is_ascending):
+		try:
+			is_dir = self._fs.is_dir(url)
+		except OSError:
+			is_dir = False
+		return is_dir ^ is_ascending, self.get_str(url).lower()
 
 def _windows_attributes(attributes):
 	flags = (

@@ -11,6 +11,7 @@ from core.column_visibility import (
 	NAME_WITHOUT_EXTENSION_KEY, is_column_hidden,
 	set_column_hidden,
 )
+from core.descript_ion import has_comments
 from core.commands.column_header_menu import install_header_menu
 from core.settings import get_setting, save_setting
 from fman import DirectoryPaneCommand, DirectoryPaneListener, load_json, \
@@ -22,7 +23,7 @@ __all__ = [
 	'InitColumnVisibility', 'RememberSortSettings', 'SortByColumn',
 	'ToggleModifiedColumn', 'ToggleSizeColumn', 'ToggleExtensionColumn',
 	'ToggleVersionColumn', 'ToggleAttributesColumn', 'ToggleFixedColumnWidths',
-	'ToggleNameWithoutExtension'
+	'ToggleNameWithoutExtension', 'ToggleCommentColumn'
 ]
 
 FIT_NAME_COLUMN_KEY = 'fit_name_column'
@@ -31,13 +32,19 @@ FIT_NAME_COLUMN_DEFAULT = True
 # fman has no pane.set_columns(...) - the FileSystem owns the column set and
 # the model is rebuilt on every navigation. So we hide/show columns directly
 # on the live Qt view instead, keyed by the columns' qualified names.
-def _get_hidden_flags(columns):
+def _get_hidden_flags(columns, url):
 	# Every index gets a flag: Qt keeps a section hidden across navigation, so a
 	# column a filesystem doesn't share with file:// (eg. DriveSize) must be unhidden.
-	return [
-		index != 0 and is_column_hidden(col)
-		for index, col in enumerate(columns)
-	]
+	flags = []
+	for index, col in enumerate(columns):
+		hidden = index != 0 and is_column_hidden(col)
+		if col == 'core.file_columns.Comment' and index != 0:
+			try:
+				hidden = hidden or not has_comments(url)
+			except OSError:
+				hidden = True
+		flags.append(hidden)
+	return flags
 
 @run_in_main_thread
 def _apply_column_visibility(pane):
@@ -54,7 +61,9 @@ def _apply_column_visibility(pane):
 	# fire and the view still repaints/relayouts normally.
 	view._handle_col_resize = False
 	try:
-		for index, hidden in enumerate(_get_hidden_flags(columns)):
+		for index, hidden in enumerate(
+			_get_hidden_flags(columns, pane.get_path())
+		):
 			view.setColumnHidden(index, hidden)
 	finally:
 		view._handle_col_resize = True
@@ -102,6 +111,10 @@ class ToggleAttributesColumn(DirectoryPaneCommand):
 	aliases = ('Toggle attributes column',)
 	def __call__(self): _toggle_column(self.pane.window, 'core.file_columns.Attributes')
 
+class ToggleCommentColumn(DirectoryPaneCommand):
+	aliases = ('Toggle comment column',)
+	def __call__(self): _toggle_column(self.pane.window, 'core.file_columns.Comment')
+
 class ToggleFixedColumnWidths(DirectoryPaneCommand):
 	aliases = ('Toggle fixed column widths',)
 	def __call__(self):
@@ -142,7 +155,9 @@ class SortByColumn(DirectoryPaneCommand):
 	def __call__(self, column_index=None):
 		columns = self.pane.get_columns()
 		visible_columns = [
-			column for column, hidden in zip(columns, _get_hidden_flags(columns))
+			column for column, hidden in zip(
+				columns, _get_hidden_flags(columns, self.pane.get_path())
+			)
 			if not hidden
 		]
 		if column_index is None:

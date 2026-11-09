@@ -41,7 +41,7 @@ class LocalFileSystem(LocalTransfers, FileSystem):
 		if PLATFORM == 'Windows':
 			columns += ('core.file_columns.Version',)
 		return columns + (
-			'core.file_columns.Attributes',
+			'core.file_columns.Attributes', 'core.file_columns.Comment',
 		)
 	def exists(self, path):
 		os_path = self._url_to_os_path(path)

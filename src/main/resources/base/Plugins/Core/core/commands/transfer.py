@@ -19,6 +19,8 @@ from core.path_completion import complete_path
 from core.transfer_queue import run_queued
 from core.util import is_parent
 from core.undo_history import CopyRecord, MoveRecord, record_transfer
+from core.commands import show_file_comment_error
+from core.descript_ion import copy_comments, move_comments
 from fman import DirectoryPaneCommand, DirectoryPaneListener, NO, YES, \
 	submit_task
 from fman.fs import makedirs
@@ -262,9 +264,14 @@ class Copy(_TreeCommand):
 	def _call_elevated(self, files, dest_dir, dest_name):
 		return elevation.copy(files, dest_dir, dest_name)
 	def _record_operation(self, transfers, destinations_that_existed):
-		record_transfer(
+		successful = record_transfer(
 			CopyRecord, transfers, destinations_that_existed, fman.fs.exists
 		)
+		if successful:
+			try:
+				copy_comments(successful)
+			except OSError as error:
+				show_file_comment_error(error)
 
 class Move(_TreeCommand):
 	def _call(self, files, dest_dir, dest_name=None):
@@ -274,9 +281,18 @@ class Move(_TreeCommand):
 	def _call_elevated(self, files, dest_dir, dest_name):
 		return elevation.move(files, dest_dir, dest_name)
 	def _record_operation(self, transfers, destinations_that_existed):
-		record_transfer(
+		successful = record_transfer(
 			MoveRecord, transfers, destinations_that_existed, fman.fs.exists
 		)
+		successful = tuple(
+			(src, dst) for src, dst in successful
+			if not fman.fs.exists(src)
+		)
+		if successful:
+			try:
+				move_comments(successful)
+			except OSError as error:
+				show_file_comment_error(error)
 
 def drop_command(file_urls, dest_dir, is_copy_not_move):
 	schemes = set(splitscheme(url)[0] for url in file_urls)

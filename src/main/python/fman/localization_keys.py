@@ -11,6 +11,8 @@ READY = 'status_ready'
 ERROR_DISMISS = 'error_dismiss'
 PROMPT_OK = 'prompt_ok'
 PROMPT_CANCEL = 'prompt_cancel'
+TEXT_INPUT_SAVE = 'text_input_save'
+TEXT_INPUT_NEW_LINE = 'text_input_new_line'
 ERROR_OPEN_CONSOLE = 'error_open_console'
 ERROR_COPY = 'error_copy'
 ERROR_COPIED = 'error_copied'
@@ -34,6 +36,10 @@ SHORTCUT_TARGET_MISSING = 'shortcut_target_missing'
 LINK_TARGET_PROMPT = 'link_target_prompt'
 LINK_TARGET_MISSING_CONFIRM = 'link_target_missing_confirm'
 LINK_TARGET_FAILED = 'link_target_failed'
+FILE_COMMENT_TITLE = 'file_comment_title'
+FILE_COMMENT_TITLE_MULTIPLE = 'file_comment_title_multiple'
+FILE_COMMENT_LOCAL_ONLY = 'file_comment_local_only'
+FILE_COMMENT_SAVE_FAILED = 'file_comment_save_failed'
 SAVE_CHANGES_BEFORE_CLOSING = 'save_changes_before_closing'
 COMMAND_TITLES = {
 	'Help': 'command_help',
@@ -57,6 +63,7 @@ COMMAND_TITLES = {
 	'Open with...': 'command_open_with',
 	'Copy': 'command_copy',
 	'Paste': 'command_paste',
+	'Edit comment': 'command_edit_comment',
 }
 
 ENGLISH_TEXT = {
@@ -71,6 +78,8 @@ ENGLISH_TEXT = {
 	ERROR_DISMISS: 'Dismiss',
 	PROMPT_OK: 'OK',
 	PROMPT_CANCEL: 'Cancel',
+	TEXT_INPUT_SAVE: 'Save',
+	TEXT_INPUT_NEW_LINE: 'New line',
 	ERROR_OPEN_CONSOLE: 'Open in console',
 	ERROR_COPY: 'Copy error',
 	ERROR_COPIED: 'Error copied to clipboard.',
@@ -97,6 +106,10 @@ ENGLISH_TEXT = {
 	LINK_TARGET_PROMPT: 'New target for %s:',
 	LINK_TARGET_MISSING_CONFIRM: '%s does not exist. Point the link there anyway?',
 	LINK_TARGET_FAILED: 'Could not change the target of %s: %s',
+	FILE_COMMENT_TITLE: 'Comment for %s',
+	FILE_COMMENT_TITLE_MULTIPLE: 'Comment for %s files',
+	FILE_COMMENT_LOCAL_ONLY: 'Comments can only be edited for local files.',
+	FILE_COMMENT_SAVE_FAILED: 'Could not save file comment: %s',
 	SAVE_CHANGES_BEFORE_CLOSING: 'Save changes before closing?',
 }
 ENGLISH_TEXT.update({key: title for title, key in COMMAND_TITLES.items()})

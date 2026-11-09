@@ -6,6 +6,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class TrashRecord:
 	urls: tuple
+	comments: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -45,8 +46,12 @@ history = UndoHistory()
 
 
 def record_transfer(record_type, transfers, destinations_that_existed, exists):
-	urls = tuple(
+	successful = tuple(
 		(src_url, dst_url) for src_url, dst_url in transfers
-		if dst_url not in destinations_that_existed and exists(dst_url)
+		if dst_url in destinations_that_existed or exists(dst_url)
+	)
+	urls = tuple(
+		pair for pair in successful if pair[1] not in destinations_that_existed
 	)
 	history.record(record_type(urls))
+	return successful

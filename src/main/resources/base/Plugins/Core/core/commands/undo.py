@@ -2,9 +2,14 @@
 
 from core import elevation
 from core.commands.deletion import confirm_trash, trash
+from core.commands import show_file_comment_error
 from core.undo_history import CopyRecord, MoveRecord, RenameRecord, TrashRecord, history
+from core.descript_ion import move_comments, restore_comments
 from core.recycle_bin import find_entry, restore_entry
-from fman import DirectoryPaneCommand, PLATFORM, Task, show_alert, submit_task
+from fman import (
+	DirectoryPaneCommand, PLATFORM, Task, show_alert,
+	submit_task,
+)
 from fman.fs import exists, notify_file_added, prepare_move, samefile
 from fman.url import basename, dirname
 
@@ -35,6 +40,7 @@ class Undo(DirectoryPaneCommand):
 			return
 		failures = []
 		last_restored_url = None
+		restored_urls = []
 		for url in record.urls:
 			try:
 				entry = find_entry(url)
@@ -43,10 +49,18 @@ class Undo(DirectoryPaneCommand):
 				restore_entry(entry)
 				notify_file_added(url)
 				last_restored_url = url
+				restored_urls.append(url)
 			except OSError as error:
 				failures.append(_failure(url, error))
 		if last_restored_url is not None:
 			_place_cursor_at(self.pane, last_restored_url)
+		try:
+			restore_comments(tuple(
+				comment for comment in record.comments
+				if comment[0] in restored_urls
+			))
+		except OSError as error:
+			_show_comment_error(error)
 		if failures:
 			show_alert('Some items could not be restored:\n' + '\n'.join(failures))
 
@@ -58,9 +72,11 @@ class Undo(DirectoryPaneCommand):
 					raise FileExistsError('The original location is occupied')
 				if not exists(dst_url):
 					raise FileNotFoundError('The moved file no longer exists')
-				if not elevation.move(
+				if elevation.move(
 					[dst_url], dirname(src_url), basename(src_url)
 				):
+					_move_comment_back(dst_url, src_url)
+				else:
 					submit_task(_MoveBack(dst_url, src_url))
 				_place_cursor_at(self.pane, src_url)
 			except OSError as error:
@@ -90,6 +106,18 @@ class _MoveBack(Task):
 		for task in tasks:
 			self.check_canceled()
 			self.run(task)
+		_move_comment_back(self._src_url, self._dst_url)
+
+
+def _move_comment_back(src_url, dst_url):
+	try:
+		move_comments(((src_url, dst_url),))
+	except OSError as error:
+		_show_comment_error(error)
+
+
+def _show_comment_error(error):
+	show_file_comment_error(error)
 
 
 def _failure(url, error):

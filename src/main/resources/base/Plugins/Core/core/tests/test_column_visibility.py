@@ -56,6 +56,7 @@ class ColumnVisibilityTest(TestCase):
 				'core.file_columns.Attributes',
 			):
 				self.assertTrue(is_column_hidden(name))
+			self.assertFalse(is_column_hidden('core.file_columns.Comment'))
 
 	def test_name_setting_only_applies_when_extension_column_is_visible(self):
 		with (

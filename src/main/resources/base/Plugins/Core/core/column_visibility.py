@@ -9,6 +9,7 @@ COLUMN_SETTINGS = {
 	'core.file_columns.Extension': ('hide_extension_column', True),
 	'core.file_columns.Version': ('hide_version_column', True),
 	'core.file_columns.Attributes': ('hide_attributes_column', True),
+	'core.file_columns.Comment': ('hide_comment_column', False),
 }
 NAME_WITHOUT_EXTENSION_KEY = 'name_without_extension'
 

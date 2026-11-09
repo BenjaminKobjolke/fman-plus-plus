@@ -14,6 +14,7 @@ from fman.impl.progress_dialog import ProgressDialog
 from fman.impl.tool_windows import ToolWindows
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.prompt_popup import Prompt
+from fman.impl.text_input_popup import TextInputPrompt
 from fman.impl.util.qt import disable_window_animations_mac, Key_Escape, \
 	NoFocus, Key_Backspace, DisplayRole
 from fman.impl.util.qt.wheel_zoom import CtrlWheelZoom
@@ -604,6 +605,12 @@ class MainWindow(QMainWindow):
 		)
 		result = self.exec_dialog(dialog)
 		if result:
+			return dialog.textValue()
+		return None
+	@run_in_main_thread
+	def show_text_input(self, text, default=''):
+		dialog = TextInputPrompt(self, str(text), default)
+		if self.exec_dialog(dialog):
 			return dialog.textValue()
 		return None
 	@run_in_main_thread

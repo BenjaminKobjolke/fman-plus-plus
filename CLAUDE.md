@@ -138,6 +138,10 @@ For one Core test module, run `tools\run_core_tests.bat core.tests.fs.test_drive
 
 After touching `src/main/python/fman/impl/prompt_completion.py`, `src/main/python/fman/impl/prompt_suggestions.py`, or `Prompt` in `src/main/python/fman/impl/prompt_popup.py`, run `tools\run_prompt_completion_tests.bat`.
 
+After touching `src/main/python/fman/impl/text_input_popup.py` or
+`src/unittest/python/fman_unittest/impl/text_input_popup_test.py`, run
+`tools\run_prompt_completion_tests.bat`.
+
 After touching `tools/close_running_fman.ps1` or `tools/build_windows.bat`, run
 `uv run python tools/test_close_running_fman.py`.
 
@@ -163,7 +167,10 @@ After touching `fman/impl/update_check.py`, run
 to `src\main\python;src\unittest\python`. The Core update check and command
 are covered by `run_core_tests.bat`.
 
-After changing Core plugin code (`src/main/resources/base/Plugins/Core/core/**`),
+For changes to `src/main/resources/base/Plugins/Core/core/descript_ion.py`, run
+the focused module with `tools\run_core_tests.bat core.tests.test_descript_ion`.
+
+After changing other Core plugin code (`src/main/resources/base/Plugins/Core/core/**`),
 run:
 
 ```bash

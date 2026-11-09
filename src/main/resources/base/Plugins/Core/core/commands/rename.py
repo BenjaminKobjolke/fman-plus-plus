@@ -6,8 +6,10 @@ offer Retry without the user retyping the new name - see its own comment.
 from core import elevation
 from core.file_extension import name_with_hidden_extension
 from core.commands.editor import _find_extension_start
+from core.commands import show_file_comment_error
 from core.commands.util import create_as_admin, is_dir_checked, NO_SELECTION
 from core.undo_history import RenameRecord, history
+from core.descript_ion import move_comments
 from core.util import is_relative_name
 from functools import partial
 from fman import CANCEL, DirectoryPaneCommand, DirectoryPaneListener, \
@@ -90,6 +92,10 @@ def rename_to(pane, file_url, new_name):
 
 def _record_rename(src_url, dst_url):
 	history.record(RenameRecord(((src_url, dst_url),)))
+	try:
+		move_comments(((src_url, dst_url),))
+	except OSError as error:
+		show_file_comment_error(error)
 
 def _place_cursor_at(pane, url):
 	try:
