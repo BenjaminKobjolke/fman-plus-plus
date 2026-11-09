@@ -92,6 +92,16 @@ class TicketsWatcherCommandsTest(unittest.TestCase):
         self.assertIsNotNone(module_call, script)
         self.assertRegex(module_call.group(), r"2\s*>\s*&\s*1\s*$")
 
+    def test_zip_runner_streams_test_progress_to_stdout(self):
+        script = (TOOLS / "run_zip_tests.bat").read_text(encoding="utf-8")
+        suite_call = re.search(
+            r'(?im)^call\s+"%~dp0unittest_with_timeout\.bat"\s+discover[^\r\n]*(?:\r?\n[^\r\n]*){0,2}',
+            script,
+        )
+
+        self.assertIsNotNone(suite_call, script)
+        self.assertRegex(suite_call.group(), r"2\s*>\s*&\s*1\s*$")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -7,5 +7,5 @@ set ROOT=%~dp0..
 set PYTHONPATH=%ROOT%\src\main\python;%ROOT%\src\unittest\python
 call "%~dp0unittest_with_timeout.bat" discover -v -p "*_test.py" ^
 	-s "%ROOT%\src\main\resources\base\Plugins\Core\core\tests\fs" ^
-	-t "%ROOT%\src\main\resources\base\Plugins\Core"
+	-t "%ROOT%\src\main\resources\base\Plugins\Core" 2>&1
 exit /b %ERRORLEVEL%
