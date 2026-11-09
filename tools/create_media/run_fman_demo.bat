@@ -121,6 +121,11 @@ if "%1"=="9" set "LOGFILE=%LEFT%\service.log"
 if "%1"=="9" powershell -NoProfile -Command "1..12 | ForEach-Object { Add-Content -LiteralPath $env:LOGFILE -Value ('{0:HH:mm:ss}  service started, worker {1} ready' -f (Get-Date), $_) }"
 if "%1"=="9" start "" /b powershell -NoProfile -Command "1..40 | ForEach-Object { Add-Content -LiteralPath $env:LOGFILE -Value ('{0:HH:mm:ss}  request {1} handled in {2} ms' -f (Get-Date), $_, (Get-Random -Minimum 4 -Maximum 90)); Start-Sleep -Milliseconds 1500 }"
 
+REM Demo 12 films Edit link target, which is visible only on a link. A junction
+REM needs no admin rights; a file symlink would.
+if "%1"=="12" mklink /J "%LEFT%\linked-folder" "%RIGHT%" >nul
+if "%1"=="12" powershell -NoProfile -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $env:LEFT 'readme shortcut.lnk')); $s.TargetPath=(Join-Path $env:LEFT 'readme.md'); $s.Save()"
+
 REM The desktop is cleared by the recording tool itself, before it starts this
 REM launcher ("minimize_all" in its config, on by default): it enumerates the
 REM top-level windows and minimizes each one, its own console included. A

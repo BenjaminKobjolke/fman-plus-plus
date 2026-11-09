@@ -260,6 +260,9 @@ composing stale inputs.
   confirmation, with and without the title bar. This exists so the automated
   screenshot check can judge dialog changes. Its stills are gitignored
   (`media/demos/dialogs/`); each check records them fresh.
+- **12 `links`** — stills of a junction and shortcut in the panes, the palette's
+  *Edit link target* entry and its target prompt (cancelled). Exists so the
+  screenshot check can judge link features.
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |

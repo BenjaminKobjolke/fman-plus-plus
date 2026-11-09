@@ -85,6 +85,25 @@ class DemoSetupTest(unittest.TestCase):
 			],
 		)
 
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
+	def test_links_demo_takes_a_still_of_each_link_screen(self):
+		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+
+		demo = DIALOG_CLIPS[12]
+		screenshot_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+
+		self.assertEqual(demo.name, 'links')
+		self.assertEqual(
+			screenshot_names,
+			['links-panes', 'link-target-palette', 'link-target-prompt'],
+		)
+
 
 if __name__ == '__main__':
 	unittest.main()

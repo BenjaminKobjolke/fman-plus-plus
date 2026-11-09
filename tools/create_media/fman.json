@@ -38,6 +38,8 @@
     {"id": 10, "name": "plugin-matrix-rain", "fps": 5, "formats": ["mp4"],
      "width": 1280, "height": 800, "group": "plugin"},
     {"id": 11, "name": "dialogs", "fps": 2, "formats": [],
+     "width": 1280, "height": 800},
+    {"id": 12, "name": "links", "fps": 2, "formats": [],
      "width": 1280, "height": 800}
   ],
   "compose": [
