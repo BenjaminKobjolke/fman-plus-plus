@@ -9,6 +9,9 @@ Demo 13 never presses Return, because that would run the file elevated.
 Demo 12 needs the junction and shortcut seeded by run_fman_demo.bat; its
 cursor starts on the junction because directories sort first, and the prompt
 is cancelled.
+
+Demo 14 holds one palette search still per palette command that a screenshot
+check needs.
 """
 
 from automated_screenshot_connector import (
@@ -78,6 +81,17 @@ DIALOG_CLIPS = {
 			Screenshot('run-as-admin-context-menu'),
 			PressKey('Escape'), Pause(1.2),
 			Pause(1.0),
+		),
+	),
+	14: DemoScript(
+		id=14,
+		name='command-palette',
+		steps=(
+			Pause(1.5), PressKey('Ctrl+Shift+P'), Pause(0.6),
+			TypeText('go to network'), Pause(1.0),
+			Screenshot('go-to-network-palette'),
+			PressKey('Return'), Pause(20.0),
+			Screenshot('go-to-network-pane'), Pause(1.0),
 		),
 	),
 }

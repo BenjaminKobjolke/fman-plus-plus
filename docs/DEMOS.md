@@ -272,6 +272,10 @@ composing stale inputs.
   and of the file context menu (the still shows the menu alone). It never presses
   Return, which would raise a UAC prompt. Exists so the screenshot check can judge
   palette entries and context-menu items.
+- **14 `command-palette`** — stills of palette searches, currently *Go to network*
+  and the network view it opens (Windows). Exists so the screenshot check can judge
+  new palette entries. A change that adds a palette command should add a `TypeText`
+  query plus a `Screenshot` still here, so its check has something to judge.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
@@ -625,6 +629,8 @@ start, and end with a `Pause(1.0)` so the recording doesn't cut off abruptly.
    Use the `OpenContextMenu` step for demos that need the file context menu.
    A demo intended for visual checks should include `Screenshot` steps for each
    UI state those checks need to judge.
+   Palette commands should add their query and still to demo 14 instead of a new
+   demo.
 3. **Set its `group`**, which is what decides where it ends up — the name
    prefix only shapes the filename:
 

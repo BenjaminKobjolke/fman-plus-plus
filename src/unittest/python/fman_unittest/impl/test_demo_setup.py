@@ -146,6 +146,25 @@ class DemoSetupTest(unittest.TestCase):
 			)
 		)
 
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
+	def test_command_palette_demo_takes_palette_and_pane_stills(self):
+		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+
+		demo = DIALOG_CLIPS[14]
+		screenshot_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+
+		self.assertEqual(demo.name, 'command-palette')
+		self.assertEqual(
+			screenshot_names,
+			['go-to-network-palette', 'go-to-network-pane'],
+		)
+
 
 if __name__ == '__main__':
 	unittest.main()
