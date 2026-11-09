@@ -263,6 +263,13 @@ composing stale inputs.
 - **12 `links`** — stills of a junction and shortcut in the panes, the palette's
   *Edit link target* entry and its target prompt (cancelled). Exists so the
   screenshot check can judge link features.
+- **13 `context-menu`** — stills of the palette searching *Run as administrator*
+  and of the file context menu (the still shows the menu alone). It never presses
+  Return, which would raise a UAC prompt. Exists so the screenshot check can judge
+  palette entries and context-menu items.
+
+Screenshot checks should not record demo 1: until the screenshot tool honors
+`--output` for demos (#15344), its stills overwrite the committed README images.
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |
@@ -610,6 +617,7 @@ start, and end with a `Pause(1.0)` so the recording doesn't cut off abruptly.
    (`id`, `name`, `fps`, `width`, `height`, `formats`). Ids ≥ 3 automatically
    get the scratch fixture folders. A stills-only demo like `themes` sets
    `"formats": []`.
+   Use the `OpenContextMenu` step for demos that need the file context menu.
    A demo intended for visual checks should include `Screenshot` steps for each
    UI state those checks need to judge.
 3. **Set its `group`**, which is what decides where it ends up — the name

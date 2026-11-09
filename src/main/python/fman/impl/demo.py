@@ -17,8 +17,11 @@ palette / inline filter) since QTimers keep firing inside nested modal loops.
 The scripts it plays live in ``demo_scripts.py``.
 """
 
+from dataclasses import dataclass
+
 from PyQt5.QtCore import QObject, QTimer
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QContextMenuEvent
+from PyQt5.QtWidgets import QAbstractItemView, QApplication, QMenu
 from fman.impl.util.qt.key_events import parse_chord, post_chord, post_text
 
 from automated_screenshot_connector.steps import (
@@ -29,6 +32,12 @@ from automated_screenshot_connector.steps import (
 START_DELAY_MS = 500
 # Hold the final state briefly so the recording doesn't end abruptly.
 END_HOLD_MS = 1000
+
+
+@dataclass(frozen=True)
+class OpenContextMenu:
+	"""Open the file context menu for the cursor's row, like the Menu key."""
+
 
 class DemoPlayer(QObject):
 	"""Plays one DemoScript by posting key events, then quits the app.
@@ -80,12 +89,34 @@ class DemoPlayer(QObject):
 			self._client.send_screenshot(
 				action.name, png=self._screenshots.screenshot_png())
 		elif isinstance(action, CustomStep):
-			# fman defines no custom steps; a Wait's delay already elapsed.
-			pass
+			if isinstance(action.step, OpenContextMenu):
+				self._open_context_menu()
+			# Other custom steps remain ignored; a Wait's delay already elapsed.
 		self._advance()
 
 	def _target(self):
+		popup = QApplication.activePopupWidget()
+		if isinstance(popup, QMenu):
+			# The file view keeps focus while a menu is open, so Escape must target
+			# the menu.
+			return popup
 		return QApplication.focusWidget() or self._window
+
+	def _open_context_menu(self):
+		view = QApplication.focusWidget()
+		if not isinstance(view, QAbstractItemView):
+			raise ValueError('OpenContextMenu needs a focused file view')
+		point = view.visualRect(view.currentIndex()).center()
+		# Right-button selection swallows Mouse; a posted Menu key bypasses
+		# Qt's context-menu path.
+		QApplication.postEvent(
+			view.viewport(),
+			QContextMenuEvent(
+				QContextMenuEvent.Keyboard,
+				point,
+				view.viewport().mapToGlobal(point),
+			),
+		)
 
 	def _send_char(self, ch):
 		post_text(self._target(), ch)

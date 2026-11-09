@@ -104,6 +104,48 @@ class DemoSetupTest(unittest.TestCase):
 			['links-panes', 'link-target-palette', 'link-target-prompt'],
 		)
 
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
+	def test_context_menu_demo_takes_palette_and_menu_stills(self):
+		from fman.impl.demo import OpenContextMenu
+		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+
+		demo = DIALOG_CLIPS[13]
+		screenshot_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+
+		self.assertEqual(demo.name, 'context-menu')
+		self.assertEqual(
+			screenshot_names,
+			['run-as-admin-palette', 'run-as-admin-context-menu'],
+		)
+		self.assertEqual(
+			sum(isinstance(step, OpenContextMenu) for step in demo.steps),
+			1,
+		)
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
+	def test_context_menu_demo_never_presses_return(self):
+		from automated_screenshot_connector.steps import PressReturn, SendKey, flatten
+		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+
+		actions = [action for _, action in flatten(DIALOG_CLIPS[13].steps)]
+		self.assertFalse(any(isinstance(action, PressReturn) for action in actions))
+		self.assertFalse(
+			any(
+				isinstance(action, SendKey)
+				and action.chord.casefold() in ('return', 'enter')
+				for action in actions
+			)
+		)
+
 
 if __name__ == '__main__':
 	unittest.main()

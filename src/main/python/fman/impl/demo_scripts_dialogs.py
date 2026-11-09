@@ -4,6 +4,8 @@ Every dialog is cancelled and works only with demo 11's scratch data. The
 cursor starts on the first file in the sorted left pane (changelog.txt); any
 file is enough for F5 and F8.
 
+Demo 13 never presses Return, because that would run the file elevated.
+
 Demo 12 needs the junction and shortcut seeded by run_fman_demo.bat; its
 cursor starts on the junction because directories sort first, and the prompt
 is cancelled.
@@ -12,6 +14,7 @@ is cancelled.
 from automated_screenshot_connector import (
 	Command, DemoScript, Pause, PressKey, Screenshot, TypeText,
 )
+from fman.impl.demo import OpenContextMenu
 
 DIALOG_CLIPS = {
 	11: DemoScript(
@@ -59,6 +62,21 @@ DIALOG_CLIPS = {
 			Screenshot('link-target-prompt'),
 			PressKey('Escape'),
 			Pause(1.2),
+			Pause(1.0),
+		),
+	),
+	13: DemoScript(
+		id=13,
+		name='context-menu',
+		steps=(
+			Pause(1.5),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			TypeText('run as administrator'), Pause(1.0),
+			Screenshot('run-as-admin-palette'),
+			PressKey('Escape'), Pause(1.2),
+			OpenContextMenu(), Pause(1.5),
+			Screenshot('run-as-admin-context-menu'),
+			PressKey('Escape'), Pause(1.2),
 			Pause(1.0),
 		),
 	),

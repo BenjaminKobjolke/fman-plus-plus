@@ -5,16 +5,21 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 import unittest
 
-from PyQt5.QtGui import QImage
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtCore import QObject
+from PyQt5.QtGui import QContextMenuEvent, QImage, QStandardItemModel
+from PyQt5.QtWidgets import QApplication, QMenu, QTableView, QWidget
 
 from fman.impl.scripting.automation import AutomationActions
 
 CONNECTOR_AVAILABLE = find_spec('automated_screenshot_connector') is not None
 if CONNECTOR_AVAILABLE:
 	from automated_screenshot_connector import DemoClient
-	from automated_screenshot_connector.steps import DemoScript, SendScreenshot
-	from fman.impl.demo import DemoPlayer
+	from automated_screenshot_connector.steps import (
+		CustomStep,
+		DemoScript,
+		SendScreenshot,
+	)
+	from fman.impl.demo import DemoPlayer, OpenContextMenu
 
 
 @unittest.skipUnless(
@@ -65,3 +70,59 @@ class DemoPlayerTest(TestCase):
 
 		screenshots.screenshot_png.assert_called_once_with()
 		client.send_screenshot.assert_called_once_with('still', png=b'png-bytes')
+
+	def test_open_context_menu_posts_a_keyboard_event_at_the_current_row(self):
+		view = QTableView(self.window)
+		model = QStandardItemModel(2, 1, view)
+		view.setModel(model)
+		view.setGeometry(0, 0, 40, 30)
+		view.show()
+		index = model.index(1, 0)
+		view.setCurrentIndex(index)
+		view.setFocus()
+		self.app.processEvents()
+		events = []
+		filter_ = _ContextMenuEventFilter(events)
+		view.viewport().installEventFilter(filter_)
+		player = self._player(MagicMock(spec=DemoClient), MagicMock())
+
+		with patch('fman.impl.demo.QTimer'):
+			player._execute(CustomStep(OpenContextMenu()))
+		self.app.processEvents()
+
+		self.assertEqual(
+			events,
+			[(QContextMenuEvent.Keyboard, view.visualRect(index).center())],
+		)
+
+	def test_keys_go_to_an_open_menu(self):
+		player = self._player(MagicMock(spec=DemoClient), MagicMock())
+		menu = QMenu(self.window)
+
+		with patch('fman.impl.demo.QApplication.activePopupWidget', return_value=menu):
+			self.assertIs(player._target(), menu)
+		with patch('fman.impl.demo.QApplication.activePopupWidget', return_value=None):
+			with patch(
+				'fman.impl.demo.QApplication.focusWidget',
+				return_value=self.window,
+			):
+				self.assertIs(player._target(), self.window)
+
+	def test_open_context_menu_without_an_item_view_raises(self):
+		self.window.setFocus()
+		player = self._player(MagicMock(spec=DemoClient), MagicMock())
+
+		with patch('fman.impl.demo.QTimer'):
+			with self.assertRaisesRegex(ValueError, 'focused file view'):
+				player._execute(CustomStep(OpenContextMenu()))
+
+
+class _ContextMenuEventFilter(QObject):
+	def __init__(self, events):
+		super().__init__()
+		self.events = events
+
+	def eventFilter(self, _watched, event):
+		if isinstance(event, QContextMenuEvent):
+			self.events.append((event.reason(), event.pos()))
+		return False
