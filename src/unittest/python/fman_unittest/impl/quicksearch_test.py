@@ -122,7 +122,7 @@ class QuicksearchTest(TestCase):
 		dialog.close()
 	def test_footer_text_names_both_keys_and_actions(self):
 		self.assertEqual(
-			'Enter  Run    Shift+Enter  More actions', footer_text()
+			'Enter: Run - Shift+Enter: More actions', footer_text()
 		)
 	def test_more_button_hit_test_only_matches_the_button_area(self):
 		row = QRect(10, 20, 300, 40)

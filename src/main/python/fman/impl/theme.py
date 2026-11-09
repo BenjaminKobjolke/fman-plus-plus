@@ -156,7 +156,12 @@ class Theme:
 		if self._font_offset_pts == 0 or not self._css_rules:
 			return ''
 		zoomed_selectors = (
-			('*', 'Quicksearch #header, Quicksearch QListView', None),
+			(
+				'*',
+				'Quicksearch #header, Quicksearch #footer, '
+				'Quicksearch QListView',
+				None,
+			),
 			('th', self._CSS_TO_QSS['th'], None),
 			('.statusbar', self._CSS_TO_QSS['.statusbar'], None),
 			('.quicksearch-query', self._CSS_TO_QSS['.quicksearch-query'], None),

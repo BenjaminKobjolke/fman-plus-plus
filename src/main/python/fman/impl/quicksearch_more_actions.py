@@ -10,7 +10,7 @@ MORE_GLYPH = '⋯'
 
 
 def footer_text():
-	return '%s  %s    %s  %s' % (
+	return '%s: %s - %s: %s' % (
 		translate(QUICKSEARCH_KEY_ENTER),
 		translate(QUICKSEARCH_RUN),
 		translate(QUICKSEARCH_KEY_SHIFT_ENTER),

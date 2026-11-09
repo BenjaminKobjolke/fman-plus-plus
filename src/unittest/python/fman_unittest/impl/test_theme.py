@@ -133,7 +133,7 @@ class ThemeTest(TestCase):
 		theme.set_font_offset(3)
 		stylesheet = self._app.stylesheet
 		for selector, size in (
-			('Quicksearch #header, Quicksearch QListView', 12),
+			('Quicksearch #header, Quicksearch #footer, Quicksearch QListView', 12),
 			('LocationBar:read-only', 12),
 			('QTableView QHeaderView::section', 11),
 			('QStatusBar, QStatusBar QLabel, PaneStatusLine', 11),
@@ -157,7 +157,7 @@ class ThemeTest(TestCase):
 		stylesheet = self._app.stylesheet
 		self.assertNotIn('QTableView QHeaderView::section {', stylesheet)
 		for selector, size in (
-			('Quicksearch #header, Quicksearch QListView', 12),
+			('Quicksearch #header, Quicksearch #footer, Quicksearch QListView', 12),
 			('LocationBar:read-only', 12),
 			('QStatusBar, QStatusBar QLabel, PaneStatusLine', 11),
 			('Quicksearch QLineEdit', 15),
