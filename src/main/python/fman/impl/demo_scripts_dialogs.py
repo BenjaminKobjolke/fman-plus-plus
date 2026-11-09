@@ -24,10 +24,14 @@ DIALOG_CLIPS = {
 			PressKey('Escape'), Pause(1.2),
 			PressKey('Ctrl+Shift+P'), Pause(0.6),
 			Command('toggle title bar'), Pause(1.5),
-			PressKey('F5'), Pause(1.8),
+			# Recreating the native window loses pane focus. Use the palette's
+			# commands so the frameless dialogs still open deterministically.
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('copy'), Pause(1.8),
 			Screenshot('dialog-copy-prompt-no-title-bar'),
 			PressKey('Escape'), Pause(1.2),
-			PressKey('F8'), Pause(1.5),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('delete'), Pause(1.5),
 			Screenshot('dialog-delete-confirm-no-title-bar'),
 			PressKey('Escape'), Pause(1.2),
 			PressKey('Ctrl+Shift+P'), Pause(0.6),

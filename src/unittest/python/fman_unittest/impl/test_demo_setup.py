@@ -74,6 +74,16 @@ class DemoSetupTest(unittest.TestCase):
 				'dialog-delete-confirm-no-title-bar',
 			],
 		)
+		command_lines = [
+			step.line for step in demo.steps
+			if step.__class__.__name__ == 'Command'
+		]
+		self.assertEqual(
+			command_lines,
+			[
+				'toggle title bar', 'copy', 'delete', 'toggle title bar',
+			],
+		)
 
 
 if __name__ == '__main__':
