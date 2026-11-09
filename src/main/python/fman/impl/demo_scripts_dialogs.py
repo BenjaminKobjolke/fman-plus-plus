@@ -32,6 +32,9 @@ DIALOG_CLIPS = {
 			PressKey('Escape'), Pause(1.2),
 			PressKey('F8'), Pause(1.5), Screenshot('dialog-delete-confirm'),
 			PressKey('Escape'), Pause(1.2),
+			PressKey('Shift+Delete'), Pause(1.5),
+			Screenshot('dialog-delete-permanently-confirm'),
+			PressKey('Escape'), Pause(1.2),
 			PressKey('Ctrl+Shift+P'), Pause(0.6),
 			Command('toggle title bar'), Pause(1.5),
 			# Recreating the native window loses pane focus. Use the palette's

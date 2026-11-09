@@ -70,6 +70,7 @@ class DemoSetupTest(unittest.TestCase):
 				'dialog-copy-prompt',
 				'dialog-overwrite',
 				'dialog-delete-confirm',
+				'dialog-delete-permanently-confirm',
 				'dialog-copy-prompt-no-title-bar',
 				'dialog-delete-confirm-no-title-bar',
 			],

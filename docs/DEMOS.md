@@ -262,7 +262,8 @@ composing stale inputs.
 - **2 `themes`** — one still per bundled theme, joined into the README's
   `media/demos/themes/themes.gif`. Records no video at all.
 - **11 `dialogs`** — stills of the copy prompt, overwrite question and delete
-  confirmation, with and without the title bar. This exists so the automated
+  confirmation with and without the title bar, plus the permanent-delete
+  (Shift+Delete) confirmation. This exists so the automated
   screenshot check can judge dialog changes. Its stills are gitignored
   (`media/demos/dialogs/`); each check records them fresh.
 - **12 `links`** — stills of a junction and shortcut in the panes, the palette's
