@@ -85,6 +85,7 @@
 		"default font", "theme font", "reset typeface", "clear font"
 	],
 	"reset_pane_font_size": ["default font size", "reset zoom"],
+	"run_as_administrator": ["admin", "elevated", "elevate", "uac", "runas"],
 	"select_group": ["select files by mask", "wildcard selection", "select group"],
 	"deselect_group": ["deselect files by mask", "wildcard deselection", "deselect group"],
 	"select_same_extension": ["select by extension", "select matching extension", "select file type"],

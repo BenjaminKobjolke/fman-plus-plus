@@ -66,7 +66,7 @@ EXPECTED = frozenset({
 	'ShowConsole', 'ShowConsoleWindow', 'ShowOnlyActivePane', 'ShowReleaseNotes',
 	'ShowVolumes', 'SortByColumn',
 	'SwapPanes', 'SwitchPanes', 'Symlink', 'ToggleDeselectAfterTransfer',
-	'PinFolderToTaskbar',
+	'PinFolderToTaskbar', 'RunAsAdministrator',
 	'ToggleExecutableIcons', 'ToggleHiddenFiles', 'ToggleMixedSorting',
 	'ToggleOverlayIcons',
 	'ToggleRememberLastVisited', 'LastVisitedListener',

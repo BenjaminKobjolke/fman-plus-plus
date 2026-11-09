@@ -2,6 +2,7 @@
 	{ "caption": "-", "id": "open" },
 	{ "command": "open_selected_files", "caption": "&Open" },
 	{ "command": "open_with", "caption": "Open wit&h..." },
+	{ "command": "run_as_administrator", "caption": "Run as &administrator" },
 	{ "caption": "-", "id": "clipboard" },
 	{ "command": "cut", "caption": "Cu&t" },
 	{ "command": "copy_to_clipboard", "caption": "&Copy" },

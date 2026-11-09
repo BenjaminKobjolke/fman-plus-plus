@@ -36,7 +36,7 @@ _COMMAND_MODULES = (
 	'read_only_overwrite',
 	'navigation', 'network_shares', 'open_with', 'opening', 'pack', 'palette',
 	'pane_view', 'pane_size', 'swap_panes',
-	'places', 'plugins', 'release_notes', 'rename', 'selection',
+	'places', 'plugins', 'release_notes', 'rename', 'run_as_admin', 'selection',
 	'selection_summary',
 	'symlink', 'taskbar', 'theme', 'transfer', 'transfer_queue', 'view_mode',
 	'undo', 'updates', 'window'
