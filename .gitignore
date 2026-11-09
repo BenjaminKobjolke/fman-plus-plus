@@ -42,6 +42,8 @@ media/demos/themes/*.png
 media/demos/dialogs/
 # Link stills - recorded on demand for the screenshot check, never committed
 media/demos/links/
+# Context-menu stills - recorded on demand for the screenshot check, never committed
+media/demos/context-menu/
 tmp
 tickets/
 # Written by tools\release_create.bat (release-tool create) - transient local state
