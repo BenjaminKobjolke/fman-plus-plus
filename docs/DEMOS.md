@@ -258,7 +258,8 @@ composing stale inputs.
   `media/demos/themes/themes.gif`. Records no video at all.
 - **11 `dialogs`** — stills of the copy prompt, overwrite question and delete
   confirmation, with and without the title bar. This exists so the automated
-  screenshot check can judge dialog changes.
+  screenshot check can judge dialog changes. Its stills are gitignored
+  (`media/demos/dialogs/`); each check records them fresh.
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |

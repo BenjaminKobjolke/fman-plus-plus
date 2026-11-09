@@ -38,6 +38,8 @@ media/demos/feature-*/
 media/demos/plugin-*/
 # Theme stills - intermediates, joined into media/demos/themes/themes.gif
 media/demos/themes/*.png
+# Dialog stills - recorded on demand for the screenshot check, never committed
+media/demos/dialogs/
 tmp
 tickets/
 # Written by tools\release_create.bat (release-tool create) - transient local state
