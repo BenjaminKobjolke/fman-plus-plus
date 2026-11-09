@@ -1,13 +1,19 @@
-"""Persistent file type actions, with the OS association as the fallback."""
+"""Persistent file type actions, with the OS association as the fallback.
+
+Existing paths take precedence over parsing so legacy paths containing spaces
+remain plain program names.
+"""
 from core.os_ import get_popen_kwargs_for_opening
-from fman import load_json, save_json, show_status_message
+from fman import PLATFORM, load_json, save_json, show_status_message
 from fman.url import as_url
 from dataclasses import dataclass
 from enum import Enum
-from os.path import basename
+from os.path import basename, exists
 from shutil import which
 from subprocess import Popen
 from typing import Collection, Protocol, Sequence
+
+from core.text_editor import format_arguments, parse_arguments
 
 
 FILE_TYPE_ACTIONS_JSON = 'File Type Actions.json'
@@ -105,18 +111,74 @@ def command_line_for(program: str, arguments: Sequence[str]) -> tuple[str, ...]:
 	return tuple(args)
 
 
+@dataclass(frozen=True)
+class AppEntry:
+	program: str
+	arguments: tuple[str, ...] = ()
+
+	@classmethod
+	def from_json(cls, value: str) -> 'AppEntry':
+		if exists(value):
+			return cls(value)
+		# CommandLineToArgvW accepts an unmatched double quote, so preserve the
+		# existing fallback for malformed Windows command lines. Single quotes
+		# are ordinary characters there and can appear inside double quotes.
+		if PLATFORM == 'Windows' and value.count('"') % 2:
+			return cls(value)
+		try:
+			tokens = parse_arguments(value)
+		except (ValueError, OSError):
+			return cls(value)
+		if len(tokens) <= 1:
+			return cls(tokens[0] if tokens else value)
+		return cls(tokens[0], tuple(tokens[1:]))
+
+	@classmethod
+	def from_parts(cls, program: str, arguments: Sequence[str]) -> 'AppEntry':
+		if not arguments or tuple(arguments) == (FILE_PLACEHOLDER,):
+			return cls(program)
+		return cls(program, command_line_for(program, arguments)[1:])
+
+	def to_json(self) -> str:
+		if not self.arguments:
+			return self.program
+		return format_arguments((self.program, *self.arguments))
+
+	def command_line(self) -> tuple[str, ...]:
+		if self.arguments:
+			return command_line_for(self.program, self.arguments)
+		kwargs = get_popen_kwargs_for_opening(
+			[FILE_PLACEHOLDER], with_=self.program
+		)
+		return tuple(kwargs['args'])
+
+
+def launch_commands(args: Sequence[str], files: Sequence[str]) -> list[list[str]]:
+	file_argument = next(
+		(argument for argument in args[1:] if argument == FILE_PLACEHOLDER), None
+	)
+	if file_argument is not None:
+		index = args.index(file_argument)
+		return [list(args[:index]) + list(files) + list(args[index + 1:])]
+	if any(FILE_PLACEHOLDER in argument for argument in args):
+		return [
+			[argument.replace(FILE_PLACEHOLDER, path) for argument in args]
+			for path in files
+		]
+	return [list(args)]
+
+
 def app_args(app_path: str) -> tuple[str, ...]:
-	kwargs = get_popen_kwargs_for_opening([FILE_PLACEHOLDER], with_=app_path)
-	return tuple(kwargs['args'])
+	return AppEntry.from_json(app_path).command_line()
 
 
-def rename_app(old_name: str, new_name: str, new_path: str) -> None:
+def rename_app(old_name: str, new_name: str, new_value: str) -> None:
 	actions = _load_actions()
 	for suffix, value in actions.items():
 		action = FileTypeAction.from_json(value)
 		if action and action.kind is ActionKind.COMMAND_LINE and action.app == old_name:
 			actions[suffix] = FileTypeAction(
-				ActionKind.COMMAND_LINE, args=app_args(new_path), app=new_name
+				ActionKind.COMMAND_LINE, args=app_args(new_value), app=new_name
 			).to_json()
 	_save_actions()
 

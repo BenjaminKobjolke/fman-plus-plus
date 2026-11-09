@@ -1,8 +1,12 @@
 from core.file_type_actions import (
-	ActionKind, FileTypeAction, action_for, command_line_for,
+	ActionKind, AppEntry, FileTypeAction, action_for, app_args, command_line_for,
+	launch_commands,
 	remove_action, rename_app, run_file_type_actions, set_action, suffix_of,
 )
+from core.os_ import get_popen_kwargs_for_opening
 from fman.url import as_url
+from tempfile import TemporaryDirectory
+from pathlib import Path
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
@@ -128,4 +132,71 @@ class FileTypeActionsTest(TestCase):
 	def test_suffix_of_uses_last_dot(self):
 		self.assertEqual('.gz', suffix_of('a.tar.gz'))
 		self.assertEqual('', suffix_of('README'))
+
+	def test_app_entry_keeps_existing_path_with_spaces_plain(self):
+		with TemporaryDirectory() as directory:
+			path = Path(directory) / 'my app.exe'
+			path.touch()
+			entry = AppEntry.from_json(str(path))
+		self.assertEqual(str(path), entry.program)
+		self.assertEqual((), entry.arguments)
+
+	def test_app_entry_parses_command_line_and_appends_file(self):
+		entry = AppEntry.from_json('flatpak run org.videolan.VLC')
+		self.assertEqual('flatpak', entry.program)
+		self.assertEqual(('run', 'org.videolan.VLC'), entry.arguments)
+		self.assertEqual(
+			('flatpak', 'run', 'org.videolan.VLC', '{file}'),
+			entry.command_line(),
+		)
+
+	def test_app_entry_parses_quoted_program_path(self):
+		entry = AppEntry.from_json(
+			'"C:/Program Files/x/vlc.exe" --fullscreen {file}'
+		)
+		self.assertEqual('C:/Program Files/x/vlc.exe', entry.program)
+		self.assertEqual(('--fullscreen', '{file}'), entry.arguments)
+
+	def test_app_entry_parses_apostrophe_inside_double_quoted_argument(self):
+		entry = AppEntry.from_json('vlc --title="it\'s VLC" {file}')
+		self.assertEqual('vlc', entry.program)
+		self.assertEqual(('--title=it\'s VLC', '{file}'), entry.arguments)
+
+	def test_app_entry_keeps_single_token_and_unmatched_quote_plain(self):
+		for value in ('code', '"unmatched'):
+			with self.subTest(value=value):
+				entry = AppEntry.from_json(value)
+				self.assertEqual(value, entry.program)
+				self.assertEqual((), entry.arguments)
+				self.assertEqual(
+					get_popen_kwargs_for_opening(['{file}'], with_=value)['args'],
+					list(entry.command_line()),
+				)
+
+	def test_app_entry_serializes_plain_and_parameterized_values(self):
+		for arguments in ([], ['{file}']):
+			self.assertEqual(
+				'program', AppEntry.from_parts('program', arguments).to_json()
+			)
+		entry = AppEntry.from_parts('C:/Program Files/x.exe', ['--a'])
+		self.assertEqual(
+			('C:/Program Files/x.exe', ('--a', '{file}')),
+			(AppEntry.from_json(entry.to_json()).program,
+			 AppEntry.from_json(entry.to_json()).arguments),
+		)
+
+	def test_launch_commands_expands_standalone_and_embedded_placeholders(self):
+		self.assertEqual(
+			[['vlc', 'a', 'b']], launch_commands(('vlc', '{file}'), ['a', 'b'])
+		)
+		self.assertEqual(
+			[['vlc', '--file=a'], ['vlc', '--file=b']],
+			launch_commands(('vlc', '--file={file}'), ['a', 'b']),
+		)
+
+	def test_app_args_parses_command_line_values(self):
+		self.assertEqual(
+			('flatpak', 'run', 'org.videolan.VLC', '{file}'),
+			app_args('flatpak run org.videolan.VLC'),
+		)
 

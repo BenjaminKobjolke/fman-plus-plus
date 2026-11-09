@@ -8,13 +8,15 @@ list - most-used app for this suffix first, then everything else.
 # picker with a different caption.
 from core.commands.editor import _PLATFORM_APPLICATIONS_FILTER, \
 	_show_app_open_dialog
+from core.commands.app_arguments import ask_arguments
 from core.commands.util import is_file_url, NO_SELECTION
 from core.commands.file_types import ChooseFileTypeAction
 from core.file_type_actions import (
-	action_for_exact_suffix, remove_action, rename_app, suffix_of,
+	AppEntry, action_for_exact_suffix, launch_commands, remove_action,
+	rename_app, suffix_of,
 )
-from core.os_ import get_popen_kwargs_for_opening
 from core.quicksearch_screen import QuicksearchScreen
+from core.text_editor import format_arguments
 from fman import DirectoryPaneCommand, PLATFORM, load_json, save_json, \
 	show_alert, show_file_open_dialog, show_input, show_status_message
 from fman.fs import resolve
@@ -81,13 +83,21 @@ def _open_files_with_app(files, app):
 	_save_file_associations()
 	apps = _load_apps()
 	try:
-		app_path = apps[app]
+		app_value = apps[app]
 	except KeyError:
 		# We don't expect this to happen. But JSON files are always susceptible
 		# by becoming corrupted, eg. when the user edits them.
 		show_alert('Could not find the configuration for %s.' % app)
 		return
-	Popen(**get_popen_kwargs_for_opening(files, with_=app_path))
+	if not isinstance(app_value, str):
+		show_alert('Could not find the configuration for %s.' % app)
+		return
+	try:
+		command_line = AppEntry.from_json(app_value).command_line()
+		for arguments in launch_commands(command_line, files):
+			Popen(arguments)
+	except OSError as error:
+		show_alert('Could not start %s: %s' % (app, error))
 
 def _load_file_associations():
 	return load_json('File Associations.json', {})
@@ -111,8 +121,11 @@ def _add_app():
 	)
 	if not app_name:
 		return
+	arguments = ask_arguments('{file}')
+	if arguments is None:
+		return
 	apps = _load_apps()
-	apps[app_name] = app_path
+	apps[app_name] = AppEntry.from_parts(app_path, arguments).to_json()
 	_save_apps()
 	return app_name
 
@@ -237,19 +250,26 @@ class EditApp(QuicksearchScreen):
 			Configure(self._files).show()
 			return
 		apps = _load_apps()
-		app_path = apps[app]
+		entry = AppEntry.from_json(apps[app])
 		new_path = show_file_open_dialog(
-			"Pick an executable", app_path,
+			"Pick an executable", entry.program,
 			_PLATFORM_APPLICATIONS_FILTER[PLATFORM]
 		)
 		if not new_path:
 			Configure(self._files).show()
 			return
+		arguments = ask_arguments(
+			format_arguments(entry.arguments) if entry.arguments else '{file}'
+		)
+		if arguments is None:
+			Configure(self._files).show()
+			return
+		new_value = AppEntry.from_parts(new_path, arguments).to_json()
 		del apps[app]
-		apps[new_name] = new_path
+		apps[new_name] = new_value
 		_save_apps()
 		_remap_app_associations(app, new_name)
-		rename_app(app, new_name, new_path)
+		rename_app(app, new_name, new_value)
 		show_alert('%s was updated.' % new_name)
 	def on_cancelled(self):
 		Configure(self._files).show()

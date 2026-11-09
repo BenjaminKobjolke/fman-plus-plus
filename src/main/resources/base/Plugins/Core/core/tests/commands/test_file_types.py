@@ -58,10 +58,10 @@ class ChooseFileTypeActionTest(TestCase):
 			'core.commands.file_types._show_app_open_dialog',
 			return_value='csv.exe'
 		), patch(
-			'core.commands.file_types.show_input',
+			'core.commands.app_arguments.show_input',
 			return_value='--sep ";"'
 		), patch(
-			'core.commands.file_types.parse_arguments',
+			'core.commands.app_arguments.parse_arguments',
 			return_value=['--sep', ';']
 		), patch(
 			'core.commands.file_types.command_line_for',
@@ -84,7 +84,7 @@ class ChooseFileTypeActionTest(TestCase):
 					'core.commands.file_types._show_app_open_dialog',
 					return_value=dialog_value
 				), patch(
-					'core.commands.file_types.show_input',
+					'core.commands.app_arguments.show_input',
 					return_value=prompt_value
 				):
 					ChooseFileTypeAction(

@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#420](https://github.com/mherrmann/fman/issues/420) | How to "Open with..." program with parameters | enhancement, 1 vote | deferred | 2026-11-08 | `File Type Actions.json` supports command lines with arguments, but adding parameterized apps to the Open With app picker needs a separate UI and configuration design. |
+| [#420](https://github.com/mherrmann/fman/issues/420) | How to "Open with..." program with parameters | enhancement, 1 vote | fixed | 2026-11-08 | Open With apps accept command-line arguments in `Apps.json` and when adding or editing an app. |
 | [#419](https://github.com/mherrmann/fman/issues/419) | Select All optionally should not select directories | enhancement | fixed | 2026-11-08 | `SelectAll(files_only=True)` selects all and deselects folders; `core/tests/commands/test_navigation.py` covers it. |
 | [#417](https://github.com/mherrmann/fman/issues/417) | Provide an internal viewer | enhancement | already fixed | 2026-11-08 | Core includes an internal text, image and video viewer with file navigation; see `docs/viewers/FILE_VIEWERS.md` and `docs/views/`. |
 | [#414](https://github.com/mherrmann/fman/issues/414) | Zipping should offer different suggestions | enhancement | already fixed | 2026-11-08 | `Pack` suggests the opposite pane and `Pack here` suggests the active pane; both use the editable destination prompt. See `core/commands/pack.py`. |

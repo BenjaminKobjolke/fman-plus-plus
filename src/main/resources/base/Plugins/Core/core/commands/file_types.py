@@ -1,13 +1,13 @@
 """Commands and screens for configuring persistent file type actions."""
 from core.commands.editor import _show_app_open_dialog
+from core.commands.app_arguments import ask_arguments
 from core.commands.opening import _open_files
 from core.commands.util import is_file_url, NO_SELECTION
 from core.file_type_actions import (
 	ActionKind, FileTypeAction, app_args, command_line_for, set_action,
 )
 from core.quicksearch_screen import QuicksearchScreen
-from core.text_editor import parse_arguments
-from fman import DirectoryPaneCommand, show_alert, show_input, \
+from fman import DirectoryPaneCommand, show_alert, \
 	show_status_message
 
 
@@ -78,16 +78,8 @@ class ChooseFileTypeAction(QuicksearchScreen):
 		program = _show_app_open_dialog('Pick a program')
 		if not program:
 			return None
-		text = show_input(
-			'Arguments ({file} is the file; it is added last when missing):',
-			'{file}'
-		)
-		if text is None:
-			return None
-		try:
-			arguments = parse_arguments(text)
-		except (ValueError, OSError) as error:
-			show_alert('Could not read the arguments: %s' % error)
+		arguments = ask_arguments('{file}')
+		if arguments is None:
 			return None
 		return FileTypeAction(
 			ActionKind.COMMAND_LINE,
