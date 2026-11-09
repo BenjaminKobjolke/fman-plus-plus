@@ -13,6 +13,11 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
+| [#425](https://github.com/mherrmann/fman/issues/425) | Windows installation file | windows | already fixed | 2026-11-09 | The current Windows distribution builds and publishes `fmanSetup.exe`; the old 1.1 installer failure report was answered with an offline installer. |
+| [#424](https://github.com/mherrmann/fman/issues/424) | File/Dir Comment | enhancement | deferred | 2026-11-09 | No installed plugin implements file comments. A comment editor and interoperable `descript.ion` handling need a separate feature plan. |
+| [#423](https://github.com/mherrmann/fman/issues/423) | Moveable (zipped) version of fman | enhancement, 1 vote | deferred | 2026-11-09 | A portable zip exists, but it stores the profile beside the app; this request wants per-user data and needs a separate profile-location design. |
+| [#422](https://github.com/mherrmann/fman/issues/422) | GOTO not working | bug | already fixed | 2026-11-09 | Current GoTo resolves entered paths and opens existing locations; the issue is a 2011 report with no reproducible steps beyond an unspecified failed navigation. |
+| [#421](https://github.com/mherrmann/fman/issues/421) | Allow to create links and modify link targets | enhancement, 2 votes | deferred | 2026-11-09 | Core and an installed plugin create symlinks, but target editing is not covered; a separate UI and behavior plan is needed. |
 | [#420](https://github.com/mherrmann/fman/issues/420) | How to "Open with..." program with parameters | enhancement, 1 vote | fixed | 2026-11-08 | Open With apps accept command-line arguments in `Apps.json` and when adding or editing an app. |
 | [#419](https://github.com/mherrmann/fman/issues/419) | Select All optionally should not select directories | enhancement | fixed | 2026-11-08 | `SelectAll(files_only=True)` selects all and deselects folders; `core/tests/commands/test_navigation.py` covers it. |
 | [#417](https://github.com/mherrmann/fman/issues/417) | Provide an internal viewer | enhancement | already fixed | 2026-11-08 | Core includes an internal text, image and video viewer with file navigation; see `docs/viewers/FILE_VIEWERS.md` and `docs/views/`. |
