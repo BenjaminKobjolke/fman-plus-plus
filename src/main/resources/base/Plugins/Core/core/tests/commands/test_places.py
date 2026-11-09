@@ -31,6 +31,25 @@ class OpenSettingsTest(TestCase):
 
 		self.assertEqual(('Open Settings', 'Open Preferences'), OpenSettings.aliases)
 
+@skipUnless(PLATFORM == 'Windows', 'The network location only exists on Windows.')
+class GoToNetworkTest(TestCase):
+	def test_aliases(self):
+		from core.commands.places import GoToNetwork
+
+		self.assertEqual(('Go to network',), GoToNetwork.aliases)
+
+	def test_opens_network_root(self):
+		from core.commands.places import GoToNetwork
+		from fman import DirectoryPane
+		from unittest.mock import MagicMock
+
+		pane = MagicMock(spec=DirectoryPane)
+		GoToNetwork(pane)()
+
+		pane.run_command.assert_called_once_with(
+			'open_directory', {'url': 'network://'}
+		)
+
 class EnvDirTest(TestCase):
 	def test_unset_variable_is_none(self):
 		# None means "no such place on this machine", which is what makes the

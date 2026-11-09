@@ -38,7 +38,7 @@ EXPECTED = frozenset({
 	'GoToDesktop',
 	'FindLockingProcesses', 'GoToDocuments', 'GoToDownloads', 'GoToListener',
 	'GoToLocalAppData',
-	'GoToPluginsDirectory', 'GoToProgramData', 'GoToProgramFiles',
+	'GoToNetwork', 'GoToPluginsDirectory', 'GoToProgramData', 'GoToProgramFiles',
 	'GoToProgramFilesX86',
 	'GoToRootOfCurrentDrive', 'GoToTemp', 'GoUp', 'Help', 'HistoryListener',
 	'IncreasePaneFontSize', 'InitColumnVisibility', 'InitHiddenFilesFilter',

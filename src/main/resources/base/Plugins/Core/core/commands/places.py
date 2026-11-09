@@ -105,8 +105,15 @@ if PLATFORM == 'Windows':
 
 	__all__ += [
 		'GoToLocalAppData', 'GoToProgramData', 'GoToProgramFiles',
-		'GoToProgramFilesX86'
+		'GoToProgramFilesX86', 'GoToNetwork'
 	]
+
+	class GoToNetwork(DirectoryPaneCommand):
+
+		aliases = ('Go to network',)
+
+		def __call__(self):
+			self.pane.run_command('open_directory', {'url': 'network://'})
 
 	class GoToLocalAppData(_GoToDirectory):
 
