@@ -32,6 +32,7 @@ EXPECTED = frozenset({
 	'CreateAndEditFile', 'CreateDirectory', 'Cut', 'DecreasePaneFontSize',
 	'DragToLastUsedApp',
 	'DeletePermanently', 'Deselect', 'DoNothing', 'DragAndDropListener',
+	'EditLinkTarget',
 	'FollowShortcut', 'GoBack', 'GoForward', 'GoHome', 'GoTo', 'GoToAppData',
 	'ToggleFolderTree', 'ToggleTreeFollowsCursor',
 	'GoToDesktop',

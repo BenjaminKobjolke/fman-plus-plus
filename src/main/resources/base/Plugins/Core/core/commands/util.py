@@ -120,6 +120,14 @@ def shortcut_target(path):
 	except com_error:
 		return ''
 
+def set_shortcut_target(path, target):
+	# Reuse the Shell Link API so changing a target leaves its arguments,
+	# working directory and icon intact.
+	import win32com.client
+	shortcut = win32com.client.Dispatch('WScript.Shell').CreateShortCut(path)
+	shortcut.TargetPath = target
+	shortcut.Save()
+
 def chosen_files(command):
 	# The selection a "do this to the chosen files" command starts from.
 	# Alerts and returns [] when there is none, so each caller is one `if

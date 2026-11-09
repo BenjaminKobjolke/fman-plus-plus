@@ -11,6 +11,7 @@
 	{ "command": "move_to_trash", "caption": "&Delete" },
 	{ "command": "rename", "caption": "Rena&me" },
 	{ "command": "duplicate_file", "caption": "Duplicate..." },
+	{ "command": "edit_link_target", "caption": "Edit link target..." },
 	{ "caption": "-", "id": "archive" },
 	{ "command": "pack", "caption": "Add to archive..." },
 	{ "command": "pack_here", "caption": "Pack here..." },

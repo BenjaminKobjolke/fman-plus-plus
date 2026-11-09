@@ -31,6 +31,9 @@ GOTO_NETWORK_NO_SHARES = 'goto_network_no_shares'
 COULD_NOT_READ = 'could_not_read'
 COULD_NOT_CREATE = 'could_not_create'
 SHORTCUT_TARGET_MISSING = 'shortcut_target_missing'
+LINK_TARGET_PROMPT = 'link_target_prompt'
+LINK_TARGET_MISSING_CONFIRM = 'link_target_missing_confirm'
+LINK_TARGET_FAILED = 'link_target_failed'
 SAVE_CHANGES_BEFORE_CLOSING = 'save_changes_before_closing'
 COMMAND_TITLES = {
 	'Help': 'command_help',
@@ -91,6 +94,9 @@ ENGLISH_TEXT = {
 	COULD_NOT_READ: 'Could not read from %s (%s)',
 	COULD_NOT_CREATE: 'Could not create %s (%s)',
 	SHORTCUT_TARGET_MISSING: 'The destination of %s does not exist.',
+	LINK_TARGET_PROMPT: 'New target for %s:',
+	LINK_TARGET_MISSING_CONFIRM: '%s does not exist. Point the link there anyway?',
+	LINK_TARGET_FAILED: 'Could not change the target of %s: %s',
 	SAVE_CHANGES_BEFORE_CLOSING: 'Save changes before closing?',
 }
 ENGLISH_TEXT.update({key: title for title, key in COMMAND_TITLES.items()})

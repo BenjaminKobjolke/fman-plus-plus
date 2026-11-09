@@ -21,6 +21,10 @@
 		"lnk", "shortcut", "link target", "destination", "go to destination",
 		"go to target"
 	],
+	"edit_link_target": [
+		"symlink", "junction", "shortcut", "lnk", "link target", "retarget",
+		"change link", "mklink"
+	],
 	"go_home": [
 		"home", "~", "home directory", "user folder", "user profile",
 		"go to home"

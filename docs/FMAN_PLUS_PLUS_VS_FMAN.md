@@ -15,6 +15,7 @@ fman++ is a fork of [mherrmann/fman](https://github.com/mherrmann/fman). This pa
 - **Refresh changing folders.** Local, network and FTP folders can refresh while fman is open. See [Folder refresh](functions/FOLDER_REFRESH.md) (upstream [#170](https://github.com/mherrmann/fman/issues/170)).
 - **Choose how many panes to use.** Start with one pane or add and remove panes as needed. See [Show only the active pane](functions/show-only-active-pane.md) and [Add and remove panes](functions/add-remove-panes.md) (upstream [#156](https://github.com/mherrmann/fman/issues/156), [#57](https://github.com/mherrmann/fman/issues/57)).
 - **Follow Windows shortcuts.** Navigate to a `.lnk` file's destination instead of launching it. See [Follow shortcut](functions/follow-shortcut.md).
+- **Edit link destinations.** Change the target of a symbolic link, junction or Windows shortcut from the command palette or context menu. See [Edit link target](functions/edit-link-target.md) (upstream [#421](https://github.com/mherrmann/fman/issues/421)).
 - **See drive capacity.** The Windows drive list can show total and free space. See [Drive space](functions/DRIVE_SPACE.md) (upstream [#49](https://github.com/mherrmann/fman/issues/49)).
 - **Keep large folders responsive.** Directory loading and file-list updates avoid blocking the window. See [Large directories](LARGE_DIRECTORIES.md).
 - **Keep your place when leaving private mode.** Pane locations are restored after incognito navigation ends. See [Go To](functions/go-to.md).
