@@ -385,8 +385,10 @@ def load_json(name, default=None, save_on_quit=False):
 def save_json(name, value=None):
 	return _get_plugin_support().save_json(name, value)
 
-def show_alert(text, buttons=OK, default_button=OK):
-	return _get_ui().show_alert(text, buttons, default_button)
+def show_alert(text, buttons=OK, default_button=OK, button_texts=None):
+	return _get_ui().show_alert(
+		text, buttons, default_button, button_texts=button_texts
+	)
 
 def log(*args):
 	get_console_log().append(format_log_args(*args))
