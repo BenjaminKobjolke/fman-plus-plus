@@ -51,20 +51,17 @@ if exist "%APPDATA%\fman\Themes" (
 	xcopy /e /i /q /y "%APPDATA%\fman\Themes" "%FMAN_DATA_DIRECTORY%\Themes\" >nul
 )
 
-REM The standalone clips are encoded into GIFs narrower than this 1280px
-REM capture - 800px for the feature-* ones, less for the plugin-* ones - so
-REM the whole UI lands at 0.625x or less in the README, and Core 9pt reads as
-REM ~5.6pt there. Drop in a demo-only Theme.css that bumps the font sizes;
-REM user plugins load after Core and Theme keeps load order, so it wins.
-REM Ids 8-10 only: the tour chapters are published at full 1280 width and stay
-REM legible without it. See tools/create_media/demo_Theme.css.
-if "%1"=="8" set "FONT_CSS=1"
-if "%1"=="9" set "FONT_CSS=1"
-if "%1"=="10" set "FONT_CSS=1"
-if defined FONT_CSS (
-	mkdir "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoFont" 2>nul
-	copy /y "%CD%\tools\create_media\demo_Theme.css" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoFont\Theme.css" >nul
-)
+REM The window is captured at 1920x1080, then the published tour is 1280px
+REM wide and the standalone GIFs are narrower. Seed a demo-only Theme.css for
+REM every recording so the text remains readable after composition.
+REM Standalone feature/plugin clips need the larger variant; all others use
+REM Core sizes at 1.5x. See tools/create_media/demo_Theme*.css.
+set "FONT_CSS=demo_Theme_default.css"
+if "%1"=="8" set "FONT_CSS=demo_Theme.css"
+if "%1"=="9" set "FONT_CSS=demo_Theme.css"
+if "%1"=="10" set "FONT_CSS=demo_Theme.css"
+mkdir "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoFont" 2>nul
+copy /y "%CD%\tools\create_media\%FONT_CSS%" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoFont\Theme.css" >nul
 
 REM Demo 10 films a THIRD-PARTY plugin, so the one plugin under test has to go
 REM back into the tree the rmdir above just emptied. Only that one: seeding all

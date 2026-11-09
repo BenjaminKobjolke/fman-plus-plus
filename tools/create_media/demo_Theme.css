@@ -1,53 +1,39 @@
 /*
- * Font sizes for the standalone feature-* and plugin-* recordings
- * (demos 8, 9 and 10).
+ * Font sizes for standalone feature-* and plugin-* recordings (demos 8-10).
  *
- * Why this exists: the clips are captured at 1280x800 but the mp4_gif
- * compose steps in fman.json encode the GIFs narrower - 800 px for the
- * feature clips - so everything on screen lands at 0.625x in the README
- * or smaller. At Core's default
- * 9pt that reads as ~5.6pt - too small. Bumping the app-wide font here
- * gets the GIF back to ~8.75pt effective without changing the capture
- * size (and so without changing how much of the window is in frame).
+ * They are captured at 1920x1080, then published at 800px wide for feature
+ * clips (about 0.42x) and narrower for plugin clips. At 800px the 21pt app
+ * font reads as about 8.75pt. CSS accepts whole pt values only, so these are
+ * rounded.
  *
- * run_fman_demo.bat copies this into the throwaway demo profile as
- * Plugins\User\DemoFont\Theme.css, for those ids only. User plugins load
- * after Core, and Theme keeps load order, so these win over
- * Plugins/Core/Theme.css. The tour chapters are deliberately left alone:
- * their MP4 is published at full 1280 width and is already legible.
+ * run_fman_demo.bat copies this into the throwaway profile as
+ * Plugins\User\DemoFont\Theme.css. The tour uses demo_Theme_default.css.
+ * User plugins load after Core and Theme keeps load order, so these win over
+ * Plugins/Core/Theme.css.
  *
- * Order matters. Both consumers resolve `*` against the more specific
- * selectors by *load order*, not by specificity:
- *   - fman.impl.util.css.CSSEngine (quicksearch item text, painted by hand)
- *     treats `*` as matching every selector and lets the last rule win.
- *   - the Qt style sheet built from these rules is appended after Core's.
- * So `*` goes first here, and every selector that must NOT inherit 14pt is
- * restated after it.
+ * Order matters. Both consumers resolve `*` against more specific selectors
+ * by load order, not specificity, so restate selectors after `*`.
  */
 * {
-	font-size: 14pt;
+	font-size: 21pt;
 }
 
 th {
-	font-size: 12pt;
+	font-size: 18pt;
 }
 
 .statusbar {
-	font-size: 12pt;
+	font-size: 18pt;
 }
 
 .quicksearch-query, .quicksearch-item-title {
-	font-size: 15pt;
+	font-size: 22pt;
 }
 
 .quicksearch-item-hint {
-	font-size: 11pt;
+	font-size: 16pt;
 }
 
-/*
- * Core's Theme.css sets no font-size for this one, so it would silently
- * inherit the 14pt `*` above and match the title. Restate it.
- */
 .quicksearch-item-description {
-	font-size: 12pt;
+	font-size: 18pt;
 }

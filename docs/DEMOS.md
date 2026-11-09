@@ -35,11 +35,16 @@ over a socket so the tool can capture the window. The wiring:
   when `--automation-demo` is on the command line (`_run_demo()`), and skips the
   splash/tutorial and single-instance handoff so the recording is clean.
 - `tools/create_media/fman.json` — the tool-side config. Two halves: `demos`
-  (window size, formats, which `group` a demo belongs to, the tour captions) and
-  `compose` (what gets built out of the recordings afterwards).
+  (the 1920x1080 window size, formats, which `group` a demo belongs to, the tour
+  captions, and `scale_to_window_size`) and `compose` (what gets built out of
+  the recordings afterwards). The recorder's
+  [`scale_to_window_size` setting](https://github.com/BenjaminKobjolke/automated-application-screenshots/blob/main/docs/CONFIG.md#scale_to_window_size-boolean-default-false-demo-mode-launch-only)
+  caps desktop stills and video frames at the configured window dimensions.
 - `tools/create_media/run_fman_demo.bat` — launcher the tool starts per run.
-- `tools/create_media/demo_Theme.css` — font sizes for the standalone clips,
-  seeded into the demo profile by that launcher for ids 8, 9 and 10 only.
+- `tools/create_media/demo_Theme_default.css` — Core font sizes at 1.5x, seeded
+  into every demo profile except ids 8, 9 and 10.
+- `tools/create_media/demo_Theme.css` — larger font sizes for standalone clips,
+  seeded for ids 8, 9 and 10.
 - `tools/demos_record.bat` — one command that drives recording **and**
   composing; every argument passes straight through to the tool.
 - `tools/demos_build_tour.bat` — the join step on its own, for double-clicking:
@@ -110,21 +115,21 @@ change how a recording looks rather than how it behaves:
 - `%APPDATA%\fman\Themes` — mirrored so a *custom* theme resolves instead of
   silently falling back to the default.
 
-Ids 8, 9 and 10 get one thing seeded that no profile of yours supplies: a
-`Plugins\User\DemoFont\Theme.css` copied from
-`tools/create_media/demo_Theme.css`. Their GIFs are encoded narrower than the
-1280 px capture - 800 px for the `feature-*` ones - so Core's 9pt lands at
-~5.6pt in the README; the file bumps the app-wide `*` font to 14pt, which reads
-as ~8.75pt after the downscale. Id 10 is seeded the same way as insurance
-rather than necessity: its GIF ships at 360 px, where no font size is readable,
-but a plugin clip that *does* hinge on text needs both the bump and a wider
-encode - see [DEMOS_PLUGINS.md](DEMOS_PLUGINS.md). It is a user plugin, and `Theme` keeps CSS load
+Every demo gets one thing seeded that no profile of yours supplies:
+`Plugins\User\DemoFont\Theme.css`. Demos use the 1920x1080 window and enable
+the recorder's `scale_to_window_size` option, so scaled displays cannot make
+their stills or frames larger than Full HD. The tour is published at 1280 px
+wide; the default font file scales Core sizes by 1.5 so they retain today's
+effective size after composition. The standalone feature and plugin clips use
+`demo_Theme.css`: their 800 px feature GIFs need a 21pt app-wide font to read as
+about 8.75pt after downscaling. Id 10's GIF ships at 360 px, where no font size
+is readable, but a plugin clip that *does* hinge on text needs both the bump and
+a wider encode - see [DEMOS_PLUGINS.md](DEMOS_PLUGINS.md). It is a user plugin, and `Theme` keeps CSS load
 order, so it wins over `Plugins/Core/Theme.css` — but only by being **last**:
 both consumers (`CSSEngine` for the hand-painted quicksearch item text, and
 the generated Qt style sheet) resolve `*` against more specific selectors by
 load order, not by specificity. Hence every selector that must not inherit the
-14pt is restated *after* the `*` rule inside that file. The tour chapters are
-deliberately excluded: their MP4 is published at full 1280 width.
+app-wide font is restated *after* the `*` rule inside each file.
 
 One thing it cannot reach: the inline filter's input (`FilterBar QLineEdit`,
 `styles.qss`) stays 9pt — that selector is not in `Theme._CSS_TO_QSS`, so no
@@ -346,7 +351,7 @@ The chapters exist because of hard limits in the recorder, not taste:
 
 | limit | value | consequence |
 |-------|-------|-------------|
-| frames held in RAM | ~3 MB each at 1280x800, and the MP4 export copies them all again as numpy arrays | ~30 MB per second at 10 fps — a single 2.5-minute take needs gigabytes |
+| frames held in RAM | ~6 MB each at 1920x1080, and the MP4 export copies them all again as numpy arrays | ~60 MB per second at 10 fps — a single 2.5-minute take needs gigabytes |
 | `DEMO_CAP_S` | 300 s | a longer demo is aborted |
 | `EVENT_TIMEOUT_S` | 60 s | 60 s with no `demo_started`/`screenshot`/`demo_ended` aborts the run. A chapter under a minute is covered by `demo_started` alone; a longer one needs `Screenshot` steps as heartbeats |
 | `WINDOW_TIMEOUT_S` | 30 s | fman must show its window within 30 s of launch |
@@ -634,9 +639,9 @@ start, and end with a `Pause(1.0)` so the recording doesn't cut off abruptly.
    `overview`, whose stills are used directly.
 4. A tour chapter's script goes in `demo_scripts_tour.py` rather than
    `demo_scripts.py`, to keep both under the project's 300-line limit.
-5. For a `feature-*` or `plugin-*` clip, add its id to the `FONT_CSS` lines in
-   `run_fman_demo.bat`, or it records at 9pt and the downscaled GIF is
-   unreadable. Nothing else needs editing: the compose step picks up every demo
+5. Every demo receives `demo_Theme_default.css`. For a standalone `feature-*`
+   or `plugin-*` clip, choose `demo_Theme.css` instead by adding its id to the
+   override lines in `run_fman_demo.bat`. The compose step picks up every demo
    in the group, and `{short}` names the output.
 6. Preview it, check its side effects, then record and build:
    `tools\demos_record.bat --demo <id> --compose`.
@@ -650,7 +655,7 @@ start, and end with a `Pause(1.0)` so the recording doesn't cut off abruptly.
 | a filter finds nothing right after the demo created a file | the pane hasn't re-listed | `PressKey('Ctrl+R')` before filtering |
 | a photo viewer or media player opens mid-recording | `Return` was pressed on a file the cursor happened to be on | fix the cursor position; never press Return on a non-directory, non-`.zip` |
 | the palette runs the wrong command | a shorter command title matched the query first | lengthen the query; see the table above |
-| the text in a `feature-*` or `plugin-*` GIF is too small to read | the demo-only `Theme.css` was not seeded - its id is missing from the `FONT_CSS` lines | add it in `run_fman_demo.bat` and re-record |
+| the text in a `feature-*` or `plugin-*` GIF is too small to read | it uses the default demo font CSS instead of the larger standalone variant | add its id to the `demo_Theme.css` override lines in `run_fman_demo.bat` and re-record |
 | a clock/monitor overlay is visible in every frame | an always-on-top desktop widget | close it and re-record; the capture is a screen region |
 | file names or window contents show faintly *through* fman | a window was left behind fman, and `DEMO_OPACITY` is 0.8 | check the minimize count the tool logs — a zero on a bad take is the tell; a window pinned always-on-top survives the minimize and has to be closed by hand |
 | a video demo records a download dialog | libmpv isn't cached in the demo profile | copy `libmpv-2.dll` into `%TEMP%\fman-demo-profile\Local\libmpv\` |

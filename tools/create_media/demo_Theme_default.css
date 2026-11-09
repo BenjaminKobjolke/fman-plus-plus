@@ -1,0 +1,26 @@
+/*
+ * Core demos are captured at 1920x1080 and published at 1280px or narrower,
+ * so Core's font sizes grow by 1.5x. CSS accepts whole pt values only.
+ * run_fman_demo.bat seeds this for every demo except ids 8-10, which use
+ * demo_Theme.css. Keep `*` first and restate later selectors because the CSS
+ * consumers resolve equal matches by load order, not specificity.
+ */
+* {
+	font-size: 14pt;
+}
+
+th {
+	font-size: 12pt;
+}
+
+.statusbar {
+	font-size: 12pt;
+}
+
+.quicksearch-query, .quicksearch-item-title {
+	font-size: 18pt;
+}
+
+.quicksearch-item-hint {
+	font-size: 14pt;
+}

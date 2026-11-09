@@ -250,12 +250,14 @@ The same GIF goes to two repositories:
    name. Prefer palette queries that **equal** an alias exactly, and verify
    chords against the plugin's `Key Bindings.json` as well as Core's.
 3. Add the matching entry to `demos` in `tools/create_media/fman.json`
-   (`fps: 5` to start, `formats: ["mp4"]`, 1280x800) with
+   (`fps: 5` to start, `formats: ["mp4"]`, 1920x1080) with
    **`"group": "plugin"`** — that alone is what routes it into the plugin GIF
    step, and `{short}` names the output after the part following `plugin-`.
-4. In `tools/create_media/run_fman_demo.bat`: add the id to the `FONT_CSS`
-   lines, and add a seeding block that copies **only that plugin** and exits 1
-   if it is absent.
+4. In `tools/create_media/run_fman_demo.bat`, choose the font file for the new
+   demo: use `demo_Theme_default.css` for the tour-style Core sizes, or add its
+   id to the `demo_Theme.css` override lines for a standalone clip that needs
+   the larger font. Add a seeding block that copies **only that plugin** and
+   exits 1 if it is absent.
 5. Nothing to add to any build script: the existing compose step already picks
    up every demo in the group. If the new clip needs different encoder settings
    than MatrixRain's (a clip whose text has to stay legible wants a wider
