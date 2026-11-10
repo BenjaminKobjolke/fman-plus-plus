@@ -1,4 +1,7 @@
-from PyQt5.QtWidgets import QStyledItemDelegate
+from PyQt5.QtWidgets import QStyledItemDelegate, QStyle
+from PyQt5.QtGui import QFont
+from fman.impl.model.shading import ShadeRole, SHADE_BOLD
+from fman.impl.view.file_shading import paint_shaded
 
 class MultipleDelegates:
 	""" Let an item view have multiple ItemDelegates. """
@@ -23,6 +26,7 @@ class CompositeItemDelegate(QStyledItemDelegate):
 		super().initStyleOption(option, index)
 		if not index.isValid():
 			return
+		font = QFont(option.font)
 		for item in self._items:
 			# Unlike the other methods in this class, we don't call
 			# `item.initStyleOption(...)` here, for the following reason:
@@ -32,6 +36,14 @@ class CompositeItemDelegate(QStyledItemDelegate):
 			# then use `item#adapt_style_option(...)` to make the necessary
 			# changes. When 350 files are displayed, this saves about 700ms.
 			item.adapt_style_option(option, index)
+		shade = index.data(ShadeRole)
+		if shade and shade.style == SHADE_BOLD and option.state & (
+			QStyle.State_Selected | QStyle.State_HasFocus
+		):
+			# The single-row delegate adds State_HasFocus after file styling.
+			option.font = font
+	def paint(self, painter, option, index):
+		paint_shaded(super().paint, painter, option, index)
 	def eventFilter(self, editor, event):
 		for item in self._items:
 			# eventFilter(...) is protected. We can only call it if we

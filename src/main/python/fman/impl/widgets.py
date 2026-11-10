@@ -244,6 +244,9 @@ class DirectoryPaneWidget(QWidget):
 	def set_dimmer(self, dimmer):
 		self._model.set_dimmer(dimmer)
 	@run_in_main_thread
+	def set_file_shading(self, shader, style):
+		self._model.set_shader(shader, style)
+	@run_in_main_thread
 	def set_mix_dirs(self, value):
 		self._model.set_mix_dirs(value)
 	@run_in_main_thread

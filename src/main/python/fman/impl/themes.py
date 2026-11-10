@@ -124,6 +124,7 @@ DEFAULT_COLORS = {
 	'pane_hidden_fg': '#9975715e',
 	'pane_hidden_fg_dir': '#99ffffff',
 	'pane_selected_fg': '#f92672',
+	'pane_new_fg': '#a6e22e',
 	'pane_cursor_bg': '#49483e',
 	'header_bg': '#363731',
 	# Text

@@ -27,7 +27,7 @@ def show_file_comment_error(error):
 _COMMAND_MODULES = (
 	'app', 'archives', 'auto_update', 'clipboard', 'columns', 'deletion',
 	'deselect_after_transfer', 'drag_to_app', 'duplicate',
-	'file_comment', 'folder_tree', 'fman_account',
+	'file_age_shading', 'file_comment', 'folder_tree', 'fman_account',
 	'console', 'drive_space', 'folder_refresh',
 	'editor', 'external', 'file_properties', 'file_types', 'goto',
 	'hidden_files', 'language',

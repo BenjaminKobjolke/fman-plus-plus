@@ -1,6 +1,7 @@
 from collections import namedtuple
 from fman.impl.model.table import _get_move_destination, invalidate_icons, \
 	DimmedRole, Row as ModelRow, Rows, TableModel
+from fman.impl.model.shading import Shade, ShadeRole
 from unittest import TestCase
 
 class GetMoveDestinationTest(TestCase):
@@ -80,6 +81,20 @@ class RowsFindTest(TestCase):
 		self._rows = Rows()
 
 class TableModelTest(TestCase):
+	def test_shade_role_uses_row_key_and_shader(self):
+		self._model.insert_rows([Row('a')])
+		self._model.set_shader(lambda key: .25, 'tint')
+		self.assertEqual(
+			Shade('tint', .25),
+			self._model.data(self._model.index(0, 0), ShadeRole)
+		)
+	def test_set_shader_none_clears_shading(self):
+		self._model.insert_rows([Row('a')])
+		self._model.set_shader(lambda key: .25, 'tint')
+		self._model.set_shader(None, None)
+		self.assertEqual(
+			None, self._model.data(self._model.index(0, 0), ShadeRole)
+		)
 	def test_dimmed_role_is_false_without_a_dimmer(self):
 		self._model.insert_rows([Row('a')])
 		self.assertFalse(self._model.data(self._model.index(0, 0), DimmedRole))

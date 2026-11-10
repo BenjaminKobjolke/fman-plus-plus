@@ -89,6 +89,7 @@ and bevel in the quicksearch popup.
 |-------|----------------|
 | `pane_bg` | File list / dialog / overlay / filter-bar background |
 | `pane_fg` | File rows |
+| `pane_new_fg` | Text tint for file-age shading's tint style (defaults to Monokai green, `#a6e22e`) |
 | `pane_fg_dir` | Directory rows (defaults to `bright_fg`) |
 | `pane_selected_fg` | Text of selected files |
 | `pane_cursor_bg` | Cursor row, and the pane's focus rectangle |

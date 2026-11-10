@@ -255,6 +255,29 @@ after a short debounce. A location change also has its usual
 `on_path_changed()` callback; plugins should not rely on selection callbacks
 for model resets.
 
+### File shading
+
+`pane.set_file_shading(shader, style='transparency')` applies a plugin-defined
+shade to each file row. The shader receives a file URL and returns a number
+from `0` (unchanged) to `1` (fully shaded), or `None` to leave that file
+unchanged. Values are clamped to this range; an exception leaves the file
+unchanged and its traceback is reported once for that shader. Pass `None` as
+the shader to clear it. Supported styles are `transparency`, `tint`, and
+`bold`; an unsupported style raises `ValueError`.
+
+Selected files and the row under the cursor are not shaded. File shading itself
+does not restrict URLs, but a shader should avoid slow work because it is
+evaluated while the file list is drawn. The built-in age shader uses only local
+files. This example assumes `fman` and `datetime` have been imported:
+
+```python
+def age_in_years(url):
+	modified = fman.fs.query(url, 'modified_datetime')
+	if modified is None: return None
+	return min(1, max(0, (datetime.now(modified.tzinfo) - modified).days / 365))
+pane.set_file_shading(age_in_years)
+```
+
 ### Incognito mode
 
 `fman.is_incognito()` returns whether incognito mode is currently enabled. The

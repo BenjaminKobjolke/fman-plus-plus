@@ -48,6 +48,14 @@ QTableView::item:has-children:disabled, CompactFileView::item:has-children:disab
 	color: $pane_hidden_fg_dir;
 }
 
+/* The delegate sets :on only during the tint overlay pass. */
+QTableView::item:on, CompactFileView::item:on {
+	color: $pane_new_fg;
+}
+QTableView::item:has-children:on, CompactFileView::item:has-children:on {
+	color: $pane_new_fg;
+}
+
 QTableView::item:selected, QTableView::item:selected:disabled,
 CompactFileView::item:selected, CompactFileView::item:selected:disabled {
 	color: $pane_selected_fg;

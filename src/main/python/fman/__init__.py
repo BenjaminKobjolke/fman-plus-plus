@@ -12,7 +12,7 @@ from numbers import Real
 from fbs_runtime import platform
 from os import getenv
 from os.path import join, expanduser
-from typing import Sequence
+from typing import Callable, Optional, Sequence
 from PyQt5.QtWidgets import QMessageBox
 
 import re
@@ -135,6 +135,8 @@ class DirectoryPane:
 		return self._widget.get_home_cursor()
 	def _set_dimmer(self, dimmer):
 		self._widget.set_dimmer(dimmer)
+	def _set_file_shading(self, shader, style):
+		self._widget.set_file_shading(shader, style)
 	def _set_mix_dirs(self, value):
 		self._widget.set_mix_dirs(value)
 	def _remove_filter(self, filter_):
@@ -146,6 +148,21 @@ class DirectoryPane:
 		return self._widget.get_file_under_cursor()
 	def get_chosen_files(self) -> list[str]:
 		return _get_chosen_files(self)
+	def set_file_shading(
+		self, shader: Optional[Callable[[str], Optional[Real]]],
+		style: str = 'transparency'
+	) -> None:
+		"""Set a per-file visual shade function and its rendering style.
+
+		The shader receives each file URL and returns an amount from 0 (fresh)
+		to 1 (fully shaded), or None to leave the file unchanged. Supported
+		styles are transparency, tint and bold. Selected and cursor rows are
+		left unchanged by the renderer.
+		"""
+		from fman.impl.model.shading import SHADE_STYLES
+		if style not in SHADE_STYLES:
+			raise ValueError('Unsupported file shading style: %s' % style)
+		self._set_file_shading(shader, style)
 	def move_cursor_down(self, toggle_selection=False):
 		self._widget.move_cursor_down(toggle_selection)
 	def move_cursor_up(self, toggle_selection=False):

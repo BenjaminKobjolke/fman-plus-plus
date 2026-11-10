@@ -483,6 +483,27 @@ class SortedFileSystemModelShutdownTest(TestCase):
 		model.shutdown()
 
 class SortedFileSystemModelMixedSortingTest(TestCase):
+	def test_set_shader_is_retained_for_new_source_models(self):
+		class StubFileSystem:
+			def __init__(self):
+				self.file_removed = Event()
+				self.columns_changed = Event()
+
+		fs = StubFileSystem()
+		with patch.object(SortedFileSystemModel, 'set_location'):
+			model = SortedFileSystemModel(None, fs, 'null://')
+		shader = lambda _url: .5
+		model._shader = shader
+		model._shade_style = 'tint'
+		with patch('fman.impl.model.Model') as source_model_class:
+			with patch.object(model, 'setSourceModel'):
+				with patch.object(model, '_connect_signals'):
+					model._set_location_main.__wrapped__(
+						model, 'null://', [], 0, True, lambda: None
+					)
+		source_model_class.return_value.set_shader.assert_called_once_with(
+			shader, 'tint'
+		)
 	def test_set_mix_dirs_forwards_to_source_model(self):
 		class StubFileSystem:
 			def __init__(self):

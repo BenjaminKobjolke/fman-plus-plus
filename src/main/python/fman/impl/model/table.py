@@ -1,5 +1,6 @@
 from collections import namedtuple
 from fman.impl.model.diff import ComputeDiff
+from fman.impl.model.shading import ShadeRole, safe_shade
 from fman.impl.util import Event
 from fman.impl.util.qt import DisplayRole, EditRole, DecorationRole, \
 	ToolTipRole, ItemIsDropEnabled, ItemIsSelectable, ItemIsEnabled, \
@@ -22,6 +23,8 @@ class TableModel:
 		self._column_headers = column_headers
 		self._rows = Rows()
 		self._dimmer = None
+		self._shader = None
+		self._shade_style = None
 		self._transaction_level = 0
 		self._transaction_made_changes = False
 	def rowCount(self, parent=QModelIndex()):
@@ -45,6 +48,11 @@ class TableModel:
 			if role == DimmedRole:
 				return self._dimmer is not None \
 					and self._dimmer(self._rows[index.row()].key)
+			elif role == ShadeRole:
+				return safe_shade(
+					self._shader, self._shade_style,
+					self._rows[index.row()].key
+				)
 			elif role in (DisplayRole, EditRole):
 				return self._rows[index.row()].cells[index.column()].str
 			elif role == DecorationRole and index.column() == 0:
@@ -54,11 +62,17 @@ class TableModel:
 		return QVariant()
 	def set_dimmer(self, dimmer):
 		self._dimmer = dimmer
+		self._emit_role_changed(DimmedRole)
+	def set_shader(self, shader, style):
+		self._shader = shader
+		self._shade_style = style
+		self._emit_role_changed(ShadeRole)
+	def _emit_role_changed(self, role):
 		if self.rowCount():
 			self.dataChanged.emit(
 				self.index(0, 0),
 				self.index(self.rowCount() - 1, self.columnCount() - 1),
-				[DimmedRole]
+				[role]
 			)
 	def headerData(self, section, orientation, role=DisplayRole):
 		if orientation == Qt.Horizontal and role == DisplayRole \
