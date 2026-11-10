@@ -1,7 +1,8 @@
 from core.commands import fman_account as commands
+from core.fman_api import AccountInfo, FmanApiError
 from core.plugin_list import PluginListEntry, PluginOs, PluginSource
 from core.plugin_sync import SyncPlan, SyncState
-from fman import NO, YES
+from fman import NO, OK, YES
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -10,7 +11,8 @@ class AccountCommandsTest(TestCase):
 	def setUp(self):
 		self.patches = {}
 		for name in (
-			'sign_in', 'clear_token', 'signed_in_client', 'SyncState.load',
+			'is_signed_in', 'sign_in', 'clear_token', 'signed_in_client',
+			'SyncState.load',
 			'compute_sync', 'PluginSyncDialog', 'show_alert',
 			'show_status_message', 'entry_for_installed',
 			'_get_thirdparty_plugins', 'install_zip', 'record_installation',
@@ -33,12 +35,57 @@ class AccountCommandsTest(TestCase):
 		result = Mock(email='person@example.com')
 		self.patches['sign_in'].return_value = result
 		commands.SignInToFmanAccount(None)()
-		self.patches['show_status_message'].assert_called_once_with(
+		self.patches['show_alert'].assert_called_once_with(
 			'Signed in to fman account: person@example.com'
 		)
 		self.patches['run_application_command'].assert_called_once_with(
 			'sync_settings'
 		)
+
+	def test_account_commands_are_visible_only_in_the_matching_state(self):
+		self.patches['is_signed_in'].return_value = False
+		self.assertTrue(commands.SignInToFmanAccount(None).is_visible())
+		self.assertFalse(commands.SignOutOfFmanAccount(None).is_visible())
+		self.assertFalse(commands.ShowFmanAccount(None).is_visible())
+
+		self.patches['is_signed_in'].return_value = True
+		self.assertFalse(commands.SignInToFmanAccount(None).is_visible())
+		self.assertTrue(commands.SignOutOfFmanAccount(None).is_visible())
+		self.assertTrue(commands.ShowFmanAccount(None).is_visible())
+
+	def test_fman_account_shows_name_and_email_and_signs_out_when_selected(self):
+		self.client.me.return_value = AccountInfo('person@example.com', 'Person')
+		self.patches['show_alert'].return_value = YES
+
+		commands.ShowFmanAccount(None)()
+
+		self.patches['show_alert'].assert_called_once_with(
+			'Signed in to fman account as Person person@example.com',
+			OK | YES, OK, button_texts={YES: 'Sign out'}
+		)
+		self.patches['run_application_command'].assert_called_once_with(
+			'sign_out_of_fman_account'
+		)
+
+	def test_fman_account_reports_when_signed_out(self):
+		self.patches['signed_in_client'].return_value = None
+
+		commands.ShowFmanAccount(None)()
+
+		self.patches['show_status_message'].assert_called_once_with(
+			'Signed out of fman account'
+		)
+		self.patches['show_alert'].assert_not_called()
+
+	def test_fman_account_reports_api_error(self):
+		self.client.me.side_effect = FmanApiError('offline')
+
+		commands.ShowFmanAccount(None)()
+
+		self.patches['show_status_message'].assert_called_once_with(
+			'Could not load fman account: offline'
+		)
+		self.patches['show_alert'].assert_not_called()
 
 	def test_sign_out_clears_token(self):
 		commands.SignOutOfFmanAccount(None)()

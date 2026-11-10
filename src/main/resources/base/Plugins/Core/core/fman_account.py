@@ -30,6 +30,13 @@ def clear_token() -> None:
 		pass
 
 
+def is_signed_in() -> bool:
+	try:
+		return bool(load_token())
+	except keyring.errors.KeyringError:
+		return False
+
+
 def sign_in(client):
 	"""Open XIDA sign-in and poll its callback until it returns an access token.
 

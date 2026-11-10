@@ -42,6 +42,12 @@ class AuthCallbackResponse:
 
 
 @dataclass(frozen=True)
+class AccountInfo:
+	email: str | None
+	name: str | None
+
+
+@dataclass(frozen=True)
 class CatalogPluginInfo:
 	name: str
 	description: str
@@ -134,6 +140,18 @@ class FmanApiClient:
 	def refresh(self) -> AuthCallbackResponse:
 		response = self._request('post', _API_V1 + '/auth/refresh', json={})
 		return self._auth_response(response)
+
+	def me(self) -> AccountInfo:
+		response = self._request('get', _API_V1 + '/auth/me')
+		user = self._json_object(response).get('user')
+		if not isinstance(user, dict):
+			raise FmanApiError('Invalid auth me response')
+		email = user.get('email')
+		name = user.get('name')
+		if (email is not None and not isinstance(email, str) or
+				name is not None and not isinstance(name, str)):
+			raise FmanApiError('Invalid auth me response')
+		return AccountInfo(email=email, name=name)
 
 	def get_plugin_list(self) -> tuple[PluginListEntry, ...]:
 		response = self._request(

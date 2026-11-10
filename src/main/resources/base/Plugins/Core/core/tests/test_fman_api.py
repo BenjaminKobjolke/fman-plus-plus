@@ -1,6 +1,6 @@
 from core.fman_api import (
-	FmanApiAuthError, FmanApiClient, FmanApiConflictError, FmanApiError,
-	SyncedSettingsDocument,
+	AccountInfo, FmanApiAuthError, FmanApiClient, FmanApiConflictError,
+	FmanApiError, SyncedSettingsDocument,
 )
 from core.plugin_list import PluginListEntry, PluginOs, PluginSource
 from unittest import TestCase
@@ -13,6 +13,37 @@ class FmanApiClientTest(TestCase):
 	def setUp(self):
 		self.session = Mock()
 		self.client = FmanApiClient('access-token', session=self.session)
+
+	def test_me_sends_bearer_header_and_parses_account_info(self):
+		self.session.get.return_value = _response({'user': {
+			'email': 'person@example.com', 'name': 'Person'
+		}})
+
+		self.assertEqual(
+			AccountInfo('person@example.com', 'Person'), self.client.me()
+		)
+		self.session.get.assert_called_once_with(
+			'https://fman.workflow-tools.com/api/v1/auth/me',
+			headers={'Authorization': 'Bearer access-token'}, timeout=30
+		)
+
+	def test_me_rejects_response_without_user(self):
+		self.session.get.return_value = _response({})
+
+		with self.assertRaisesRegex(FmanApiError, 'Invalid auth me response'):
+			self.client.me()
+
+	def test_me_rejects_non_string_account_fields(self):
+		for field in ('email', 'name'):
+			with self.subTest(field=field):
+				self.session.get.return_value = _response({
+					'user': {
+						'email': 'person@example.com', 'name': 'Person', field: 123
+					}
+				})
+
+				with self.assertRaisesRegex(FmanApiError, 'Invalid auth me response'):
+					self.client.me()
 
 	def test_sends_bearer_header_and_parses_complete_plugin_list(self):
 		self.session.get.return_value = _response({

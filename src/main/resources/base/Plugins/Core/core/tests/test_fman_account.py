@@ -1,14 +1,27 @@
 from core.fman_account import (
-	clear_token, load_token, save_token, sign_in, signed_in_client
+	clear_token, is_signed_in, load_token, save_token, sign_in, signed_in_client
 )
 from core.fman_api import (
 	AuthCallbackResponse, AuthInitResponse, FmanApiAuthError
 )
 from unittest import TestCase
 from unittest.mock import Mock, patch
+from keyring.errors import KeyringError
 
 
 class AccountTokenTest(TestCase):
+	@patch('core.fman_account.load_token', return_value='secret-token')
+	def test_is_signed_in_when_a_token_is_stored(self, load_token):
+		self.assertTrue(is_signed_in())
+
+	@patch('core.fman_account.load_token', return_value=None)
+	def test_is_signed_out_when_no_token_is_stored(self, load_token):
+		self.assertFalse(is_signed_in())
+
+	@patch('core.fman_account.load_token', side_effect=KeyringError('unavailable'))
+	def test_is_signed_out_when_keyring_is_unavailable(self, load_token):
+		self.assertFalse(is_signed_in())
+
 	@patch('core.fman_account.keyring')
 	def test_loads_token_from_system_credential_store(self, keyring):
 		keyring.get_password.return_value = 'secret-token'

@@ -1,5 +1,7 @@
 """Commands for signing in and synchronizing the account's plugin list."""
-from core.fman_account import clear_token, sign_in, signed_in_client
+from core.fman_account import (
+	clear_token, is_signed_in, sign_in, signed_in_client,
+)
 from core.fman_api import FmanApiAuthError, FmanApiClient, FmanApiError
 from core.github import GitHubRepo
 from core.plugin_hosts import repo_for_location
@@ -12,7 +14,7 @@ from core.plugin_sync import SyncState, compute_sync
 from core.plugin_sync_dialog import PluginSyncDialog
 from core.settings_sync_runner import sync_settings
 from fman import (
-	ApplicationCommand, DirectoryPaneListener, NO, PLATFORM,
+	ApplicationCommand, DirectoryPaneListener, NO, OK, PLATFORM,
 	YES, run_application_command, show_alert, show_status_message,
 )
 from os.path import basename
@@ -21,7 +23,7 @@ from urllib.error import URLError
 
 __all__ = [
 	'PluginSyncOnStartup', 'SignInToFmanAccount', 'SignOutOfFmanAccount',
-	'SyncPlugins', 'SyncSettings',
+	'ShowFmanAccount', 'SyncPlugins', 'SyncSettings',
 ]
 
 _STARTUP_SYNC_STARTED = False
@@ -36,6 +38,9 @@ _SETTINGS_NETWORK_ERROR = 'Could not sync settings: %s'
 class SignInToFmanAccount(ApplicationCommand):
 	aliases = ('Sign in to fman account',)
 
+	def is_visible(self):
+		return not is_signed_in()
+
 	def __call__(self):
 		try:
 			result = sign_in(FmanApiClient())
@@ -45,16 +50,44 @@ class SignInToFmanAccount(ApplicationCommand):
 		message = 'Signed in to fman account'
 		if result.email:
 			message += ': ' + result.email
-		show_status_message(message)
+		show_alert(message)
 		run_application_command('sync_settings')
 
 
 class SignOutOfFmanAccount(ApplicationCommand):
 	aliases = ('Sign out of fman account',)
 
+	def is_visible(self):
+		return is_signed_in()
+
 	def __call__(self):
 		clear_token()
 		show_status_message('Signed out of fman account')
+
+
+class ShowFmanAccount(ApplicationCommand):
+	aliases = ('fman account',)
+
+	def is_visible(self):
+		return is_signed_in()
+
+	def __call__(self):
+		try:
+			client = signed_in_client()
+			if client is None:
+				show_status_message('Signed out of fman account')
+				return
+			account = client.me()
+		except FmanApiError as error:
+			show_status_message('Could not load fman account: %s' % error)
+			return
+
+		parts = [part for part in (account.name, account.email) if part]
+		message = 'Signed in to fman account'
+		if parts:
+			message += ' as ' + ' '.join(parts)
+		if show_alert(message, OK | YES, OK, button_texts={YES: 'Sign out'}) & YES:
+			run_application_command('sign_out_of_fman_account')
 
 
 class SyncSettings(ApplicationCommand):
