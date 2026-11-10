@@ -27,7 +27,7 @@
       "code_quality": "green"
     },
     "tools\\run_tests.bat": {
-      "test": "green"
+      "test": "failed"
     },
     "tools\\run_core_tests.bat": {
       "test": "green"
