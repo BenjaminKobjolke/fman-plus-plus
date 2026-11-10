@@ -20,12 +20,76 @@ class OverwriteDialogTest(TestCase):
 	def tearDown(self):
 		self.dialog.close()
 
-	def test_has_four_buttons_in_first_row_and_three_in_second(self):
-		self.assertEqual(6, self.dialog.button_rows[0].count())
-		self.assertEqual(5, self.dialog.button_rows[1].count())
+	def test_buttons_are_grouped_in_four_rows(self):
+		choices = (
+			(OverwriteChoice.OVERWRITE, OverwriteChoice.OVERWRITE_ALL),
+			(OverwriteChoice.RENAME, OverwriteChoice.RENAME_ALL),
+			(OverwriteChoice.SKIP, OverwriteChoice.SKIP_ALL),
+			(OverwriteChoice.ABORT,),
+		)
+		self.assertEqual(len(choices), len(self.dialog.button_rows))
 		for row in self.dialog.button_rows:
 			self.assertIsNotNone(row.itemAt(0).spacerItem())
 			self.assertIsNotNone(row.itemAt(row.count() - 1).spacerItem())
+		for row, row_choices in zip(self.dialog.button_rows, choices):
+			self.assertEqual(
+				[self.dialog.buttons[choice] for choice in row_choices],
+				[row.itemAt(index).widget() for index in range(1, row.count() - 1)],
+			)
+
+	def test_right_and_left_move_in_reading_order_and_wrap(self):
+		self.dialog.show()
+		QApplication.processEvents()
+		overwrite = self.dialog.buttons[OverwriteChoice.OVERWRITE]
+		overwrite_all = self.dialog.buttons[OverwriteChoice.OVERWRITE_ALL]
+		rename = self.dialog.buttons[OverwriteChoice.RENAME]
+		abort = self.dialog.buttons[OverwriteChoice.ABORT]
+
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Right)
+		self.assertTrue(overwrite_all.hasFocus())
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Right)
+		self.assertTrue(rename.hasFocus())
+
+		overwrite.setFocus()
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Left)
+		self.assertTrue(abort.hasFocus())
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Right)
+		self.assertTrue(overwrite.hasFocus())
+
+	def test_down_and_up_keep_the_column(self):
+		self.dialog.show()
+		QApplication.processEvents()
+		overwrite = self.dialog.buttons[OverwriteChoice.OVERWRITE]
+		overwrite_all = self.dialog.buttons[OverwriteChoice.OVERWRITE_ALL]
+		rename_all = self.dialog.buttons[OverwriteChoice.RENAME_ALL]
+		skip = self.dialog.buttons[OverwriteChoice.SKIP]
+		skip_all = self.dialog.buttons[OverwriteChoice.SKIP_ALL]
+		abort = self.dialog.buttons[OverwriteChoice.ABORT]
+
+		overwrite_all.setFocus()
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Down)
+		self.assertTrue(rename_all.hasFocus())
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Down)
+		self.assertTrue(skip_all.hasFocus())
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Down)
+		self.assertTrue(abort.hasFocus())
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Down)
+		self.assertTrue(overwrite.hasFocus())
+
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Up)
+		self.assertTrue(abort.hasFocus())
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Up)
+		self.assertTrue(skip.hasFocus())
+
+	def test_enter_presses_the_focused_button(self):
+		self.dialog.show()
+		QApplication.processEvents()
+		QTest.keyClick(QApplication.focusWidget(), Qt.Key_Down)
+		button = self.dialog.buttons[OverwriteChoice.RENAME]
+		self.assertTrue(button.hasFocus())
+		QTest.keyClick(button, Qt.Key_Return)
+		self.assertEqual(OverwriteChoice.RENAME, self.dialog.choice)
+		self.assertEqual(QDialog.Accepted, self.dialog.result())
 
 	def test_each_button_returns_its_choice(self):
 		for choice in OverwriteChoice:
