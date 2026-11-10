@@ -63,8 +63,12 @@ class HeaderSortArrow:
 	def __init__(self, position: SortArrowPosition) -> None:
 		self._position = position
 
+	@property
+	def position(self) -> SortArrowPosition:
+		return self._position
+
 	@staticmethod
-	def _section_option(
+	def section_option(
 		option: QStyleOptionHeader,
 		widget: QHeaderView
 	) -> QStyleOptionHeader:
@@ -88,7 +92,7 @@ class HeaderSortArrow:
 			widget.orientation() != Qt.Horizontal or \
 			self._position == SortArrowPosition.EDGE:
 			return option.rect
-		section_option = self._section_option(option, widget)
+		section_option = self.section_option(option, widget)
 		label_rect = widget.style().subElementRect(
 			QStyle.SE_HeaderLabel, section_option, widget
 		)
@@ -112,7 +116,7 @@ class HeaderSortArrow:
 			self._position == SortArrowPosition.EDGE or \
 			option.sortIndicator == QStyleOptionHeader.None_:
 			return option.rect
-		section_option = self._section_option(option, widget)
+		section_option = self.section_option(option, widget)
 		arrow_rect = widget.style().subElementRect(
 			QStyle.SE_HeaderArrow, section_option, widget
 		)

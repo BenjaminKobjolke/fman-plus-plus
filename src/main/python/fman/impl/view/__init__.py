@@ -15,7 +15,8 @@ from fman.impl.view.scrollbar_below_header import install_scrollbar_below_header
 from fman.impl.view.scroll_margin import ScrollMargin
 from fman.impl.view.single_row_mode import SingleRowMode
 from fman.impl.view.right_button_selection import RightButtonSelection
-from fman.impl.view.header_sort_arrow import HeaderSortArrow, SortArrowPosition
+from fman.impl.view.header_sort_arrow import HeaderSortArrow, SortArrowPosition, \
+	place_sort_arrow
 from PyQt5.QtCore import QEvent, QItemSelection, QItemSelectionModel as QISM, \
 	QRect, Qt, pyqtSignal, QRectF
 from PyQt5.QtGui import QPen, QContextMenuEvent, QKeySequence, QPainter, \
@@ -458,6 +459,45 @@ class ProxyStyle(QProxyStyle):
 		painter: QPainter,
 		widget: Optional[QWidget] = None
 	) -> None:
+		if element == QStyle.CE_Header and \
+			isinstance(option, QStyleOptionHeader) and \
+			option.sortIndicator != QStyleOptionHeader.None_ and \
+			isinstance(widget, QHeaderView) and \
+			widget.orientation() == Qt.Horizontal and \
+			self._header_sort_arrow.position != SortArrowPosition.EDGE:
+			section_option = QStyleOptionHeader(option)
+			section_option.rect = self._header_sort_arrow.section_option(
+				option, widget
+			).rect
+			label_rect = widget.style().subElementRect(
+				QStyle.SE_HeaderLabel, section_option, widget
+			)
+			arrow_rect = widget.style().subElementRect(
+				QStyle.SE_HeaderArrow, section_option, widget
+			)
+			gap = self.pixelMetric(QStyle.PM_HeaderMargin, option, widget)
+			text_width = widget.fontMetrics().horizontalAdvance(option.text)
+			placement = place_sort_arrow(
+				self._header_sort_arrow.position,
+				label_rect,
+				text_width,
+				arrow_rect,
+				gap
+			)
+			super().drawControl(
+				QStyle.CE_HeaderSection, section_option, painter, widget
+			)
+			label_option = QStyleOptionHeader(section_option)
+			label_option.rect = placement.label
+			super().drawControl(
+				QStyle.CE_HeaderLabel, label_option, painter, widget
+			)
+			arrow_option = QStyleOptionHeader(section_option)
+			arrow_option.rect = placement.arrow
+			super().drawPrimitive(
+				QStyle.PE_IndicatorHeaderArrow, arrow_option, painter, widget
+			)
+			return
 		if element == QStyle.CE_HeaderLabel:
 			option = QStyleOptionHeader(option)
 			option.rect = self._header_sort_arrow.label_rect(self, option, widget)
