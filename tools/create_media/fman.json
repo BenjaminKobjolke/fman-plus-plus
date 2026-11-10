@@ -45,6 +45,8 @@
     {"id": 13, "name": "context-menu", "fps": 2, "formats": [],
      "width": 1920, "height": 1080},
     {"id": 14, "name": "command-palette", "fps": 2, "formats": [],
+     "width": 1920, "height": 1080},
+    {"id": 15, "name": "listing", "fps": 2, "formats": [],
      "width": 1920, "height": 1080}
   ],
   "compose": [

@@ -12,6 +12,9 @@ is cancelled.
 
 Demo 14 holds one palette search still per palette command that a screenshot
 check needs.
+
+Demo 15 holds pane listing stills for the screenshot check. Add a still here
+when a change affects how the file list looks.
 """
 
 from automated_screenshot_connector import (
@@ -95,6 +98,23 @@ DIALOG_CLIPS = {
 			Screenshot('go-to-network-palette'),
 			PressKey('Return'), Pause(20.0),
 			Screenshot('go-to-network-pane'), Pause(1.0),
+		),
+	),
+	15: DemoScript(
+		id=15,
+		name='listing',
+		steps=(
+			Pause(1.5),
+			Screenshot('listing-panes'),
+			PressKey('Ctrl+Shift+P'),
+			Pause(0.6),
+			Command('toggle file age shading'),
+			Pause(1.5),
+			Screenshot('listing-file-age'),
+			PressKey('Ctrl+Shift+P'),
+			Pause(0.6),
+			Command('toggle file age shading'),
+			Pause(2.2),
 		),
 	),
 }

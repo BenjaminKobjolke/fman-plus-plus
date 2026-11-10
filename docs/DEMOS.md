@@ -277,6 +277,10 @@ composing stale inputs.
   and the network view it opens (Windows). Exists so the screenshot check can judge
   new palette entries. A change that adds a palette command should add a `TypeText`
   query plus a `Screenshot` still here, so its check has something to judge.
+- **15 `listing`** — stills of both panes without and with file age shading on
+  backdated scratch files. Exists so the screenshot check can judge changes to how
+  the file list looks (shading, colors, columns), instead of the tour chapters that
+  record no stills. A change to the file list's look should add a `Screenshot` here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.

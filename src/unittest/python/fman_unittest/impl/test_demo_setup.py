@@ -166,6 +166,29 @@ class DemoSetupTest(unittest.TestCase):
 			['go-to-network-palette', 'go-to-network-pane'],
 		)
 
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
+	def test_listing_demo_takes_stills_with_and_without_file_age_shading(self):
+		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+
+		demo = DIALOG_CLIPS[15]
+		screenshot_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+		command_lines = [
+			step.line for step in demo.steps
+			if step.__class__.__name__ == 'Command'
+		]
+
+		self.assertEqual(demo.name, 'listing')
+		self.assertEqual(
+			screenshot_names, ['listing-panes', 'listing-file-age'],
+		)
+		self.assertEqual(command_lines, ['toggle file age shading'] * 2)
+
 
 if __name__ == '__main__':
 	unittest.main()
