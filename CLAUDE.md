@@ -106,6 +106,9 @@ to every choice that is genuinely open.
 
 ## Testing
 
+After touching `tools/create_media/DemoAccount/**`, run
+`uv run python tools/test_demo_account.py`.
+
 After touching `virtual_files.py` or `virtual_file_drop.py`, run
 `tools\run_tests.bat`.
 

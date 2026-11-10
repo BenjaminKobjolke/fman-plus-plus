@@ -94,9 +94,12 @@ cannot be shown without it:
 | 8 | `projects\alpha`, `projects\beta` and `reports` in the left folder, plus a 5-entry `Visited Paths.json` in the demo profile — see [Chapter 8 records a suggestion list](#chapter-8-records-a-suggestion-list---check-it) |
 | 9 | `service.log` in the left folder, plus a background PowerShell appender that adds a line every 1.5 s for 60 s, so tail mode has something to follow |
 | 10 | the MatrixRain plugin copied in from `%APPDATA%`, and the example text files in the *right* folder too — see [DEMOS_PLUGINS.md](DEMOS_PLUGINS.md) |
+| 16 | the DemoAccount fake-account plugin in `Plugins\User` |
 
 Every run sets `FMAN_DATA_DIRECTORY` to that profile and wipes its `Plugins`
-folder. Recording against your own profile would load your third-party plugins,
+folder. It also sets `PYTHON_KEYRING_BACKEND` to the null keyring, so recordings
+start signed out and never read real account credentials. Recording against
+your own profile would load your third-party plugins,
 whose key bindings are prepended (so they beat Core's: `ArrowNavigation` takes
 Left/Right, `fman-flatview` takes `Ctrl+F2`) and whose commands change what a
 typed palette query resolves to — `compare`, for instance, stops meaning
@@ -636,6 +639,8 @@ start, and end with a `Pause(1.0)` so the recording doesn't cut off abruptly.
    UI state those checks need to judge.
    Palette commands should add their query and still to demo 14 instead of a new
    demo.
+   A feature demo that needs a signed-in fman account goes into demo 16, which
+   uses the seeded fake account.
 3. **Set its `group`**, which is what decides where it ends up — the name
    prefix only shapes the filename:
 
