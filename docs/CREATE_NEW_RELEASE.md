@@ -69,6 +69,13 @@ on. It refuses to run without a record, installer, release notes, or a
 `<label>` tag on `origin` (commit, tag and push first — step 6 by hand:
 `git tag <label>`, `git push`, `git push origin <label>`).
 
+If `tools\release_create.bat` fails at the GitHub Release step, the version has
+already been bumped, committed, tagged and pushed. Do not run
+`tools\release_create.bat` again: it would build the next version (for example,
+1.8.10 → 1.9.0). Check `gh release view <label>` first; a timed-out
+`gh release create` may leave no release, or a draft that must be published or
+deleted by hand. Then run `tools\github_release.bat` to publish the existing build.
+
 For an installer built before the record existed, name the label, for example:
 `tools\github_release.bat 1.8.0`.
 
