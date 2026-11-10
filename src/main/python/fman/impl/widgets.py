@@ -148,6 +148,8 @@ class DirectoryPaneWidget(QWidget):
 		self._file_view.set_scroll_margin(rows)
 	def set_right_button_selection(self, enabled):
 		self._file_view.set_right_button_selection(enabled)
+	def set_drag_selection(self, enabled):
+		self._file_view.set_drag_selection(enabled)
 	def get_file_view(self):
 		return self._file_view
 	def is_compact_view(self):
@@ -446,6 +448,7 @@ class MainWindow(QMainWindow):
 		self._quicksearch_width = None
 		self._scroll_margin = 0
 		self._right_button_selection = False
+		self._drag_selection = True
 		self._backgrounds = ()
 		self._pane_status_mode = PaneStatusMode(True, True)
 		self._pane_status_bar_owner = None
@@ -506,6 +509,10 @@ class MainWindow(QMainWindow):
 		self._right_button_selection = enabled
 		for pane in self._panes:
 			pane.set_right_button_selection(enabled)
+	def set_drag_selection(self, enabled):
+		self._drag_selection = enabled
+		for pane in self._panes:
+			pane.set_drag_selection(enabled)
 	@run_in_main_thread
 	def set_backgrounds(self, backgrounds):
 		# Remembered as well as applied, for the same reason as the icon
@@ -739,6 +746,7 @@ class MainWindow(QMainWindow):
 		result.set_icon_size(self._file_list_icon_size)
 		result.set_scroll_margin(self._scroll_margin)
 		result.set_right_button_selection(self._right_button_selection)
+		result.set_drag_selection(self._drag_selection)
 		result.set_status_line_visible(self._pane_status_mode.lines_visible)
 		self._panes.append(result)
 		# After the append, because the pane's own index is what decides

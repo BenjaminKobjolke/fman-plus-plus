@@ -15,6 +15,7 @@ from fman.impl.view.scrollbar_below_header import install_scrollbar_below_header
 from fman.impl.view.scroll_margin import ScrollMargin
 from fman.impl.view.single_row_mode import SingleRowMode
 from fman.impl.view.right_button_selection import RightButtonSelection
+from fman.impl.view.drag_range_selection import DragRangeSelection
 from fman.impl.view.header_sort_arrow import HeaderSortArrow, SortArrowPosition, \
 	place_sort_arrow
 from PyQt5.QtCore import QEvent, QItemSelection, QItemSelectionModel as QISM, \
@@ -27,7 +28,7 @@ from PyQt5.QtWidgets import QTableView, QLineEdit, QVBoxLayout, QStyle, \
 
 class FileListView(
 	PaneSurface, SingleRowMode, MoveWithoutUpdatingSelection,
-	RightButtonSelection, DragAndDrop,
+	RightButtonSelection, DragRangeSelection, DragAndDrop,
 	ResizeColumnsToContents, ScrollMargin
 ):
 	activated = pyqtSignal()

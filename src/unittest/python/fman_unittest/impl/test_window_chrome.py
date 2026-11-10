@@ -2,7 +2,9 @@ from fman.impl.util.settings import Settings
 from fman.impl.widgets import MainWindow
 from fman.impl.window_chrome import MENU_BAR_SETTING, STATUS_BAR_SETTING, \
 	TITLE_BAR_SETTING, PANE_STATUS_LINES_VISIBLE_SETTING, \
-	PANE_MESSAGES_IN_STATUS_BAR_SETTING, PaneStatusSettings, WindowChrome
+	PANE_MESSAGES_IN_STATUS_BAR_SETTING, DRAG_SELECTION_SETTING, \
+	DRAG_SELECTION_ON_MESSAGE, DRAG_SELECTION_OFF_MESSAGE, \
+	PaneStatusSettings, WindowChrome
 from fman.impl.pane_status import PaneStatusMode
 from json import dump, load
 from os.path import join
@@ -77,13 +79,32 @@ class WindowChromeTest(TestCase):
 				getattr(self._window, setter).assert_called_once_with(True)
 		self._window.set_pane_status_mode.assert_called_once_with(
 			PaneStatusMode(lines_visible=True, in_status_bar=True))
+	def test_drag_selection_is_enabled_by_default(self):
+		self.assertTrue(self._make_chrome().drag_selection.is_enabled())
+	def test_toggling_drag_selection_persists_false_and_removes_default(self):
+		chrome = self._make_chrome()
+		message = chrome.drag_selection.toggle(self._window)
+		self._window.set_drag_selection.assert_called_once_with(False)
+		self.assertEqual(DRAG_SELECTION_OFF_MESSAGE, message)
+		self.assertEqual({DRAG_SELECTION_SETTING: False},
+			self._read_settings_file())
+		message = chrome.drag_selection.toggle(self._window)
+		self._window.set_drag_selection.assert_called_with(True)
+		self.assertEqual(DRAG_SELECTION_ON_MESSAGE, message)
+		self.assertEqual({}, self._read_settings_file())
+	def test_apply_sets_drag_selection_from_saved_value_or_default(self):
+		for saved, enabled in (({}, True), ({DRAG_SELECTION_SETTING: False}, False)):
+			with self.subTest(saved=saved):
+				chrome = self._make_chrome(saved)
+				chrome.apply(self._window)
+				self._window.set_drag_selection.assert_called_once_with(enabled)
 	def _make_chrome(self, saved=None):
 		# A fresh window and a fresh settings file per call, so the calls and
 		# the JSON of one subTest never reach the next one.
 		self._window = MagicMock(spec=MainWindow)
-		# The pane API is added in the next checkpoint, but chrome owns this
-		# forwarding contract already.
+		# WindowChrome owns this forwarding contract; keep the widget a mock.
 		self._window.set_pane_status_mode = MagicMock()
+		self._window.set_drag_selection = MagicMock()
 		with open(self._settings_path, 'w') as f:
 			dump(saved or {}, f)
 		return WindowChrome(Settings(self._settings_path))

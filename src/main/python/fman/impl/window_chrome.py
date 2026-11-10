@@ -26,6 +26,8 @@ the main window starts.
 
 Right-button selection is also applied here so its saved mode reaches panes
 before the main window starts.
+Drag selection is applied here for the same reason: its saved mode must reach
+each pane at startup.
 """
 
 from .pane_status import PaneStatusMode
@@ -41,6 +43,9 @@ MENU_BAR_SETTING = 'menu_bar_visible'
 STATUS_BAR_SETTING = 'status_bar_visible'
 PANE_STATUS_LINES_VISIBLE_SETTING = 'pane_status_lines_visible'
 PANE_MESSAGES_IN_STATUS_BAR_SETTING = 'pane_messages_in_status_bar'
+DRAG_SELECTION_SETTING = 'drag_selection'
+DRAG_SELECTION_ON_MESSAGE = 'Drag selection on.'
+DRAG_SELECTION_OFF_MESSAGE = 'Drag selection off.'
 
 def save_visible_flag(settings, key, visible):
 	if visible:
@@ -75,11 +80,27 @@ class PaneStatusSettings:
 		if set_mode is not None:
 			set_mode(self.mode())
 
+class DragSelectionSetting:
+	"""Persist and apply the default-on drag selection mode."""
+
+	def __init__(self, settings):
+		self._settings = settings
+	def is_enabled(self):
+		return self._settings.get(DRAG_SELECTION_SETTING, True) is not False
+	def apply(self, window):
+		window.set_drag_selection(self.is_enabled())
+	def toggle(self, window):
+		enabled = not self.is_enabled()
+		save_visible_flag(self._settings, DRAG_SELECTION_SETTING, enabled)
+		self.apply(window)
+		return DRAG_SELECTION_ON_MESSAGE if enabled else DRAG_SELECTION_OFF_MESSAGE
+
 class WindowChrome:
 	def __init__(self, settings):
 		self._settings = settings
 		self.pane_status = PaneStatusSettings(settings)
 		self.right_button_selection = RightButtonSelectionSetting(settings)
+		self.drag_selection = DragSelectionSetting(settings)
 	def is_title_bar_visible(self):
 		return self._settings.get(TITLE_BAR_SETTING, True)
 	def is_menu_bar_visible(self):
@@ -104,5 +125,6 @@ class WindowChrome:
 		window.set_status_bar_visible(self.is_status_bar_visible())
 		self.pane_status.apply(window)
 		self.right_button_selection.apply(window)
+		self.drag_selection.apply(window)
 	def _save(self, setting, visible):
 		save_visible_flag(self._settings, setting, visible)

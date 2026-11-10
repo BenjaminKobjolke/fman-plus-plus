@@ -36,6 +36,18 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 			window._widget)
 		window._widget.show_status_message.assert_called_once_with('Selection on.')
 
+	def test_drag_selection_toggle_is_registered_and_shows_message(self):
+		window_chrome = MagicMock()
+		commands = self._application_commands(window_chrome=window_chrome)
+		self.assertIn('ToggleDragSelection', commands)
+		window_chrome.drag_selection.toggle.return_value = 'Drag selection is off.'
+		window = SimpleNamespace(_widget=MagicMock())
+		commands['ToggleDragSelection'](window)()
+		window_chrome.drag_selection.toggle.assert_called_once_with(
+			window._widget)
+		window._widget.show_status_message.assert_called_once_with(
+			'Drag selection is off.')
+
 	def test_registers_both_pane_status_commands_on_every_platform(self):
 		commands = []
 		args = [MagicMock() for _ in range(7)]
