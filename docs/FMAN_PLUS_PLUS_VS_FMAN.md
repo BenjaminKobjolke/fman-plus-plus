@@ -23,6 +23,7 @@ fman++ is a fork of [mherrmann/fman](https://github.com/mherrmann/fman). This pa
 ## Copy, move and delete
 
 - **Run transfers in parallel.** Copy and move can transfer files while gathering the directory listing, with adjustable workers. See [Copy and Move](COPY_AND_MOVE.md).
+- **Choose the expected action when dragging between drives.** Windows cross-drive drags copy by default, with Ctrl to copy and Shift to move. See [Drag and drop](COPY_AND_MOVE.md#drag-and-drop) (upstream [#459](https://github.com/mherrmann/fman/issues/459)).
 - **Undo common file operations.** Restore changes from trash or reverse moves, renames and copies while they remain undoable. See [Undo](functions/undo.md) (upstream [#50](https://github.com/mherrmann/fman/issues/50)).
 - **Recover from interrupted moves.** Completed local files are rolled back when a move stops early where it is safe to do so. See [Copy and Move](COPY_AND_MOVE.md) (upstream [#75](https://github.com/mherrmann/fman/issues/75)).
 - **Handle file conflicts in more ways.** Compare file details, rename one conflict or automatically rename later conflicts. See [Copy and Move](COPY_AND_MOVE.md).

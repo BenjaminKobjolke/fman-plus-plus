@@ -12,6 +12,13 @@ are separate and described in [ROBOCOPY.md](ROBOCOPY.md).
 Core copy and move progress dialogs can be minimized with `–` and restored
 from their status bar icon.
 
+## Drag and drop
+
+On Windows, dragging files within the same drive moves them; dragging to another
+drive or network share copies them. Hold Ctrl to copy or Shift to move, and the
+cursor shows the action that will happen. Dropping files out of an archive always
+copies them.
+
 ## Transfer queue
 
 Copy and Move run through one global transfer queue by default. A transfer
@@ -143,7 +150,8 @@ check** command to turn it off or back on. Its setting key is
 Use **Toggle folder tree** (Alt+F10) to replace one pane's file list with a
 folder-only tree. Right and Left expand or collapse folders, Enter opens the
 selected folder in the other pane, and Esc restores the file list. Dragging
-onto a tree folder moves files; hold Ctrl to copy. **Toggle tree follows
+onto a tree folder follows the same [drag-and-drop behavior](#drag-and-drop).
+**Toggle tree follows
 cursor** makes the other pane follow the selection after a short pause. It is
 off by default; `tree_follow_cursor` in `Core Settings.json` controls the
 default.
