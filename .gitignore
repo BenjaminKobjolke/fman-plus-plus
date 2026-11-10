@@ -46,6 +46,8 @@ media/demos/links/
 media/demos/context-menu/
 # Command-palette stills - recorded on demand for the screenshot check, never committed
 media/demos/command-palette/
+# fman-account stills - recorded on demand for the screenshot check, never committed
+media/demos/fman-account/
 tmp
 tickets/
 # Written by tools\release_create.bat (release-tool create) - transient local state
