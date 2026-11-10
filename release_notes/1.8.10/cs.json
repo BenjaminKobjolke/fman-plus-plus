@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Větší kontrola nad soubory a paletou příkazů",
+  "notes": [
+    "Nové: Přidávejte komentáře k souborům a složkám, upravujte cíle odkazů, procházejte síťová umístění a předávejte argumenty programu aplikacím „Otevřít v“.",
+    "Vylepšeno: Paleta příkazů se nyní přizpůsobuje velikosti písma, lépe se vejde do úzkých oken a dokáže spouštět příkazy s oprávněními správce; dialogová okna nyní mají jednotný styl v rámci okna.",
+    "Opraveno: Funkce Vybrat vše může vynechat složky, relace se při zavírání spolehlivě ukládají a synchronizace zásuvných modulů, motivy, kompaktní zobrazení i ovládací prvky modálních oken fungují spolehlivěji."
+  ]
+}

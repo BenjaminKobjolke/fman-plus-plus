@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Više kontrole nad datotekama i komandnom paletom",
+  "notes": [
+    "Novo: Dodajte komentare datotekama i fasciklama, uređujte odredišta linkova, krećite se do mrežnih lokacija i prosleđujte argumente programa aplikacijama „Otvori pomoću“.",
+    "Poboljšano: Komandna paleta se sada prilagođava veličini fonta, bolje se uklapa u uske prozore i može da pokreće komande sa administratorskim pravima; dijalozi koriste ujednačen stil unutar prozora.",
+    "Ispravljeno: Opcija „Izaberi sve“ može da preskoči direktorijume, sesije se pouzdano čuvaju pri zatvaranju, a sinhronizacija dodataka, teme, kompaktni prikaz i modalne kontrole rade pouzdanije."
+  ]
+}

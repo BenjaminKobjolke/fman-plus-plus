@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Nagyobb kontroll a fájlok és a parancspaletta felett",
+  "notes": [
+    "Újdonság: Megjegyzéseket adhatsz fájlokhoz és mappákhoz, szerkesztheted a hivatkozások célját, hálózati helyekre navigálhatsz, és parancssori argumentumokat adhatsz át a „Megnyitás ezzel” alkalmazásoknak.",
+    "Továbbfejlesztve: A parancspaletta mostantól a betűmérethez igazodik, jobban elfér a keskeny ablakokban, és rendszergazdai jogosultságokkal is futtathat parancsokat; a párbeszédablakok egységes, ablakon belüli stílust kaptak.",
+    "Javítva: Az „Összes kijelölése” kihagyhatja a könyvtárakat, a munkamenetek bezáráskor megbízhatóbban mentődnek, valamint a bővítmények szinkronizálása, a témák, a tömör nézet és a modális ablakok vezérlőelemei is megbízhatóbban működnek."
+  ]
+}

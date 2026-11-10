@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Mer kontroll over filer og kommandopaletten",
+  "notes": [
+    "Nytt: Legg til kommentarer i filer og mapper, rediger lenkemål, gå til nettverksplasseringer og send programargumenter til apper som åpnes med «Åpne med».",
+    "Forbedret: Kommandopaletten tilpasser seg nå skriftstørrelsen, passer bedre i smale vinduer og kan kjøre kommandoer med administratorrettigheter. Dialoger bruker nå en enhetlig stil i vinduet.",
+    "Rettet: «Merk alt» kan hoppe over mapper, økter lagres pålitelig når de lukkes, og synkronisering av programtillegg, temaer, kompaktvisning og kontroller i modale vinduer fungerer mer pålitelig."
+  ]
+}

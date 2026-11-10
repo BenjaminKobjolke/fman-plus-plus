@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Mehr Kontrolle über Dateien und die Befehlspalette",
+  "notes": [
+    "Neu: Kommentare zu Dateien und Ordnern hinzufügen, Linkziele bearbeiten, zu Netzwerkorten navigieren und Programmargumente an Apps für „Öffnen mit“ übergeben.",
+    "Verbessert: Die Befehlspalette passt sich jetzt an die Schriftgröße an, eignet sich besser für schmale Fenster und kann Befehle mit Administratorrechten ausführen. Dialoge verwenden nun einen einheitlichen Stil innerhalb des Fensters.",
+    "Behoben: „Alle auswählen“ kann Verzeichnisse überspringen, Sitzungen werden beim Schließen zuverlässig gespeichert und Pluginsynchronisierung, Designs, kompakte Ansicht sowie modale Steuerelemente funktionieren zuverlässiger."
+  ]
+}

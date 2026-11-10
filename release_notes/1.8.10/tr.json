@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Dosyalar ve komut paleti üzerinde daha fazla kontrol",
+  "notes": [
+    "Yeni: Dosyalara ve klasörlere yorum ekleyin, bağlantı hedeflerini düzenleyin, ağ konumlarına gidin ve Birlikte Aç uygulamalarına program bağımsız değişkenleri iletin.",
+    "İyileştirildi: Komut paleti artık yazı tipi boyutuna göre ölçekleniyor, dar pencerelere daha iyi sığıyor ve komutları yönetici ayrıcalıklarıyla çalıştırabiliyor; iletişim kutuları, pencere içinde tutarlı bir stil kullanıyor.",
+    "Düzeltildi: Tümünü Seç artık dizinleri atlayabiliyor, oturumlar kapatılırken güvenilir biçimde kaydediliyor; eklenti eşitlemesi, temalar, kompakt görünüm ve modal kontroller daha güvenilir çalışıyor."
+  ]
+}

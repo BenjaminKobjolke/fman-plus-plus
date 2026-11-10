@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Mai mult control asupra fișierelor și paletei de comenzi",
+  "notes": [
+    "Nou: Adăugați comentarii la fișiere și foldere, editați destinațiile linkurilor, navigați către locații de rețea și transmiteți argumente de program aplicațiilor „Deschide cu”.",
+    "Îmbunătățit: Paleta de comenzi se adaptează acum dimensiunii fontului, se potrivește mai bine în ferestrele înguste și poate rula comenzi cu privilegii de administrator; casetele de dialog folosesc un stil unitar în fereastră.",
+    "Remediat: „Selectare totală” poate omite directoarele, sesiunile se salvează în mod fiabil la închidere, iar sincronizarea pluginurilor, temele, vizualizarea compactă și controalele modale funcționează mai fiabil."
+  ]
+}

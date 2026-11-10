@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Plus de contrôle sur les fichiers et la palette de commandes",
+  "notes": [
+    "Nouveau : ajoutez des commentaires aux fichiers et aux dossiers, modifiez les cibles des liens, accédez aux emplacements réseau et transmettez des arguments aux applications ouvertes avec « Ouvrir avec ».",
+    "Améliorations : la palette de commandes s’adapte désormais à la taille de la police, s’affiche mieux dans les fenêtres étroites et peut exécuter des commandes avec des privilèges d’administrateur ; les boîtes de dialogue adoptent un style unifié intégré à la fenêtre.",
+    "Corrections : la commande « Tout sélectionner » peut ignorer les dossiers, les sessions sont enregistrées de manière fiable à la fermeture, et la synchronisation des extensions, les thèmes, l’affichage compact et les commandes modales fonctionnent de manière plus fiable."
+  ]
+}

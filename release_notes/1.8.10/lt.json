@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Daugiau failų ir komandų paletės valdymo galimybių",
+  "notes": [
+    "Nauja: Pridėkite komentarų prie failų ir aplankų, redaguokite nuorodų paskirties vietas, naršykite tinklo vietas ir perduokite programos argumentus programoms, kurios atidaro failus.",
+    "Patobulinta: Komandų paletė dabar prisitaiko prie šrifto dydžio, geriau telpa siauruose languose ir gali vykdyti komandas administratoriaus teisėmis; dialogo langai dabar turi vieningą lango viduje naudojamą stilių.",
+    "Ištaisyta: Funkcija „Pasirinkti viską“ gali praleisti katalogus, uždarant sesijos patikimai išsaugomos, o papildinių sinchronizavimas, temos, kompaktiškas rodinys ir modaliniai valdikliai veikia patikimiau."
+  ]
+}

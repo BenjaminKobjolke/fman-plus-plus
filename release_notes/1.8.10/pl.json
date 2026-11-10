@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Większa kontrola nad plikami i paletą poleceń",
+  "notes": [
+    "Nowość: Dodawaj komentarze do plików i folderów, zmieniaj miejsca docelowe linków, przechodź do lokalizacji sieciowych i przekazuj argumenty programów aplikacjom uruchamianym za pomocą polecenia „Otwórz za pomocą”.",
+    "Ulepszenie: Paleta poleceń dostosowuje się teraz do rozmiaru czcionki, lepiej mieści się w wąskich oknach i może uruchamiać polecenia z uprawnieniami administratora. Okna dialogowe mają spójny styl i są wyświetlane wewnątrz okna aplikacji.",
+    "Poprawki: Polecenie „Zaznacz wszystko” może pomijać katalogi, sesje są niezawodnie zapisywane podczas zamykania, a synchronizacja wtyczek, motywy, widok kompaktowy i kontrolki w oknach modalnych działają bardziej niezawodnie."
+  ]
+}

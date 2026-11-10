@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Meer controle over bestanden en het opdrachtpalet",
+  "notes": [
+    "Nieuw: Voeg opmerkingen toe aan bestanden en mappen, bewerk linkdoelen, navigeer naar netwerklocaties en geef argumenten door aan apps die je gebruikt met Openen met.",
+    "Verbeterd: Het opdrachtpalet past zich nu aan de lettergrootte aan, past beter in smalle vensters en kan opdrachten uitvoeren met beheerdersrechten. Dialoogvensters hebben nu een uniforme stijl binnen het venster.",
+    "Opgelost: Alles selecteren kan mappen overslaan, sessies worden betrouwbaar opgeslagen bij het sluiten en pluginsynchronisatie, thema's, compacte weergave en modale bedieningselementen werken betrouwbaarder."
+  ]
+}

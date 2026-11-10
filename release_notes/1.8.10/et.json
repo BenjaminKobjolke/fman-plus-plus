@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Rohkem võimalusi failide ja käsupaleti juhtimiseks",
+  "notes": [
+    "Uus: Lisa failidele ja kaustadele kommentaare, muuda linkide sihtkohti, liigu võrgukohtadesse ning edasta rakendustele „Ava rakendusega“ programmiargumente.",
+    "Täiustatud: Käsupalett kohandub nüüd fondi suurusega, sobib paremini kitsastesse akendesse ning saab käske käivitada administraatoriõigustega; dialoogid kasutavad ühtset aknasisest stiili.",
+    "Parandatud: „Vali kõik“ saab katalooge vahele jätta, seansid salvestatakse sulgemisel usaldusväärselt ning pluginate sünkroonimine, teemad, kompaktne vaade ja modaaldialoogide juhtelemendid töötavad nüüd töökindlamalt."
+  ]
+}

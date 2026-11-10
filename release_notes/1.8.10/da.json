@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Mere kontrol over filer og kommandopaletten",
+  "notes": [
+    "Nyt: Tilføj kommentarer til filer og mapper, rediger linkmål, naviger til netværksplaceringer, og send programargumenter til apps, der åbnes med.",
+    "Forbedret: Kommandopaletten tilpasser nu størrelsen efter skriftstørrelsen, passer bedre til smalle vinduer og kan køre kommandoer med administratorrettigheder; dialoger bruger nu en ensartet stil i vinduet.",
+    "Rettet: Vælg alle kan springe mapper over, sessioner gemmes nu pålideligt ved lukning, og synkronisering af plugins, temaer, kompakt visning og modale kontrolelementer fungerer mere pålideligt."
+  ]
+}

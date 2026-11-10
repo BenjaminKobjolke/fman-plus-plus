@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Več nadzora nad datotekami in ukazno paleto",
+  "notes": [
+    "Novo: Datotekam in mapam lahko dodate komentarje, uredite cilje povezav, krmarite do omrežnih lokacij in aplikacijam »Odpri z« posredujete argumente programa.",
+    "Izboljšano: Ukazna paleta se zdaj prilagaja velikosti pisave, bolje se prilega ozkim oknom in lahko izvaja ukaze s skrbniškimi pravicami; pogovorna okna imajo enoten slog znotraj okna.",
+    "Popravljeno: Možnost »Izberi vse« lahko preskoči imenike, seje se ob zapiranju zanesljivo shranijo, sinhronizacija vtičnikov, teme, strnjen pogled in kontrolniki modalnih oken pa delujejo zanesljiveje."
+  ]
+}

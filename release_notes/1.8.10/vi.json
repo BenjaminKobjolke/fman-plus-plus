@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Kiểm soát tệp và bảng lệnh tốt hơn",
+  "notes": [
+    "Mới: Thêm ghi chú vào tệp và thư mục, chỉnh sửa đích liên kết, điều hướng đến các vị trí mạng và truyền đối số chương trình cho ứng dụng Mở bằng.",
+    "Cải tiến: Bảng lệnh giờ đây thay đổi kích thước theo cỡ chữ, phù hợp hơn với các cửa sổ hẹp và có thể chạy lệnh với quyền quản trị viên; các hộp thoại sử dụng giao diện thống nhất bên trong cửa sổ.",
+    "Đã sửa: Chọn tất cả có thể bỏ qua thư mục, phiên làm việc được lưu ổn định khi đóng, đồng thời tính năng đồng bộ plugin, chủ đề, chế độ xem thu gọn và các điều khiển trong hộp thoại hoạt động đáng tin cậy hơn."
+  ]
+}

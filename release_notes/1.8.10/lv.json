@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Plašākas failu un komandu paletes vadības iespējas",
+  "notes": [
+    "Jauns: Pievienojiet komentārus failiem un mapēm, rediģējiet saišu mērķus, pārejiet uz tīkla atrašanās vietām un nododiet programmas argumentus lietotnēm “Atvērt ar”.",
+    "Uzlabots: Komandu palete tagad pielāgojas fonta lielumam, labāk ietilpst šauros logos un var izpildīt komandas ar administratora privilēģijām; dialoglodziņiem tagad ir vienots izskats programmas logā.",
+    "Novērsts: Komanda “Atlasīt visu” var izlaist direktorijus, sesijas tiek droši saglabātas, aizverot programmu, un spraudņu sinhronizācija, motīvi, kompaktais skats un modālo logu vadīklas darbojas uzticamāk."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Mais controle sobre arquivos e a paleta de comandos",
+  "notes": [
+    "Novo: Adicione comentários a arquivos e pastas, edite destinos de links, navegue por locais de rede e passe argumentos de programa para aplicativos de Abrir com.",
+    "Melhorias: A paleta de comandos agora se ajusta ao tamanho da fonte, funciona melhor em janelas estreitas e pode executar comandos com privilégios de administrador; as caixas de diálogo seguem um estilo unificado dentro da janela.",
+    "Correções: O comando Selecionar Tudo pode ignorar diretórios, as sessões são salvas de forma confiável ao fechar, e a sincronização de plugins, os temas, a visualização compacta e os controles modais funcionam de forma mais confiável."
+  ]
+}

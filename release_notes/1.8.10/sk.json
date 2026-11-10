@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Viac možností pri práci so súbormi a paletou príkazov",
+  "notes": [
+    "Novinka: Pridávajte komentáre k súborom a priečinkom, upravujte ciele odkazov, prechádzajte do sieťových umiestnení a odovzdávajte argumenty programov aplikáciám „Otvoriť pomocou“.",
+    "Vylepšenie: Paleta príkazov sa teraz prispôsobuje veľkosti písma, lepšie sa zmestí do úzkych okien a dokáže spúšťať príkazy s oprávneniami správcu. Dialógové okná používajú jednotný štýl v rámci okna.",
+    "Oprava: Funkcia Vybrať všetko môže vynechať priečinky, relácie sa pri zatváraní spoľahlivo ukladajú a synchronizácia doplnkov, motívy, kompaktné zobrazenie a ovládacie prvky modálnych okien fungujú spoľahlivejšie."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Mer kontroll över filer och kommandopaletten",
+  "notes": [
+    "Nytt: Lägg till kommentarer till filer och mappar, redigera länkmål, navigera till nätverksplatser och skicka programargument till appar som öppnas med Öppna med.",
+    "Förbättrat: Kommandopaletten anpassas nu efter teckenstorleken, passar bättre i smala fönster och kan köra kommandon med administratörsbehörighet. Dialogrutor har nu en enhetlig stil i appfönstret.",
+    "Åtgärdat: Markera alla kan hoppa över kataloger, sessioner sparas tillförlitligt när appen stängs och synkronisering av insticksprogram, teman, kompakt vy och modala kontroller fungerar mer tillförlitligt."
+  ]
+}

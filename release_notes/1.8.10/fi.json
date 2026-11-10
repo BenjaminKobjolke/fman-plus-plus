@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Lisää tiedostojen ja komentopaletin hallintamahdollisuuksia",
+  "notes": [
+    "Uutta: Lisää kommentteja tiedostoihin ja kansioihin, muokkaa linkkien kohteita, siirry verkkosijainteihin ja välitä ohjelma-argumentteja Avaa sovelluksessa -toiminnon sovelluksille.",
+    "Parannettu: Komentopaletti mukautuu nyt fonttikokoon, sopii paremmin kapeisiin ikkunoihin ja voi suorittaa komentoja järjestelmänvalvojan oikeuksin. Valintaikkunoissa on yhtenäinen ikkunansisäinen tyyli.",
+    "Korjattu: Valitse kaikki -toiminto voi ohittaa hakemistot, istunnot tallentuvat luotettavasti suljettaessa, ja liitännäisten synkronointi, teemat, tiivis näkymä sekä modaali-ikkunoiden ohjaimet toimivat luotettavammin."
+  ]
+}

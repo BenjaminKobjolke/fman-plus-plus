@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "Più controllo sui file e sulla palette dei comandi",
+  "notes": [
+    "Novità: aggiungi commenti a file e cartelle, modifica le destinazioni dei collegamenti, naviga tra le posizioni di rete e passa argomenti ai programmi alle app «Apri con».",
+    "Miglioramenti: la palette dei comandi ora si adatta alle dimensioni del carattere, si adatta meglio alle finestre strette e può eseguire comandi con privilegi di amministratore; le finestre di dialogo adottano uno stile uniforme all’interno della finestra.",
+    "Correzioni: «Seleziona tutto» può ignorare le directory, le sessioni vengono salvate in modo affidabile alla chiusura e la sincronizzazione dei plugin, i temi, la visualizzazione compatta e i controlli delle finestre modali funzionano in modo più affidabile."
+  ]
+}

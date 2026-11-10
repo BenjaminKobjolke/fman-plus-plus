@@ -1,0 +1,10 @@
+{
+  "version": "1.8.10",
+  "date": "2026-11-10",
+  "title": "More control over files and the command palette",
+  "notes": [
+    "New: Add comments to files and folders, edit link targets, navigate to network locations, and pass program arguments to Open With apps.",
+    "Improved: The command palette now scales with font size, fits narrow windows better, and can run commands with administrator privileges; dialogs use a unified in-window style.",
+    "Fixed: Select All can skip directories, sessions save reliably when closing, and plugin synchronization, themes, compact view, and modal controls behave more reliably."
+  ]
+}
