@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+import fman
+from fman.impl.widgets import DirectoryPaneWidget
 
 from core.file_age import (
 	FileAgeOptions, age_amount, load_options, make_age_shader,
@@ -10,6 +13,28 @@ from core.commands.file_age_shading import (
 	InitFileAgeShading as InitListener,
 	ToggleFileAgeShading as ToggleCommand,
 )
+
+
+class ApplyTest(TestCase):
+	def test_disabled_shading_clears_through_public_pane_api(self):
+		widget = Mock(spec=DirectoryPaneWidget)
+		pane = fman.DirectoryPane(None, widget, None)
+		with patch('core.file_age.get_setting', return_value=False):
+			from core.file_age import apply
+			apply(pane)
+		widget.set_file_shading.assert_called_once_with(None, 'transparency')
+	def test_enabled_shading_passes_shader_and_configured_style(self):
+		widget = Mock(spec=DirectoryPaneWidget)
+		pane = fman.DirectoryPane(None, widget, None)
+		with patch(
+				'core.file_age.get_setting',
+				side_effect=[True, 'log', 'bold', 365]
+		):
+			from core.file_age import apply
+			apply(pane)
+		args, _kwargs = widget.set_file_shading.call_args
+		self.assertTrue(callable(args[0]))
+		self.assertEqual('bold', args[1])
 
 
 class AgeAmountTest(TestCase):

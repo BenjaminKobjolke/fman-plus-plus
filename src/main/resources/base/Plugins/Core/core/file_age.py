@@ -104,4 +104,4 @@ def apply(pane):
 	if options.enabled:
 		pane.set_file_shading(make_age_shader(options), options.style)
 	else:
-		pane.set_file_shading(None, None)
+		pane.set_file_shading(None)
