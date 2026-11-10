@@ -24,6 +24,9 @@ REM re-recording matches the first one. Redirecting APPDATA would do it too,
 REM but that is also where pip --user puts PyQt5 and fbs_runtime - hence
 REM fman's own FMAN_DATA_DIRECTORY override.
 set "FMAN_DATA_DIRECTORY=%TEMP%\fman-demo-profile"
+REM Isolate the OS credential store too: profile isolation alone would still
+REM read a signed-in recordist's real account and could sync their plugins/settings.
+set "PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring"
 if exist "%FMAN_DATA_DIRECTORY%\Plugins" rmdir /s /q "%FMAN_DATA_DIRECTORY%\Plugins"
 if not exist "%FMAN_DATA_DIRECTORY%\Local\libmpv" mkdir "%FMAN_DATA_DIRECTORY%\Local\libmpv"
 REM Without a cached libmpv the first video view downloads ~100 MB behind a
@@ -79,6 +82,10 @@ if "%1"=="10" (
 		exit /b 1
 	)
 )
+
+REM Demo 16 uses a fake signed-in account and API; the null keyring above keeps
+REM the real credential store out of the recording.
+if "%1"=="16" xcopy /e /i /q /y "%CD%\tools\create_media\DemoAccount" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoAccount\" >nul
 
 REM Demo 1 reads the committed examples. The tour chapters (id 3+) create,
 REM rename, move and pack files, so they get a fresh scratch copy of both

@@ -15,6 +15,9 @@ check needs.
 
 Demo 15 holds pane listing stills for the screenshot check. Add a still here
 when a change affects how the file list looks.
+
+Demo 16 plays the fman account flow against the seeded DemoAccount fake; it
+never reaches the real account or network.
 """
 
 from automated_screenshot_connector import (
@@ -115,6 +118,35 @@ DIALOG_CLIPS = {
 			Pause(0.6),
 			Command('toggle file age shading'),
 			Pause(2.2),
+		),
+	),
+	16: DemoScript(
+		id=16,
+		name='fman-account',
+		steps=(
+			Pause(1.5),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			TypeText('fman account'), Pause(1.0),
+			Screenshot('fman-account-palette-signed-out'),
+			PressKey('Escape'),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('sign in to fman account'),
+			Pause(2.0), Screenshot('fman-account-signed-in-alert'),
+			PressKey('Return'), Pause(2.0),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			TypeText('fman account'), Pause(1.0),
+			Screenshot('fman-account-palette-signed-in'),
+			PressKey('Escape'),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('fman account'), Pause(2.0),
+			Screenshot('fman-account-details'),
+			PressKey('Escape'), Pause(1.2),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('sign out of fman account'), Pause(1.5),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			TypeText('fman account'), Pause(1.0),
+			Screenshot('fman-account-palette-after-sign-out'),
+			PressKey('Escape'), Pause(1.0),
 		),
 	),
 }
