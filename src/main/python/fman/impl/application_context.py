@@ -723,8 +723,14 @@ class FrozenApplicationContext(DevelopmentApplicationContext):
 			# VCRUNTIME140.dll) instead of their own, which also keeps
 			# target\fman locked so the next build cannot replace it. Restore
 			# the default search order, under the same assumption as above.
+			# PyInstaller and PyQt5 also prepend the bundle to PATH, which let the
+			# Android emulator load opengl32sw.dll from target\fman.
 			import ctypes
 			ctypes.windll.kernel32.SetDllDirectoryW(None)
+			from fman.impl.util.frozen_path import remove_dirs_below
+			os.environ['PATH'] = remove_dirs_below(
+				os.environ.get('PATH', ''), sys._MEIPASS
+			)
 		super().on_main_window_shown()
 	@cached_property
 	def exception_handlers(self):
