@@ -53,6 +53,7 @@ from fman.impl.util.qt import connect_once
 from fman.impl.util.settings import Settings
 from fman.impl.quicksearch_width import QuicksearchWidth
 from fman.impl.view import ProxyStyle
+from fman.impl.view.header_sort_arrow import SORT_ARROW_SETTING, SortArrowPosition
 from fman.impl.widgets import MainWindow, Application
 from os import makedirs, getcwd
 from os.path import dirname, join
@@ -666,7 +667,12 @@ class DevelopmentApplicationContext(ApplicationContext):
 			base_style = QStyleFactory.create(base_style_name)
 		if not base_style:
 			base_style = QStyleFactory.create('Fusion')
-		return ProxyStyle(base_style)
+		return ProxyStyle(
+			base_style,
+			SortArrowPosition.from_setting(
+				self.local_settings.get(SORT_ARROW_SETTING, None)
+			)
+		)
 	@cached_property
 	def window(self):
 		return Window(self.main_window, self.pane_command_registry)

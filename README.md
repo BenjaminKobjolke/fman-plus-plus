@@ -261,6 +261,7 @@ These are the ones maintained on this account.
 | [ROBOCOPY.md](docs/ROBOCOPY.md) | Copy and Move with robocopy (Windows): destination picker, progress, logs |
 | [STATUSBAR.md](docs/STATUSBAR.md) | The bar at the bottom: what it says, hiding it, theming it |
 | [SINGLE_INSTANCE.md](docs/SINGLE_INSTANCE.md) | Reusing a running window, and the `single_instance` setting |
+| [SORT_ARROW.md](docs/SORT_ARROW.md) | Where the column sort arrow sits, and the `sort_arrow_position` setting |
 | [SCRIPTING_API.md](docs/SCRIPTING_API.md) | Read fman state and run allowed commands from scripts |
 | [SYSTEM_TRAY.md](docs/SYSTEM_TRAY.md) | Windows notification area, global hotkey and sign-in startup |
 | [THEMES.md](docs/THEMES.md) | Theme files, color tokens and switching |

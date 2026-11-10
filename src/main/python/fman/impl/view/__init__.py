@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fbs_runtime.platform import is_mac
 from fman.impl.frameless_dialog import extra_margin
 from fman.impl.model.table import DimmedRole
@@ -13,12 +15,14 @@ from fman.impl.view.scrollbar_below_header import install_scrollbar_below_header
 from fman.impl.view.scroll_margin import ScrollMargin
 from fman.impl.view.single_row_mode import SingleRowMode
 from fman.impl.view.right_button_selection import RightButtonSelection
+from fman.impl.view.header_sort_arrow import HeaderSortArrow, SortArrowPosition
 from PyQt5.QtCore import QEvent, QItemSelection, QItemSelectionModel as QISM, \
 	QRect, Qt, pyqtSignal, QRectF
-from PyQt5.QtGui import QPen, QContextMenuEvent, QKeySequence, QPainterPath, \
-	QRegion
+from PyQt5.QtGui import QPen, QContextMenuEvent, QKeySequence, QPainter, \
+	QPainterPath, QRegion
 from PyQt5.QtWidgets import QTableView, QLineEdit, QVBoxLayout, QStyle, \
-	QStyledItemDelegate, QProxyStyle, QHeaderView, QToolTip, QMenu, QAction
+	QStyledItemDelegate, QProxyStyle, QHeaderView, QToolTip, QMenu, QAction, \
+	QStyleOption, QStyleOptionHeader, QWidget
 
 class FileListView(
 	PaneSurface, SingleRowMode, MoveWithoutUpdatingSelection,
@@ -388,7 +392,20 @@ class Layout(QVBoxLayout):
 		self.setSpacing(0)
 
 class ProxyStyle(QProxyStyle):
+	def __init__(
+		self,
+		base_style: Optional[QStyle] = None,
+		sort_arrow_position: SortArrowPosition = SortArrowPosition.AFTER
+	) -> None:
+		super().__init__(base_style)
+		self._header_sort_arrow = HeaderSortArrow(sort_arrow_position)
+
 	def drawPrimitive(self, element, option, painter, widget):
+		if element == QStyle.PE_IndicatorHeaderArrow:
+			option = QStyleOptionHeader(option)
+			option.rect = self._header_sort_arrow.arrow_rect(self, option, widget)
+			super().drawPrimitive(element, option, painter, widget)
+			return
 		if element == QStyle.PE_FrameFocusRect:
 			# Prevent the ugly dotted border around focused elements on Windows:
 			return
@@ -434,6 +451,17 @@ class ProxyStyle(QProxyStyle):
 			painter.restore()
 			return
 		super().drawPrimitive(element, option, painter, widget)
+	def drawControl(
+		self,
+		element: QStyle.ControlElement,
+		option: QStyleOption,
+		painter: QPainter,
+		widget: Optional[QWidget] = None
+	) -> None:
+		if element == QStyle.CE_HeaderLabel:
+			option = QStyleOptionHeader(option)
+			option.rect = self._header_sort_arrow.label_rect(self, option, widget)
+		super().drawControl(element, option, painter, widget)
 	def pixelMetric(self, metric, option=None, widget=None):
 		return super().pixelMetric(metric, option, widget) + \
 			extra_margin(metric, widget)
