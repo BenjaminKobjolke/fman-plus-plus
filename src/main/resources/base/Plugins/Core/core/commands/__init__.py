@@ -38,7 +38,8 @@ _COMMAND_MODULES = (
 	'pane_view', 'pane_size', 'swap_panes',
 	'places', 'plugins', 'release_notes', 'rename', 'run_as_admin', 'selection',
 	'selection_summary',
-	'symlink', 'taskbar', 'theme', 'transfer', 'transfer_queue', 'view_mode',
+	'symlink', 'taskbar', 'theme', 'transfer', 'force_transfer',
+	'transfer_queue', 'view_mode',
 	'undo', 'updates', 'window'
 )
 __all__ = []

@@ -27,7 +27,7 @@ EXPECTED = frozenset({
 	'ClearHiddenAttribute',
 	'ClearLastVisitedHistory',
 	'CommandPalette', 'CompareDirectories', 'Copy', 'CopyFileName', 'CopyFilePath',
-	'CopyPathsToClipboard', 'ConnectNetworkShare',
+	'CopyPathsToClipboard', 'ConnectNetworkShare', 'ForceCopy', 'ForceMove',
 	'CopyToClipboard', 'DuplicateFile',
 	'CreateAndEditFile', 'CreateDirectory', 'Cut', 'DecreasePaneFontSize',
 	'DragToLastUsedApp',

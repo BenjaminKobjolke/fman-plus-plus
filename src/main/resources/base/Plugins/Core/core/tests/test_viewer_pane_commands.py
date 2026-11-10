@@ -28,7 +28,8 @@ class ViewerCommandFlagTest(TestCase):
 	def test_core_flags_only_suitable_commands(self):
 		import core
 		expected = {
-			'AddPane', 'Copy', 'Move', 'RemovePane', 'Symlink', 'CopyPathsToClipboard',
+			'AddPane', 'Copy', 'Move', 'ForceCopy', 'ForceMove', 'RemovePane', 'Symlink',
+			'CopyPathsToClipboard',
 			'CopyFileName', 'CopyFilePath',
 			'OpenWithEditor', 'OpenTerminal', 'OpenNativeFileManager',
 			'ShowExplorerProperties', 'Pack', 'PackWithPassword', 'OpenWith',
