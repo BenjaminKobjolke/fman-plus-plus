@@ -36,6 +36,7 @@ if not (root / "no_portable_archive").exists():
 
 
 def run_batch(path, *args):
+    print(f"Running batch: {path.name}", flush=True)
     return subprocess.run(
         ["cmd", "/d", "/c", "call", str(path), *args],
         capture_output=True, text=True, timeout=60,
