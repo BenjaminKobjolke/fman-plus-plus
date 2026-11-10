@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Selezione più fluida ed elenchi di file più chiari",
+  "notes": [
+    "Novità: trascina sulle righe per selezionare un intervallo continuo e usa Forza copia o Forza spostamento per trasferire i file senza che venga richiesta una destinazione.",
+    "Miglioramento: puoi applicare facoltativamente una sfumatura ai file in base alla loro età; le frecce di ordinamento sono visualizzate accanto alle intestazioni delle colonne.",
+    "Correzioni: la sfumatura in base all’età dei file viene rimossa correttamente, le app congelate ripuliscono i percorsi inclusi nel pacchetto e fman registra dettagli diagnostici quando l’interfaccia smette di rispondere."
+  ]
+}

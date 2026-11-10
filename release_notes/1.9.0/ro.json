@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Selectare mai fluidă și liste de fișiere mai clare",
+  "notes": [
+    "Nou: Trageți peste rânduri pentru a selecta un interval continuu și folosiți „Copiere forțată” sau „Mutare forțată” pentru a transfera fișiere fără solicitarea unei destinații.",
+    "Îmbunătățit: Opțional, fișierele pot fi umbrite în funcție de vechime, iar săgețile de sortare sunt afișate lângă etichetele coloanelor.",
+    "Remediat: Umbrirea fișierelor în funcție de vechime se șterge corect, aplicațiile înghețate își curăță căile incluse în pachet, iar fman înregistrează detalii de diagnosticare când interfața nu mai răspunde."
+  ]
+}

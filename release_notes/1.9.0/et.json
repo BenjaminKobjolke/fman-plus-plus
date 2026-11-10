@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Sujuvam valimine ja selgemad faililoendid",
+  "notes": [
+    "Uus: Lohista üle ridade, et valida järjestikune vahemik, ning kasuta käsku „Sundkopeerimine” või „Sundteisaldamine”, et faile üle kanda sihtkoha küsimist kuvamata.",
+    "Täiustatud: Soovi korral varjuta faile nende vanuse järgi; sortimisnooled kuvatakse veerusiltide kõrval.",
+    "Parandatud: Failide vanuse järgi varjutus eemaldatakse nüüd korrektselt, hangunud rakendused puhastavad oma komplekti kuuluvad rajad ning fman salvestab diagnostikaandmed, kui kasutajaliides ei reageeri."
+  ]
+}

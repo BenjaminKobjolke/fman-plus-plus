@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Selección más fluida y listas de archivos más claras",
+  "notes": [
+    "Nuevo: Arrastra por varias filas para seleccionar un rango continuo y usa Forzar copia o Forzar movimiento para transferir archivos sin que se te pida un destino.",
+    "Mejorado: Ahora puedes sombrear los archivos según su antigüedad y ver flechas de ordenación junto a los nombres de las columnas.",
+    "Corregido: El sombreado por antigüedad se borra correctamente, las aplicaciones bloqueadas limpian sus rutas empaquetadas y fman registra datos de diagnóstico cuando la interfaz deja de responder."
+  ]
+}

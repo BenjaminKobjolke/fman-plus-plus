@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Smidigare markering och tydligare fillistor",
+  "notes": [
+    "Nyhet: Dra över raderna för att markera ett sammanhängande intervall och använd Tvinga kopiering eller Tvinga flytt för att överföra filer utan att behöva ange en destination.",
+    "Förbättrat: Välj om filer ska skuggas efter ålder, och se sorteringspilar bredvid kolumnrubrikerna.",
+    "Åtgärdat: Skuggningen efter filålder tas bort korrekt, frysta appar städar upp sina medföljande sökvägar och fman sparar diagnostikuppgifter när gränssnittet slutar svara."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Gördülékenyebb kijelölés és áttekinthetőbb fájllisták",
+  "notes": [
+    "Újdonság: Húzd végig az egeret a sorokon egy összefüggő tartomány kijelöléséhez, és használd a Kényszerített másolás vagy a Kényszerített áthelyezés lehetőséget a fájlok célhely megadása nélküli átviteléhez.",
+    "Továbbfejlesztés: Igény szerint koruk alapján eltérő árnyalattal jelenítheted meg a fájlokat; az oszlopcímkék mellett rendezési nyilak láthatók.",
+    "Javítás: A fájlok korát jelző árnyalás megfelelően törlődik, a fagyasztott alkalmazások eltávolítják a csomagolt elérési útvonalaikat, a fman pedig diagnosztikai adatokat rögzít, ha a felület nem válaszol."
+  ]
+}

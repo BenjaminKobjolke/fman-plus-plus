@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Ērtāka atlase un pārskatāmāki failu saraksti",
+  "notes": [
+    "Jauns: Velciet pāri rindām, lai atlasītu nepārtrauktu diapazonu, un izmantojiet «Piespiedu kopēšana» vai «Piespiedu pārvietošana», lai pārsūtītu failus, neprasot norādīt mērķi.",
+    "Uzlabots: Pēc izvēles iekrāsojiet failus atbilstoši to vecumam; kārtošanas bultiņas tiek rādītas blakus kolonnu nosaukumiem.",
+    "Novērsts: Failu iekrāsojums atbilstoši to vecumam tagad tiek notīrīts pareizi, pakotās lietotnes sakopj komplektā iekļautos ceļus, un fman saglabā diagnostikas informāciju, ja saskarne pārstāj reaģēt."
+  ]
+}

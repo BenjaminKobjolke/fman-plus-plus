@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Soepeler selecteren en duidelijkere bestandslijsten",
+  "notes": [
+    "Nieuw: Sleep over rijen om een aaneengesloten bereik te selecteren en gebruik Geforceerd kopiëren of Geforceerd verplaatsen om bestanden over te zetten zonder dat er om een bestemming wordt gevraagd.",
+    "Verbeterd: Geef bestanden desgewenst een kleur op basis van hun leeftijd. Sorteerpijlen worden naast de kolomkoppen weergegeven.",
+    "Opgelost: De arcering op basis van bestandsleeftijd wordt correct verwijderd, vastgelopen apps ruimen hun meegeleverde paden op en fman legt diagnostische gegevens vast wanneer de interface niet meer reageert."
+  ]
+}

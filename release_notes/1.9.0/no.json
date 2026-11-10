@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Smidigere utvalg og tydeligere fillister",
+  "notes": [
+    "Nytt: Dra over rader for å velge et sammenhengende område, og bruk Tving kopiering eller Tving flytting for å overføre filer uten å få spørsmål om målmappe.",
+    "Forbedret: Du kan nå velge å skyggelegge filer etter alder, og sorteringspiler vises ved siden av kolonneoverskriftene.",
+    "Rettet: Skyggelegging etter filalder fjernes nå riktig, apper som har sluttet å svare rydder opp i de medfølgende banene sine, og fman registrerer diagnostiske detaljer når grensesnittet slutter å svare."
+  ]
+}

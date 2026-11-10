@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Smoother selection and clearer file lists",
+  "notes": [
+    "New: Drag across rows to select a contiguous range, and use Force Copy or Force Move to transfer files without a destination prompt.",
+    "Improved: Optionally shade files by age, with sort arrows displayed beside their column labels.",
+    "Fixed: File-age shading clears correctly, frozen apps clean up their bundled paths, and fman records diagnostic details when the interface stops responding."
+  ]
+}

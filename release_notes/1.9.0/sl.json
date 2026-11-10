@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Preprostejše izbiranje in preglednejši seznami datotek",
+  "notes": [
+    "Novo: Povlecite čez vrstice, da izberete strnjen obseg, in uporabite možnosti »Prisilno kopiraj« ali »Prisilno premakni« za prenos datotek brez poziva za izbiro cilja.",
+    "Izboljšano: Datoteke lahko po želji obarvate glede na njihovo starost, puščice za razvrščanje pa so prikazane ob oznakah stolpcev.",
+    "Popravljeno: Obarvanje datotek glede na starost se pravilno počisti, zamrznjene aplikacije počistijo svoje priložene poti, fman pa zabeleži diagnostične podrobnosti, ko se vmesnik preneha odzivati."
+  ]
+}

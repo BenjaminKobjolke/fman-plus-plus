@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Seleção mais fluida e listas de ficheiros mais claras",
+  "notes": [
+    "Novo: Arraste pelas linhas para selecionar um intervalo contínuo e use «Forçar cópia» ou «Forçar movimentação» para transferir ficheiros sem que lhe seja pedido um destino.",
+    "Melhorado: Pode agora sombrear os ficheiros consoante a sua antiguidade, com setas de ordenação junto aos nomes das colunas.",
+    "Corrigido: O sombreado por antiguidade é removido corretamente, as aplicações empacotadas limpam os caminhos incluídos e o fman regista informações de diagnóstico quando a interface deixa de responder."
+  ]
+}

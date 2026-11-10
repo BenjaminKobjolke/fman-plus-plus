@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Jednostavniji odabir i pregledniji popisi datoteka",
+  "notes": [
+    "Novo: Povucite preko redaka da biste odabrali neprekinuti raspon i upotrijebite opciju Prisilno kopiraj ili Prisilno premjesti za prijenos datoteka bez upita za odredište.",
+    "Poboljšano: Po želji zasjenite datoteke prema starosti, a strelice za sortiranje prikazuju se pokraj naziva stupaca.",
+    "Ispravljeno: Zasjenjenje prema starosti datoteka sada se ispravno uklanja, zamrznute aplikacije čiste svoje uključene putanje, a fman bilježi dijagnostičke pojedinosti kada sučelje prestane reagirati."
+  ]
+}

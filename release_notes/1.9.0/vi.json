@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Chọn tệp mượt mà hơn, danh sách tệp rõ ràng hơn",
+  "notes": [
+    "Mới: Kéo qua các hàng để chọn một dải liên tiếp, rồi dùng Sao chép bắt buộc hoặc Di chuyển bắt buộc để chuyển tệp mà không cần xác nhận thư mục đích.",
+    "Cải tiến: Tùy chọn tô màu tệp theo độ tuổi, đồng thời hiển thị mũi tên sắp xếp bên cạnh nhãn cột.",
+    "Đã sửa: Tô màu theo độ tuổi của tệp được xóa đúng cách, các ứng dụng đóng gói được dọn dẹp đường dẫn đi kèm và fman ghi lại thông tin chẩn đoán khi giao diện ngừng phản hồi."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Plynulejší výběr a přehlednější seznamy souborů",
+  "notes": [
+    "Novinka: Přetažením přes řádky vyberete souvislý rozsah. Pomocí příkazů Vynutit kopírování nebo Vynutit přesun můžete přenášet soubory bez dotazu na cílové umístění.",
+    "Vylepšení: Volitelně můžete soubory barevně odlišit podle stáří. Šipky řazení se zobrazují vedle názvů sloupců.",
+    "Opravy: Stínování podle stáří souborů se správně ruší, zabalené aplikace uklízejí své přibalené cesty a fman zaznamenává diagnostické údaje, když rozhraní přestane reagovat."
+  ]
+}

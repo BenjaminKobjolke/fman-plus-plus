@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Płynniejsze zaznaczanie i czytelniejsze listy plików",
+  "notes": [
+    "Nowość: Przeciągnij po wierszach, aby zaznaczyć ciągły zakres, i użyj opcji „Wymuś kopiowanie” lub „Wymuś przenoszenie”, aby przesłać pliki bez pytania o miejsce docelowe.",
+    "Ulepszenie: Możesz włączyć cieniowanie plików według ich wieku; strzałki sortowania są wyświetlane obok nazw kolumn.",
+    "Naprawiono: Cieniowanie plików według ich wieku jest teraz prawidłowo usuwane, zamrożone aplikacje czyszczą dołączone ścieżki, a fman zapisuje szczegóły diagnostyczne, gdy interfejs przestaje odpowiadać."
+  ]
+}

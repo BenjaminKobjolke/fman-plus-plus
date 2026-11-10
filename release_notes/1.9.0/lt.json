@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Sklandesnis pasirinkimas ir aiškesni failų sąrašai",
+  "notes": [
+    "Nauja: Vilkite per eilutes, kad pasirinktumėte gretimą intervalą, ir naudokite „Priverstinai kopijuoti“ arba „Priverstinai perkelti“, kad perkeltumėte failus be paskirties vietos pasirinkimo dialogo.",
+    "Patobulinta: Galite pasirinktinai nuspalvinti failus pagal jų amžių; rūšiavimo rodyklės rodomos šalia stulpelių pavadinimų.",
+    "Ištaisyta: Failų amžiaus nuspalvinimas tinkamai išjungiamas, supakuotos programos išvalo savo pridėtus kelius, o „fman“ užfiksuoja diagnostinę informaciją, kai sąsaja nustoja reaguoti."
+  ]
+}

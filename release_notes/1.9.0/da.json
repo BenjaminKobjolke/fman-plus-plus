@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Smidigere markering og tydeligere fillister",
+  "notes": [
+    "Nyt: Træk hen over rækker for at markere et sammenhængende område, og brug Tvungen kopiering eller Tvungen flytning til at overføre filer uden at blive spurgt om en destination.",
+    "Forbedret: Du kan vælge at skygge filer efter alder, og sorteringspile vises ved siden af kolonneoverskrifterne.",
+    "Rettet: Skygger for filalder fjernes korrekt, apps, der fryser, rydder op i deres medfølgende stier, og fman registrerer diagnosticeringsoplysninger, når brugerfladen holder op med at svare."
+  ]
+}

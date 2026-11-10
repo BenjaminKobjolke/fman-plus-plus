@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Flüssigere Auswahl und übersichtlichere Dateilisten",
+  "notes": [
+    "Neu: Ziehen Sie über mehrere Zeilen, um einen zusammenhängenden Bereich auszuwählen. Mit „Kopieren erzwingen“ oder „Verschieben erzwingen“ übertragen Sie Dateien ohne Zielabfrage.",
+    "Verbessert: Dateien können optional je nach Alter farblich hervorgehoben werden. Sortierpfeile werden neben den Spaltenbezeichnungen angezeigt.",
+    "Behoben: Die farbliche Hervorhebung nach Alter wird korrekt entfernt, eingefrorene Apps bereinigen ihre gebündelten Pfade, und fman erfasst Diagnoseinformationen, wenn die Oberfläche nicht mehr reagiert."
+  ]
+}

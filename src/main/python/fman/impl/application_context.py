@@ -8,6 +8,7 @@ from fman import APP_NAME, PLATFORM, DATA_DIRECTORY, Window
 from fman.impl.controller import Controller
 from fman.impl.console_log import get_console_log, install_stream_capture
 from fman.impl.font_database import FontDatabase
+from fman.impl.hang_log import HangLog
 from fman.impl.metrics import Metrics, ServerBackend, AsynchronousMetrics, \
 	LoggingBackend
 from fman.impl.model.icon_provider import GnomeFileIconProvider, \
@@ -125,7 +126,11 @@ class DevelopmentApplicationContext(ApplicationContext):
 			self.window.show_status_message(
 				self._explorer_replacement_message, timeout_secs=10)
 		_ = self.global_hotkey
+		self.hang_log.start()
 		return self.app.exec_()
+	@cached_property
+	def hang_log(self):
+		return HangLog(self._get_local_data_file('Hangs.log'))
 	def _run_demo(self):
 		# Play a scripted demo for the automated-application-screenshots tool
 		# (see fman.impl.demo). Bypasses single-instance + onboarding so the

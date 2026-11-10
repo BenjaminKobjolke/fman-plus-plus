@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Sélection plus fluide et listes de fichiers plus claires",
+  "notes": [
+    "Nouveau : Faites glisser le curseur sur plusieurs lignes pour sélectionner une plage continue, puis utilisez « Forcer la copie » ou « Forcer le déplacement » pour transférer des fichiers sans invite de destination.",
+    "Amélioration : Vous pouvez désormais colorer les fichiers selon leur ancienneté, et des flèches de tri s’affichent à côté des intitulés de colonnes.",
+    "Correction : La coloration selon l’ancienneté des fichiers s’efface correctement, les applications figées nettoient leurs chemins intégrés, et fman enregistre des informations de diagnostic lorsque l’interface ne répond plus."
+  ]
+}

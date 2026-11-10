@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Daha akıcı seçim ve daha anlaşılır dosya listeleri",
+  "notes": [
+    "Yeni: Kesintisiz bir aralığı seçmek için satırlar boyunca sürükleyin; hedef sorusu olmadan dosyaları aktarmak için Zorla Kopyala veya Zorla Taşı seçeneklerini kullanın.",
+    "İyileştirildi: Dosyaları isteğe bağlı olarak yaşlarına göre gölgelendirin; sıralama okları sütun etiketlerinin yanında gösterilir.",
+    "Düzeltildi: Dosya yaşı gölgelendirmesi artık doğru şekilde kaldırılıyor, donmuş uygulamalar paketlenmiş yollarını temizliyor ve arayüz yanıt vermeyi durdurduğunda fman tanılama ayrıntılarını kaydediyor."
+  ]
+}

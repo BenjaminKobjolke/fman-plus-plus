@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Sujuvampi valinta ja selkeämmät tiedostoluettelot",
+  "notes": [
+    "Uutta: Valitse yhtenäinen alue vetämällä rivien yli ja siirrä tiedostoja ilman kohdekyselyä valitsemalla Pakota kopiointi tai Pakota siirto.",
+    "Parannettu: Tiedostot voi halutessaan sävyttää iän mukaan, ja lajittelunuolet näkyvät sarakeotsikoiden vieressä.",
+    "Korjattu: Tiedostojen ikään perustuva sävytys poistuu nyt oikein, paketoidut sovellukset siivoavat mukaan paketoidut polkunsa, ja fman tallentaa diagnostiikkatietoja, kun käyttöliittymä lakkaa vastaamasta."
+  ]
+}

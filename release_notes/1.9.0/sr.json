@@ -1,0 +1,10 @@
+{
+  "version": "1.9.0",
+  "date": "2026-11-10",
+  "title": "Lakši izbor i pregledniji spiskovi datoteka",
+  "notes": [
+    "Novo: Prevucite preko redova da biste izabrali neprekidan opseg, a zatim koristite opcije „Prinudno kopiranje” ili „Prinudno premeštanje” za prenos datoteka bez upita za odredište.",
+    "Poboljšano: Po želji zasenčite datoteke prema starosti, uz strelice za sortiranje pored naziva kolona.",
+    "Ispravljeno: Senčenje datoteka prema starosti sada se pravilno uklanja, zamrznute aplikacije čiste svoje putanje iz paketa, a fman beleži dijagnostičke podatke kada interfejs prestane da reaguje."
+  ]
+}
