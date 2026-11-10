@@ -1,6 +1,7 @@
 from fbs_runtime.platform import is_mac, is_windows, is_linux
 from fman.impl.util.qt import MoveAction, NoButton, AltModifier, \
-	ControlModifier, CopyAction
+	ControlModifier, CopyAction, get_urls
+from fman.impl.drop_action import choose_drop_action
 from PyQt5.QtCore import QItemSelectionModel as QISM
 from PyQt5.QtWidgets import QAbstractItemView
 
@@ -63,6 +64,32 @@ class DragAndDrop:
 			finally:
 				self.selectionModel().select(selection, QISM.ClearAndSelect)
 				self.selectionModel().setCurrentIndex(current, QISM.NoUpdate)
+	def _windows_drop_action(self, event):
+		urls = get_urls(event.mimeData())
+		dest = self.model().drop_dest_url(self.indexAt(event.pos()))
+		return choose_drop_action(event.keyboardModifiers(), urls, dest)
+	def dragEnterEvent(self, event):
+		if not is_windows():
+			return super().dragEnterEvent(event)
+		action = self._windows_drop_action(event)
+		if not event.possibleActions() & action:
+			return super().dragEnterEvent(event)
+		event.setDropAction(action)
+		super().dragEnterEvent(event)
+		if event.isAccepted():
+			event.setDropAction(action)
+			event.accept()
+	def dragMoveEvent(self, event):
+		if not is_windows():
+			return super().dragMoveEvent(event)
+		action = self._windows_drop_action(event)
+		if not event.possibleActions() & action:
+			return super().dragMoveEvent(event)
+		event.setDropAction(action)
+		super().dragMoveEvent(event)
+		if event.isAccepted():
+			event.setDropAction(action)
+			event.accept()
 	def dropEvent(self, event):
 		modifiers = event.keyboardModifiers()
 		if is_mac():
@@ -71,8 +98,9 @@ class DragAndDrop:
 			do_copy = (modifiers & ControlModifier) or (modifiers & AltModifier)
 		else:
 			# Windows
-			do_copy = modifiers & ControlModifier
-		action = CopyAction if do_copy else MoveAction
+			action = self._windows_drop_action(event)
+		if not is_windows():
+			action = CopyAction if do_copy else MoveAction
 		event.setDropAction(action)
 		super().dropEvent(event)
 		if action == MoveAction and is_windows():

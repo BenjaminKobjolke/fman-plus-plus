@@ -2,7 +2,8 @@ from fman.impl.util.qt import MoveAction, CopyAction, IgnoreAction, \
 	FMAN_URLS_MIME, VIRTUAL_FILE_MIME, get_urls, set_urls
 from fman.url import dirname
 from fbs_runtime.platform import is_windows
-from PyQt5.QtCore import QAbstractTableModel, pyqtSignal, QMimeData
+from PyQt5.QtCore import QAbstractTableModel, pyqtSignal, QMimeData, QModelIndex
+from typing import Optional
 
 import sip
 
@@ -66,3 +67,5 @@ class DragAndDrop(QAbstractTableModel):
 		return False
 	def _get_drop_dest(self, index):
 		return self.url(index) if index.isValid() else self.get_location()
+	def drop_dest_url(self, index: QModelIndex) -> Optional[str]:
+		return self._get_drop_dest(index)

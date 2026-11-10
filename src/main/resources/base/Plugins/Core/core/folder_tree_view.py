@@ -4,12 +4,12 @@ from fman.impl.util.qt import FMAN_URLS_MIME, MoveAction, CopyAction, \
 	IgnoreAction, get_urls, set_urls
 from fman.impl.util.qt.thread import run_in_main_thread
 from fman.impl.view.drag_and_drop import DragAndDrop
-from PyQt5.QtCore import QMimeData, QPersistentModelIndex, Qt, QTimer
+from PyQt5.QtCore import QMimeData, QPersistentModelIndex, QModelIndex, Qt, QTimer
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import QFileIconProvider, QTreeView
 from dataclasses import dataclass
 from threading import Thread
-from typing import Callable
+from typing import Callable, Optional
 
 import sip
 
@@ -86,6 +86,8 @@ class FolderTreeModel(QStandardItemModel):
 		return data
 	def supportedDropActions(self):
 		return MoveAction | CopyAction | IgnoreAction
+	def drop_dest_url(self, index: QModelIndex) -> Optional[str]:
+		return self.data(index, URL_ROLE) if index.isValid() else None
 	def canDropMimeData(self, data, action, row, column, parent):
 		if action == IgnoreAction:
 			return True
