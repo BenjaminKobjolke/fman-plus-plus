@@ -144,12 +144,7 @@ class CreateDirectory(DirectoryPaneCommand):
 	aliases = ('New folder',)
 
 	def __call__(self):
-		file_under_cursor = self.pane.get_file_under_cursor()
-		if file_under_cursor:
-			default = basename(file_under_cursor).split('.', 1)[0]
-		else:
-			default = ''
-		name = show_input("New folder (directory)", default)
+		name = show_input("New folder (directory)")
 		if name:
 			# Support recursive creation of directories:
 			if PLATFORM == 'Windows':
