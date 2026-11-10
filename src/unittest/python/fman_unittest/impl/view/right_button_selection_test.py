@@ -3,7 +3,7 @@
 from fman.impl.view import FileListView
 from fman.impl.view.compact_view import CompactFileView
 from PyQt5.QtCore import QEvent, QPointF, Qt, pyqtSignal
-from PyQt5.QtGui import QContextMenuEvent, QMouseEvent, QStandardItemModel
+from PyQt5.QtGui import QContextMenuEvent, QCursor, QMouseEvent, QStandardItemModel
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 from unittest.mock import ANY, Mock
@@ -151,6 +151,7 @@ class RightButtonSelectionTest(TestCase):
 		self._mouse_at(event_type, self._pos(row), button, buttons)
 
 	def _mouse_at(self, event_type, pos, button, buttons):
+		QCursor.setPos(self.view.viewport().mapToGlobal(pos))
 		QApplication.sendEvent(self.view.viewport(), QMouseEvent(
 			event_type, QPointF(pos), button, buttons, Qt.NoModifier
 		))
