@@ -4,10 +4,12 @@ from unittest import TestCase
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtTest import QTest
-from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QMessageBox, \
+	QVBoxLayout, QWidget
 
 from fman.impl.in_window_dialog import Scrim, exec_in_window
 from fman.impl.prompt_popup import Prompt
+from fman.impl.widgets import MessageBox
 
 
 class InWindowDialogTest(TestCase):
@@ -42,6 +44,30 @@ class InWindowDialogTest(TestCase):
 		QTimer.singleShot(0, check_and_accept)
 		self.assertEqual(QDialog.Accepted, exec_in_window(dialog, self.parent))
 		self.assertEqual([(None, False, True)], observed)
+
+	def test_plain_dialog_gets_the_frameless_outline_style(self):
+		dialog = QDialog()
+		observed = []
+		def check_and_accept():
+			observed.append(dialog.property('frameless'))
+			dialog.accept()
+		QTimer.singleShot(0, check_and_accept)
+		self.assertEqual(QDialog.Accepted, exec_in_window(dialog, self.parent))
+		self.assertEqual([True], observed)
+
+	def test_message_box_gets_the_frameless_outline_style(self):
+		dialog = MessageBox(self.parent, True)
+		dialog.setText('Are you sure?')
+		dialog.setStandardButtons(QMessageBox.Ok)
+		# A real QMessageBox window aborts under Qt's offscreen platform.
+		dialog.show = lambda: None
+		observed = []
+		def check_and_accept():
+			observed.append(dialog.property('frameless'))
+			dialog.accept()
+		QTimer.singleShot(0, check_and_accept)
+		self.assertEqual(QDialog.Accepted, exec_in_window(dialog, self.parent))
+		self.assertEqual([True], observed)
 
 	def test_escape_rejects_dialog(self):
 		dialog = _DialogWithLineEdit()

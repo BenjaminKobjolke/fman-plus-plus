@@ -1,7 +1,7 @@
 """
-A dialog without a title bar, shown when the main window hides its own: an
-outline (styles.qss, `*[frameless="true"]`) so it does not blend into the
-window behind it, and wider margins so the content keeps off that outline.
+Dialogs without a title bar, and every dialog shown inside the main window,
+get an outline and the popup background, with wider margins so content keeps
+off that outline.
 
 The margins come from the app's style (view.ProxyStyle asks extra_margin(...)),
 not from `padding` in styles.qss: Qt ignores padding on dialogs, and

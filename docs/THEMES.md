@@ -96,11 +96,11 @@ and bevel in the quicksearch popup.
 | `header_bg` | Column-header gradient, input borders |
 | `muted_fg` | Header text, labels, checkboxes, item descriptions, Command Palette / Go To caption |
 | `bright_fg` | Input text, status-bar text, highlighted matches |
-| `border` | Overlay / filter-bar border, status-bar top edge |
+| `border` | Overlay / filter-bar border, status-bar top edge, dialog outline |
 | `input_bg` | Text fields (rename editor, prompts) |
 | `window_bg` | Window and dialog chrome |
 | `statusbar_bg_top` | Status-bar gradient |
-| `popup_bg` | Quicksearch / command-palette background |
+| `popup_bg` | Quicksearch / command-palette background, dialog background |
 | `popup_item_fg` | Command-palette entry titles |
 | `popup_selected_bg` | Selected entry in the palette |
 | `scrim_bg` | The dim over the main window while a dialog is open |

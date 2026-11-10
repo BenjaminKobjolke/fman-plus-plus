@@ -3,7 +3,7 @@
 from fman.impl.themes import build_palette, list_themes, load_theme
 from fman_unittest.impl.test_themes import _THEMES_DIR, contrast_ratio
 from os.path import join
-from PyQt5.QtGui import QPalette
+from PyQt5.QtGui import QColor, QPalette
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 
@@ -18,11 +18,21 @@ _TEXT_PAIRS = (
 	('popup_input_fg', 'popup_input_bg'),
 	('muted_fg', 'pane_bg'),
 	('bright_fg', 'pane_bg'),
+	('bright_fg', 'popup_bg'),
 	('bright_fg', 'input_bg')
 )
 
 
 class ThemeContrastTest(TestCase):
+	def test_dialog_outline_differs_from_dialog_background_in_every_theme(self):
+		for theme_name in list_themes([_THEMES_DIR]):
+			colors = load_theme(theme_name, [_THEMES_DIR])
+			with self.subTest(theme=theme_name):
+				self.assertNotEqual(
+					QColor(colors['border']).rgba(),
+					QColor(colors['popup_bg']).rgba()
+				)
+
 	def test_text_background_pairs_have_minimum_contrast_in_every_theme(self):
 		for theme_name in list_themes([_THEMES_DIR]):
 			colors = load_theme(theme_name, [_THEMES_DIR])

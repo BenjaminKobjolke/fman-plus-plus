@@ -306,7 +306,7 @@ QRadioButton::checked {
 	color: $bright_fg;
 }
 
-/* A dialog without a title bar, because the main window hides its own. */
+/* Dialogs without a title bar and every dialog shown inside the main window. */
 *[frameless="true"] {
 	background-color: $popup_bg;
 	border: 1px solid $border;

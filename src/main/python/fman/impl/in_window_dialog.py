@@ -3,10 +3,13 @@
 from PyQt5.QtCore import QEvent, QEventLoop, QObject, Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QFrame
 from PyQt5 import sip
+from fman.impl.frameless_dialog import make_frameless
 
 
 def exec_in_window(dialog, parent):
 	previous_focus = QApplication.focusWidget()
+	make_frameless(dialog)
+	# Set the property before reparenting so Qt polishes with the dialog style.
 	dialog.setParent(parent, Qt.SubWindow)
 	dialog.setAutoFillBackground(True)
 	scrim = Scrim(parent)
