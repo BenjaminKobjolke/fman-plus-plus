@@ -82,9 +82,10 @@ class DemoPlayerTest(TestCase):
 			'fman.impl.demo.foreground_process_window', return_value=True,
 		) as foreground:
 			with patch.object(player, '_advance') as advance:
-				player._expect_child_window(ExpectChildWindow())
+				player._expect_child_window(
+					ExpectChildWindow('opened-by-new-instance'))
 
-		foreground.assert_called_once_with(123)
+		foreground.assert_called_once_with(123, 'opened-by-new-instance')
 		advance.assert_called_once_with()
 
 	def test_expect_child_window_fails_when_child_window_never_appears(self):
@@ -101,7 +102,7 @@ class DemoPlayerTest(TestCase):
 				with patch('fman.impl.demo.QTimer.singleShot') as single_shot:
 					with patch.object(player, '_fail') as fail:
 						player._expect_child_window(
-							ExpectChildWindow(timeout_s=0.5))
+							ExpectChildWindow('missing', timeout_s=0.5))
 
 		fail.assert_called_once_with()
 		single_shot.assert_not_called()

@@ -15,7 +15,7 @@ LAUNCH_CLIPS = {
 			Pause(1.5),
 			Screenshot('single-instance-primary'),
 			LaunchFman(('--new-instance', 'opened-by-new-instance')),
-			ExpectChildWindow(),
+			ExpectChildWindow('opened-by-new-instance'),
 			Pause(2.0),
 			ScreenStill('single-instance-new-window'),
 			Pause(1.2),

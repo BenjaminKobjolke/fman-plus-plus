@@ -215,6 +215,9 @@ class DemoSetupTest(unittest.TestCase):
 			index for index, action in enumerate(actions)
 			if isinstance(action, ExpectChildWindow)
 		)
+		self.assertEqual(
+			actions[expect_window_index].folder, 'opened-by-new-instance',
+		)
 		new_window_index = next(
 			index for index, action in enumerate(actions)
 			if getattr(action, 'name', None) == 'single-instance-new-window'

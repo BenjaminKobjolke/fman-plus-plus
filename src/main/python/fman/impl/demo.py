@@ -19,6 +19,7 @@ The scripts it plays live in ``demo_scripts.py``.
 """
 
 from dataclasses import dataclass
+import logging
 import os
 import subprocess
 import sys
@@ -65,8 +66,9 @@ class LaunchFman:
 
 @dataclass(frozen=True)
 class ExpectChildWindow:
-	"""Bring the most recently launched fman window to the foreground."""
+	"""Bring the new fman window showing the folder to the foreground."""
 
+	folder: str
 	timeout_s: float = 20.0
 
 
@@ -204,10 +206,19 @@ class DemoPlayer(QObject):
 			if (
 				child is not None
 				and child.poll() is None
-				and foreground_process_window(child.pid)
+				and foreground_process_window(child.pid, step.folder)
 			):
 				self._advance()
 			elif time.monotonic() >= deadline:
+				if child is None:
+					logging.getLogger(__name__).warning(
+						'Timed out waiting for child window (no child).'
+					)
+				else:
+					logging.getLogger(__name__).warning(
+						'Timed out waiting for child window from PID %s '
+						'(exit code: %s).', child.pid, child.poll(),
+					)
 				self._fail()
 			else:
 				QTimer.singleShot(100, check)
