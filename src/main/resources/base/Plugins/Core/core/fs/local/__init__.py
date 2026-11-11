@@ -1,5 +1,6 @@
 from core.trash import move_to_trash
 from core.util import filenotfounderror
+from core.fs.local.wsl_links import ERROR_CANT_ACCESS_FILE
 from datetime import datetime
 from errno import ENOENT
 from fman import PLATFORM, Task
@@ -68,6 +69,11 @@ class LocalFileSystem(LocalTransfers, FileSystem):
 		try:
 			return os.stat(os_path)
 		except FileNotFoundError:
+			return os.stat(os_path, follow_symlinks=False)
+		except OSError as e:
+			if getattr(e, 'winerror', None) != ERROR_CANT_ACCESS_FILE:
+				raise
+			# WSL links to Linux paths cannot be followed from Windows.
 			return os.stat(os_path, follow_symlinks=False)
 	def size_bytes(self, path):
 		return self.stat(path).st_size

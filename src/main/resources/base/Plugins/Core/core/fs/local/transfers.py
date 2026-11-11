@@ -15,6 +15,7 @@ from fman.url import (
 
 from core.fs.local import locks
 from core.fs.local import read_only
+from core.fs.local import wsl_links
 
 
 class LocalTransfers:
@@ -135,38 +136,54 @@ class CopyFile(Task):
 		dst_existed = self._fs.exists(dst_urlpath)
 		src = as_human_readable(self._src_url)
 		dst = as_human_readable(self._dst_url)
-		if islink(src):
+		if wsl_links.is_wsl_link(src):
+			self._write_temp_file(
+				dst, dst_existed,
+				lambda temp: self._copy_wsl_link(src, temp)
+			)
+		elif islink(src):
 			os.symlink(os.readlink(src), dst)
 			copystat(src, dst, follow_symlinks=False)
 		else:
-			if dst_existed:
-				locks.raise_if_locked(dst)
-			temp = dst + '.fman-partial'
-			try:
-				with open(src, 'rb') as fsrc:
-					with open(temp, 'wb') as fdst:
-						num_written = 0
-						while True:
-							self.check_canceled()
-							buf = fsrc.read(16 * 1024)
-							if not buf:
-								break
-							num_written += fdst.write(buf)
-							self.set_progress(num_written)
-				copystat(src, temp, follow_symlinks=False)
-				if dst_existed:
-					with read_only.writable_destination(dst):
-						os.replace(temp, dst)
-				else:
-					os.replace(temp, dst)
-			except BaseException:
-				try:
-					remove(temp)
-				except FileNotFoundError:
-					pass
-				raise
+			self._write_temp_file(
+				dst, dst_existed,
+				lambda temp: self._copy_regular_file(src, temp)
+			)
 		if not dst_existed:
 			self._fs.notify_file_added(dst_urlpath)
+	def _write_temp_file(self, dst, dst_existed, write_temp):
+		if dst_existed:
+			locks.raise_if_locked(dst)
+		temp = dst + '.fman-partial'
+		try:
+			write_temp(temp)
+			if dst_existed:
+				with read_only.writable_destination(dst):
+					os.replace(temp, dst)
+			else:
+				os.replace(temp, dst)
+		except BaseException:
+			try:
+				remove(temp)
+			except FileNotFoundError:
+				pass
+			raise
+	def _copy_wsl_link(self, src, temp):
+		with open(temp, 'wb'):
+			pass
+		wsl_links.write_reparse_data(temp, wsl_links.read_reparse_data(src))
+	def _copy_regular_file(self, src, temp):
+		with open(src, 'rb') as fsrc:
+			with open(temp, 'wb') as fdst:
+				num_written = 0
+				while True:
+					self.check_canceled()
+					buf = fsrc.read(16 * 1024)
+					if not buf:
+						break
+					num_written += fdst.write(buf)
+					self.set_progress(num_written)
+		copystat(src, temp, follow_symlinks=False)
 
 
 class MoveByCopying(Task):
