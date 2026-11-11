@@ -138,7 +138,11 @@ Local copies and moves that copy across drives write regular files to a
 temporary `.fman-partial` name beside the destination, then publish the final
 name only after the copy and metadata update succeed. A failed or canceled copy
 removes the temporary file and preserves any old destination file until that
-publish. Symlinks keep their existing handling.
+publish. Ordinary symlinks keep their existing handling. WSL links to Linux-only paths
+are copied as identical links without administrator rights, but their timestamps
+are not preserved. A destination that cannot store reparse points (FAT, exFAT,
+or some network shares) shows the usual per-file error and lets the rest of the
+copy continue.
 
 Before a local file is moved across drives or replaces an existing copy
 destination, Core checks whether another program has it open. This happens

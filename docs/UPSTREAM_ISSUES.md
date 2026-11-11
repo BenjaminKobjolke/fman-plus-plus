@@ -13,7 +13,7 @@ Status: `fixed`, `already fixed` (works here already), `skipped` (with reason),
 
 | Issue | Title | Labels | Status | Date | Note |
 |-------|-------|--------|--------|------|------|
-| [#470](https://github.com/mherrmann/fman/issues/470) | Error copying file on windows | bug, windows | deferred | 2026-11-11 | The report concerns WSL-created Linux symlinks that Windows reports as WinError 1920 during directory copying; needs a focused Windows/WSL reproduction and regression test before changing the transfer path. |
+| [#470](https://github.com/mherrmann/fman/issues/470) | Error copying file on windows | bug, windows | fixed | 2026-11-11 | Fixed by todo #15689: copies WSL Linux-only symlinks as identical reparse points, with regression coverage. |
 | [#467](https://github.com/mherrmann/fman/issues/467) | GoTo does not autocomplete dirs in network drive | bug, windows, 1 vote | already fixed | 2026-11-11 | GoTo suggestions enumerate local directories through `SuggestLocations.LocalFileSystem`, which also handles mapped drive letters. |
 | [#466](https://github.com/mherrmann/fman/issues/466) | Use system "Open with" | enhancement, 4 votes | skipped | 2026-11-11 | fman keeps its configured file type actions and custom app picker; native system menus conflict with the fork's established context-menu direction. |
 | [#464](https://github.com/mherrmann/fman/issues/464) | Command line flag for single instance | enhancement, 5 votes | fixed | 2026-11-11 | Default single-instance mode forwards paths to the running window; `--new-instance` opens a separate window for one launch. |
