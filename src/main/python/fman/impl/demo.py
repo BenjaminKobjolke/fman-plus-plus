@@ -4,7 +4,8 @@ fman opts into that tool's contract (see the tool repo's
 docs/AUTOMATION_INTERFACE.md): in demo mode it plays a scripted sequence of UI
 actions and reports demo_started/screenshot/demo_ended events over a socket so
 the tool can record a GIF/MP4 plus PNG stills. fman renders each still itself
-with Qt and uploads it inline; video frames are still captured by the tool.
+with Qt and uploads it inline; video frames and ``ScreenStill`` steps are
+captured by the tool from the screen.
 
 The reusable step model, socket client and CLI parser come from the stdlib-only
 core of the ``automated_screenshot_connector`` library (installed via
@@ -18,11 +19,14 @@ The scripts it plays live in ``demo_scripts.py``.
 """
 
 from dataclasses import dataclass
+import time
 
 from PyQt5.QtCore import QObject, QTimer
 from PyQt5.QtGui import QContextMenuEvent
 from PyQt5.QtWidgets import QAbstractItemView, QApplication, QMenu
-from fman.impl.util.qt.key_events import parse_chord, post_chord, post_text
+from fman.impl.util.qt.key_events import (
+	parse_chord, post_chord, post_text,
+)
 
 from automated_screenshot_connector.steps import (
 	CustomStep, InsertChar, PressReturn, SendKey, SendScreenshot, flatten,
@@ -37,6 +41,22 @@ END_HOLD_MS = 1000
 @dataclass(frozen=True)
 class OpenContextMenu:
 	"""Open the file context menu for the cursor's row, like the Menu key."""
+
+
+@dataclass(frozen=True)
+class ScreenStill:
+	"""Ask the recording tool to capture a still directly from the screen.
+
+	Separate windows such as the progress window are included in the capture.
+	"""
+	name: str
+
+
+@dataclass(frozen=True)
+class WaitForOverwriteQuestion:
+	"""Capture and answer the overwrite question, failing if it never opens."""
+
+	timeout_s: float = 30.0
 
 
 class DemoPlayer(QObject):
@@ -91,8 +111,51 @@ class DemoPlayer(QObject):
 		elif isinstance(action, CustomStep):
 			if isinstance(action.step, OpenContextMenu):
 				self._open_context_menu()
+			elif isinstance(action.step, ScreenStill):
+				self._client.send_screenshot(action.step.name)
+			elif isinstance(action.step, WaitForOverwriteQuestion):
+				self._wait_for_overwrite_question(action.step)
+				return
 			# Other custom steps remain ignored; a Wait's delay already elapsed.
 		self._advance()
+
+	def _wait_for_overwrite_question(self, step):
+		from fman.impl.overwrite_dialog import OverwriteDialog
+		from fman.impl.progress_dialog import ProgressDialog
+
+		deadline = time.monotonic() + step.timeout_s
+
+		def check():
+			dialogs = self._window.findChildren(OverwriteDialog)
+			dialog = next(
+				(dialog for dialog in dialogs if dialog.isVisible()), None
+			)
+			progress_is_visible = any(
+				window.isVisible()
+				for window in self._window.findChildren(ProgressDialog)
+			)
+			if dialog is not None and not progress_is_visible:
+				self._client.send_screenshot('ftp-overwrite-question')
+
+				def answer():
+					post_chord(dialog, 'Return')
+					self._advance()
+
+				# ScreenStill is captured on the tool's next screen frame.
+				QTimer.singleShot(1000, answer)
+			elif time.monotonic() >= deadline:
+				self._fail()
+			else:
+				QTimer.singleShot(100, check)
+
+		check()
+
+	def _fail(self):
+		"""Close a failed recording instead of raising from a timer callback."""
+		self._client.close()
+		instance = QApplication.instance()
+		if instance is not None:
+			instance.quit()
 
 	def _target(self):
 		popup = QApplication.activePopupWidget()

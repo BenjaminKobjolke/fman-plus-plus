@@ -18,12 +18,21 @@ when a change affects how the file list looks.
 
 Demo 16 plays the fman account flow against the seeded DemoAccount fake; it
 never reaches the real account or network.
+
+Demo 17 needs the FTP plugin and fake server seeded by run_fman_demo.bat. It
+checks that the progress window hides during a task question and returns after.
 """
 
 from automated_screenshot_connector import (
 	Command, DemoScript, Pause, PressKey, Screenshot, TypeText,
 )
-from fman.impl.demo import OpenContextMenu
+from fman.impl.demo import (
+	OpenContextMenu, ScreenStill, WaitForOverwriteQuestion,
+)
+
+# Keep this URL's port and account in sync with demo_ftp_server.py's
+# PORT and authorizer.
+DEMO_FTP_URL = 'ftp://demo:demo@127.0.0.1:21217/'
 
 DIALOG_CLIPS = {
 	11: DemoScript(
@@ -147,6 +156,33 @@ DIALOG_CLIPS = {
 			TypeText('fman account'), Pause(1.0),
 			Screenshot('fman-account-palette-after-sign-out'),
 			PressKey('Escape'), Pause(1.0),
+		),
+	),
+	17: DemoScript(
+		id=17,
+		name='ftp-overwrite',
+		steps=(
+			Pause(1.5),
+			PressKey('Tab'),
+			PressKey('Ctrl+Shift+P'),
+			Pause(0.6),
+			Command('open ftp location'),
+			Pause(1.0),
+			PressKey('Ctrl+A'),
+			TypeText(DEMO_FTP_URL),
+			PressKey('Return'),
+			Pause(4.0),
+			Screenshot('ftp-pane'),
+			PressKey('Tab'),
+			PressKey('F5'),
+			Pause(1.5),
+			PressKey('Return'),
+			Pause(2.3),
+			ScreenStill('ftp-progress-before-question'),
+			WaitForOverwriteQuestion(),
+			Pause(1.5),
+			ScreenStill('ftp-progress-after-answer'),
+			Pause(4.0),
 		),
 	),
 }

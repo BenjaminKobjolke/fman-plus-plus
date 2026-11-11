@@ -19,7 +19,9 @@ if CONNECTOR_AVAILABLE:
 		DemoScript,
 		SendScreenshot,
 	)
-	from fman.impl.demo import DemoPlayer, OpenContextMenu
+	from fman.impl.demo import (
+		DemoPlayer, OpenContextMenu, ScreenStill, WaitForOverwriteQuestion,
+	)
 
 
 @unittest.skipUnless(
@@ -70,6 +72,55 @@ class DemoPlayerTest(TestCase):
 
 		screenshots.screenshot_png.assert_called_once_with()
 		client.send_screenshot.assert_called_once_with('still', png=b'png-bytes')
+
+	def test_screen_still_asks_the_recording_tool_to_capture_the_screen(self):
+		client = MagicMock(spec=DemoClient)
+		player = DemoPlayer(
+			QObject(), client,
+			DemoScript(id=99, name='test', steps=(CustomStep(ScreenStill('x')),)),
+			1, MagicMock(spec=AutomationActions),
+		)
+
+		with patch('fman.impl.demo.QTimer'):
+			player._execute(CustomStep(ScreenStill('x')))
+
+		client.send_screenshot.assert_called_once_with('x')
+
+	def test_overwrite_wait_captures_only_after_the_question_is_open(self):
+		from fman.impl.overwrite_dialog import OverwriteDialog
+
+		client = MagicMock(spec=DemoClient)
+		player = self._player(client, MagicMock())
+		dialog = OverwriteDialog(self.window, 'Replace?', None)
+		dialog.show()
+		self.addCleanup(dialog.deleteLater)
+
+		with patch('fman.impl.demo.post_chord') as post_chord:
+			with patch('fman.impl.demo.QTimer.singleShot') as single_shot:
+				with patch.object(player, '_advance') as advance:
+					player._wait_for_overwrite_question(
+						WaitForOverwriteQuestion())
+					callback = single_shot.call_args.args[1]
+					callback()
+
+		client.send_screenshot.assert_called_once_with('ftp-overwrite-question')
+		post_chord.assert_called_once_with(dialog, 'Return')
+		advance.assert_called_once_with()
+
+	def test_overwrite_wait_timeout_closes_the_recording_session(self):
+		client = MagicMock(spec=DemoClient)
+		player = self._player(client, MagicMock())
+		application = MagicMock()
+
+		with patch('fman.impl.demo.time.monotonic', side_effect=(0, 31)):
+			with patch(
+				'fman.impl.demo.QApplication.instance', return_value=application,
+			):
+				player._wait_for_overwrite_question(
+					WaitForOverwriteQuestion(timeout_s=30))
+
+		client.close.assert_called_once_with()
+		application.quit.assert_called_once_with()
 
 	def test_open_context_menu_posts_a_keyboard_event_at_the_current_row(self):
 		view = QTableView(self.window)

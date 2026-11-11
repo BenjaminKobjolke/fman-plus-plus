@@ -83,6 +83,16 @@ if "%1"=="10" (
 	)
 )
 
+REM Demo 17 needs the FTP plugin to connect to its local overwrite fixture.
+if "%1"=="17" (
+	if exist "%APPDATA%\fman\Plugins\User\FMAN_FTPClient" (
+		xcopy /e /i /q /y "%APPDATA%\fman\Plugins\User\FMAN_FTPClient" "%FMAN_DATA_DIRECTORY%\Plugins\User\FMAN_FTPClient\" >nul
+	) else (
+		echo ERROR: FMAN_FTPClient is not installed in %APPDATA%\fman\Plugins\User - cannot record demo 17.
+		exit /b 1
+	)
+)
+
 REM Demo 16 uses a fake signed-in account and API; the null keyring above keeps
 REM the real credential store out of the recording.
 if "%1"=="16" xcopy /e /i /q /y "%CD%\tools\create_media\DemoAccount" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoAccount\" >nul
@@ -102,6 +112,20 @@ if %1 GEQ 3 (
 	xcopy /q /y "%CD%\examples\left_pane\*" "!LEFT!\" >nul
 	xcopy /q /y "%CD%\examples\right_pane\*" "!LEFT!\" >nul
 )
+
+REM Demo 17 uploads this small site; site sorts first and contains the conflict.
+if "%1"=="17" mkdir "%LEFT%\site\css" 2>nul
+if "%1"=="17" >"%LEFT%\site\index.html" echo Demo site
+if "%1"=="17" >"%LEFT%\site\about.html" echo About this demo
+if "%1"=="17" >"%LEFT%\site\contact.html" echo Contact this demo
+if "%1"=="17" >"%LEFT%\site\css\style.css" echo body { color: blue; }
+if "%1"=="17" >"%LEFT%\site\css\print.css" echo @media print { body { color: black; } }
+if "%1"=="17" set "FTP_SERVER_PID=%TEMP%\fman-demo-17-ftp.pid"
+if "%1"=="17" if exist "%FTP_SERVER_PID%" (
+	for /f %%p in (%FTP_SERVER_PID%) do taskkill /pid %%p /t /f >nul 2>nul
+	del "%FTP_SERVER_PID%"
+)
+if "%1"=="17" powershell -NoProfile -Command "$p=Start-Process -FilePath '%FMAN_PYTHON%' -ArgumentList @('%CD%\tools\create_media\demo_ftp_server.py','%TEMP%\fman-demo-17-ftp') -PassThru; Set-Content -LiteralPath '%FTP_SERVER_PID%' -Value $p.Id"
 
 REM Demo 10 turns the rain translucent, and what shows through is the file
 REM list underneath - so the right pane cannot be the empty one it gets above.
@@ -148,3 +172,8 @@ REM through it too. Running fman by hand skips that; close what is on screen.
   --automation-demo-width %3 ^
   --automation-demo-height %4 ^
   "%LEFT%" "%RIGHT%"
+
+if "%1"=="17" if exist "%FTP_SERVER_PID%" (
+	for /f %%p in (%FTP_SERVER_PID%) do taskkill /pid %%p /t /f >nul 2>nul
+	del "%FTP_SERVER_PID%"
+)
