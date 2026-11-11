@@ -78,6 +78,7 @@ fman++ is a fork of [mherrmann/fman](https://github.com/mherrmann/fman). This pa
 
 - **Reuse one running window.** Opening a folder from Explorer or the command line sends it to the existing fman window. See [Single instance](SINGLE_INSTANCE.md) (upstream [#125](https://github.com/mherrmann/fman/issues/125)).
 - **Minimize fman to the system tray.** Restore it with tray commands, a global shortcut or sign-in startup. See [System tray](SYSTEM_TRAY.md) (upstream [#144](https://github.com/mherrmann/fman/issues/144)).
+- **Add the `fman` command to PATH.** Toggle it from the command palette on Windows; installer updates keep a removal in effect. See [fman command in PATH](FMAN_IN_PATH.md) (upstream [#463](https://github.com/mherrmann/fman/issues/463)).
 - **Browse and connect network shares.** Go To accepts UNC and SMB paths, and the command palette can connect or disconnect shares. See [Windows network support](WINDOWS_NETWORK_SUPPORT.md) (upstream [#86](https://github.com/mherrmann/fman/issues/86)).
 - **Use Robocopy for Windows transfers.** Copy and move through a destination picker with progress, retries, threading and optional logs. See [Robocopy](ROBOCOPY.md).
 - **Keep network folders responsive.** Loading remote listings no longer freezes the window while Windows resolves icons and attributes. See [Windows network support](WINDOWS_NETWORK_SUPPORT.md).

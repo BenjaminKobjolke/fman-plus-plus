@@ -38,3 +38,6 @@ Most profile data moves with the portable folder. Some plugins store absolute
 paths in their own data; those paths will not follow the folder if the drive
 letter changes. Update those plugin paths after moving the copy to a drive with a
 different letter.
+
+Portable copies can add themselves to the Windows PATH. See [fman command in PATH](FMAN_IN_PATH.md)
+for the move warning and how to switch the command off.

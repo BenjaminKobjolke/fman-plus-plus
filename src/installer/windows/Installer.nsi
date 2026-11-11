@@ -173,8 +173,12 @@ fman_wait_done:
   ${GetSize} "$InstDir" "/S=0K" $0 $1 $2
   IntFmt $0 "0x%08X" $0
   WriteRegDWORD SHCTX "${UNINST_KEY}" "EstimatedSize" "$0"
+  ; Keep a removal made with "Toggle fman command in PATH" across updates.
+  ReadRegDWORD $0 HKCU "Software\${app_name}" "NoPathEntry"
+  StrCmp $0 "1" fman_path_skip
   Push "add"
   Call UpdateUserPath
+fman_path_skip:
 
 SectionEnd
 
@@ -214,6 +218,8 @@ Section "Uninstall"
   RMDir /r "$InstDir"
   Delete "$SMPROGRAMS\${app_name}.lnk"
   Delete "$SMPROGRAMS\${display_name}.lnk"
+  DeleteRegValue HKCU "Software\${app_name}" "NoPathEntry"
+  DeleteRegKey /ifempty HKCU "Software\${app_name}"
   DeleteRegKey /ifempty SHCTX "Software\${app_name}"
   DeleteRegKey SHCTX "${UNINST_KEY}"
 

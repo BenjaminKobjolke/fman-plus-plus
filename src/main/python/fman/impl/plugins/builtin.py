@@ -17,6 +17,11 @@ def toggle_start_with_windows(settings):
 	from fman.impl.autostart import toggle
 	return toggle(settings)
 
+def toggle_fman_in_path():
+	# Keep winreg out of imports on platforms where tray commands are absent.
+	from fman.impl.command_path import toggle
+	return toggle()
+
 def toggle_explorer_replacement(settings):
 	# Keep winreg out of imports on platforms where tray commands are absent.
 	from fman.impl.explorer_replacement import toggle
@@ -153,6 +158,11 @@ class BuiltinPlugin(Plugin):
 				window_chrome.pane_status.toggle_in_status_bar(
 					self.window._widget)
 
+		class ToggleFmanInPath(ApplicationCommand):
+			aliases = ('Toggle fman command in PATH',)
+			def __call__(self):
+				self.window._widget.show_status_message(toggle_fman_in_path())
+
 		if tray is not None:
 			class MinimizeToTray(ApplicationCommand):
 				aliases = ('Minimize to system tray',)
@@ -196,6 +206,7 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(ToggleScriptingApi)
 		self._register_application_command(TogglePaneStatusLines)
 		self._register_application_command(TogglePaneMessagesInStatusBar)
+		self._register_application_command(ToggleFmanInPath)
 		if tray is not None:
 			self._register_application_command(MinimizeToTray)
 			self._register_application_command(ToggleMinimizeToTray)

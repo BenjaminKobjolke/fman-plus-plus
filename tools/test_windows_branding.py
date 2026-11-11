@@ -75,7 +75,17 @@ def check_installer():
     assert 'Delete "$SMPROGRAMS\\${display_name}.lnk"' in uninstall
 
     install = script.split("Section\n", 1)[1].split("SectionEnd", 1)[0]
+    path_opt_out = 'ReadRegDWORD $0 HKCU "Software\\${app_name}" "NoPathEntry"'
+    path_skip = 'StrCmp $0 "1" fman_path_skip'
+    assert path_opt_out in install
+    assert path_skip in install
+    assert install.index(path_opt_out) < install.index('Push "add"')
+    assert install.index(path_skip) < install.index('Push "add"')
     assert 'Push "add"\n  Call UpdateUserPath' in install
+    assert (
+        'DeleteRegValue HKCU "Software\\${app_name}" "NoPathEntry"'
+        in uninstall
+    )
     path_helper = script.split(
         "!macro DefineUpdateUserPath function", 1
     )[1].split("!macroend", 1)[0]
