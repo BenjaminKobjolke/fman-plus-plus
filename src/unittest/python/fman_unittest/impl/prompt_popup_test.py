@@ -127,6 +127,13 @@ class PromptPopupTest(TestCase):
 			get_completions=lambda text: ['alpha/', 'beta/']
 		)
 		self.addCleanup(self.prompt.close)
+	def _apply_default_stylesheet(self):
+		from pathlib import Path
+		from fman.impl.themes import DEFAULT_TOKENS, substitute
+		previous_style_sheet = self.app.styleSheet()
+		self.addCleanup(self.app.setStyleSheet, previous_style_sheet)
+		style_sheet = Path('src/main/resources/base/styles.qss').read_text()
+		self.app.setStyleSheet(substitute(style_sheet, DEFAULT_TOKENS))
 
 	def test_closing_prompt_stops_suggestion_worker(self):
 		worker = self.prompt._suggestions._worker
@@ -208,17 +215,10 @@ class PromptPopupTest(TestCase):
 		self.assertEqual(input_size + 2, prompt._header.font().pointSizeF())
 		self.assertEqual(input_size - 2, detail.font().pointSizeF())
 	def test_title_path_and_input_text_share_a_left_edge(self):
-		from fman.impl.themes import DEFAULT_TOKENS, substitute
-		from pathlib import Path
-		previous_style_sheet = self.app.styleSheet()
-		self.addCleanup(self.app.setStyleSheet, previous_style_sheet)
-		previous_style_name = self.app.style().objectName()
-		self.addCleanup(
-			self.app.setStyle, QStyleFactory.create(previous_style_name)
-		)
-		self.app.setStyle(ProxyStyle(QStyleFactory.create('Fusion')))
-		style_sheet = Path('src/main/resources/base/styles.qss').read_text()
-		self.app.setStyleSheet(substitute(style_sheet, DEFAULT_TOKENS))
+		self._apply_default_stylesheet()
+		style = ProxyStyle(QStyleFactory.create('Fusion'))
+		style.setParent(self.parent)
+		self.parent.setStyle(style)
 		prompt = Prompt(
 			self.parent, _StubApp(), self.css,
 			'Move "visible.txt" to\nC:/target', 'visible.txt'
@@ -243,12 +243,7 @@ class PromptPopupTest(TestCase):
 			).x()
 			self.assertEqual(input_text_left, label_text_left)
 	def test_title_has_space_before_path(self):
-		from fman.impl.themes import DEFAULT_TOKENS, substitute
-		from pathlib import Path
-		previous_style_sheet = self.app.styleSheet()
-		self.addCleanup(self.app.setStyleSheet, previous_style_sheet)
-		style_sheet = Path('src/main/resources/base/styles.qss').read_text()
-		self.app.setStyleSheet(substitute(style_sheet, DEFAULT_TOKENS))
+		self._apply_default_stylesheet()
 		prompt = Prompt(
 			self.parent, _StubApp(), self.css, 'Move "x" to\nC:/target'
 		)
