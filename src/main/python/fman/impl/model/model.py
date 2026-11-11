@@ -67,6 +67,7 @@ class Model(SortFilterTableModel, DragAndDrop):
 	location_loaded = pyqtSignal(str)
 	file_renamed = pyqtSignal(str, str)
 	location_disappeared = pyqtSignal(str)
+	location_unavailable = pyqtSignal(str, str)
 
 	def __init__(
 		self, fs, location, columns, sort_column=0, ascending=True,
@@ -107,17 +108,27 @@ class Model(SortFilterTableModel, DragAndDrop):
 		except FileNotFoundError:
 			self.location_disappeared.emit(self._location)
 			return
+		except OSError as e:
+			self._on_listing_failed(e)
+			return
 		batch = []
 		batch_deadline = time() + _INIT_BATCH_SECS
+		has_read_file_name = False
 		while not self._shutdown:
 			try:
 				file_name = next(file_names)
 			except FileNotFoundError:
 				self.location_disappeared.emit(self._location)
 				return
-			except (StopIteration, OSError):
+			except StopIteration:
+				break
+			except OSError as e:
+				if not has_read_file_name:
+					self._on_listing_failed(e)
+					return
 				break
 			else:
+				has_read_file_name = True
 				url = join(self._location, file_name)
 				try:
 					file_ = self._init_file(url)
@@ -166,6 +177,13 @@ class Model(SortFilterTableModel, DragAndDrop):
 			return
 		self._file_watcher.start()
 		self._load_remaining_files()
+	def _on_listing_failed(self, e):
+		# Empty optical drives can reject the first listing; don't cache that
+		# failure so inserting media and reopening the drive works (#474).
+		self._fs.clear_cache(self._location)
+		self.location_unavailable.emit(
+			self._location, e.strerror or str(e)
+		)
 	def _init_file(self, url):
 		# Load the first column because it is used as an "anchor" when the user
 		# types in arbitrary characters:

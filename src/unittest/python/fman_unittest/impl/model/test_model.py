@@ -11,7 +11,7 @@ from fman_unittest.impl.model import StubFileSystem
 from PyQt5.QtCore import QObject, pyqtSignal
 from random import shuffle
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import random
 
@@ -334,6 +334,99 @@ class InitStreamsFilesTest(ExecutorTestCase):
 		# The real one builds a QPixmap, which aborts without a QApplication:
 		self._patch('_get_empty_icon', lambda *_: None)
 
+class InitUnavailableLocationTest(ExecutorTestCase):
+	def test_listing_fails_before_first_name(self):
+		def iterdir(_):
+			def files():
+				raise PermissionError(13, 'The device is not ready')
+				yield
+			return files()
+		self._fs.iterdir = iterdir
+		unavailable = []
+		disappeared = []
+		self._model.location_unavailable.connect(
+			lambda *args: unavailable.append(args)
+		)
+		self._model.location_disappeared.connect(
+			lambda *args: disappeared.append(args)
+		)
+		callback = MagicMock()
+
+		Model._init.__wrapped__(self._model, callback)
+
+		self._fs.clear_cache.assert_called_once_with('stub://')
+		self.assertEqual(
+			[('stub://', 'The device is not ready')], unavailable
+		)
+		self.assertEqual([], disappeared)
+		callback.assert_not_called()
+		self.assertEqual(0, self._model.rowCount())
+	def test_error_after_first_name_keeps_rows(self):
+		def iterdir(_):
+			yield 'a'
+			raise OSError('boom')
+		self._fs.iterdir = iterdir
+		unavailable = []
+		self._model.location_unavailable.connect(
+			lambda *args: unavailable.append(args)
+		)
+		callback = MagicMock()
+
+		Model._init.__wrapped__(self._model, callback)
+
+		self.assertEqual([], unavailable)
+		self.assertEqual(1, self._model.rowCount())
+		callback.assert_called_once_with()
+	def test_file_not_found_still_disappears(self):
+		def iterdir(_):
+			def files():
+				raise FileNotFoundError('gone')
+				yield
+			return files()
+		self._fs.iterdir = iterdir
+		unavailable = []
+		disappeared = []
+		self._model.location_unavailable.connect(
+			lambda *args: unavailable.append(args)
+		)
+		self._model.location_disappeared.connect(
+			lambda *args: disappeared.append(args)
+		)
+
+		Model._init.__wrapped__(self._model, lambda: None)
+
+		self.assertEqual([], unavailable)
+		self.assertEqual([('stub://',)], disappeared)
+	def test_reason_falls_back_to_str(self):
+		def iterdir(_):
+			def files():
+				raise OSError('boom')
+				yield
+			return files()
+		self._fs.iterdir = iterdir
+		unavailable = []
+		self._model.location_unavailable.connect(
+			lambda *args: unavailable.append(args)
+		)
+
+		Model._init.__wrapped__(self._model, lambda: None)
+
+		self.assertEqual([('stub://', 'boom')], unavailable)
+	def setUp(self):
+		super().setUp()
+		self._fs = StubFileSystem({})
+		clear_cache = lambda _: None
+		self._fs.clear_cache = MagicMock(
+			spec=clear_cache, wraps=clear_cache
+		)
+		self._model = Model(self._fs, 'stub://', [NameColumn()])
+		self._model._file_watcher = MagicMock(spec=FileWatcher)
+		self._model._load_remaining_files = lambda *_, **__: None
+		# The real one builds a QPixmap, which aborts without a QApplication:
+		patcher = patch.object(model_module, '_get_empty_icon', lambda *_: None)
+		patcher.start()
+		self.addCleanup(patcher.stop)
+
 class ModelSortTest(ExecutorTestCase):
 
 	"""
@@ -481,6 +574,66 @@ class SortedFileSystemModelShutdownTest(TestCase):
 		model.shutdown()
 		self.assertNotIn(model._on_file_removed, fs.file_removed._callbacks)
 		model.shutdown()
+
+class SortedFileSystemModelUnavailableTest(TestCase):
+	def test_goes_back_to_previous_location_and_reemits(self):
+		model = self._create_model()
+		model._previous_location = 'file://C:'
+		unavailable = []
+		model.location_unavailable.connect(
+			lambda *args: unavailable.append(args)
+		)
+		with patch.object(model, 'set_location') as set_location:
+			model._on_location_unavailable('file://D:', 'not ready')
+
+		set_location.assert_called_once_with('file://C:')
+		self.assertEqual([('file://D:', 'not ready')], unavailable)
+	def test_falls_back_to_null_location_without_previous(self):
+		model = self._create_model()
+		model._previous_location = 'file://D:'
+		with patch.object(model, 'set_location') as set_location:
+			model._on_location_unavailable('file://D:', 'not ready')
+
+		set_location.assert_called_once_with('null://')
+	def test_falls_back_to_null_location_when_going_back_fails(self):
+		model = self._create_model()
+		model._previous_location = 'file://C:'
+		unavailable = []
+		model.location_unavailable.connect(
+			lambda *args: unavailable.append(args)
+		)
+		with patch.object(
+			model, 'set_location', side_effect=[OSError('cannot go back'), None]
+		) as set_location:
+			model._on_location_unavailable('file://D:', 'not ready')
+
+		self.assertEqual(
+			[call('file://C:'), call('null://')], set_location.call_args_list
+		)
+		self.assertEqual([('file://D:', 'not ready')], unavailable)
+	def test_set_location_main_records_previous_location(self):
+		model = self._create_model()
+		old_model = MagicMock(spec=Model)
+		old_model.get_location.return_value = 'file://C:'
+		with patch.object(model, 'sourceModel', return_value=old_model):
+			with patch.object(model, 'setSourceModel'):
+				with patch.object(model, '_connect_signals'):
+					with patch.object(model, '_disconnect_signals'):
+						with patch('fman.impl.model.Model'):
+							model._set_location_main.__wrapped__(
+								model, 'file://D:', [], 0, True, lambda: None
+							)
+
+		self.assertEqual('file://C:', model._previous_location)
+	def _create_model(self):
+		class StubFileSystem:
+			def __init__(self):
+				self.file_removed = Event()
+				self.columns_changed = Event()
+
+		fs = StubFileSystem()
+		with patch.object(SortedFileSystemModel, 'set_location'):
+			return SortedFileSystemModel(None, fs, 'null://')
 
 class SortedFileSystemModelMixedSortingTest(TestCase):
 	def test_set_shader_is_retained_for_new_source_models(self):

@@ -1,7 +1,7 @@
 from fbs_runtime.platform import is_mac
 from fman import OK
 from fman import translate
-from fman.localization_keys import READY
+from fman.localization_keys import COULD_NOT_READ, READY
 from fman.impl.background import chrome_is_transparent, for_window
 from fman.impl.frameless_dialog import _MAX_SCREEN_SHARE, _MIN_TEXT_CHARS, \
 	make_frameless, text_width_floor
@@ -121,6 +121,7 @@ class DirectoryPaneWidget(QWidget):
 		self._home_cursor = None
 		self._model.location_changed.connect(self._on_location_changed)
 		self._model.location_loaded.connect(self._on_location_loaded)
+		self._model.location_unavailable.connect(self._on_location_unavailable)
 		self._location_bar.clicked.connect(
 			lambda: self.location_bar_clicked.emit(self)
 		)
@@ -321,6 +322,13 @@ class DirectoryPaneWidget(QWidget):
 			self._home_cursor = None
 		self._file_view.resizeColumnsToContents()
 		self.location_changed.emit(self)
+	def _on_location_unavailable(self, url, reason):
+		self._loading_timer.stop()
+		self._view_mode.set_loading('')
+		message = translate(COULD_NOT_READ) % (
+			as_human_readable(url), reason
+		)
+		self.window().show_alert(message)
 	def get_home_cursor(self):
 		return self._home_cursor
 

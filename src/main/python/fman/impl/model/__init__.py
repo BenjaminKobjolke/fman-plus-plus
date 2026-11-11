@@ -17,6 +17,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 
 	location_changed = pyqtSignal(str)
 	location_loaded = pyqtSignal(str)
+	location_unavailable = pyqtSignal(str, str)
 	file_renamed = pyqtSignal(str, str)
 	files_dropped = pyqtSignal(list, str, bool)
 	sort_order_changed = pyqtSignal(int, int)
@@ -33,6 +34,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		self._mix_dirs = False
 		self._already_visited = set()
 		self._num_rows_to_preload = 0
+		self._previous_location = null_location
 		self.set_location(null_location)
 		self._fs.file_removed.add_callback(self._on_file_removed)
 		self._fs.columns_changed.add_callback(self._on_columns_changed)
@@ -121,6 +123,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 	):
 		old_model = self.sourceModel()
 		if old_model:
+			self._previous_location = old_model.get_location()
 			self._disconnect_signals(old_model)
 		new_model = Model(
 			self._fs, url, columns, sort_col_index, ascending,
@@ -202,6 +205,15 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 					# parent directory we don't have access to. So catch all
 					# OSErrors and in the worst case go to null://.
 					self._on_file_removed(dir_)
+	def _on_location_unavailable(self, url, reason):
+		location = self._previous_location
+		if location == url:
+			location = self._null_location
+		try:
+			self.set_location(location)
+		except OSError:
+			self.set_location(self._null_location)
+		self.location_unavailable.emit(url, reason)
 	def _on_columns_changed(self, url_or_scheme):
 		location = self.get_location()
 		if (
@@ -222,6 +234,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		# support it. So we need Python wrappers "_emit_...":
 		model.location_loaded.connect(self._emit_location_loaded)
 		model.location_disappeared.connect(self._on_file_removed)
+		model.location_unavailable.connect(self._on_location_unavailable)
 		model.file_renamed.connect(self._emit_file_renamed)
 		model.files_dropped.connect(self._emit_files_dropped)
 		model.sort_order_changed.connect(self._emit_sort_order_changed)
@@ -231,6 +244,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		# doesn't support it. So we need Python wrappers "_emit_...":
 		model.location_loaded.disconnect(self._emit_location_loaded)
 		model.location_disappeared.disconnect(self._on_file_removed)
+		model.location_unavailable.disconnect(self._on_location_unavailable)
 		model.file_renamed.disconnect(self._emit_file_renamed)
 		model.files_dropped.disconnect(self._emit_files_dropped)
 		model.sort_order_changed.disconnect(self._emit_sort_order_changed)
