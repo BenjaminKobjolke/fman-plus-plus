@@ -48,6 +48,8 @@ media/demos/context-menu/
 media/demos/command-palette/
 # fman-account stills - recorded on demand for the screenshot check, never committed
 media/demos/fman-account/
+# FTP overwrite stills - recorded on demand for the screenshot check, never committed
+media/demos/ftp-overwrite/
 tmp
 tickets/
 # Written by tools\release_create.bat (release-tool create) - transient local state
