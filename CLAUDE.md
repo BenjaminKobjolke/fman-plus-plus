@@ -246,6 +246,9 @@ which stalled the GUI thread in directories with tens of thousands of entries.
 After touching `src/main/python/fman/impl/view/scroll_margin.py`, run
 `tools\run_view_tests.bat`.
 
+After touching `location_bar.py` or `location_segments.py`, run
+`tools\run_view_tests.bat`.
+
 After touching `compact_view.py` or `pane_view_mode.py`, run
 `tools\run_view_tests.bat`.
 
