@@ -14,6 +14,10 @@ from urllib.request import Request, urlopen
 import uuid
 
 from parser import parser as _parser
+from fixtures import (
+	make_fixture, make_large_folder, parse_core_settings,
+	validate_large_count, write_core_settings,
+)
 from session_reaper import (
 	SESSION_FILE, close_session, fman_process_identity, kill_process,
 	process_start_time, reap_stale,
@@ -65,21 +69,6 @@ def _detached_flags():
 	)
 
 
-def _make_fixture(path):
-	path.mkdir(parents=True, exist_ok=True)
-	(path / 'visible.txt').write_text('visible fixture\n', encoding='utf-8')
-	hidden = path / 'hidden.txt'
-	hidden.write_text('hidden fixture\n', encoding='utf-8')
-	(path / 'folder').mkdir(exist_ok=True)
-	bracket_folder = path / '[--brackets--]'
-	bracket_folder.mkdir(exist_ok=True)
-	(bracket_folder / 'visible.txt').write_text(
-		'visible fixture in a bracketed folder\n', encoding='utf-8')
-	if os.name == 'nt':
-		subprocess.run(['attrib', '+h', str(hidden)], check=True,
-			stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-
 def _wait_for_state(session, process, log_path):
 	deadline = time.monotonic() + 60
 	while time.monotonic() < deadline:
@@ -106,18 +95,23 @@ def _wait_for_state(session, process, log_path):
 
 
 def _launch(args):
+	validate_large_count(args.large)
+	core_settings = parse_core_settings(args.core_settings)
+	now = time.time()
 	root = _root()
 	root.mkdir(parents=True, exist_ok=True)
-	reap_stale(root, time.time())
+	reap_stale(root, now)
 	session_id = uuid.uuid4().hex
 	session_root = root / session_id
 	profile = session_root / 'profile'
 	left = Path(args.left).resolve() if args.left else session_root / 'left'
 	right = Path(args.right).resolve() if args.right else session_root / 'right'
 	if not args.left:
-		_make_fixture(left)
+		make_fixture(left, now)
 	if not args.right:
-		_make_fixture(right)
+		make_fixture(right, now)
+	if not args.left:
+		make_large_folder(left, args.large, now)
 	local = profile / 'Local'
 	local.mkdir(parents=True, exist_ok=True)
 	port = _reserve_port()
@@ -134,6 +128,7 @@ def _launch(args):
 	}, indent=2), encoding='utf-8')
 	token_path = local / 'ScriptingApiToken.txt'
 	token_path.write_text(uuid.uuid4().hex, encoding='utf-8')
+	write_core_settings(profile, core_settings)
 	session = {
 		'session_id': session_id, 'pid': None, 'port': port,
 		'token_path': str(token_path), 'profile': str(profile),

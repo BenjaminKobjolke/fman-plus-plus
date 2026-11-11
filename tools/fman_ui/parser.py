@@ -9,6 +9,11 @@ def parser():
 	launch = commands.add_parser('launch')
 	launch.add_argument('--left')
 	launch.add_argument('--right')
+	launch.add_argument('--large', type=int, default=0,
+		help="number of files in the left fixture's large folder")
+	launch.add_argument('--core-settings', default=None,
+		help=("JSON object written to the profile's Core Settings.json "
+			"before fman starts"))
 	for name in ('state', 'commands', 'close', 'dialog'):
 		commands.add_parser(name)
 	command = commands.add_parser('command')

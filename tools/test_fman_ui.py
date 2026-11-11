@@ -14,6 +14,8 @@ import recycle_cleanup
 import fman_ui
 import session_reaper
 import test_fman_ui_session_reaper
+import test_fman_ui_fixtures
+import test_fman_ui_launch
 
 
 class FmanUiTest(TestCase):
@@ -160,48 +162,6 @@ class FmanUiTest(TestCase):
 			self.assertEqual({'dialog': None}, fman_ui._run(args))
 		api.assert_called_once_with({}, 'GET', '/v1/dialog')
 
-	def test_launch_creates_isolated_profile_and_fixture_layout(self):
-		with TemporaryDirectory() as temp:
-			with patch.dict(os.environ, {'TEMP': temp}), \
-				patch.object(fman_ui, '_reserve_port', return_value=45678), \
-				patch.object(fman_ui, '_wait_for_state'), \
-				patch.object(fman_ui, 'process_start_time', return_value=10.5), \
-				patch.object(fman_ui, 'fman_process_identity',
-					return_value=(456, 20)), \
-				patch.object(fman_ui, 'reap_stale') as reap_stale, \
-				patch.object(fman_ui.subprocess, 'Popen') as popen, \
-				patch.object(fman_ui.subprocess, 'run'):
-				popen.return_value.pid = 123
-				args = SimpleNamespace(left=None, right=None)
-				session = fman_ui._launch(args)
-				settings = json.loads(
-					(Path(session['profile']) / 'Local' / 'Settings.json').read_text())
-				self.assertTrue(settings['scripting_api']['automation'])
-				self.assertEqual(45678, settings['scripting_api']['port'])
-				session_settings = json.loads(
-					(Path(session['profile']) / 'Local' / 'Session.json').read_text())
-				self.assertEqual([{}, {}], session_settings['panes'])
-				self.assertTrue((Path(session['left']) / 'visible.txt').exists())
-				self.assertTrue((Path(session['left']) / 'hidden.txt').exists())
-				self.assertTrue((Path(session['left']) / 'folder').is_dir())
-				self.assertTrue((Path(session['left']) / '[--brackets--]' /
-					'visible.txt').exists())
-				if os.name == 'nt':
-					fman_ui.subprocess.run.assert_any_call(
-						['attrib', '+h', str(Path(session['left']) / 'hidden.txt')],
-						check=True, stdout=fman_ui.subprocess.DEVNULL,
-						stderr=fman_ui.subprocess.DEVNULL)
-				self.assertEqual(session, fman_ui._read_current())
-				reap_stale.assert_called_once()
-				session_data = json.loads((Path(session['profile']).parent /
-					'session.json').read_text())
-				self.assertEqual(123, session_data['pid'])
-				self.assertEqual(10.5, session_data['start_time'])
-				self.assertEqual(456, session_data['fman_pid'])
-				self.assertEqual(20, session_data['fman_start_time'])
-				self.assertIn(
-					'session_reaper.py', popen.call_args_list[1].args[0][1])
-
 	def test_bare_file_name_is_resolved_against_selected_pane(self):
 		with TemporaryDirectory() as temp:
 			self._write_session(temp)
@@ -253,6 +213,10 @@ class FmanUiTest(TestCase):
 def load_tests(loader, tests, pattern):
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_session_reaper.SessionReaperTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_fixtures.FixturesTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_launch.FmanUiLaunchTest))
 	return tests
 
 
