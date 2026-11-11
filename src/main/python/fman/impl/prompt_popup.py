@@ -8,7 +8,6 @@ from fman.impl.quicksearch import Quicksearch
 from fman.impl.util.qt import Key_Down, Key_Up, NoFocus
 from fman.localization import translate
 from fman.localization_keys import PROMPT_CANCEL, PROMPT_OK
-from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import (
 	QDialog, QDialogButtonBox, QLabel, QLineEdit, QStyle, QStyleOptionFrame
 )
@@ -16,6 +15,7 @@ from PyQt5.QtWidgets import (
 
 # The title sits one step above the input and the path one step below.
 _TITLE_STEP_PTS = 2
+# Qt's fixed QLineEditPrivate::horizontalMargin.
 _LINE_EDIT_HORIZONTAL_MARGIN = 2
 
 
@@ -90,12 +90,14 @@ class Prompt(Quicksearch):
 		pts = self._query.font().pointSizeF()
 		option = QStyleOptionFrame()
 		self._query.initStyleOption(option)
-		# cursorRect() is off by the text margin under a stylesheet, so use the
-		# sub-element rect the style actually draws the input text in.
-		text_left = self._query.style().subElementRect(
+		contents = self._query.style().subElementRect(
 			QStyle.SE_LineEditContents, option, self._query
-		).left() + _LINE_EDIT_HORIZONTAL_MARGIN
-		text_left = self._query.mapTo(self, QPoint(text_left, 0)).x()
+		)
+		text_left = (
+			self._query.mapTo(self, contents.topLeft()).x()
+			+ self._query.textMargins().left()
+			+ _LINE_EDIT_HORIZONTAL_MARGIN
+		)
 		# Platform and theme styles change the input inset, so match it directly.
 		header_padding = text_left - self._header.geometry().x()
 		# A widget stylesheet wins over the app's * rule, unlike setFont.
