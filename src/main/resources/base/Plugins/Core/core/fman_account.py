@@ -1,9 +1,11 @@
 """Credential storage and browser sign-in for a fman account."""
+from fman import DATA_DIRECTORY
 from core.fman_api import FmanApiAuthError, FmanApiClient
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QDesktopServices
 
 import keyring
+import os
 import time
 
 
@@ -13,19 +15,26 @@ _SIGN_IN_TIMEOUT_SECONDS = 5 * 60
 _SIGN_IN_POLL_SECONDS = 2
 
 
+def _keyring_service() -> str:
+	# An isolated profile gets its own login so it never syncs the real account.
+	return _KEYRING_SERVICE + (
+		' ' + DATA_DIRECTORY if os.getenv('FMAN_DATA_DIRECTORY') else ''
+	)
+
+
 def load_token() -> str | None:
-	return keyring.get_password(_KEYRING_SERVICE, _KEYRING_USERNAME)
+	return keyring.get_password(_keyring_service(), _KEYRING_USERNAME)
 
 
 def save_token(token: str) -> None:
 	if not isinstance(token, str) or not token:
 		raise ValueError('An access token is required')
-	keyring.set_password(_KEYRING_SERVICE, _KEYRING_USERNAME, token)
+	keyring.set_password(_keyring_service(), _KEYRING_USERNAME, token)
 
 
 def clear_token() -> None:
 	try:
-		keyring.delete_password(_KEYRING_SERVICE, _KEYRING_USERNAME)
+		keyring.delete_password(_keyring_service(), _KEYRING_USERNAME)
 	except keyring.errors.PasswordDeleteError:
 		pass
 

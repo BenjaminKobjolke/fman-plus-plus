@@ -4,6 +4,7 @@ from core.fman_account import (
 from core.fman_api import (
 	AuthCallbackResponse, AuthInitResponse, FmanApiAuthError
 )
+import os
 from unittest import TestCase
 from unittest.mock import Mock, patch
 from keyring.errors import KeyringError
@@ -24,23 +25,48 @@ class AccountTokenTest(TestCase):
 
 	@patch('core.fman_account.keyring')
 	def test_loads_token_from_system_credential_store(self, keyring):
-		keyring.get_password.return_value = 'secret-token'
-		self.assertEqual('secret-token', load_token())
-		keyring.get_password.assert_called_once_with('fman++ API', 'access_token')
+		with patch.dict(os.environ):
+			os.environ.pop('FMAN_DATA_DIRECTORY', None)
+			keyring.get_password.return_value = 'secret-token'
+			self.assertEqual('secret-token', load_token())
+			keyring.get_password.assert_called_once_with(
+				'fman++ API', 'access_token')
 
 	@patch('core.fman_account.keyring')
 	def test_saves_token_to_system_credential_store(self, keyring):
-		save_token('secret-token')
-		keyring.set_password.assert_called_once_with(
-			'fman++ API', 'access_token', 'secret-token'
-		)
+		with patch.dict(os.environ):
+			os.environ.pop('FMAN_DATA_DIRECTORY', None)
+			save_token('secret-token')
+			keyring.set_password.assert_called_once_with(
+				'fman++ API', 'access_token', 'secret-token'
+			)
 
 	@patch('core.fman_account.keyring')
 	def test_clears_token_from_system_credential_store(self, keyring):
-		clear_token()
-		keyring.delete_password.assert_called_once_with(
-			'fman++ API', 'access_token'
-		)
+		with patch.dict(os.environ):
+			os.environ.pop('FMAN_DATA_DIRECTORY', None)
+			clear_token()
+			keyring.delete_password.assert_called_once_with(
+				'fman++ API', 'access_token'
+			)
+
+	@patch('core.fman_account.keyring')
+	def test_uses_isolated_profile_for_token_store(self, keyring):
+		with patch.dict(
+			'os.environ', {'FMAN_DATA_DIRECTORY': 'C:/temp/fman-profile'}), \
+			patch('core.fman_account.DATA_DIRECTORY', 'C:/temp/fman-profile'):
+			keyring.get_password.return_value = 'secret-token'
+
+			self.assertEqual('secret-token', load_token())
+			save_token('secret-token')
+			clear_token()
+
+			service = 'fman++ API C:/temp/fman-profile'
+			keyring.get_password.assert_called_once_with(service, 'access_token')
+			keyring.set_password.assert_called_once_with(
+				service, 'access_token', 'secret-token'
+			)
+			keyring.delete_password.assert_called_once_with(service, 'access_token')
 
 
 class AccountSignInTest(TestCase):
