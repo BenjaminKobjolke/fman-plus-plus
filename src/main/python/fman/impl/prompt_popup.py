@@ -8,7 +8,15 @@ from fman.impl.quicksearch import Quicksearch
 from fman.impl.util.qt import Key_Down, Key_Up, NoFocus
 from fman.localization import translate
 from fman.localization_keys import PROMPT_CANCEL, PROMPT_OK
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLabel, QLineEdit, QStyle
+from PyQt5.QtCore import QPoint
+from PyQt5.QtWidgets import (
+	QDialog, QDialogButtonBox, QLabel, QLineEdit, QStyle, QStyleOptionFrame
+)
+
+
+# The title sits one step above the input and the path one step below.
+_TITLE_STEP_PTS = 2
+_LINE_EDIT_HORIZONTAL_MARGIN = 2
 
 
 class Prompt(Quicksearch):
@@ -31,10 +39,13 @@ class Prompt(Quicksearch):
 			parent, app, css, lambda _query: [], query=default,
 			width_store=width_store, title=title
 		)
+		self._detail = None
 		if detail:
 			self._detail = QLabel(detail, self)
 			self._detail.setObjectName('detail')
 			self.layout().insertWidget(1, self._detail)
+		self.layout().activate()
+		self._apply_text_hierarchy()
 		self._selection_start = selection_start
 		self._selection_end = selection_end
 		self._request_immediate_repaint = False
@@ -74,6 +85,32 @@ class Prompt(Quicksearch):
 		)
 		self.layout().addWidget(self._buttons)
 		self._adjust_item_list_ize()
+	def _apply_text_hierarchy(self):
+		self._query.ensurePolished()
+		pts = self._query.font().pointSizeF()
+		option = QStyleOptionFrame()
+		self._query.initStyleOption(option)
+		# cursorRect() is off by the text margin under a stylesheet, so use the
+		# sub-element rect the style actually draws the input text in.
+		text_left = self._query.style().subElementRect(
+			QStyle.SE_LineEditContents, option, self._query
+		).left() + _LINE_EDIT_HORIZONTAL_MARGIN
+		text_left = self._query.mapTo(self, QPoint(text_left, 0)).x()
+		# Platform and theme styles change the input inset, so match it directly.
+		header_padding = text_left - self._header.geometry().x()
+		# A widget stylesheet wins over the app's * rule, unlike setFont.
+		self._header.setStyleSheet(
+			'font-size: %gpt; padding-left: %dpx;' % (
+				pts + _TITLE_STEP_PTS, header_padding
+			)
+		)
+		if self._detail is not None:
+			detail_padding = text_left - self._detail.geometry().x()
+			self._detail.setStyleSheet(
+				'font-size: %gpt; padding-left: %dpx;' % (
+					max(1, pts - _TITLE_STEP_PTS), detail_padding
+				)
+			)
 	def setTextValue(self, text):
 		self._query.setText(text)
 	def textValue(self):
@@ -85,6 +122,8 @@ class Prompt(Quicksearch):
 			self._query.end(False)
 			self._request_immediate_repaint = True
 		QDialog.setVisible(self, visible)
+		if visible:
+			self._apply_text_hierarchy()
 	def paintEvent(self, event):
 		if self._request_immediate_repaint:
 			self._request_immediate_repaint = False

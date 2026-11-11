@@ -11,7 +11,7 @@ from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import (
 	QApplication, QDialog, QDialogButtonBox, QWidget, QLineEdit, QStyle
 )
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QLabel, QStyleOptionFrame
 from threading import Event, get_ident
 from unittest import TestCase
 
@@ -191,6 +191,70 @@ class PromptPopupTest(TestCase):
 		QTest.qWait(10)
 		buttons = self.prompt.findChild(QDialogButtonBox, 'buttons')
 		self.assertTrue(self.prompt.rect().contains(buttons.geometry()))
+	def test_title_is_larger_than_input_and_path_is_smaller(self):
+		previous_style_sheet = self.app.styleSheet()
+		self.addCleanup(self.app.setStyleSheet, previous_style_sheet)
+		self.app.setStyleSheet('* { font-size: 20pt; }')
+		prompt = Prompt(
+			self.parent, _StubApp(), self.css, 'Move "x" to\nC:/target'
+		)
+		self.addCleanup(prompt.close)
+		prompt._header.ensurePolished()
+		prompt._query.ensurePolished()
+		detail = prompt.findChild(QLabel, 'detail')
+		detail.ensurePolished()
+		input_size = prompt._query.font().pointSizeF()
+		self.assertEqual(input_size + 2, prompt._header.font().pointSizeF())
+		self.assertEqual(input_size - 2, detail.font().pointSizeF())
+	def test_title_path_and_input_text_share_a_left_edge(self):
+		from fman.impl.themes import DEFAULT_TOKENS, substitute
+		from pathlib import Path
+		previous_style_sheet = self.app.styleSheet()
+		self.addCleanup(self.app.setStyleSheet, previous_style_sheet)
+		style_sheet = Path('src/main/resources/base/styles.qss').read_text()
+		self.app.setStyleSheet(substitute(style_sheet, DEFAULT_TOKENS))
+		prompt = Prompt(
+			self.parent, _StubApp(), self.css, 'Move "x" to\nC:/target'
+		)
+		self.addCleanup(prompt.close)
+		prompt.show()
+		header = prompt._header
+		detail = prompt.findChild(QLabel, 'detail')
+		query = prompt._query
+		option = QStyleOptionFrame()
+		query.initStyleOption(option)
+		input_text_margin = 2  # QLineEditPrivate::horizontalMargin
+		text_starts = (
+			header.mapTo(prompt, header.contentsRect().topLeft()).x(),
+			detail.mapTo(prompt, detail.contentsRect().topLeft()).x(),
+			query.mapTo(
+				prompt,
+				query.style().subElementRect(
+					QStyle.SE_LineEditContents, option, query
+				).topLeft()
+			).x() + input_text_margin,
+		)
+		self.assertEqual(text_starts[0], text_starts[1])
+		self.assertEqual(text_starts[1], text_starts[2])
+	def test_title_has_space_before_path(self):
+		from fman.impl.themes import DEFAULT_TOKENS, substitute
+		from pathlib import Path
+		previous_style_sheet = self.app.styleSheet()
+		self.addCleanup(self.app.setStyleSheet, previous_style_sheet)
+		style_sheet = Path('src/main/resources/base/styles.qss').read_text()
+		self.app.setStyleSheet(substitute(style_sheet, DEFAULT_TOKENS))
+		prompt = Prompt(
+			self.parent, _StubApp(), self.css, 'Move "x" to\nC:/target'
+		)
+		self.addCleanup(prompt.close)
+		prompt.show()
+		header = prompt._header
+		detail = prompt.findChild(QLabel, 'detail')
+		space = (
+			detail.mapTo(prompt, detail.contentsRect().topLeft()).y()
+			- header.mapTo(prompt, header.contentsRect().bottomLeft()).y() - 1
+		)
+		self.assertGreaterEqual(space, 6)
 	def test_prompt_uses_frameless_style_margins(self):
 		self.assertTrue(self.prompt.property('frameless'))
 		margins = self.prompt.layout().contentsMargins()

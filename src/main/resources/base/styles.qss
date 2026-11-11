@@ -162,9 +162,14 @@ MessageBox #qt_msgbox_label {
 	color: $bright_fg;
 }
 
+Prompt #header {
+	padding: 6px 8px 6px 8px;
+}
+
 Prompt #detail {
 	color: $muted_fg;
-	padding: 0 7px 6px 7px;
+	/* 8px matches the input inset: container margin, two Div borders, line-edit border and Qt's 2px text margin. */
+	padding: 0 8px 6px 8px;
 }
 
 TextInputPrompt #detail {
