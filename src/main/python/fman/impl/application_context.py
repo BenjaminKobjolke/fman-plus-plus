@@ -143,6 +143,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 			from fman.impl.demo import DemoPlayer
 			from fman.impl.demo_scripts import DEMO_OPACITY, demo_ids, \
 				get_script
+			from fman.impl.demo_scripts_launch import LISTENING_DEMO_IDS
 		except ImportError:
 			log.error(
 				'Demo mode needs the automated-screenshot-connector. Install '
@@ -164,6 +165,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 		sys.argv[1:] = leftover
 		self._demo_mode = True
 		self._load_plugins()
+		if options.demo in LISTENING_DEMO_IDS:
+			# Demo 18 films forwarded launches into this process.
+			self.single_instance.start_listening()
 		self.session_manager.show_main_window(self.window)
 		# A recording must not inherit the recordist's window opacity, nor
 		# whatever a previous take left in the demo profile: every chapter
@@ -182,7 +186,8 @@ class DevelopmentApplicationContext(ApplicationContext):
 		client = DemoClient(options.demo_port)
 		player = DemoPlayer(
 			self.main_window, client, script, int(self.main_window.winId()),
-			AutomationActions(self.main_window, self.plugin_support)
+			AutomationActions(self.main_window, self.plugin_support),
+			plugin_support=self.plugin_support,
 		)
 		player.start()
 		return self.app.exec_()

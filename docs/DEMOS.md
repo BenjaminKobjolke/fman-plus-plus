@@ -290,6 +290,12 @@ composing stale inputs.
   question is open, and back after answering. It needs `FMAN_FTPClient` installed
   and seeds a loopback fake FTP server with slow listings; its stills are
   gitignored (`media/demos/ftp-overwrite/`).
+- **18 `single-instance`** — launches a separate `--new-instance` window, then
+  starts fman normally and shows that the original window receives the forwarded
+  folder. Its stills are `single-instance-primary`,
+  `single-instance-new-window` and `single-instance-forwarded-to-original`. It
+  records stills only and exists so the screenshot check can judge
+  single-instance and `--new-instance` changes.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.

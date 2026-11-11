@@ -1,6 +1,7 @@
 """Qt event tests for screenshots uploaded by demo playback."""
 
 from importlib.util import find_spec
+import os
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 import unittest
@@ -20,7 +21,8 @@ if CONNECTOR_AVAILABLE:
 		SendScreenshot,
 	)
 	from fman.impl.demo import (
-		DemoPlayer, OpenContextMenu, ScreenStill, WaitForOverwriteQuestion,
+		DemoPlayer, ExpectForwarded, LaunchFman, OpenContextMenu, ScreenStill,
+		WaitForOverwriteQuestion,
 	)
 
 
@@ -43,7 +45,116 @@ class DemoPlayerTest(TestCase):
 		return DemoPlayer(
 			self.window, client,
 			DemoScript(id=99, name='test', steps=()), 1, screenshots,
+			plugin_support=MagicMock(),
 		)
+
+	def test_launch_fman_starts_the_main_script_with_a_resolved_folder(self):
+		plugin_support = MagicMock()
+		plugin_support.get_panes.return_value = [MagicMock()]
+		plugin_support.get_panes.return_value[0].get_path.return_value = 'C:/demo'
+		player = DemoPlayer(
+			self.window, MagicMock(spec=DemoClient),
+			DemoScript(id=99, name='test', steps=()), 1, MagicMock(),
+			plugin_support=plugin_support,
+		)
+
+		with patch('fman.impl.demo.subprocess.Popen') as popen:
+			with patch('fman.impl.demo.sys.executable', 'python.exe'):
+				with patch('fman.impl.demo.sys.argv', ['main.py']):
+					with patch('fman.impl.demo.os.path.abspath', return_value='main.py'):
+						player._launch_fman(LaunchFman(('--new-instance', 'separate')))
+
+		popen.assert_called_once_with([
+			'python.exe', 'main.py', '--new-instance',
+			os.path.join('C:/demo', 'separate'),
+		])
+		self.assertEqual([popen.return_value], player._children)
+
+	def test_expect_forwarded_advances_when_launch_and_pane_match(self):
+		player = self._player(MagicMock(spec=DemoClient), MagicMock())
+		old_child, recent_child = MagicMock(), MagicMock()
+		old_child.poll.return_value = None
+		recent_child.poll.return_value = 0
+		player._children = [old_child, recent_child]
+		player._plugin_support.get_active_pane.return_value.get_path.return_value = (
+			'C:/demo/forwarded'
+		)
+
+		with patch('fman.impl.demo.QTimer.singleShot'):
+			with patch.object(player, '_advance') as advance:
+				player._expect_forwarded(ExpectForwarded('forwarded'))
+
+		advance.assert_called_once_with()
+
+	def test_expect_forwarded_timeout_fails_and_closes_client(self):
+		client = MagicMock(spec=DemoClient)
+		player = self._player(client, MagicMock())
+		child = MagicMock()
+		child.poll.return_value = None
+		player._children = [child]
+		application = MagicMock()
+
+		with patch('fman.impl.demo.time.monotonic', side_effect=(0, 1)):
+			with patch('fman.impl.demo.QTimer.singleShot'):
+				with patch(
+					'fman.impl.demo.QApplication.instance',
+					return_value=application,
+				):
+					player._expect_forwarded(ExpectForwarded('missing', 0.5))
+
+		child.terminate.assert_called_once_with()
+		client.close.assert_called_once_with()
+		application.quit.assert_called_once_with()
+
+	def test_expect_forwarded_waits_for_earlier_child_to_remain_running(self):
+		player = self._player(MagicMock(spec=DemoClient), MagicMock())
+		old_child, recent_child = MagicMock(), MagicMock()
+		old_child.poll.return_value = 1
+		recent_child.poll.return_value = 0
+		player._children = [old_child, recent_child]
+		player._plugin_support.get_active_pane.return_value.get_path.return_value = (
+			'C:/demo/forwarded'
+		)
+
+		with patch('fman.impl.demo.time.monotonic', side_effect=(0, 1)):
+			with patch('fman.impl.demo.QTimer.singleShot') as single_shot:
+				with patch.object(player, '_advance') as advance:
+					with patch.object(player, '_fail') as fail:
+						player._expect_forwarded(
+							ExpectForwarded('forwarded', timeout_s=0.5)
+						)
+
+		advance.assert_not_called()
+		fail.assert_called_once_with()
+		single_shot.assert_not_called()
+
+	def test_expect_forwarded_keeps_waiting_while_no_pane_is_active(self):
+		player = self._player(MagicMock(spec=DemoClient), MagicMock())
+		child = MagicMock()
+		child.poll.return_value = 0
+		player._children = [child]
+		player._plugin_support.get_active_pane.return_value = None
+
+		with patch('fman.impl.demo.time.monotonic', side_effect=(0, 0)):
+			with patch('fman.impl.demo.QTimer.singleShot') as single_shot:
+				with patch.object(player, '_advance') as advance:
+					player._expect_forwarded(
+						ExpectForwarded('forwarded', timeout_s=1)
+					)
+
+		advance.assert_not_called()
+		single_shot.assert_called_once()
+
+	def test_finish_terminates_a_running_child(self):
+		player = self._player(MagicMock(spec=DemoClient), MagicMock())
+		child = MagicMock()
+		child.poll.return_value = None
+		player._children = [child]
+
+		with patch('fman.impl.demo.QApplication.instance', return_value=None):
+			player._finish()
+
+		child.terminate.assert_called_once_with()
 
 	def test_screenshot_step_uploads_the_rendered_window(self):
 		client = MagicMock(spec=DemoClient)
@@ -78,7 +189,7 @@ class DemoPlayerTest(TestCase):
 		player = DemoPlayer(
 			QObject(), client,
 			DemoScript(id=99, name='test', steps=(CustomStep(ScreenStill('x')),)),
-			1, MagicMock(spec=AutomationActions),
+			1, MagicMock(spec=AutomationActions), plugin_support=MagicMock(),
 		)
 
 		with patch('fman.impl.demo.QTimer'):

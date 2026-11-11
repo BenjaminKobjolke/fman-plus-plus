@@ -189,6 +189,55 @@ class DemoSetupTest(unittest.TestCase):
 		)
 		self.assertEqual(command_lines, ['toggle file age shading'] * 2)
 
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
+	def test_single_instance_demo_records_both_launch_outcomes(self):
+		from automated_screenshot_connector.steps import CustomStep, flatten
+		from fman.impl.demo import ExpectForwarded, LaunchFman
+		from fman.impl.demo_scripts_launch import (
+			LAUNCH_CLIPS, LISTENING_DEMO_IDS,
+		)
+
+		actions = [
+			action.step if isinstance(action, CustomStep) else action
+			for _, action in flatten(LAUNCH_CLIPS[18].steps)
+		]
+		launches = [action for action in actions if isinstance(action, LaunchFman)]
+		self.assertEqual(launches, [
+			LaunchFman(('--new-instance', 'opened-by-new-instance')),
+			LaunchFman(('forwarded-to-original',)),
+		])
+		forwarded_index = next(
+			index for index, action in enumerate(actions)
+			if isinstance(action, ExpectForwarded)
+		)
+		self.assertLess(
+			forwarded_index,
+			next(
+				index for index, action in enumerate(actions)
+				if getattr(action, 'name', None)
+				== 'single-instance-forwarded-to-original'
+			),
+		)
+		self.assertEqual(
+			[
+				action.name for action in actions
+				if getattr(action, 'name', None) in (
+					'single-instance-primary',
+					'single-instance-new-window',
+					'single-instance-forwarded-to-original',
+				)
+			],
+			[
+				'single-instance-primary',
+				'single-instance-new-window',
+				'single-instance-forwarded-to-original',
+			],
+		)
+		self.assertIn(18, LISTENING_DEMO_IDS)
+
 
 if __name__ == '__main__':
 	unittest.main()

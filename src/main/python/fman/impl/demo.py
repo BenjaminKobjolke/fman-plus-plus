@@ -19,6 +19,9 @@ The scripts it plays live in ``demo_scripts.py``.
 """
 
 from dataclasses import dataclass
+import os
+import subprocess
+import sys
 import time
 
 from PyQt5.QtCore import QObject, QTimer
@@ -53,6 +56,21 @@ class ScreenStill:
 
 
 @dataclass(frozen=True)
+class LaunchFman:
+	"""Launch another fman process with arguments relative to the active pane."""
+
+	args: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ExpectForwarded:
+	"""Wait for a normal launch to forward to this demo's active pane."""
+
+	folder: str
+	timeout_s: float = 20.0
+
+
+@dataclass(frozen=True)
 class WaitForOverwriteQuestion:
 	"""Capture and answer the overwrite question, failing if it never opens."""
 
@@ -66,13 +84,15 @@ class DemoPlayer(QObject):
 	the UI paints exactly as it would for human input.
 	"""
 
-	def __init__(self, window, client, script, hwnd, screenshots):
+	def __init__(self, window, client, script, hwnd, screenshots, plugin_support):
 		super().__init__(window)
 		self._window = window
 		self._client = client
 		self._script = script
 		self._hwnd = hwnd
 		self._screenshots = screenshots
+		self._plugin_support = plugin_support
+		self._children = []
 		self._actions = flatten(script.steps)
 		self._index = 0
 		self._check_chords()
@@ -116,6 +136,11 @@ class DemoPlayer(QObject):
 			elif isinstance(action.step, WaitForOverwriteQuestion):
 				self._wait_for_overwrite_question(action.step)
 				return
+			elif isinstance(action.step, LaunchFman):
+				self._launch_fman(action.step)
+			elif isinstance(action.step, ExpectForwarded):
+				self._expect_forwarded(action.step)
+				return
 			# Other custom steps remain ignored; a Wait's delay already elapsed.
 		self._advance()
 
@@ -150,8 +175,45 @@ class DemoPlayer(QObject):
 
 		check()
 
+	def _launch_fman(self, step):
+		base_path = self._plugin_support.get_panes()[0].get_path()
+		args = [
+			arg if arg.startswith('--') else os.path.join(base_path, arg)
+			for arg in step.args
+		]
+		self._children.append(subprocess.Popen([
+			sys.executable, os.path.abspath(sys.argv[0]), *args,
+		]))
+
+	def _expect_forwarded(self, step):
+		deadline = time.monotonic() + step.timeout_s
+
+		def check():
+			recent_child = self._children[-1] if self._children else None
+			active_pane = self._plugin_support.get_active_pane()
+			if (
+				recent_child is not None
+				and recent_child.poll() == 0
+				and active_pane is not None
+				and active_pane.get_path().endswith(step.folder)
+				and all(child.poll() is None for child in self._children[:-1])
+			):
+				self._advance()
+			elif time.monotonic() >= deadline:
+				self._fail()
+			else:
+				QTimer.singleShot(100, check)
+
+		check()
+
+	def _terminate_children(self):
+		for child in self._children:
+			if child.poll() is None:
+				child.terminate()
+
 	def _fail(self):
 		"""Close a failed recording instead of raising from a timer callback."""
+		self._terminate_children()
 		self._client.close()
 		instance = QApplication.instance()
 		if instance is not None:
@@ -191,6 +253,7 @@ class DemoPlayer(QObject):
 		post_chord(self._target(), chord)
 
 	def _finish(self):
+		self._terminate_children()
 		self._client.send_ended(self._script.id)
 		self._client.close()
 		instance = QApplication.instance()

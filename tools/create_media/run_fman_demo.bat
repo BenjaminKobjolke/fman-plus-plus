@@ -48,6 +48,11 @@ REM demo mode pins DEMO_OPACITY so every chapter records at a known value.
 if exist "%APPDATA%\fman\Local\Settings.json" (
 	copy /y "%APPDATA%\fman\Local\Settings.json" "%FMAN_DATA_DIRECTORY%\Local\" >nul
 )
+if "%1"=="18" (
+	set "SETTINGS_FILE=%FMAN_DATA_DIRECTORY%\Local\Settings.json"
+	REM A copied single_instance=false would make the plain launch open its own window.
+	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; New-Item -ItemType Directory -Force -Path (Split-Path $p) | Out-Null; $s=if (Test-Path -LiteralPath $p) { Get-Content -Raw -LiteralPath $p | ConvertFrom-Json } else { [pscustomobject]@{} }; $s | Add-Member -NotePropertyName single_instance -NotePropertyValue $true -Force; [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false))"
+)
 REM A custom theme lives outside the bundled Themes dir, so mirror those too -
 REM otherwise load_theme silently falls back to the default.
 if exist "%APPDATA%\fman\Themes" (
@@ -112,6 +117,10 @@ if %1 GEQ 3 (
 	xcopy /q /y "%CD%\examples\left_pane\*" "!LEFT!\" >nul
 	xcopy /q /y "%CD%\examples\right_pane\*" "!LEFT!\" >nul
 )
+if "%1"=="18" mkdir "%LEFT%\opened-by-new-instance"
+if "%1"=="18" >"%LEFT%\opened-by-new-instance\demo.txt" echo Separate window
+if "%1"=="18" mkdir "%LEFT%\forwarded-to-original"
+if "%1"=="18" >"%LEFT%\forwarded-to-original\demo.txt" echo Forwarded launch
 
 REM Demo 17 uploads this small site; site sorts first and contains the conflict.
 if "%1"=="17" mkdir "%LEFT%\site\css" 2>nul
