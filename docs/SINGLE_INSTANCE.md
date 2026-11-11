@@ -13,6 +13,9 @@ launch instead.
 - `fman` (no path) → the running fman window is simply raised/focused.
 - `fman --single-pane` → the running fman hides the other panes, then comes to
   the front. On a fresh start, the same option starts with one visible pane.
+- `fman --new-instance "C:\some\folder"` → always starts a separate window
+  for this launch. It does not take over forwarded launches; the running window
+  continues to receive them.
 - Multiple paths (`fman "C:\a" "C:\b"`) → the first path opens in the active pane,
   the next in the other pane, and so on, matching the fresh-start behavior.
 
@@ -32,6 +35,8 @@ To allow multiple independent fman windows again, set `single_instance` to
 ```
 
 The default is `true` (single instance on). Create the file if it does not exist.
+Use `fman --new-instance` as a per-launch alternative when only one launch should
+open a separate window.
 
 ### Taskbar buttons
 

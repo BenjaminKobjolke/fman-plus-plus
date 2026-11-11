@@ -1,6 +1,6 @@
 from fman.impl.session import SessionManager
 from fman.impl.single_instance import (
-	SingleInstance, bring_to_front, open_paths_in_running_instance,
+	SingleInstance, bring_to_front, open_paths_in_running_instance, take_flag,
 	panes_active_first
 )
 from os import getpid
@@ -8,6 +8,26 @@ from PyQt5.QtCore import QEventLoop, Qt
 from PyQt5.QtNetwork import QLocalSocket
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
+
+class TakeFlagTest(TestCase):
+	def test_removes_flag_and_keeps_other_arguments_in_order(self):
+		argv = ['fman', '--single-pane', 'C:/x']
+
+		self.assertTrue(take_flag(argv, '--single-pane'))
+
+		self.assertEqual(['fman', 'C:/x'], argv)
+	def test_returns_false_and_leaves_arguments_unchanged_when_absent(self):
+		argv = ['fman', 'C:/x']
+
+		self.assertFalse(take_flag(argv, '--single-pane'))
+
+		self.assertEqual(['fman', 'C:/x'], argv)
+	def test_removes_every_occurrence(self):
+		argv = ['fman', '--single-pane', 'C:/x', '--single-pane']
+
+		self.assertTrue(take_flag(argv, '--single-pane'))
+
+		self.assertEqual(['fman', 'C:/x'], argv)
 
 class SingleInstanceTest(TestCase):
 	@classmethod

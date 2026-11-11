@@ -35,7 +35,7 @@ from fman.impl.scripting.config import ScriptingApiConfig
 from fman.impl.scripting.control import ScriptingApiControl
 from fman.impl.scripting.server import ScriptingServer
 from fman.impl.single_instance import SingleInstance, server_name_for, \
-	open_paths_in_running_instance
+	open_paths_in_running_instance, NEW_INSTANCE_ARG, take_flag
 from fman.impl.theme import Theme
 from fman.impl.theme_controller import ThemeController
 from fman.impl.language import LanguageSettings
@@ -82,8 +82,8 @@ class DevelopmentApplicationContext(ApplicationContext):
 		self.init_logging()
 		self._start_hidden = False
 		self._explorer_replacement_message = None
-		self._single_pane = SINGLE_PANE_ARG in sys.argv
-		sys.argv[:] = [arg for arg in sys.argv if arg != SINGLE_PANE_ARG]
+		self._single_pane = take_flag(sys.argv, SINGLE_PANE_ARG)
+		new_instance = take_flag(sys.argv, NEW_INSTANCE_ARG)
 		if PLATFORM == 'Windows':
 			from fman.impl.autostart import TRAY_ARG, apply
 			from fman.impl.explorer_replacement import (
@@ -98,7 +98,8 @@ class DevelopmentApplicationContext(ApplicationContext):
 			apply_taskbar_grouping(self.local_settings)
 		if '--automation-demo' in sys.argv:
 			return self._run_demo()
-		if self.single_instance_enabled:
+		# A second listener would steal forwarded launches from the primary.
+		if self.single_instance_enabled and not new_instance:
 			# Touch self.app first: QLocalSocket needs a QApplication instance.
 			_ = self.app
 			abs_paths = [

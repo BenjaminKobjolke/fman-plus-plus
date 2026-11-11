@@ -9,6 +9,12 @@ _LOG = logging.getLogger(__name__)
 
 # Blocking waits are bounded so a hung/foreign peer can never freeze startup.
 _TIMEOUT_MS = 3000
+NEW_INSTANCE_ARG = '--new-instance'
+
+def take_flag(argv: list[str], flag: str) -> bool:
+	was_present = flag in argv
+	argv[:] = [arg for arg in argv if arg != flag]
+	return was_present
 
 def server_name_for(data_directory):
 	# Per-user/per-install name so different OS users don't share one socket.
