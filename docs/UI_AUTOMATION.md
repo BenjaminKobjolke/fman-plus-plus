@@ -1,14 +1,17 @@
-# Windows UI automation
+# Windows and macOS UI automation
 
-`tools\fman_ui.bat` starts a private fman process and drives its Qt window over
-the local scripting API. It is intended for automated checks that need to see
-the command palette, file rows, clicks, or a screenshot without taking over the
-developer's desktop.
+`tools\fman_ui.bat` on Windows and `tools/fman_ui.sh` on macOS start a private
+fman process and drive its Qt window over the local scripting API. They support
+automated checks of the command palette, file rows, dialogs, and screenshots
+without taking over the developer's desktop.
 
 ## Safety and limits
 
-The driver always uses a separate profile under `%TEMP%\fman-ui\` and never
-attaches to the fman process in the user's profile. By default, it creates two
+The driver always uses a separate profile under `%TEMP%\fman-ui\` on Windows
+or `$TMPDIR/fman-ui/` on macOS and never attaches to the fman process in the
+user's profile. The instance starts signed out of the fman account with its
+own keyring entry, so it does not sync account plugins or settings. By default,
+it creates two
 fixture folders there with `visible.txt`, a Windows-hidden `hidden.txt`, a
 `folder` subfolder, and a `[--brackets--]` subfolder containing `visible.txt`.
 They also include an `ages` folder with `age_0d_fresh.txt` (0.1 days old),
@@ -17,9 +20,11 @@ They also include an `ages` folder with `age_0d_fresh.txt` (0.1 days old),
 Optional `--left` and `--right` arguments select caller
 provided fixture folders. Use only disposable test data: commands can modify
 the folders opened in the two panes. `close` removes the generated profile and
-fixtures, then removes Recycle Bin entries whose original paths are inside this
-session folder. It leaves caller-provided folders and other Recycle Bin entries
-alone; the close result reports how many entries it removed.
+fixtures. On Windows it also removes Recycle Bin entries whose original paths
+are inside this session folder; it leaves caller-provided folders and other
+Recycle Bin entries alone, and the close result reports how many entries it
+removed. On macOS, files moved to the Trash remain there. The `hidden.txt`
+fixture is not hidden on macOS.
 
 A session that receives no driver command for 30 minutes, or whose fman process
 has exited, is closed by a watchdog started with that session. The next
@@ -27,7 +32,8 @@ has exited, is closed by a watchdog started with that session. The next
 of every check.
 
 All commands except `launch` and `close` read the session information written
-to `%TEMP%\fman-ui\current.json`; the driver never reads `%APPDATA%\fman`.
+to the platform's temporary `fman-ui/current.json`; the driver never reads the
+user's normal fman profile.
 The instance runs without user plugins and does not move or click the real
 mouse. fman's own dialogs can be inspected and answered; operating-system
 dialogs and global hotkeys cannot be driven. Screenshots of video viewer areas
@@ -89,7 +95,8 @@ tools\fman_ui.bat close
 
 The tickets watcher's validation agent finds this driver through the
 `desktop_ui_driver` key in `tools/tickets-watcher.json`, which names
-`tools/fman_ui.bat` and this document. Both paths must stay real files inside
+`tools/fman_ui.bat` on Windows; `tools/fman_ui.sh` is the macOS command. Both
+paths must stay real files inside
 the checkout or the watcher ignores the key. Agents may use `--large` and
 `--core-settings`; both stay inside the temporary fixture and profile. They
 never use `--left` or `--right`, so checks cannot touch folders outside
@@ -136,6 +143,46 @@ tools\fman_ui.bat command move_to_trash --pane 0
 tools\fman_ui.bat dialog
 tools\fman_ui.bat keys Return
 tools\fman_ui.bat dialog
+```
+
+## macOS
+
+Run `tools/fman_ui.sh` with the same commands and arguments as the Windows
+batch file. Sessions and fixtures live under `$TMPDIR/fman-ui/`. The driver
+starts fman and its watchdog in separate process sessions so they keep running
+after the shell command exits. `keys Ctrl+…` sends the Command key. The
+`hidden.txt` fixture is visible on macOS, and closing the driver does not remove
+files from the Trash.
+
+## Example: check Force copy and Force move
+
+This follows validation task #2075. On Windows, select two fixture files in the
+left pane, then check the copy result in the right pane. Run the copy again to
+inspect the overwrite dialog, then move and undo a file:
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat click --file visible.txt --pane 0
+tools\fman_ui.bat keys Ctrl+F5
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat keys Ctrl+F5
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat keys Ctrl+F6
+tools\fman_ui.bat command undo --pane 0
+tools\fman_ui.bat close
+```
+
+On macOS, confirm both commands are registered and searchable in the palette:
+
+```sh
+tools/fman_ui.sh launch
+tools/fman_ui.sh commands
+tools/fman_ui.sh keys Ctrl+Shift+P
+tools/fman_ui.sh type Force
+tools/fman_ui.sh screenshot "$TMPDIR/fman-force-transfer.png"
+tools/fman_ui.sh keys Escape
+tools/fman_ui.sh close
 ```
 
 ## Example: hide and unhide a file

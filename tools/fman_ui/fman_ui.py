@@ -7,6 +7,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
@@ -25,7 +26,7 @@ from session_reaper import (
 
 
 def _root():
-	return Path(os.environ.get('TEMP', Path.home())) / 'fman-ui'
+	return Path(os.environ.get('TEMP') or tempfile.gettempdir()) / 'fman-ui'
 
 
 def _current_path():
@@ -150,6 +151,7 @@ def _launch(args):
 			cwd=str(Path(__file__).resolve().parents[2]), env=environment,
 			stdout=log, stderr=subprocess.STDOUT,
 			creationflags=_detached_flags(),
+			start_new_session=os.name != 'nt',
 		)
 	session['pid'] = process.pid
 	session['start_time'] = process_start_time(process.pid)
@@ -171,6 +173,7 @@ def _launch(args):
 		], creationflags=_detached_flags(), stdin=subprocess.DEVNULL,
 		stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
 		cwd=str(Path(__file__).resolve().parents[2]),
+		start_new_session=os.name != 'nt',
 	)
 	_current_path().write_text(json.dumps(session, indent=2), encoding='utf-8')
 	return session

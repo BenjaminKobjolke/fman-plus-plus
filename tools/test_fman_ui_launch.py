@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import tempfile
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest import TestCase
@@ -15,10 +16,17 @@ from parser import parser
 
 
 class FmanUiLaunchTest(TestCase):
+	def test_root_uses_system_temp_directory_when_temp_is_unset(self):
+		with patch.dict(os.environ), \
+			patch.object(tempfile, 'gettempdir', return_value='system-temp'):
+			os.environ.pop('TEMP', None)
+			self.assertEqual(Path('system-temp') / 'fman-ui', fman_ui._root())
+
 	def _launch(self, temp, *, large=0, core_settings=None):
 		patches = (
 			patch.dict(os.environ, {'TEMP': temp}),
 			patch.object(fman_ui, '_reserve_port', return_value=45678),
+			patch.object(fman_ui, '_root', return_value=Path(temp) / 'fman-ui'),
 			patch.object(fman_ui, '_wait_for_state'),
 			patch.object(fman_ui, 'process_start_time', return_value=10.5),
 			patch.object(fman_ui, 'fman_process_identity',
@@ -28,11 +36,13 @@ class FmanUiLaunchTest(TestCase):
 			patch.object(fman_ui.subprocess, 'run'),
 		)
 		with patches[0], patches[1], patches[2], patches[3], patches[4], \
-			patches[5], patches[6] as popen, patches[7]:
+			patches[5], patches[6], patches[7] as popen, patches[8]:
 			popen.return_value.pid = 123
-			return fman_ui._launch(SimpleNamespace(
+			session = fman_ui._launch(SimpleNamespace(
 				left=None, right=None, large=large,
 				core_settings=core_settings))
+			self.popen_calls = popen.call_args_list
+			return session
 
 	def test_launch_creates_isolated_profile_and_fixture_layout(self):
 		with TemporaryDirectory() as temp, patch.dict(os.environ, {'TEMP': temp}):
@@ -87,6 +97,17 @@ class FmanUiLaunchTest(TestCase):
 				'Settings' / 'Core Settings.json')
 			self.assertEqual({'file_age_style': 'tint'},
 				json.loads(settings_path.read_text(encoding='utf-8')))
+
+	def test_launch_starts_children_in_new_sessions_only_on_posix(self):
+		for name, expected in (('posix', True), ('nt', False)):
+			with self.subTest(os_name=name), TemporaryDirectory() as temp:
+				with patch.object(fman_ui, 'os', SimpleNamespace(
+					name=name, environ=os.environ)):
+					self._launch(temp)
+				self.assertEqual(2, len(self.popen_calls))
+				self.assertEqual(
+					[expected, expected],
+					[call.kwargs['start_new_session'] for call in self.popen_calls])
 
 	def test_invalid_launch_options_fail_before_session_directory_is_created(self):
 		with TemporaryDirectory() as temp, patch.dict(os.environ, {'TEMP': temp}):
