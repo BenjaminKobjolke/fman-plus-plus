@@ -156,3 +156,62 @@ class _StubErrorHandler:
 	def report(self, message, exc):
 		self.calls.append((message, exc))
 		self.reported.set()
+
+
+class ControllerLocationBarTest(TestCase):
+	def setUp(self):
+		self.metrics = MagicMock()
+		self.usage_helper = MagicMock()
+		self.controller = Controller(
+			MagicMock(), MagicMock(), self.usage_helper, self.metrics,
+			MagicMock()
+		)
+		self.pane_widget = MagicMock()
+		self.pane = MagicMock(spec=DirectoryPane)
+		self.controller._panes[self.pane_widget] = self.pane
+
+	def test_navigation_places_cursor_on_child_and_switches_scheme(self):
+		self.pane.get_path.side_effect = [
+			'zip://C:/archive.zip/folder/current',
+			'file://C:/archive.zip'
+		]
+
+		self.controller.on_location_bar_segment_clicked(
+			self.pane_widget, 'zip://C:/archive.zip'
+		)
+
+		self.pane.set_path.assert_called_once()
+		path, callback = self.pane.set_path.call_args.args
+		self.assertEqual('zip://C:/archive.zip', path)
+		callback()
+		self.pane.place_cursor_at.assert_called_once_with(
+			'file://C:/archive.zip/folder'
+		)
+		self.pane.move_cursor_home.assert_not_called()
+		self.metrics.track.assert_not_called()
+		self.usage_helper.on_location_bar_clicked.assert_not_called()
+
+	def test_navigation_swallows_missing_parent(self):
+		self.pane.get_path.return_value = 'file:///home/user/project'
+		self.pane.set_path.side_effect = FileNotFoundError
+
+		self.controller.on_location_bar_segment_clicked(
+			self.pane_widget, 'file:///home/user'
+		)
+
+		self.pane.set_path.assert_called_once()
+
+	def test_missing_cursor_target_falls_back_to_home(self):
+		self.pane.get_path.side_effect = [
+			'file:///home/user/project',
+			'file:///home/user'
+		]
+		self.pane.place_cursor_at.side_effect = ValueError
+
+		self.controller.on_location_bar_segment_clicked(
+			self.pane_widget, 'file:///home'
+		)
+
+		_, callback = self.pane.set_path.call_args.args
+		callback()
+		self.pane.move_cursor_home.assert_called_once_with()

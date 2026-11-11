@@ -1,5 +1,7 @@
 from fman.impl.util.qt.key_event import QtKeyEvent
 from fman.impl.plugins.plugin import ReportExceptions
+from fman.impl.view.location_segments import child_on_path
+from fman.url import splitscheme
 from PyQt5.QtGui import QContextMenuEvent
 from threading import Thread
 from weakref import WeakValueDictionary
@@ -23,6 +25,9 @@ class Controller:
 		self._panes[pane_widget] = pane
 		pane_widget.location_changed.connect(self.on_location_changed)
 		pane_widget.location_bar_clicked.connect(self.on_location_bar_clicked)
+		pane_widget.location_bar_segment_clicked.connect(
+			self.on_location_bar_segment_clicked
+		)
 		pane_widget.selection_changed.connect(self.on_selection_changed)
 		self._plugin_support.register_pane(pane)
 	def unregister_pane(self, pane_widget, pane):
@@ -52,6 +57,27 @@ class Controller:
 		pane = self._panes[pane_widget]
 		if not self._usage_helper.on_location_bar_clicked(pane, past_events):
 			pane._broadcast('on_location_bar_clicked')
+	def on_location_bar_segment_clicked(self, pane_widget, parent_url: str) -> None:
+		pane = self._panes[pane_widget]
+		path_before = pane.get_path()
+		cursor_target = child_on_path(parent_url, path_before)
+		def callback():
+			path_now = pane.get_path()
+			if path_now == path_before:
+				return
+			if cursor_target is None:
+				pane.move_cursor_home()
+				return
+			cursor_dest = splitscheme(path_now)[0] + \
+				splitscheme(cursor_target)[1]
+			try:
+				pane.place_cursor_at(cursor_dest)
+			except ValueError:
+				pane.move_cursor_home()
+		try:
+			pane.set_path(parent_url, callback)
+		except FileNotFoundError:
+			pass
 	def handle_shortcut(self, pane_widget, qkeyevent):
 		pane = self._panes[pane_widget]
 		key_event = QtKeyEvent(qkeyevent.key(), qkeyevent.modifiers())

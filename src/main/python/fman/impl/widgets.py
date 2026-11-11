@@ -83,6 +83,7 @@ class DirectoryPaneWidget(QWidget):
 
 	location_changed = pyqtSignal(QWidget)
 	location_bar_clicked = pyqtSignal(QWidget)
+	location_bar_segment_clicked = pyqtSignal(QWidget, str)
 	selection_changed = pyqtSignal(QWidget)
 
 	def __init__(self, fs, null_location, parent, controller):
@@ -125,6 +126,9 @@ class DirectoryPaneWidget(QWidget):
 		self._location_bar.clicked.connect(
 			lambda: self.location_bar_clicked.emit(self)
 		)
+		self._location_bar.segment_clicked.connect(
+			lambda url: self.location_bar_segment_clicked.emit(self, url)
+		)
 		self._filter_bar = FilterBar(self, self._model, self._file_view)
 		self._loading_message = LOADING_MESSAGE
 		self._loading_started = 0.0
@@ -151,6 +155,8 @@ class DirectoryPaneWidget(QWidget):
 		self._file_view.set_right_button_selection(enabled)
 	def set_drag_selection(self, enabled):
 		self._file_view.set_drag_selection(enabled)
+	def set_clickable_path(self, enabled: bool) -> None:
+		self._location_bar.set_clickable(enabled)
 	def get_file_view(self):
 		return self._file_view
 	def is_compact_view(self):
@@ -301,7 +307,7 @@ class DirectoryPaneWidget(QWidget):
 		self._controller.on_files_dropped(self, *args)
 	def _on_location_changed(self, url):
 		self._filter_bar.close()
-		self._location_bar.setText(as_human_readable(url))
+		self._location_bar.set_location(url)
 		if splitscheme(url)[0] == NETWORK_SCHEME:
 			self._loading_message = LOADING_MESSAGE_NETWORK
 		else:
@@ -457,6 +463,7 @@ class MainWindow(QMainWindow):
 		self._scroll_margin = 0
 		self._right_button_selection = False
 		self._drag_selection = True
+		self._clickable_path = True
 		self._backgrounds = ()
 		self._pane_status_mode = PaneStatusMode(True, True)
 		self._pane_status_bar_owner = None
@@ -521,6 +528,10 @@ class MainWindow(QMainWindow):
 		self._drag_selection = enabled
 		for pane in self._panes:
 			pane.set_drag_selection(enabled)
+	def set_clickable_path(self, enabled: bool) -> None:
+		self._clickable_path = enabled
+		for pane in self._panes:
+			pane.set_clickable_path(enabled)
 	@run_in_main_thread
 	def set_backgrounds(self, backgrounds):
 		# Remembered as well as applied, for the same reason as the icon
@@ -755,6 +766,7 @@ class MainWindow(QMainWindow):
 		result.set_scroll_margin(self._scroll_margin)
 		result.set_right_button_selection(self._right_button_selection)
 		result.set_drag_selection(self._drag_selection)
+		result.set_clickable_path(self._clickable_path)
 		result.set_status_line_visible(self._pane_status_mode.lines_visible)
 		self._panes.append(result)
 		# After the append, because the pane's own index is what decides

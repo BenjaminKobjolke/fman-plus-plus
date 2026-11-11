@@ -147,6 +147,7 @@ class MainWindowPaneStatusTest(TestCase):
 		pane.set_scroll_margin = MagicMock()
 		pane.set_right_button_selection = MagicMock()
 		pane.set_drag_selection = MagicMock()
+		pane.set_clickable_path = MagicMock()
 		pane.set_status_line_visible = MagicMock()
 		pane.set_backgrounds = MagicMock()
 		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):
@@ -166,6 +167,7 @@ class MainWindowPaneStatusTest(TestCase):
 		pane.set_scroll_margin = MagicMock()
 		pane.set_right_button_selection = MagicMock()
 		pane.set_drag_selection = MagicMock()
+		pane.set_clickable_path = MagicMock()
 		pane.set_status_line_visible = MagicMock()
 		pane.set_backgrounds = MagicMock()
 		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):
@@ -185,6 +187,7 @@ class MainWindowPaneStatusTest(TestCase):
 		pane.set_scroll_margin = MagicMock()
 		pane.set_right_button_selection = MagicMock()
 		pane.set_drag_selection = MagicMock()
+		pane.set_clickable_path = MagicMock()
 		pane.set_status_line_visible = MagicMock()
 		pane.set_backgrounds = MagicMock()
 		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):

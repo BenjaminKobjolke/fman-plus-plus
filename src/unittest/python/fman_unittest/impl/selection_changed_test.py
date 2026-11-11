@@ -93,4 +93,5 @@ class _RecordingListener:
 class _PaneWidget(QObject):
 	location_changed = pyqtSignal(object)
 	location_bar_clicked = pyqtSignal(object)
+	location_bar_segment_clicked = pyqtSignal(object, str)
 	selection_changed = pyqtSignal(object)

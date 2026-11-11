@@ -48,6 +48,18 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 		window._widget.show_status_message.assert_called_once_with(
 			'Drag selection is off.')
 
+	def test_clickable_path_toggle_is_registered_and_shows_message(self):
+		window_chrome = MagicMock()
+		commands = self._application_commands(window_chrome=window_chrome)
+		self.assertIn('ToggleClickablePath', commands)
+		window_chrome.clickable_path.toggle.return_value = 'Clickable path off.'
+		window = SimpleNamespace(_widget=MagicMock())
+		commands['ToggleClickablePath'](window)()
+		window_chrome.clickable_path.toggle.assert_called_once_with(
+			window._widget)
+		window._widget.show_status_message.assert_called_once_with(
+			'Clickable path off.')
+
 	def test_registers_both_pane_status_commands_on_every_platform(self):
 		commands = []
 		args = [MagicMock() for _ in range(7)]

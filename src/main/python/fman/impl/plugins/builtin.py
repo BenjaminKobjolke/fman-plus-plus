@@ -78,6 +78,13 @@ class BuiltinPlugin(Plugin):
 					self.window._widget)
 				self.window._widget.show_status_message(message)
 
+		class ToggleClickablePath(ApplicationCommand):
+			aliases = ('Toggle clickable path',)
+			def __call__(self):
+				message = window_chrome.clickable_path.toggle(
+					self.window._widget)
+				self.window._widget.show_status_message(message)
+
 		class ResumeToolWindow(ApplicationCommand):
 			aliases = ('Resume tool window',)
 			def __call__(self):
@@ -199,6 +206,7 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(ShowTransferQueue)
 		self._register_application_command(ToggleStatusBar)
 		self._register_application_command(ToggleDragSelection)
+		self._register_application_command(ToggleClickablePath)
 		self._register_application_command(ToggleRightButtonSelection)
 		self._register_application_command(ToggleIncognito)
 		self._register_application_command(ResumeToolWindow)
