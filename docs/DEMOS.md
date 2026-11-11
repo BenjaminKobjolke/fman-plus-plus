@@ -71,7 +71,8 @@ fman renders each `Screenshot` still itself with Qt and sends it in the
 region with pyautogui for GIF/MP4 frames. The `themes` and `dialogs` stills-only
 demos therefore work on a locked or disconnected desktop when the tool supports
 uploaded stills; an older tool ignores the field and captures the desktop as
-before.
+before. `ScreenStill` steps are captured by the tool from the screen, so they
+need an unlocked desktop.
 
 ### Panes and the demo profile
 
@@ -284,6 +285,11 @@ composing stale inputs.
   backdated scratch files. Exists so the screenshot check can judge changes to how
   the file list looks (shading, colors, columns), instead of the tour chapters that
   record no stills. A change to the file list's look should add a `Screenshot` here.
+- **17 `ftp-overwrite`** — records an FTP folder upload with an existing file,
+  showing the progress window before the overwrite question, hidden while the
+  question is open, and back after answering. It needs `FMAN_FTPClient` installed
+  and seeds a loopback fake FTP server with slow listings; its stills are
+  gitignored (`media/demos/ftp-overwrite/`).
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
