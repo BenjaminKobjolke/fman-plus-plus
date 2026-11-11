@@ -151,15 +151,16 @@ class _MSG(ctypes.Structure):
 
 def _paths_from_notification(shell32, notification, event):
 	"""Copy filesystem paths from a new-delivery shell notification."""
-	items = (ctypes.c_void_p * 2)()
+	pidls = ctypes.POINTER(ctypes.c_void_p)()
 	event_id = wintypes.LONG()
 	shell32.SHChangeNotification_Lock.restype = ctypes.c_void_p
 	shell32.SHChangeNotification_Lock.argtypes = (
-		wintypes.HANDLE, wintypes.DWORD, ctypes.POINTER(ctypes.c_void_p),
+		wintypes.HANDLE, wintypes.DWORD,
+		ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)),
 		ctypes.POINTER(wintypes.LONG)
 	)
 	locked = shell32.SHChangeNotification_Lock(
-		notification, event, items, ctypes.byref(event_id)
+		notification, event, ctypes.byref(pidls), ctypes.byref(event_id)
 	)
 	if not locked:
 		return (), 0
@@ -169,7 +170,7 @@ def _paths_from_notification(shell32, notification, event):
 		)
 		shell32.SHGetPathFromIDListW.restype = wintypes.BOOL
 		paths = []
-		for pidl in items:
+		for pidl in (pidls[0], pidls[1]):
 			if not pidl:
 				continue
 			path = ctypes.create_unicode_buffer(32768)
