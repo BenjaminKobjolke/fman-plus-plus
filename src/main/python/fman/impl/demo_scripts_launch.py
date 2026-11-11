@@ -2,7 +2,9 @@
 
 from automated_screenshot_connector import DemoScript, Pause, Screenshot
 
-from fman.impl.demo import ExpectForwarded, LaunchFman, ScreenStill
+from fman.impl.demo import (
+	ExpectChildWindow, ExpectForwarded, LaunchFman, ScreenStill,
+)
 
 
 LAUNCH_CLIPS = {
@@ -13,7 +15,8 @@ LAUNCH_CLIPS = {
 			Pause(1.5),
 			Screenshot('single-instance-primary'),
 			LaunchFman(('--new-instance', 'opened-by-new-instance')),
-			Pause(10.0),
+			ExpectChildWindow(),
+			Pause(2.0),
 			ScreenStill('single-instance-new-window'),
 			Pause(1.2),
 			LaunchFman(('forwarded-to-original',)),

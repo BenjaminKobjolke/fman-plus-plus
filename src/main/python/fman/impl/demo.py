@@ -30,6 +30,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QApplication, QMenu
 from fman.impl.util.qt.key_events import (
 	parse_chord, post_chord, post_text,
 )
+from fman.impl.demo_window import foreground_process_window
 
 from automated_screenshot_connector.steps import (
 	CustomStep, InsertChar, PressReturn, SendKey, SendScreenshot, flatten,
@@ -60,6 +61,13 @@ class LaunchFman:
 	"""Launch another fman process with arguments relative to the active pane."""
 
 	args: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ExpectChildWindow:
+	"""Bring the most recently launched fman window to the foreground."""
+
+	timeout_s: float = 20.0
 
 
 @dataclass(frozen=True)
@@ -138,6 +146,9 @@ class DemoPlayer(QObject):
 				return
 			elif isinstance(action.step, LaunchFman):
 				self._launch_fman(action.step)
+			elif isinstance(action.step, ExpectChildWindow):
+				self._expect_child_window(action.step)
+				return
 			elif isinstance(action.step, ExpectForwarded):
 				self._expect_forwarded(action.step)
 				return
@@ -184,6 +195,24 @@ class DemoPlayer(QObject):
 		self._children.append(subprocess.Popen([
 			sys.executable, os.path.abspath(sys.argv[0]), *args,
 		]))
+
+	def _expect_child_window(self, step):
+		deadline = time.monotonic() + step.timeout_s
+
+		def check():
+			child = self._children[-1] if self._children else None
+			if (
+				child is not None
+				and child.poll() is None
+				and foreground_process_window(child.pid)
+			):
+				self._advance()
+			elif time.monotonic() >= deadline:
+				self._fail()
+			else:
+				QTimer.singleShot(100, check)
+
+		check()
 
 	def _expect_forwarded(self, step):
 		deadline = time.monotonic() + step.timeout_s

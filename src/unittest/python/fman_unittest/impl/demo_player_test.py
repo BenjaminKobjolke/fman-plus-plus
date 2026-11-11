@@ -21,7 +21,8 @@ if CONNECTOR_AVAILABLE:
 		SendScreenshot,
 	)
 	from fman.impl.demo import (
-		DemoPlayer, ExpectForwarded, LaunchFman, OpenContextMenu, ScreenStill,
+		DemoPlayer, ExpectChildWindow, ExpectForwarded, LaunchFman,
+		OpenContextMenu, ScreenStill,
 		WaitForOverwriteQuestion,
 	)
 
@@ -69,6 +70,41 @@ class DemoPlayerTest(TestCase):
 			os.path.join('C:/demo', 'separate'),
 		])
 		self.assertEqual([popen.return_value], player._children)
+
+	def test_expect_child_window_waits_until_child_is_foreground(self):
+		player = self._player(MagicMock(spec=DemoClient), MagicMock())
+		child = MagicMock()
+		child.pid = 123
+		child.poll.return_value = None
+		player._children = [child]
+
+		with patch(
+			'fman.impl.demo.foreground_process_window', return_value=True,
+		) as foreground:
+			with patch.object(player, '_advance') as advance:
+				player._expect_child_window(ExpectChildWindow())
+
+		foreground.assert_called_once_with(123)
+		advance.assert_called_once_with()
+
+	def test_expect_child_window_fails_when_child_window_never_appears(self):
+		player = self._player(MagicMock(spec=DemoClient), MagicMock())
+		child = MagicMock()
+		child.pid = 123
+		child.poll.return_value = None
+		player._children = [child]
+
+		with patch('fman.impl.demo.time.monotonic', side_effect=(0, 1)):
+			with patch(
+				'fman.impl.demo.foreground_process_window', return_value=False,
+			):
+				with patch('fman.impl.demo.QTimer.singleShot') as single_shot:
+					with patch.object(player, '_fail') as fail:
+						player._expect_child_window(
+							ExpectChildWindow(timeout_s=0.5))
+
+		fail.assert_called_once_with()
+		single_shot.assert_not_called()
 
 	def test_expect_forwarded_advances_when_launch_and_pane_match(self):
 		player = self._player(MagicMock(spec=DemoClient), MagicMock())

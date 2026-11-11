@@ -195,7 +195,9 @@ class DemoSetupTest(unittest.TestCase):
 	)
 	def test_single_instance_demo_records_both_launch_outcomes(self):
 		from automated_screenshot_connector.steps import CustomStep, flatten
-		from fman.impl.demo import ExpectForwarded, LaunchFman
+		from fman.impl.demo import (
+			ExpectChildWindow, ExpectForwarded, LaunchFman,
+		)
 		from fman.impl.demo_scripts_launch import (
 			LAUNCH_CLIPS, LISTENING_DEMO_IDS,
 		)
@@ -209,6 +211,15 @@ class DemoSetupTest(unittest.TestCase):
 			LaunchFman(('--new-instance', 'opened-by-new-instance')),
 			LaunchFman(('forwarded-to-original',)),
 		])
+		expect_window_index = next(
+			index for index, action in enumerate(actions)
+			if isinstance(action, ExpectChildWindow)
+		)
+		new_window_index = next(
+			index for index, action in enumerate(actions)
+			if getattr(action, 'name', None) == 'single-instance-new-window'
+		)
+		self.assertLess(expect_window_index, new_window_index)
 		forwarded_index = next(
 			index for index, action in enumerate(actions)
 			if isinstance(action, ExpectForwarded)
