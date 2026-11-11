@@ -203,7 +203,9 @@ GitHub release uploads both assets. See [PORTABLE.md](PORTABLE.md) for the user
 workflow. The project owns `src/installer/windows/Installer.nsi`; its visible
 names come from the `display_name` build setting. Keep `app_name` as `fman`:
 it names the executable, install directory and uninstall key, so existing
-installs update in place. **`upload()` is a no-op for this fork** —
+installs update in place. Before copying new files, the installer clears
+`Plugins\Core` and `_internal` to remove stale shipped files on upgrade.
+**`upload()` is a no-op for this fork** —
 `src/build/python/build_impl/windows.py` disabled it (this fork has no access
 to the original project's AWS account and doesn't publish to
 `update.fman.io`, upstream's channel). Distribution is GitHub Releases only

@@ -153,6 +153,10 @@ fman_wait_again:
 fman_wait_timeout:
   Abort "Could not wait for ${app_name} to close."
 fman_wait_done:
+  ; An upgrade must not keep packages an older build shipped: a stale copy in
+  ; Plugins\Core shadows the bundled one (duplicate-package alert).
+  RMDir /r "$InstDir\Plugins\Core"
+  RMDir /r "$InstDir\_internal"
   SetOutPath "$InstDir"
   File /r "..\${app_name}\*"
   WriteRegStr SHCTX "Software\${app_name}" "" $InstDir
