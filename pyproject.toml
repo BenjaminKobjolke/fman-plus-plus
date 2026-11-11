@@ -28,7 +28,7 @@ dependencies = [
 
 [dependency-groups]
 # Installed by every `uv sync`; excluded from the freeze in base.json.
-demos = ["automated-screenshot-connector"]
+demos = ["automated-screenshot-connector", "pyftpdlib==2.2.0"]
 
 [tool.uv]
 package = false
