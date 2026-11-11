@@ -77,6 +77,24 @@ class UnregisterPackageTest(TestCase):
 		package = ModuleType('fman_unittest_package_that_is_not_loaded')
 		ExternalPlugin._unregister_package(None, package)
 
+	def test_removes_package_and_its_submodules(self):
+		name = 'fman_unittest_package_with_submodules'
+		package = ModuleType(name)
+		submodule = ModuleType(name + '.module')
+		lookalike = ModuleType(name + '_other')
+		sys.modules[name] = package
+		sys.modules[submodule.__name__] = submodule
+		sys.modules[lookalike.__name__] = lookalike
+		try:
+			ExternalPlugin._unregister_package(None, package)
+			self.assertNotIn(name, sys.modules)
+			self.assertNotIn(submodule.__name__, sys.modules)
+			self.assertIs(lookalike, sys.modules[lookalike.__name__])
+		finally:
+			sys.modules.pop(name, None)
+			sys.modules.pop(submodule.__name__, None)
+			sys.modules.pop(lookalike.__name__, None)
+
 class ReportIfPackageNameTakenTest(TestCase):
 	def test_reports_clash(self):
 		other = ModuleType('fman_unittest_clashing_package')

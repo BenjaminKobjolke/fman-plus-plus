@@ -282,9 +282,14 @@ class ExternalPlugin(Plugin):
 		# pop(), not del: two plugins can ship a package of the same name
 		# (eg. the same plugin installed both under Third-party/ and User/).
 		# The second load overwrites the first one's sys.modules entry, so
-		# only the first unload finds it - and a KeyError here would abort
-		# the whole 'Reload plugins'.
-		sys.modules.pop(package.__name__, None)
+		# only the first unload finds it. Remove submodules too, or imports
+		# during 'Reload plugins' would reuse the old module objects.
+		package_name = package.__name__
+		for module_name in list(sys.modules):
+			if module_name == package_name or module_name.startswith(
+				package_name + '.'
+			):
+				sys.modules.pop(module_name, None)
 	def _iterate_classes(self, module):
 		for cls in [getattr(module, name) for name in dir(module)]:
 			if inspect.isclass(cls):
