@@ -68,3 +68,10 @@ examples/scripting_api/test*.md
 # Downloaded by tools/fbs_pro.py (install.bat); not committed
 vendor/*.tar.gz
 vendor/*.part
+
+# AI working files and external ticket-tool working copies
+.claude/
+/PLAN_*.md
+/PLAN.md
+/HANDOFF.md
+/tickets/
