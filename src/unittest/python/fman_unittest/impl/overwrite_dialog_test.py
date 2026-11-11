@@ -4,9 +4,10 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 from fman.impl.overwrite_dialog import (
 	FileDetails, OverwriteChoice, OverwriteDialog
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtTest import QTest
-from PyQt5.QtWidgets import QApplication, QDialog, QGridLayout, QLabel
+from PyQt5.QtWidgets import QApplication, QDialog, QGridLayout, QLabel, QWidget
+from fman.impl.in_window_dialog import exec_in_window
 from unittest import TestCase
 
 
@@ -90,6 +91,45 @@ class OverwriteDialogTest(TestCase):
 		QTest.keyClick(button, Qt.Key_Return)
 		self.assertEqual(OverwriteChoice.RENAME, self.dialog.choice)
 		self.assertEqual(QDialog.Accepted, self.dialog.result())
+
+	def test_in_window_dialog_moves_focus_and_enters_selected_choice(self):
+		parent = QWidget()
+		parent.resize(800, 600)
+		parent.show()
+		dialog = OverwriteDialog(parent, 'exists', None)
+		result = {}
+
+		def navigate_dialog():
+			focus = parent.focusWidget()
+			result['initial_focus'] = focus
+			result['starts_on_overwrite'] = (
+				focus is dialog.buttons[OverwriteChoice.OVERWRITE]
+			)
+			QTest.keyClick(focus, Qt.Key_Down)
+			focus = parent.focusWidget()
+			result['down_focus'] = focus
+			QTest.keyClick(focus, Qt.Key_Right)
+			focus = parent.focusWidget()
+			result['right_focus'] = focus
+			QTest.keyClick(focus, Qt.Key_Return)
+			result['choice'] = dialog.choice
+			if dialog.isVisible():
+				dialog.reject()
+
+		try:
+			QTimer.singleShot(0, navigate_dialog)
+			result['dialog_result'] = exec_in_window(dialog, parent)
+			self.assertTrue(result['starts_on_overwrite'])
+			self.assertIs(
+				dialog.buttons[OverwriteChoice.RENAME], result['down_focus']
+			)
+			self.assertIs(
+				dialog.buttons[OverwriteChoice.RENAME_ALL], result['right_focus']
+			)
+			self.assertEqual(OverwriteChoice.RENAME_ALL, result['choice'])
+			self.assertEqual(QDialog.Accepted, result['dialog_result'])
+		finally:
+			parent.close()
 
 	def test_each_button_returns_its_choice(self):
 		for choice in OverwriteChoice:

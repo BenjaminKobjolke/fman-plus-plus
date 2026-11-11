@@ -89,6 +89,8 @@ class OverwriteDialog(QDialog):
 			layout.addLayout(row)
 
 		self.buttons[OverwriteChoice.OVERWRITE].setDefault(True)
+		# exec_in_window focuses the dialog; the arrow-key filter needs button focus.
+		self.setFocusProxy(self.buttons[OverwriteChoice.OVERWRITE])
 		self.buttons[OverwriteChoice.OVERWRITE].setFocus(Qt.OtherFocusReason)
 
 	def eventFilter(self, watched, event):
