@@ -11,7 +11,8 @@ from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import (
 	QApplication, QDialog, QDialogButtonBox, QWidget, QLineEdit, QStyle
 )
-from PyQt5.QtWidgets import QLabel, QStyleOptionFrame
+from PyQt5.QtWidgets import QLabel, QStyleFactory, QStyleOptionFrame
+from fman.impl.view import ProxyStyle
 from threading import Event, get_ident
 from unittest import TestCase
 
@@ -211,31 +212,36 @@ class PromptPopupTest(TestCase):
 		from pathlib import Path
 		previous_style_sheet = self.app.styleSheet()
 		self.addCleanup(self.app.setStyleSheet, previous_style_sheet)
+		previous_style_name = self.app.style().objectName()
+		self.addCleanup(
+			self.app.setStyle, QStyleFactory.create(previous_style_name)
+		)
+		self.app.setStyle(ProxyStyle(QStyleFactory.create('Fusion')))
 		style_sheet = Path('src/main/resources/base/styles.qss').read_text()
 		self.app.setStyleSheet(substitute(style_sheet, DEFAULT_TOKENS))
 		prompt = Prompt(
-			self.parent, _StubApp(), self.css, 'Move "x" to\nC:/target'
+			self.parent, _StubApp(), self.css,
+			'Move "visible.txt" to\nC:/target', 'visible.txt'
 		)
 		self.addCleanup(prompt.close)
 		prompt.show()
-		header = prompt._header
-		detail = prompt.findChild(QLabel, 'detail')
 		query = prompt._query
 		option = QStyleOptionFrame()
 		query.initStyleOption(option)
-		input_text_margin = 2  # QLineEditPrivate::horizontalMargin
-		text_starts = (
-			header.mapTo(prompt, header.contentsRect().topLeft()).x(),
-			detail.mapTo(prompt, detail.contentsRect().topLeft()).x(),
+		input_text_left = (
 			query.mapTo(
 				prompt,
 				query.style().subElementRect(
 					QStyle.SE_LineEditContents, option, query
 				).topLeft()
-			).x() + input_text_margin,
+			).x() + query.textMargins().left() + 2
 		)
-		self.assertEqual(text_starts[0], text_starts[1])
-		self.assertEqual(text_starts[1], text_starts[2])
+		for label in (prompt._header, prompt._detail):
+			self.assertIn('padding: 0px;', label.styleSheet())
+			label_text_left = label.mapTo(
+				prompt, label.contentsRect().topLeft()
+			).x()
+			self.assertEqual(input_text_left, label_text_left)
 	def test_title_has_space_before_path(self):
 		from fman.impl.themes import DEFAULT_TOKENS, substitute
 		from pathlib import Path

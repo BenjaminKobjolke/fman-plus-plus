@@ -99,20 +99,21 @@ class Prompt(Quicksearch):
 			+ _LINE_EDIT_HORIZONTAL_MARGIN
 		)
 		# Platform and theme styles change the input inset, so match it directly.
-		header_padding = text_left - self._header.geometry().x()
-		# A widget stylesheet wins over the app's * rule, unlike setFont.
-		self._header.setStyleSheet(
-			'font-size: %gpt; padding-left: %dpx;' % (
-				pts + _TITLE_STEP_PTS, header_padding
+		def style_label(label, point_size):
+			# QSS padding shifts both contentsRect() and QLabel's draw area.
+			# Move those insets to the widget margins so text moves only once.
+			contents = label.contentsRect()
+			right = label.width() - contents.right() - 1
+			bottom = label.height() - contents.bottom() - 1
+			label.setStyleSheet(
+				'font-size: %gpt; padding: 0px;' % point_size
 			)
-		)
+			label.setContentsMargins(
+				text_left - label.geometry().x(), contents.top(), right, bottom
+			)
+		style_label(self._header, pts + _TITLE_STEP_PTS)
 		if self._detail is not None:
-			detail_padding = text_left - self._detail.geometry().x()
-			self._detail.setStyleSheet(
-				'font-size: %gpt; padding-left: %dpx;' % (
-					max(1, pts - _TITLE_STEP_PTS), detail_padding
-				)
-			)
+			style_label(self._detail, max(1, pts - _TITLE_STEP_PTS))
 	def setTextValue(self, text):
 		self._query.setText(text)
 	def textValue(self):
