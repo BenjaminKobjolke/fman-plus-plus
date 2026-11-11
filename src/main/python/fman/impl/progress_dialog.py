@@ -124,10 +124,17 @@ class ProgressDialog(QProgressDialog):
 	def _show_without_popup(self, show_dialog, *args, **kwargs):
 		# Prevent the progress dialog from popping up while the alert is shown:
 		self.setMinimumDuration(self._MAX_C_INT)
+		# A visible one would cover a dialog drawn inside the main window. A modal
+		# one stays: the main window then opens the dialog as a window above it.
+		covers = self.isVisible() and not self.isModal()
+		if covers:
+			self.hide()
 		try:
 			return show_dialog(*args, **kwargs)
 		finally:
 			self.setMinimumDuration(self._MINIMUM_DURATION_MS)
+			if covers and not self.wasCanceled():
+				self.show()
 	def was_canceled(self):
 		return self._was_canceled
 	@run_in_main_thread

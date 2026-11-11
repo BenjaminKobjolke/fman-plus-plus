@@ -22,6 +22,53 @@ from PyQt5.QtWidgets import QApplication, QLabel, QStatusBar, QStyle, \
 from unittest import TestCase
 
 class WorkersLabelTest(TestCase):
+	def test_visible_non_modal_dialog_is_hidden_while_question_is_open(self):
+		parent = _OverwriteParent()
+		dialog = self._dialog(parent)
+		parent.callback = lambda: dialog.isVisible()
+		dialog.show()
+		self.assertTrue(dialog.isVisible())
+		dialog.show_overwrite_dialog()
+		self.assertFalse(parent.result)
+		self.assertTrue(dialog.isVisible())
+
+	def test_minimized_dialog_stays_hidden_while_question_is_open(self):
+		status_bar = QStatusBar()
+		tool_windows = ToolWindows(status_bar)
+		parent = _OverwriteParent()
+		dialog = self._dialog(
+			parent, ToolWindowOptions(False, True, None), tool_windows
+		)
+		parent.callback = lambda: dialog.isVisible()
+		dialog.show()
+		dialog.minimize()
+		self.assertFalse(dialog.isVisible())
+		dialog.show_overwrite_dialog()
+		self.assertFalse(parent.result)
+		self.assertFalse(dialog.isVisible())
+		self.assertEqual(1, len(status_bar.findChildren(QToolButton)))
+
+	def test_dialog_that_has_not_appeared_stays_hidden(self):
+		parent = _OverwriteParent()
+		dialog = self._dialog(parent)
+		parent.callback = lambda: dialog.isVisible()
+		self.assertFalse(dialog.isVisible())
+		dialog.show_overwrite_dialog()
+		self.assertFalse(parent.result)
+		self.assertFalse(dialog.isVisible())
+
+	def test_modal_dialog_stays_visible_while_question_is_open(self):
+		parent = _OverwriteParent()
+		dialog = self._dialog(
+			parent, ToolWindowOptions(True, False, None)
+		)
+		parent.callback = lambda: dialog.isVisible()
+		dialog.show()
+		self.assertTrue(dialog.isVisible())
+		dialog.show_overwrite_dialog()
+		self.assertTrue(parent.result)
+		self.assertTrue(dialog.isVisible())
+
 	def test_default_options_keep_the_non_modal_dialog_without_minimize(self):
 		dialog = self._dialog()
 		self.assertEqual(Qt.NonModal, dialog.windowModality())
@@ -358,6 +405,15 @@ class _PaletteParent(QWidget):
 		super().__init__()
 		self.palette = _FakePalette(choice)
 		self.show_quicksearch = self.palette.show
+
+class _OverwriteParent(QWidget):
+	def __init__(self):
+		super().__init__()
+		self.callback = None
+		self.result = None
+	def show_overwrite_dialog(self, *args, **kwargs):
+		self.result = self.callback(*args, **kwargs)
+		return self.result
 
 class _FakeMainWindow:
 	def __init__(self, title_bar_visible):
