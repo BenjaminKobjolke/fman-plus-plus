@@ -7,11 +7,14 @@ import logging
 from threading import Thread
 from urllib.parse import parse_qs, urlsplit
 
+from PyQt5.QtCore import QPoint
+
 from fman.impl.scripting.config import (
 	AUTHORIZATION_HEADER,
 	COMMAND_PATH,
 	COMMANDS_PATH,
 	CLICK_PATH,
+	DRAG_PATH,
 	DIALOG_PATH,
 	FILES_PATH,
 	KEYS_PATH,
@@ -20,7 +23,7 @@ from fman.impl.scripting.config import (
 	STATE_PATH,
 )
 from fman.impl.scripting.actions import InvalidPane, UnknownCommand
-from fman.impl.scripting.automation import UnknownFile
+from fman.impl.scripting.automation import UnknownFile, UnsafeDrag
 from fman.impl.util.qt.key_events import parse_chord
 
 
@@ -106,7 +109,7 @@ class ScriptingServer:
 				if body is None:
 					return
 				if urlsplit(self.path).path not in (
-					COMMAND_PATH, KEYS_PATH, CLICK_PATH,
+					COMMAND_PATH, KEYS_PATH, CLICK_PATH, DRAG_PATH,
 				):
 					self._send_error(404, 'Unknown path.')
 					return
@@ -119,13 +122,15 @@ class ScriptingServer:
 					self._send_error(400, 'Request body must be a JSON object.')
 					return
 				path = urlsplit(self.path).path
-				if path in (KEYS_PATH, CLICK_PATH):
+				if path in (KEYS_PATH, CLICK_PATH, DRAG_PATH):
 					if not self._automation_enabled():
 						return
 					if path == KEYS_PATH:
 						self._keys(payload)
-					else:
+					elif path == CLICK_PATH:
 						self._click(payload)
+					else:
+						self._drag(payload)
 					return
 				name = payload.get('name')
 				args = payload.get('args', {})
@@ -243,6 +248,23 @@ class ScriptingServer:
 						return
 					server._automation_actions.click_at(x, y, button, double)
 				self._send_json(200, {'ok': True})
+
+			def _drag(self, payload):
+				coordinates = tuple(
+					payload.get(name) for name in ('x', 'y', 'to_x', 'to_y'))
+				if any(not isinstance(value, int) or isinstance(value, bool)
+					for value in coordinates):
+					self._send_error(
+						400, 'x, y, to_x and to_y must be integers.')
+					return
+				start = QPoint(coordinates[0], coordinates[1])
+				end = QPoint(coordinates[2], coordinates[3])
+				try:
+					server._automation_actions.drag_at(start, end)
+				except UnsafeDrag as error:
+					self._send_error(400, str(error))
+				else:
+					self._send_json(200, {'ok': True})
 
 			def _read_body(self):
 				length = self.headers.get('Content-Length', '0')

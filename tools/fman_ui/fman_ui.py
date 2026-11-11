@@ -258,6 +258,13 @@ def _run(args):
 		result = _api(session, 'POST', '/v1/click', payload)
 		_settle(args.settle)
 		return result
+	if args.action == 'drag':
+		payload = {
+			'x': args.x, 'y': args.y, 'to_x': args.to_x, 'to_y': args.to_y,
+		}
+		result = _api(session, 'POST', '/v1/drag', payload)
+		_settle(args.settle)
+		return result
 	if args.action == 'screenshot':
 		data = _api(session, 'GET', '/v1/screenshot')
 		Path(args.png_path).write_bytes(data)

@@ -2,7 +2,9 @@
 
 from PyQt5.QtCore import QBuffer, QIODevice, QPoint, QPointF, Qt, QEvent
 from PyQt5.QtGui import QContextMenuEvent, QMouseEvent
-from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtWidgets import (
+	QAbstractItemView, QApplication, QHeaderView, QMessageBox,
+)
 
 from fman.impl.scripting.actions import get_pane
 from fman.impl.util.qt.key_events import post_chord, post_text
@@ -11,6 +13,10 @@ from fman.impl.util.qt.thread import run_in_main_thread
 
 class UnknownFile(Exception):
 	"""Raised when a requested URL is not displayed in a pane."""
+
+
+class UnsafeDrag(Exception):
+	"""Raised when a drag could start a file operation."""
 
 
 class AutomationActions:
@@ -54,6 +60,35 @@ class AutomationActions:
 		point = QPoint(x, y)
 		child = target.childAt(point) or target
 		self._post_click(child, child.mapFrom(target, point), button, double)
+
+	@run_in_main_thread
+	def drag_at(self, start: QPoint, end: QPoint) -> None:
+		target = self._window_target()
+		child = target.childAt(start) or target
+		parent = child.parent()
+		if (
+			isinstance(parent, QAbstractItemView)
+			and not isinstance(parent, QHeaderView)
+			and child is parent.viewport()
+		):
+			raise UnsafeDrag('Drags may not start on a file list.')
+
+		start = child.mapFrom(target, start)
+		end = child.mapFrom(target, end)
+		QApplication.postEvent(child, QMouseEvent(
+			QEvent.MouseButtonPress, QPointF(start), Qt.LeftButton,
+			Qt.LeftButton, Qt.NoModifier))
+		for step in range(1, 6):
+			point = QPointF(
+				start.x() + (end.x() - start.x()) * step / 5,
+				start.y() + (end.y() - start.y()) * step / 5,
+			)
+			QApplication.postEvent(child, QMouseEvent(
+				QEvent.MouseMove, point, Qt.NoButton,
+				Qt.LeftButton, Qt.NoModifier))
+		QApplication.postEvent(child, QMouseEvent(
+			QEvent.MouseButtonRelease, QPointF(end), Qt.LeftButton,
+			Qt.NoButton, Qt.NoModifier))
 
 	@run_in_main_thread
 	def screenshot_png(self):

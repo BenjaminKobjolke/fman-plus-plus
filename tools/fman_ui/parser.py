@@ -38,6 +38,12 @@ def parser():
 	click.add_argument('--right', action='store_true')
 	click.add_argument('--double', action='store_true')
 	click.add_argument('--settle', type=int, default=500)
+	drag = commands.add_parser('drag')
+	drag.add_argument('--x', type=int, required=True)
+	drag.add_argument('--y', type=int, required=True)
+	drag.add_argument('--to-x', type=int, required=True)
+	drag.add_argument('--to-y', type=int, required=True)
+	drag.add_argument('--settle', type=int, default=500)
 	screenshot = commands.add_parser('screenshot')
 	screenshot.add_argument('png_path')
 	return parser

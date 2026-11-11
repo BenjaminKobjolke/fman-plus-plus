@@ -3,11 +3,15 @@
 from unittest import TestCase
 from unittest.mock import patch
 
-from PyQt5.QtCore import QEvent
-from PyQt5.QtGui import QImage
-from PyQt5.QtWidgets import QApplication, QDialog, QMessageBox, QWidget
+from PyQt5.QtCore import QEvent, QPoint
+from PyQt5.QtGui import QImage, QStandardItemModel
+from PyQt5.QtWidgets import (
+	QApplication, QDialog, QHeaderView, QMessageBox, QTableView, QWidget,
+)
 
-from fman.impl.scripting.automation import AutomationActions, UnknownFile
+from fman.impl.scripting.automation import (
+	AutomationActions, UnknownFile, UnsafeDrag,
+)
 from fman.impl.scripting.actions import InvalidPane
 from fman.impl.util.qt.key_events import parse_chord, post_chord, post_text
 from fman.impl.widgets import MessageBox
@@ -101,6 +105,46 @@ class ScriptingAutomationTest(TestCase):
 			QEvent.MouseButtonPress, QEvent.MouseButtonRelease,
 			QEvent.MouseButtonDblClick, QEvent.MouseButtonRelease,
 		], window.events)
+
+	def test_drag_at_posts_press_moves_and_release(self):
+		window = _MouseCapture()
+		window.resize(40, 30)
+		window.show()
+		self.addCleanup(window.close)
+		AutomationActions(window, None).drag_at(QPoint(5, 6), QPoint(25, 16))
+		self.app.processEvents()
+		self.assertEqual(QEvent.MouseButtonPress, window.events[0])
+		self.assertGreaterEqual(window.events.count(QEvent.MouseMove), 1)
+		self.assertTrue(all(
+			event == QEvent.MouseMove for event in window.events[1:-1]))
+		self.assertEqual(QEvent.MouseButtonRelease, window.events[-1])
+
+	def test_drag_at_rejects_file_list_viewport(self):
+		view = _table_view()
+		view.show()
+		self.addCleanup(view.close)
+		point = view.viewport().rect().center()
+		with self.assertRaises(UnsafeDrag):
+			AutomationActions(view, None).drag_at(point, point + QPoint(10, 0))
+
+	def test_drag_at_allows_column_header(self):
+		view = _table_view()
+		view.show()
+		self.addCleanup(view.close)
+		header = view.horizontalHeader()
+		self.assertIsInstance(header, QHeaderView)
+		header.resizeSection(0, 120)
+		header_point = QPoint(
+			header.sectionViewportPosition(0) + header.sectionSize(0) - 1,
+			header.height() // 2,
+		)
+		start = header.mapTo(view, header_point)
+		end = start + QPoint(-20, 0)
+		initial_width = header.sectionSize(0)
+		AutomationActions(view, None).drag_at(
+			start, end)
+		self.app.processEvents()
+		self.assertLess(header.sectionSize(0), initial_width)
 
 	def test_right_click_posts_context_menu_event(self):
 		window = _MouseCapture()
@@ -226,8 +270,15 @@ class _MouseCapture(QWidget):
 	def event(self, event):
 		if event.type() in (
 			QEvent.MouseButtonPress, QEvent.MouseButtonRelease,
-			QEvent.MouseButtonDblClick, QEvent.ContextMenu,
+			QEvent.MouseButtonDblClick, QEvent.MouseMove, QEvent.ContextMenu,
 		):
 			self.events.append(event.type())
 			return True
 		return super().event(event)
+
+
+def _table_view():
+	view = QTableView()
+	model = QStandardItemModel(2, 2, view)
+	view.setModel(model)
+	return view

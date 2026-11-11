@@ -49,6 +49,7 @@ or global hotkeys.
 | --- | --- | --- |
 | `POST /v1/keys` | `{"keys": ["Ctrl+Shift+P"], "text": "hidden"}` (either field or both) | `{"ok": true}` |
 | `POST /v1/click` | `{"pane": 0, "file": "<url>", "button": "left", "double": false}` or `{"x": 10, "y": 20}` | `{"ok": true}` |
+| `POST /v1/drag` | `{"x": 10, "y": 20, "to_x": 30, "to_y": 20}` | `{"ok": true}` |
 | `GET /v1/screenshot` | — | PNG image of the active modal, popup or main window |
 | `GET /v1/dialog` | — | `{"dialog": {"type": "MessageBox", "title": "Confirm", "text": "Continue?", "buttons": ["&Yes", "&No"]}}` or `{"dialog": null}` |
 | `GET /v1/files?pane=0` | Pane index is active-first and defaults to `0` | `{"pane": 0, "files": ["<url>"]}` |
@@ -59,6 +60,9 @@ file returns 404, invalid input or pane indexes return 400, and all automation
 routes return 403 while automation is disabled. The dialog endpoint returns
 the active fman message box's type, title, text and button labels, or `null`
 when no modal dialog is open.
+
+Drags that start on a file-list viewport are rejected with 400 to prevent
+starting a file drag-and-drop operation.
 
 The server checks the requested command name against the allowlist before
 dispatch. A plugin's `on_command` hook may rewrite a command after this

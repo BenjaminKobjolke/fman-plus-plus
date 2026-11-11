@@ -176,6 +176,20 @@ class FmanUiTest(TestCase):
 					api.call_args_list[1].args[3]['file'],
 				)
 
+	def test_drag_posts_start_and_end_coordinates(self):
+		with TemporaryDirectory() as temp:
+			self._write_session(temp)
+			with patch.dict(os.environ, {'TEMP': temp}), \
+				patch.object(fman_ui, '_api', return_value={'ok': True}) as api:
+				self.assertEqual(0, fman_ui.main([
+					'drag', '--x', '1', '--y', '2', '--to-x', '3', '--to-y', '4',
+					'--settle', '0',
+				]))
+		self.assertEqual(
+			('POST', '/v1/drag', {'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4}),
+			api.call_args.args[1:],
+		)
+
 	def test_bracketed_and_spaced_file_names_remain_unencoded(self):
 		with TemporaryDirectory() as temp:
 			self._write_session(temp)

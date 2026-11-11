@@ -5,8 +5,12 @@ from unittest.mock import MagicMock
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
+from PyQt5.QtCore import QPoint
+
 from fman.impl.scripting.actions import InvalidPane, ScriptingActions, UnknownCommand
-from fman.impl.scripting.automation import AutomationActions, UnknownFile
+from fman.impl.scripting.automation import (
+	AutomationActions, UnknownFile, UnsafeDrag,
+)
 from fman.impl.scripting.config import ScriptingApiConfig
 from fman.impl.scripting.server import ScriptingServer
 
@@ -114,6 +118,9 @@ class ScriptingServerTest(TestCase):
 			('GET', '/v1/dialog', None),
 			('POST', '/v1/keys', {'keys': ['A']}),
 			('POST', '/v1/click', {'x': 1, 'y': 2}),
+			('POST', '/v1/drag', {
+				'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4,
+			}),
 		):
 			with self.subTest(path=path):
 				self.assertEqual(403, self._request_error(method, path, payload))
@@ -144,6 +151,11 @@ class ScriptingServerTest(TestCase):
 			self.assertEqual({'ok': True}, self._request_at(
 				base_url, 'POST', '/v1/click', {'x': 10, 'y': 20},
 			))
+			self.assertEqual({'ok': True}, self._request_at(
+				base_url, 'POST', '/v1/drag', {
+					'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4,
+				},
+			))
 			self.assertEqual((200, 'image/png', b'png-data'), self._binary_at(
 				base_url, '/v1/screenshot'))
 			self.assertEqual({
@@ -152,6 +164,7 @@ class ScriptingServerTest(TestCase):
 			actions.send_keys.assert_called_once_with(['Ctrl+P'])
 			actions.type_text.assert_called_once_with('x')
 			actions.click_at.assert_called_once_with(10, 20, 'left', False)
+			actions.drag_at.assert_called_once_with(QPoint(1, 2), QPoint(3, 4))
 			actions.get_dialog.assert_called_once_with()
 		finally:
 			server.stop()
@@ -170,6 +183,16 @@ class ScriptingServerTest(TestCase):
 			base_url = 'http://127.0.0.1:%s' % server.port
 			self.assertEqual(400, self._request_error_at(
 				base_url, 'POST', '/v1/keys', {'keys': 'Ctrl+P'}))
+			self.assertEqual(400, self._request_error_at(
+				base_url, 'POST', '/v1/drag', {
+					'x': 1, 'y': 2, 'to_x': True, 'to_y': 4,
+				}))
+			actions.drag_at.side_effect = UnsafeDrag(
+				'Drags may not start on a file list.')
+			self.assertEqual(400, self._request_error_at(
+				base_url, 'POST', '/v1/drag', {
+					'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4,
+				}))
 			self.assertEqual(404, self._request_error_at(
 				base_url, 'POST', '/v1/click', {'pane': 0, 'file': 'file:///x'}))
 			self.assertEqual(400, self._request_error_at(

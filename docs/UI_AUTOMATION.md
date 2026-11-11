@@ -121,6 +121,7 @@ tools\fman_ui.bat keys Ctrl+Shift+P
 tools\fman_ui.bat type hidden
 tools\fman_ui.bat click --file visible.txt --pane 0 --double
 tools\fman_ui.bat click --x 250 --y 140 --right
+tools\fman_ui.bat drag --x 300 --y 60 --to-x 240 --to-y 60
 tools\fman_ui.bat screenshot %TEMP%\fman.png
 tools\fman_ui.bat close
 ```
@@ -130,6 +131,11 @@ tools\fman_ui.bat close
 `click --file` accepts either a full fman URL or a bare file name; names resolve
 against the selected pane's current folder. Input commands accept `--settle`
 milliseconds (default 500) to wait for the UI after acting.
+
+`drag` uses the same window coordinates as `click --x` and `click --y`. Find a
+column header's right edge in a screenshot and start the drag there. Drags that
+start on file rows are refused, so file drag-and-drop cannot start. Take another
+screenshot to confirm the result.
 
 When a command opens an fman dialog, its HTTP request stays open until the
 dialog is answered and may time out in the driver. If a dialog is active, the
@@ -209,6 +215,22 @@ popups are still captured on their own). The fixture's hidden attribute is set
 when `launch` creates it; the `attrib` line shows how to reset it if a check
 toggled it. Run `close` even when the check fails so the process and temporary
 session are removed.
+
+## Example: narrow a column
+
+This follows validation task #2072. Sort by Size, capture the header, then drag
+the Size/Modified boundary left until Size no longer fits beside its sort arrow.
+Use the screenshot to adjust the coordinates if needed, then capture the compact
+header layout.
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat click --x 80 --y 56
+tools\fman_ui.bat screenshot %TEMP%\fman-column-before.png
+tools\fman_ui.bat drag --x 123 --y 56 --to-x 52 --to-y 56
+tools\fman_ui.bat screenshot %TEMP%\fman-column-after.png
+tools\fman_ui.bat close
+```
 
 ## Example: undo a file from the Recycle Bin
 
