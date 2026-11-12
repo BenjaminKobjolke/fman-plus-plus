@@ -89,7 +89,7 @@ class FailedTransferOperationsTestMixin:
 				verb.capitalize(), count, '' if count == 1 else 's', verb,
 				'Retry it?' if count == 1 else 'Retry them?'
 			), YES | NO, YES
-		), answer)
+		), answer, button_texts={YES: 'Yes', NO: 'No'})
 	def _run_with_transfer_failure(
 		self, failed_src, retry_succeeds=False, cancel_after_failure=False
 	):

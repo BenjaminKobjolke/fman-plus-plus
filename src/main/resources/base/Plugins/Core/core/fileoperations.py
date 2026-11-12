@@ -146,9 +146,11 @@ class FileTreeOperation(FileTreeGathering, Task):
 	def _retry_failed(self):
 		failures = self._failed_transfers.take()
 		while failures:
+			# Qt can omit the Yes label when this retry prompt is shown again.
 			answer = self.show_alert(
 				self._failed_transfers.message(self.get_title(), failures),
-				YES | NO, YES
+				YES | NO, YES,
+				button_texts={YES: 'Yes', NO: 'No'}
 			)
 			if not answer & YES:
 				return

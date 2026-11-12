@@ -448,8 +448,10 @@ class FileTreeOperationAT(FailedTransferOperationsTestMixin):
 		return os.path.islink(as_human_readable(file_url))
 	def _readlink(self, link_url):
 		return as_url(os.readlink(as_human_readable(link_url)))
-	def _expect_alert(self, args, answer):
-		self._progress_dialog.expect_alert(args, answer)
+	def _expect_alert(self, args, answer, **kwargs):
+		self._progress_dialog.expect_alert(
+			args, answer, kwargs if kwargs else None
+		)
 	def _expect_overwrite(self, name, answer):
 		self._progress_dialog.expect_overwrite(
 			'%s exists. Do you want to overwrite it?' % name, answer
@@ -597,8 +599,8 @@ class MockProgressDialog:
 		self._expected_prompts = []
 		self.workers = None
 		self.canceled = False
-	def expect_alert(self, args, answer):
-		self._expected_alerts.append((args, answer))
+	def expect_alert(self, args, answer, kwargs=None):
+		self._expected_alerts.append((args, answer, kwargs))
 	def verify_expected_dialogs_were_shown(self):
 		self._test_case.assertEqual(
 			[], self._expected_alerts, 'Did not receive all expected alerts.'
@@ -628,12 +630,16 @@ class MockProgressDialog:
 		expected_args, answer = self._expected_prompts.pop(0)
 		self._test_case.assertEqual(expected_args, args, 'Wrong prompt')
 		return answer
-	def show_alert(self, *args, **_):
+	def show_alert(self, *args, **kwargs):
 		if not self._expected_alerts:
 			self._test_case.fail('Unexpected alert: %r' % args[0])
 			return
-		expected_args, answer = self._expected_alerts.pop(0)
+		expected_args, answer, expected_kwargs = self._expected_alerts.pop(0)
 		self._test_case.assertEqual(expected_args, args, "Wrong alert")
+		if expected_kwargs is not None:
+			self._test_case.assertEqual(
+				expected_kwargs, kwargs, "Wrong alert options"
+			)
 		return answer
 	def set_text(self, text):
 		pass
