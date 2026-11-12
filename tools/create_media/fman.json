@@ -43,6 +43,8 @@
      "width": 1920, "height": 1080, "group": "feature"},
     {"id": 9, "name": "feature-tail", "fps": 5, "formats": ["mp4"],
      "width": 1920, "height": 1080, "group": "feature"},
+    {"id": 21, "name": "feature-commands", "fps": 5, "formats": ["mp4"],
+     "width": 1920, "height": 1080, "group": "feature"},
 
     {"id": 10, "name": "plugin-matrix-rain", "fps": 5, "formats": ["mp4"],
      "width": 1920, "height": 1080, "group": "plugin"},

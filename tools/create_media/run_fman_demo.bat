@@ -84,6 +84,7 @@ if defined IS_TOUR set "FONT_CSS=demo_Theme.css"
 if "%1"=="8" set "FONT_CSS=demo_Theme.css"
 if "%1"=="9" set "FONT_CSS=demo_Theme.css"
 if "%1"=="10" set "FONT_CSS=demo_Theme.css"
+if "%1"=="21" set "FONT_CSS=demo_Theme.css"
 mkdir "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoFont" 2>nul
 copy /y "%CD%\tools\create_media\%FONT_CSS%" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoFont\Theme.css" >nul
 

@@ -24,8 +24,9 @@ In demo mode fman plays a scripted sequence of UI actions and reports events
 over a socket so the tool can capture the window. The wiring:
 
 - `src/main/python/fman/impl/demo_scripts.py` — the `DEMOS` registry, one
-  `DemoScript` per recordable demo: the overview demo, the `feature-*` clips,
-  and the themes builder.
+  `DemoScript` per recordable demo: the overview demo and the themes builder.
+- `src/main/python/fman/impl/demo_scripts_features.py` — the `feature-*` clips,
+  merged into `DEMOS` the same way as the tour chapters below.
 - `src/main/python/fman/impl/demo_scripts_tour.py` — the `tour-*` chapters,
   merged into `DEMOS` by `demo_scripts.py`. Split out to keep both files
   under the project's 300-line limit.
@@ -42,9 +43,9 @@ over a socket so the tool can capture the window. The wiring:
   caps desktop stills and video frames at the configured window dimensions.
 - `tools/create_media/run_fman_demo.bat` — launcher the tool starts per run.
 - `tools/create_media/demo_Theme_default.css` — Core font sizes at 1.5x, seeded
-  into every demo profile except ids 8, 9 and 10.
+  into every demo profile except ids 8, 9, 10 and 21.
 - `tools/create_media/demo_Theme.css` — larger font sizes for standalone clips,
-  seeded for ids 8, 9 and 10.
+  seeded for ids 8, 9, 10 and 21.
 - `tools/demos_record.bat` — one command that drives recording **and**
   composing; every argument passes straight through to the tool.
 - `tools/demos_build_tour.bat` — the join step on its own, for double-clicking:
@@ -263,7 +264,7 @@ Everything else is one command each, and each records *and* builds:
 |---|---|
 | the whole lot | `tools\demos_record.bat --demo all --compose` |
 | the themes GIF | `tools\demos_record.bat --demo 2 --compose themes` |
-| the feature GIFs | `tools\demos_record.bat --demo 8`, then `--demo 9`, then `--compose features` (one demo per run — a second `--demo` overrides the first) |
+| the feature GIFs | `tools\demos_record.bat --demo 8`, then `--demo 9`, then `--demo 21`, then `--compose features` (one demo per run — a second `--demo` overrides the first) |
 | the plugin GIF | `tools\demos_record.bat --demo 10 --compose plugins` |
 | rebuild without re-recording | `tools\demos_record.bat --compose features` |
 | what can this config even do? | `tools\demos_record.bat --list` |
@@ -337,15 +338,16 @@ Screenshot checks should not record demo 1: until the screenshot tool honors
   | 6 | `tour-d-video` | video playing in the pane, and previewing into the other one | 276 frames, 27.6 s |
   | 7 | `tour-e-archives` | pack, browse inside the zip, copy out, fuzzy palette | 354 frames, 35.4 s |
 
-- **8-9, the `feature-*` clips** - standalone, NOT part of the joined tour.
+- **8, 9 and 21, the `feature-*` clips** - standalone, NOT part of the joined tour.
   They carry `"group": "feature"`, which the third `compose` step turns into the
   committed GIFs the README's feature index shows
-  (`media/demos/features/goto.gif`, `tail.gif`):
+  (`media/demos/features/goto.gif`, `tail.gif`, `commands.gif`):
 
   | id | name | shows | measured |
   |----|------|-------|----------|
   | 8 | `feature-goto` | `Ctrl+P` Go to: fuzzy jump, tab-complete, Enter | 101 frames, 20.2 s |
   | 9 | `feature-tail` | tail mode following a log while it grows | 105 frames, 21.0 s |
+  | 21 | `feature-commands` | `Ctrl+Shift+P` palette: new folder, rename, view, delete, select all, deselect, copy | 249 frames, 49.8 s |
 
   They also record with a bigger font than everything else — see the demo
   profile section above.

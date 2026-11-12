@@ -26,6 +26,7 @@ from automated_screenshot_connector import (
 )
 
 from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+from fman.impl.demo_scripts_features import FEATURE_CLIPS
 from fman.impl.demo_scripts_launch import LAUNCH_CLIPS
 from fman.impl.demo_scripts_tour import TOUR_CHAPTERS
 
@@ -106,62 +107,7 @@ DEMOS = {
 # ``--automation-demo <id>`` still resolves every demo from one registry.
 DEMOS.update(TOUR_CHAPTERS)
 
-# Standalone feature clips for the README's feature index. Deliberately NOT
-# named tour-*: build_tour.py picks up every tour-* demo, so a tour-* name here
-# would silently lengthen the joined feature tour. tools/demo_build_feature_gifs.bat
-# turns these into the committed GIFs under media/demos/features/.
-FEATURE_CLIPS = {
-	8: DemoScript(
-		id=8,
-		name='feature-goto',
-		steps=(
-			Pause(1.5),
-			# Ctrl+P is Go to: a fuzzy jump over the folders you have already
-			# visited, with tab-completion. run_fman_demo.bat seeds this id's
-			# Visited Paths.json with the scratch tree, which is what keeps
-			# the suggestion list deterministic - AND keeps the recordist's
-			# own folders off camera. See the privacy note in docs/DEMOS.md.
-			PressKey('Ctrl+P'), Pause(1.6),
-			# Two characters on purpose: SuggestLocations only reaches out to
-			# the Windows Search index once the query is LONGER than two, and
-			# that index would answer with folders from anywhere on the disk.
-			TypeText('re'), Pause(1.8),
-			PressKey('Return'), Pause(2.4),   # jump into reports/
-			PressKey('Ctrl+P'), Pause(1.6),
-			TypeText('al'), Pause(1.8),
-			# Tab completes the highlighted suggestion into the input, so the
-			# full path is visible before it is opened.
-			PressKey('Tab'), Pause(1.6),
-			PressKey('Return'), Pause(2.4),   # ... into projects/alpha
-			PressKey('Backspace'), Pause(1.8),
-			PressKey('Backspace'), Pause(1.8),
-			Pause(1.0),
-		),
-	),
-	9: DemoScript(
-		id=9,
-		name='feature-tail',
-		steps=(
-			Pause(1.5),
-			# service.log sorts second-to-last (todo.txt is last), so End+Up
-			# lands on it without counting a dozen Downs.
-			PressKey('End'), Pause(0.8),
-			PressKey('Up'), Pause(1.2),
-			PressKey('Ctrl+Shift+P'), Pause(1.0),
-			Command('view file'), Pause(2.4),
-			# The text viewer's OWN palette. 'tail' matches the entry
-			# 'Enable tail mode (follow end)'.
-			PressKey('Ctrl+Shift+P'), Pause(1.2),
-			Command('tail'), Pause(2.0),
-			# run_fman_demo.bat is appending a line every 1.5 s in the
-			# background, so this hold is the whole point of the chapter:
-			# the view follows the end of the file while it grows.
-			Pause(8.0),
-			PressKey('Escape'), Pause(1.5),
-		),
-	),
-}
-
+# Standalone feature clips live in their own module, like the tour chapters.
 DEMOS.update(FEATURE_CLIPS)
 
 # Demos of a THIRD-PARTY plugin, for the README's plugin list and the plugin's
