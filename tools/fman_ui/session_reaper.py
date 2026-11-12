@@ -14,6 +14,8 @@ from recycle_cleanup import cleanup_session
 IDLE_LIMIT_SECONDS = 30 * 60
 WATCH_INTERVAL_SECONDS = 30
 SESSION_FILE = 'session.json'
+RESTART_MARKER = 'restarting'
+RESTART_GRACE_SECONDS = 120
 
 
 def process_start_time(pid):
@@ -72,6 +74,10 @@ def close_session(session_root):
 
 def is_stale(session_root, now):
 	session_root = Path(session_root)
+	restart_marker = session_root / RESTART_MARKER
+	if restart_marker.exists() and now - restart_marker.stat().st_mtime < \
+			RESTART_GRACE_SECONDS:
+		return False
 	session_file = session_root / SESSION_FILE
 	if not session_file.exists():
 		return now - session_root.stat().st_mtime > IDLE_LIMIT_SECONDS

@@ -121,6 +121,22 @@ class SessionReaperTest(TestCase):
 				self.assertTrue(session_reaper.is_stale(root, 1 +
 					session_reaper.IDLE_LIMIT_SECONDS + 1))
 
+	def test_is_stale_honors_fresh_restart_marker_only_within_grace_period(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp)
+			(root / session_reaper.SESSION_FILE).write_text(
+				json.dumps({'pid': 1, 'start_time': 10}))
+			marker = root / session_reaper.RESTART_MARKER
+			marker.write_text('')
+			with patch.object(Path, 'stat') as stat, \
+				patch.object(session_reaper.psutil, 'Process',
+					side_effect=session_reaper.psutil.NoSuchProcess(1)):
+				stat.return_value.st_mtime = 100
+				self.assertFalse(session_reaper.is_stale(root, 100))
+				stat.return_value.st_mtime = (
+					100 - session_reaper.RESTART_GRACE_SECONDS - 1)
+				self.assertTrue(session_reaper.is_stale(root, 100))
+
 	def test_reap_stale_closes_only_stale_folders(self):
 		with TemporaryDirectory() as temp:
 			root = Path(temp)

@@ -16,6 +16,7 @@ import session_reaper
 import test_fman_ui_session_reaper
 import test_fman_ui_fixtures
 import test_fman_ui_launch
+import test_fman_ui_restart
 
 
 class FmanUiTest(TestCase):
@@ -231,6 +232,8 @@ def load_tests(loader, tests, pattern):
 		test_fman_ui_fixtures.FixturesTest))
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_launch.FmanUiLaunchTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_restart.FmanUiRestartTest))
 	return tests
 
 

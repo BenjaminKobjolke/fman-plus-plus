@@ -15,6 +15,7 @@ from urllib.request import Request, urlopen
 import uuid
 
 from parser import parser as _parser
+from restart import restart_session
 from fixtures import (
 	make_fixture, make_large_folder, parse_core_settings,
 	validate_large_count, write_core_settings,
@@ -95,6 +96,38 @@ def _wait_for_state(session, process, log_path):
 	raise RuntimeError('fman did not start; log tail: ' + '\n'.join(tail))
 
 
+def _start_fman(session, session_root):
+	profile = session['profile']
+	environment = os.environ.copy()
+	environment['FMAN_DATA_DIRECTORY'] = profile
+	environment['PYTHONPATH'] = str(
+		Path(__file__).resolve().parents[2] / 'src' / 'main' / 'python'
+	)
+	main = Path(environment['PYTHONPATH']) / 'fman' / 'main.py'
+	log_path = Path(session_root) / 'fman.log'
+	with log_path.open('ab') as log:
+		process = subprocess.Popen(
+			[
+				os.environ.get('FMAN_PYTHON', sys.executable), str(main),
+				session['left'], session['right'],
+			],
+			cwd=str(Path(__file__).resolve().parents[2]), env=environment,
+			stdout=log, stderr=subprocess.STDOUT,
+			creationflags=_detached_flags(),
+			start_new_session=os.name != 'nt',
+		)
+	session.pop('fman_pid', None)
+	session.pop('fman_start_time', None)
+	session['pid'] = process.pid
+	session['start_time'] = process_start_time(process.pid)
+	identity = fman_process_identity(process.pid)
+	if identity is not None:
+		session['fman_pid'], session['fman_start_time'] = identity
+	(Path(session_root) / SESSION_FILE).write_text(
+		json.dumps(session, indent=2), encoding='utf-8')
+	return _wait_for_state(session, process, log_path)
+
+
 def _launch(args):
 	validate_large_count(args.large)
 	core_settings = parse_core_settings(args.core_settings)
@@ -135,33 +168,8 @@ def _launch(args):
 		'token_path': str(token_path), 'profile': str(profile),
 		'left': str(left), 'right': str(right),
 	}
-	log_path = session_root / 'fman.log'
-	environment = os.environ.copy()
-	environment['FMAN_DATA_DIRECTORY'] = str(profile)
-	environment['PYTHONPATH'] = str(
-		Path(__file__).resolve().parents[2] / 'src' / 'main' / 'python'
-	)
-	main = Path(environment['PYTHONPATH']) / 'fman' / 'main.py'
-	with log_path.open('wb') as log:
-		process = subprocess.Popen(
-			[
-				os.environ.get('FMAN_PYTHON', sys.executable), str(main),
-				str(left), str(right),
-			],
-			cwd=str(Path(__file__).resolve().parents[2]), env=environment,
-			stdout=log, stderr=subprocess.STDOUT,
-			creationflags=_detached_flags(),
-			start_new_session=os.name != 'nt',
-		)
-	session['pid'] = process.pid
-	session['start_time'] = process_start_time(process.pid)
-	identity = fman_process_identity(process.pid)
-	if identity is not None:
-		session['fman_pid'], session['fman_start_time'] = identity
-	(session_root / SESSION_FILE).write_text(
-		json.dumps(session, indent=2), encoding='utf-8')
 	try:
-		_wait_for_state(session, process, log_path)
+		_start_fman(session, session_root)
 	except Exception:
 		shutil.rmtree(session_root, ignore_errors=True)
 		raise
@@ -197,6 +205,8 @@ def _run(args):
 		removed_entries = close_session(session_root)
 		_current_path().unlink(missing_ok=True)
 		return {'ok': True, 'recycle_bin_entries_removed': removed_entries}
+	if args.action == 'restart':
+		return restart_session(session, _api, _start_fman, _current_path())
 	profile = session.get('profile')
 	if profile is not None:
 		session_file = Path(profile).parent / SESSION_FILE

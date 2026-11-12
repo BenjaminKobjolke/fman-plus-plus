@@ -20,7 +20,7 @@ They also include an `ages` folder with `age_0d_fresh.txt` (0.1 days old),
 Optional `--left` and `--right` arguments select caller
 provided fixture folders. Use only disposable test data: commands can modify
 the folders opened in the two panes. `close` removes the generated profile and
-fixtures. On Windows it also removes Recycle Bin entries whose original paths
+fixtures; `restart` keeps both for the same session. On Windows, `close` also removes Recycle Bin entries whose original paths
 are inside this session folder; it leaves caller-provided folders and other
 Recycle Bin entries alone, and the close result reports how many entries it
 removed. On macOS, files moved to the Trash remain there. The `hidden.txt`
@@ -42,9 +42,9 @@ are black.
 ## Fixtures for file-age shading and large folders
 
 The files in `ages` receive modification times relative to the launch time, so
-each start recreates the same age spread. Use `close` and then `launch` to reset
+each launch recreates the same age spread. Use `close` and then `launch` to reset
 the fixture, including a hidden attribute or profile setting changed during a
-check. `--large N` creates `N` empty files in a `large` folder in the left
+check; use `restart` to keep those changes and the same profile. `--large N` creates `N` empty files in a `large` folder in the left
 fixture only; the maximum is 50000. It is opt-in so ordinary launches remain
 quick.
 
@@ -97,8 +97,9 @@ The tickets watcher's validation agent finds this driver through the
 `desktop_ui_driver` key in `tools/tickets-watcher.json`, which names
 `tools/fman_ui.bat` on Windows; `tools/fman_ui.sh` is the macOS command. Both
 paths must stay real files inside
-the checkout or the watcher ignores the key. Agents may use `--large` and
-`--core-settings`; both stay inside the temporary fixture and profile. They
+the checkout or the watcher ignores the key. Agents may use `--large`,
+`--core-settings` and `restart` to check settings across a restart; `--large`
+and `--core-settings` stay inside the temporary fixture and profile. They
 never use `--left` or `--right`, so checks cannot touch folders outside
 `%TEMP%\fman-ui\`. Agents always run `tools\fman_ui.bat close` at the end,
 including when a check fails. Screenshots an agent wants to attach go under the
@@ -112,6 +113,7 @@ exit with a nonzero code.
 ```bat
 tools\fman_ui.bat launch
 tools\fman_ui.bat launch --left C:\scratch\left --right C:\scratch\right
+tools\fman_ui.bat restart
 tools\fman_ui.bat state
 tools\fman_ui.bat commands
 tools\fman_ui.bat dialog
@@ -270,3 +272,25 @@ tools\fman_ui.bat close
 `close` stops the isolated process, removes only trashed items from its own
 session folder, and deletes that folder. Entries from the rest of the user's
 Recycle Bin are preserved.
+
+`restart` asks fman to quit gracefully and kills it after 15 seconds if needed.
+It keeps the same profile, fixtures, port and token, so settings changed during
+the check remain in place. Pane paths are restored from the state fman saved on
+quit.
+
+## Example: check pane location bars after restart
+
+This follows validation task #2174. Hide the pane location bars from the command
+palette, restart the same isolated session, and confirm the bars remain hidden:
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat keys Ctrl+Shift+P
+tools\fman_ui.bat type Toggle pane location bars
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat screenshot %TEMP%\fman-location-bars-hidden.png
+tools\fman_ui.bat restart
+tools\fman_ui.bat screenshot %TEMP%\fman-location-bars-after-restart.png
+tools\fman_ui.bat state
+tools\fman_ui.bat close
+```

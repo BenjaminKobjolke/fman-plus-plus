@@ -14,7 +14,7 @@ def parser():
 	launch.add_argument('--core-settings', default=None,
 		help=("JSON object written to the profile's Core Settings.json "
 			"before fman starts"))
-	for name in ('state', 'commands', 'close', 'dialog'):
+	for name in ('state', 'commands', 'close', 'dialog', 'restart'):
 		commands.add_parser(name)
 	command = commands.add_parser('command')
 	command.add_argument('name')
