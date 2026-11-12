@@ -217,7 +217,12 @@ class DirectoryPane:
 		"""Run callback(file_url, new_name) on confirmation; otherwise broadcast
 		the deprecated listener event."""
 		self._edit_name_callback = callback
-		self._widget.edit_name(file_url, selection_start, selection_end)
+		edit_name = self._mounted('edit_name')
+		if edit_name is not None:
+			return edit_name(file_url, selection_start, selection_end)
+		return self._widget.edit_name(
+			file_url, selection_start, selection_end
+		)
 	def _take_edit_name_callback(self):
 		callback = self._edit_name_callback
 		self._edit_name_callback = None
@@ -243,6 +248,8 @@ class DirectoryPane:
 		A mounted widget may define get_file_under_cursor(),
 		get_selected_files(), place_cursor_at(url) and get_location() to
 		provide the pane's cursor, selection and location while it is mounted.
+		It may also define edit_name(url, selection_start, selection_end) to edit
+		a file name in its own view.
 
 		focus=False mounts without grabbing keyboard focus, so the pane the
 		command ran from stays focused (see "View file in other pane").

@@ -7,11 +7,15 @@ from fman.url import dirname
 from fman.impl.util.qt.key_event import QtKeyEvent
 from fman.impl.util.qt.thread import run_in_main_thread
 from fman.impl.view.drag_and_drop import DragAndDrop
-from PyQt5.QtCore import QEvent, Qt, QTimer
+from PyQt5.QtCore import QEvent, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QKeyEvent
-from PyQt5.QtWidgets import QAbstractItemView, QTreeView
+from PyQt5.QtWidgets import (
+	QAbstractItemView, QLineEdit, QStyledItemDelegate, QTreeView,
+)
 from dataclasses import dataclass
 from typing import Callable
+from fman.impl.util.qt import connect_once
+from fman.impl.view import set_selection
 
 from core.folder_tree_model import FolderTreeModel, URL_ROLE
 
@@ -26,6 +30,31 @@ class FolderTreeActions:
 	switch_panes: Callable[[], None]
 	open_palette: Callable[[], None]
 	try_shortcut: Callable[[QKeyEvent], bool] = lambda event: False
+	renamed: Callable[[str, str], None] = lambda url, name: None
+
+
+class _FolderTreeItemDelegate(QStyledItemDelegate):
+	editor_shown = pyqtSignal(QLineEdit)
+
+	def __init__(self, actions, parent=None):
+		super().__init__(parent)
+		self._actions = actions
+
+	def eventFilter(self, editor, event):
+		if event.type() == QEvent.Show:
+			self.editor_shown.emit(editor)
+		return super().eventFilter(editor, event)
+
+	def setModelData(self, editor, model, index):
+		new_name = editor.text()
+		if new_name and new_name != index.data():
+			self._actions.renamed(index.data(URL_ROLE), new_name)
+
+	def destroyEditor(self, editor, index):
+		item = index.model().itemFromIndex(index)
+		if item is not None:
+			item.setEditable(False)
+		super().destroyEditor(editor, index)
 
 
 class FolderTreeView(DragAndDrop, QTreeView):
@@ -44,6 +73,7 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		)
 		self._model.children_loaded.connect(self._on_children_loaded)
 		self.setModel(self._model)
+		self.setItemDelegate(_FolderTreeItemDelegate(actions, self))
 		self.setHeaderHidden(True)
 		self.setUniformRowHeights(True)
 		self.setRootIsDecorated(True)
@@ -120,17 +150,36 @@ class FolderTreeView(DragAndDrop, QTreeView):
 	def place_cursor_at(self, url):
 		if url is None:
 			return
+		item = self._find_item(url)
+		if item is not None:
+			self.setCurrentIndex(item.index())
+	def _find_item(self, url):
+		if url is None:
+			return None
 		root = self._model.invisibleRootItem()
 		items = [root.child(row) for row in reversed(range(root.rowCount()))]
 		while items:
 			item = items.pop()
 			if item.data(URL_ROLE) == url:
-				self.setCurrentIndex(item.index())
-				return
+				return item
 			items.extend(
 				item.child(row)
 				for row in reversed(range(item.rowCount()))
 			)
+		return None
+	@run_in_main_thread
+	def edit_name(self, url, start=0, end=None):
+		item = self._find_item(url)
+		if item is None:
+			return
+		item.setEditable(True)
+		delegate = self.itemDelegate()
+		connect_once(
+			delegate.editor_shown,
+			lambda editor: set_selection(editor, start, end)
+			)
+		self.setCurrentIndex(item.index())
+		self.edit(item.index())
 	def _reveal_current(self):
 		if self._reveal_url and \
 				self.currentIndex().data(URL_ROLE) == self._reveal_url:
@@ -180,13 +229,19 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		if url is not None:
 			self._actions.navigate(url)
 	def keyPressEvent(self, event):
+		if self.state() == QAbstractItemView.EditingState and \
+				event.key() in (Qt.Key_Return, Qt.Key_Enter, Qt.Key_Escape):
+			super().keyPressEvent(event)
+			return
 		key_event = QtKeyEvent(event.key(), event.modifiers())
 		key_bindings = load_json(KEY_BINDINGS_FILE, default=[])
 		if self._is_command_palette_key(key_event, key_bindings):
 			self._actions.open_palette()
-		elif event.key() in (Qt.Key_Return, Qt.Key_Enter):
+		elif event.key() in (Qt.Key_Return, Qt.Key_Enter) and \
+				self.state() != QAbstractItemView.EditingState:
 			self._navigate_current()
-		elif event.key() == Qt.Key_Escape:
+		elif event.key() == Qt.Key_Escape and \
+				self.state() != QAbstractItemView.EditingState:
 			self._actions.close()
 		elif event.key() in (Qt.Key_Tab, Qt.Key_Backtab):
 			self._actions.switch_panes()

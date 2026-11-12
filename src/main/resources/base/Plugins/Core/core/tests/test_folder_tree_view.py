@@ -175,6 +175,109 @@ class FolderTreeModelTest(TestCase):
 
 
 class FolderTreeViewTest(TestCase):
+	def test_edit_name_opens_editor_for_the_matching_row(self):
+		view = FolderTreeView(
+			True, FolderTreeActions(
+				Mock(), Mock(), Mock(), Mock(), Mock(),
+				renamed=Mock()
+			), False, _icon_provider()
+		)
+		item = view._model.add_folder(
+			view._model.invisibleRootItem(), 'file:///folder'
+		)
+		view.show()
+		view.edit_name('file:///folder', 0, 3)
+		QApplication.processEvents()
+
+		self.assertEqual(item.index(), view.currentIndex())
+		self.assertEqual(view.EditingState, view.state())
+		self.assertEqual('fol', QApplication.focusWidget().selectedText())
+		view.close()
+
+	def test_edit_name_commit_reports_only_changed_nonempty_names(self):
+		renamed = Mock()
+		view = FolderTreeView(
+			True, FolderTreeActions(
+				Mock(), Mock(), Mock(), Mock(), Mock(), renamed=renamed
+			), False, _icon_provider()
+		)
+		item = view._model.add_folder(
+			view._model.invisibleRootItem(), 'file:///folder'
+		)
+		view.show()
+		view.edit_name('file:///folder')
+		QApplication.processEvents()
+		delegate = view.itemDelegate()
+		index = item.index()
+		editor = QApplication.focusWidget()
+		editor.setText('new')
+
+		delegate.setModelData(editor, view.model(), index)
+
+		renamed.assert_called_once_with('file:///folder', 'new')
+		self.assertEqual('folder', item.text())
+		renamed.reset_mock()
+		editor.setText('folder')
+		delegate.setModelData(editor, view.model(), index)
+		renamed.assert_not_called()
+		editor.setText('')
+		delegate.setModelData(editor, view.model(), index)
+		renamed.assert_not_called()
+		view.close()
+		self.assertFalse(item.isEditable())
+
+	def test_escape_during_editing_does_not_close_tree(self):
+		close = Mock()
+		try_shortcut = Mock(return_value=True)
+		view = FolderTreeView(
+			True, FolderTreeActions(
+				Mock(), close, Mock(), Mock(), Mock(), try_shortcut,
+				renamed=Mock()
+			), False, _icon_provider()
+		)
+		item = view._model.add_folder(
+			view._model.invisibleRootItem(), 'file:///folder'
+		)
+		view.show()
+		view.edit_name('file:///folder')
+		QApplication.processEvents()
+
+		with patch('core.folder_tree_view.load_json', return_value=[]):
+			view.keyPressEvent(QKeyEvent(
+				QEvent.KeyPress, Qt.Key_Escape, Qt.NoModifier
+			))
+
+		close.assert_not_called()
+		try_shortcut.assert_not_called()
+		self.assertEqual(item.index(), view.currentIndex())
+		view.close()
+
+	def test_enter_during_editing_does_not_navigate(self):
+		navigate = Mock()
+		try_shortcut = Mock(return_value=True)
+		view = FolderTreeView(
+			True, FolderTreeActions(
+				navigate, Mock(), Mock(), Mock(), Mock(), try_shortcut,
+				renamed=Mock()
+			), False, _icon_provider()
+		)
+		item = view._model.add_folder(
+			view._model.invisibleRootItem(), 'file:///folder'
+		)
+		view.show()
+		view.edit_name('file:///folder')
+		QApplication.processEvents()
+
+		with patch('core.folder_tree_view.load_json', return_value=[]):
+			view.keyPressEvent(QKeyEvent(
+				QEvent.KeyPress, Qt.Key_Return, Qt.NoModifier
+			))
+
+		navigate.assert_not_called()
+		try_shortcut.assert_not_called()
+		self.assertEqual(item.index(), view.currentIndex())
+		view.close()
+
 	def test_other_keys_are_offered_to_shortcut_handler(self):
 		try_shortcut = Mock(return_value=True)
 		event = QKeyEvent(QEvent.KeyPress, Qt.Key_Delete, Qt.NoModifier)

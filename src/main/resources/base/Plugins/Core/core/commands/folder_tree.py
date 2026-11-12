@@ -43,7 +43,9 @@ class ToggleFolderTree(DirectoryPaneCommand):
 			navigate, self.pane.unmount_widget, drop,
 			lambda: self.pane.run_command('switch_panes'),
 			lambda: self.pane.run_command(_COMMAND_PALETTE),
-			lambda event: widget._controller.handle_shortcut(widget, event)
+			lambda event: widget._controller.handle_shortcut(widget, event),
+			renamed=lambda url, new_name:
+				widget._controller.on_file_renamed(widget, url, new_name)
 		)
 		view = FolderTreeView(
 			_is_showing_hidden_files(self.pane), actions,
