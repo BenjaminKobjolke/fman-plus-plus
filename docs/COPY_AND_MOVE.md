@@ -80,6 +80,12 @@ _gather_files()                        _run_gathered_tasks()
 - **The progress bar total grows.** Nobody knows the total size while the walk
   is still running, so each task's size is added to the total when it starts.
   The bar still ends at 100%.
+- **One listing per merged folder.** When the destination folder already
+  exists on a file system other than `file://`, the walk lists it once and
+  answers "is this name taken?" from that listing, instead of one `exists`
+  round trip per file. Otherwise the workers idle while the walk waits for the
+  server. A name that differs only in case still asks `exists`. The listing is
+  cached like a pane's, so a file someone else added since is not seen.
 - **One task of look-ahead.** Before running a task, the transferring thread
   waits until the queue holds its next item, without taking it. That is how
   it knows a failing task is the last one, which decides whether the error
