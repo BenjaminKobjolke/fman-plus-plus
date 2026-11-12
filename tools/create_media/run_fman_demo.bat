@@ -53,6 +53,11 @@ if "%1"=="18" (
 	REM A copied single_instance=false would make the plain launch open its own window.
 	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; New-Item -ItemType Directory -Force -Path (Split-Path $p) | Out-Null; $s=if (Test-Path -LiteralPath $p) { Get-Content -Raw -LiteralPath $p | ConvertFrom-Json } else { [pscustomobject]@{} }; $s | Add-Member -NotePropertyName single_instance -NotePropertyValue $true -Force; [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false))"
 )
+if "%1"=="15" (
+	set "SETTINGS_FILE=%FMAN_DATA_DIRECTORY%\Local\Settings.json"
+	REM A copied pane_location_bars_visible=false would make the first toggle show them.
+	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; if (Test-Path -LiteralPath $p) { $s=Get-Content -Raw -LiteralPath $p | ConvertFrom-Json; $null=$s.PSObject.Properties.Remove('pane_location_bars_visible'); [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false)) }"
+)
 REM A custom theme lives outside the bundled Themes dir, so mirror those too -
 REM otherwise load_theme silently falls back to the default.
 if exist "%APPDATA%\fman\Themes" (

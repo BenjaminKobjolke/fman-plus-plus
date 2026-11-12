@@ -14,7 +14,8 @@ Demo 14 holds one palette search still per palette command that a screenshot
 check needs.
 
 Demo 15 holds pane listing stills for the screenshot check. Add a still here
-when a change affects how the file list looks.
+when a change affects how the file list looks. It also hides and restores the
+pane location bars; run_fman_demo.bat starts it with them visible.
 
 Demo 16 plays the fman account flow against the seeded DemoAccount fake; it
 never reaches the real account or network.
@@ -134,6 +135,17 @@ DIALOG_CLIPS = {
 			Pause(0.6),
 			Command('toggle file age shading'),
 			Pause(2.2),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			TypeText('toggle pane location bars', char_delay_ms=100),
+			Pause(0.5), PressKey('Return'),
+			Pause(1.5),
+			Screenshot('listing-location-bars-hidden'),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			TypeText('toggle pane location bars', char_delay_ms=100),
+			Pause(0.5), PressKey('Return'),
+			Pause(1.5),
+			Screenshot('listing-location-bars-shown'),
+			Pause(1.0),
 		),
 	),
 	16: DemoScript(

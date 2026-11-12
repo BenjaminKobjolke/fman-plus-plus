@@ -292,7 +292,10 @@ composing stale inputs.
 - **15 `listing`** — stills of both panes without and with file age shading on
   backdated scratch files. Exists so the screenshot check can judge changes to how
   the file list looks (shading, colors, columns), instead of the tour chapters that
-  record no stills. A change to the file list's look should add a `Screenshot` here.
+  record no stills. It also takes stills with the pane location bars hidden and
+  shown again; the launcher starts it with them visible whatever the copied
+  settings say. Its stills are gitignored (`media/demos/listing/`). A change to the
+  file list's look should add a `Screenshot` here.
 - **17 `ftp-overwrite`** — records an FTP folder upload with an existing file,
   showing the progress window before the overwrite question, hidden while the
   question is open, and back after answering. It needs `FMAN_FTPClient` installed

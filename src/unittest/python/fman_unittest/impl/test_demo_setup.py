@@ -220,7 +220,7 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
-	def test_listing_demo_takes_stills_with_and_without_file_age_shading(self):
+	def test_listing_demo_takes_file_age_and_location_bar_stills(self):
 		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
 
 		demo = DIALOG_CLIPS[15]
@@ -229,15 +229,22 @@ class DemoSetupTest(unittest.TestCase):
 			if step.__class__.__name__ == 'Screenshot'
 		]
 		command_lines = [
-			step.line for step in demo.steps
-			if step.__class__.__name__ == 'Command'
+			step.line if step.__class__.__name__ == 'Command' else step.text
+			for step in demo.steps
+			if step.__class__.__name__ in ('Command', 'TypeText')
 		]
 
 		self.assertEqual(demo.name, 'listing')
 		self.assertEqual(
-			screenshot_names, ['listing-panes', 'listing-file-age'],
+			screenshot_names, [
+				'listing-panes', 'listing-file-age',
+				'listing-location-bars-hidden', 'listing-location-bars-shown',
+			],
 		)
-		self.assertEqual(command_lines, ['toggle file age shading'] * 2)
+		self.assertEqual(command_lines, [
+			'toggle file age shading', 'toggle file age shading',
+			'toggle pane location bars', 'toggle pane location bars',
+		])
 
 	@unittest.skipUnless(
 		CONNECTOR_AVAILABLE,
