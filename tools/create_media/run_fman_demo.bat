@@ -217,6 +217,8 @@ REM Demo 15 needs a visible age spread in the scratch copy; the checked-in
 REM example files share nearly identical timestamps, which would shade alike.
 if "%1"=="15" powershell -NoProfile -Command "$ages=@(0,2,10,45,200,900); $i=0; Get-ChildItem -LiteralPath $env:LEFT -File | Sort-Object Name | ForEach-Object { $_.LastWriteTime=(Get-Date).AddDays(-$ages[$i]); $i++; if ($i -ge $ages.Count) { $i=0 } }"
 if "%1"=="15" xcopy /q /y "%LEFT%\*" "%RIGHT%\" >nul
+REM The restart still's child window is found by this folder in its title.
+if "%1"=="15" mkdir "%LEFT%\after-restart" 2>nul
 
 REM The desktop is cleared by the recording tool itself, before it starts this
 REM launcher ("minimize_all" in its config, on by default): it enumerates the

@@ -230,6 +230,8 @@ class DemoSetupTest(unittest.TestCase):
 		'automated-screenshot-connector is not installed in this environment',
 	)
 	def test_listing_demo_takes_file_age_and_location_bar_stills(self):
+		from automated_screenshot_connector.steps import CustomStep, flatten
+		from fman.impl.demo import ExpectChildWindow, LaunchFman, ScreenStill
 		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
 
 		demo = DIALOG_CLIPS[15]
@@ -242,6 +244,10 @@ class DemoSetupTest(unittest.TestCase):
 			for step in demo.steps
 			if step.__class__.__name__ in ('Command', 'TypeText')
 		]
+		actions = [
+			action.step if isinstance(action, CustomStep) else action
+			for _, action in flatten(demo.steps)
+		]
 
 		self.assertEqual(demo.name, 'listing')
 		self.assertEqual(
@@ -253,7 +259,42 @@ class DemoSetupTest(unittest.TestCase):
 		self.assertEqual(command_lines, [
 			'toggle file age shading', 'toggle file age shading',
 			'toggle pane location bars', 'toggle pane location bars',
+			'toggle pane location bars',
 		])
+		launches = [action for action in actions if isinstance(action, LaunchFman)]
+		self.assertEqual(launches, [LaunchFman(('--new-instance', 'after-restart'))])
+		child_windows = [
+			action for action in actions if isinstance(action, ExpectChildWindow)
+		]
+		self.assertEqual(len(child_windows), 1)
+		self.assertEqual(child_windows[0].folder, 'after-restart')
+		toggle_chars = 'toggle pane location bars'
+		last_toggle_start = max(
+			index for index in range(len(actions) - len(toggle_chars) + 1)
+			if all(
+				action.__class__.__name__ == 'InsertChar'
+				and action.char == char
+				for action, char in zip(
+					actions[index:index + len(toggle_chars)], toggle_chars
+				)
+			)
+		)
+		last_toggle_index = last_toggle_start + len(toggle_chars) - 1
+		launch_index = actions.index(launches[0])
+		child_window_index = actions.index(child_windows[0])
+		after_restart_still_index = next(
+			index for index, action in enumerate(actions)
+			if getattr(action, 'name', None) == 'listing-location-bars-after-restart'
+		)
+		self.assertIsInstance(actions[after_restart_still_index], ScreenStill)
+		shown_still_index = next(
+			index for index, action in enumerate(actions)
+			if getattr(action, 'name', None) == 'listing-location-bars-shown'
+		)
+		self.assertLess(last_toggle_index, launch_index)
+		self.assertLess(launch_index, child_window_index)
+		self.assertLess(child_window_index, after_restart_still_index)
+		self.assertLess(shown_still_index, after_restart_still_index)
 
 	@unittest.skipUnless(
 		CONNECTOR_AVAILABLE,

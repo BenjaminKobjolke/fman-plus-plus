@@ -301,8 +301,12 @@ composing stale inputs.
   the file list looks (shading, colors, columns), instead of the tour chapters that
   record no stills. It also takes stills with the pane location bars hidden and
   shown again; the launcher starts it with them visible whatever the copied
-  settings say. Its stills are gitignored (`media/demos/listing/`). A change to the
-  file list's look should add a `Screenshot` here.
+  settings say. It ends by hiding the bars again, starting a second
+  `--new-instance` fman on the same demo profile in the seeded `after-restart`
+  folder, and taking `listing-location-bars-after-restart` so the screenshot
+  check can judge settings that must survive a restart. Its stills are gitignored
+  (`media/demos/listing/`). A change to the file list's look should add a
+  `Screenshot` here.
 - **17 `ftp-overwrite`** — records an FTP folder upload with an existing file,
   showing the progress window before the overwrite question, hidden while the
   question is open, and back after answering. It needs `FMAN_FTPClient` installed
