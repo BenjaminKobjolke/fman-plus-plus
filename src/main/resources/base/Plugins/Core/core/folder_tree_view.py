@@ -1,25 +1,20 @@
-"""Qt model and pane view for browsing folders as a tree."""
-from core.folder_tree import FOLLOW_CURSOR_DELAY_MS, can_drop, list_subfolders
+"""Pane view for browsing folders as a tree."""
+from core.folder_tree import FOLLOW_CURSOR_DELAY_MS
+from core.folder_tree_keys import is_tree_key, tree_move_key
 from core.key_bindings import command_for_key_event, KEY_BINDINGS_FILE
 from fman import load_json
 from fman.url import dirname
-from fman.impl.util.qt import FMAN_URLS_MIME, MoveAction, CopyAction, \
-	IgnoreAction, get_urls, set_urls
 from fman.impl.util.qt.key_event import QtKeyEvent
 from fman.impl.util.qt.thread import run_in_main_thread
 from fman.impl.view.drag_and_drop import DragAndDrop
-from PyQt5.QtCore import (
-	QMimeData, QPersistentModelIndex, QModelIndex, Qt, QTimer, pyqtSignal,
-)
-from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QAbstractItemView, QFileIconProvider, QTreeView
+from PyQt5.QtCore import QEvent, Qt, QTimer
+from PyQt5.QtGui import QKeyEvent
+from PyQt5.QtWidgets import QAbstractItemView, QTreeView
 from dataclasses import dataclass
-from threading import Thread
-from typing import Callable, Optional
+from typing import Callable
 
-import sip
+from core.folder_tree_model import FolderTreeModel, URL_ROLE
 
-URL_ROLE = Qt.UserRole + 1
 _COMMAND_PALETTE = 'command_palette'
 
 
@@ -30,129 +25,7 @@ class FolderTreeActions:
 	drop: Callable[[list[str], str, bool], None]
 	switch_panes: Callable[[], None]
 	open_palette: Callable[[], None]
-
-
-class FolderTreeModel(QStandardItemModel):
-	children_loaded = pyqtSignal(str)
-
-	def __init__(self, show_hidden, drop_callback, icon_provider, parent=None):
-		super().__init__(parent)
-		self._show_hidden = show_hidden
-		self._drop_callback = drop_callback
-		self._loading = set()
-		self._loaded = set()
-		self._pending_refresh = set()
-		self._icon_provider = icon_provider
-		self._fallback_icon = QFileIconProvider().icon(
-			QFileIconProvider.Folder
-		)
-		self.setColumnCount(1)
-	def add_folder(self, parent, url, row=None):
-		try:
-			icon = self._icon_provider.get_icon(url)
-		except OSError:
-			icon = self._fallback_icon
-		item = QStandardItem(
-			icon,
-			url.rsplit('/', 1)[-1] or '/'
-		)
-		item.setEditable(False)
-		item.setData(url, URL_ROLE)
-		item.appendRow(QStandardItem())
-		if row is None:
-			parent.appendRow(item)
-		else:
-			parent.insertRow(row, item)
-		return item
-	def load(self, item):
-		url = item.data(URL_ROLE)
-		if url in self._loading or url in self._loaded:
-			return
-		self._loading.add(url)
-		persistent = QPersistentModelIndex(item.index())
-		def work():
-			try:
-				children = list_subfolders(url, self._show_hidden)
-			except Exception:
-				children = []
-			@run_in_main_thread
-			def apply():
-				self._loading.discard(url)
-				self._loaded.add(url)
-				if not persistent.isValid():
-					self._pending_refresh.discard(url)
-					return
-				parent_item = self.itemFromIndex(QModelIndex(persistent))
-				if parent_item is None:
-					return
-				child_urls = set(children)
-				for row in reversed(range(parent_item.rowCount())):
-					child = parent_item.child(row)
-					if child.data(URL_ROLE) not in child_urls:
-						parent_item.removeRow(row)
-				# Keep existing rows in place so the current index and expanded subtree
-				# survive.
-				for row, child in enumerate(children):
-					if row < parent_item.rowCount() and \
-							parent_item.child(row).data(URL_ROLE) == child:
-						continue
-					# shortcut: Existing rows are sorted already; an out-of-order one
-					# stays put.
-					self.add_folder(parent_item, child, row)
-				self.children_loaded.emit(url)
-				if url in self._pending_refresh:
-					self._pending_refresh.discard(url)
-					self._loaded.discard(url)
-					self.load(parent_item)
-			apply()
-		Thread(target=work, daemon=True).start()
-	def refresh(self, url):
-		if url in self._loading:
-			self._pending_refresh.add(url)
-			return
-		if url not in self._loaded:
-			return
-		root = self.invisibleRootItem()
-		items = [root.child(row) for row in reversed(range(root.rowCount()))]
-		while items:
-			item = items.pop()
-			if item.data(URL_ROLE) == url:
-				self._loaded.discard(url)
-				self.load(item)
-				return
-			items.extend(
-				item.child(row)
-				for row in reversed(range(item.rowCount()))
-			)
-	def mimeTypes(self):
-		return ['text/uri-list', FMAN_URLS_MIME]
-	def mimeData(self, indexes):
-		data = QMimeData()
-		urls = [
-			self.data(index, URL_ROLE)
-			for index in indexes if index.column() == 0
-		]
-		set_urls(data, urls)
-		sip.transferto(data, None)
-		return data
-	def supportedDropActions(self):
-		return MoveAction | CopyAction | IgnoreAction
-	def drop_dest_url(self, index: QModelIndex) -> Optional[str]:
-		return self.data(index, URL_ROLE) if index.isValid() else None
-	def canDropMimeData(self, data, action, row, column, parent):
-		if action == IgnoreAction:
-			return True
-		if not data.hasUrls() or not parent.isValid():
-			return False
-		return can_drop(get_urls(data), self.data(parent, URL_ROLE))
-	def dropMimeData(self, data, action, row, column, parent):
-		if action == IgnoreAction:
-			return True
-		urls = get_urls(data)
-		if not self.canDropMimeData(data, action, row, column, parent):
-			return False
-		self._drop_callback(urls, self.data(parent, URL_ROLE), action == CopyAction)
-		return True
+	try_shortcut: Callable[[QKeyEvent], bool] = lambda event: False
 
 
 class FolderTreeView(DragAndDrop, QTreeView):
@@ -206,9 +79,7 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		self.setStyleSheet(
 			'' if size is None else 'FolderTreeView { font-size: %dpt; }' % size
 		)
-	def _is_command_palette_key(self, event):
-		key_event = QtKeyEvent(event.key(), event.modifiers())
-		key_bindings = load_json(KEY_BINDINGS_FILE, default=[])
+	def _is_command_palette_key(self, key_event, key_bindings):
 		return command_for_key_event(
 			key_event, key_bindings, [_COMMAND_PALETTE]
 		) is not None or key_event.matches('Ctrl+Shift+P')
@@ -309,7 +180,9 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		if url is not None:
 			self._actions.navigate(url)
 	def keyPressEvent(self, event):
-		if self._is_command_palette_key(event):
+		key_event = QtKeyEvent(event.key(), event.modifiers())
+		key_bindings = load_json(KEY_BINDINGS_FILE, default=[])
+		if self._is_command_palette_key(key_event, key_bindings):
 			self._actions.open_palette()
 		elif event.key() in (Qt.Key_Return, Qt.Key_Enter):
 			self._navigate_current()
@@ -317,5 +190,15 @@ class FolderTreeView(DragAndDrop, QTreeView):
 			self._actions.close()
 		elif event.key() in (Qt.Key_Tab, Qt.Key_Backtab):
 			self._actions.switch_panes()
-		else:
+		elif is_tree_key(event.key(), event.modifiers()):
 			super().keyPressEvent(event)
+		else:
+			key = tree_move_key(key_event, key_bindings)
+			if key is not None:
+				super().keyPressEvent(QKeyEvent(
+					QEvent.KeyPress, key, Qt.NoModifier
+				))
+			elif self._actions.try_shortcut(event):
+				return
+			else:
+				super().keyPressEvent(event)

@@ -36,8 +36,8 @@ class DeferredThread:
 
 class FolderTreeModelTest(TestCase):
 	def load_children(self, model, parent, children):
-		with patch('core.folder_tree_view.Thread', SynchronousThread), \
-				patch('core.folder_tree_view.list_subfolders', return_value=children):
+		with patch('core.folder_tree_model.Thread', SynchronousThread), \
+				patch('core.folder_tree_model.list_subfolders', return_value=children):
 			model.load(parent)
 
 	def test_load_inserts_children_in_order_around_an_existing_child(self):
@@ -74,8 +74,8 @@ class FolderTreeModelTest(TestCase):
 		model = FolderTreeModel(True, Mock(), _icon_provider())
 		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
 
-		with patch('core.folder_tree_view.Thread', SynchronousThread), \
-			patch('core.folder_tree_view.list_subfolders', side_effect=RuntimeError):
+		with patch('core.folder_tree_model.Thread', SynchronousThread), \
+			patch('core.folder_tree_model.list_subfolders', side_effect=RuntimeError):
 			model.load(parent)
 
 		self.assertEqual(0, parent.rowCount())
@@ -88,9 +88,9 @@ class FolderTreeModelTest(TestCase):
 		retained = model.add_folder(parent, 'file:///p/retained')
 		model._loaded.add('file:///p')
 
-		with patch('core.folder_tree_view.Thread', SynchronousThread), \
+		with patch('core.folder_tree_model.Thread', SynchronousThread), \
 				patch(
-					'core.folder_tree_view.list_subfolders',
+					'core.folder_tree_model.list_subfolders',
 					return_value=['file:///p/added', 'file:///p/retained']
 				) as list_subfolders:
 			model.refresh('file:///p')
@@ -117,9 +117,9 @@ class FolderTreeModelTest(TestCase):
 		model = FolderTreeModel(True, Mock(), _icon_provider())
 		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
 		DeferredThread.threads = []
-		with patch('core.folder_tree_view.Thread', DeferredThread), \
+		with patch('core.folder_tree_model.Thread', DeferredThread), \
 				patch(
-					'core.folder_tree_view.list_subfolders',
+					'core.folder_tree_model.list_subfolders',
 					side_effect=[['file:///p/stale'], ['file:///p/fresh']]
 				) as list_subfolders:
 			model.load(parent)
@@ -175,6 +175,108 @@ class FolderTreeModelTest(TestCase):
 
 
 class FolderTreeViewTest(TestCase):
+	def test_other_keys_are_offered_to_shortcut_handler(self):
+		try_shortcut = Mock(return_value=True)
+		event = QKeyEvent(QEvent.KeyPress, Qt.Key_Delete, Qt.NoModifier)
+		view = FolderTreeView(
+			True,
+			FolderTreeActions(
+				Mock(), Mock(), Mock(), Mock(), Mock(), try_shortcut
+			),
+			False, _icon_provider()
+		)
+
+		view.keyPressEvent(event)
+
+		try_shortcut.assert_called_once_with(event)
+
+	def test_tree_navigation_keys_stay_in_tree(self):
+		try_shortcut = Mock(return_value=True)
+		view = FolderTreeView(
+			True,
+			FolderTreeActions(
+				Mock(), Mock(), Mock(), Mock(), Mock(), try_shortcut
+			),
+			False, _icon_provider()
+		)
+		parent = view._model.add_folder(
+			view._model.invisibleRootItem(), 'file:///parent'
+		)
+		view._model.add_folder(parent, 'file:///parent/child')
+		view.setCurrentIndex(parent.index())
+		with patch.object(view._model, 'load'):
+			view.keyPressEvent(QKeyEvent(
+				QEvent.KeyPress, Qt.Key_Right, Qt.NoModifier
+			))
+			self.assertTrue(view.isExpanded(parent.index()))
+			view.keyPressEvent(QKeyEvent(
+				QEvent.KeyPress, Qt.Key_Left, Qt.NoModifier
+			))
+			self.assertFalse(view.isExpanded(parent.index()))
+			view.keyPressEvent(QKeyEvent(
+				QEvent.KeyPress, Qt.Key_Down, Qt.NoModifier
+			))
+
+		try_shortcut.assert_not_called()
+
+	def test_modified_navigation_key_is_offered_to_shortcuts(self):
+		try_shortcut = Mock(return_value=True)
+		view = FolderTreeView(
+			True,
+			FolderTreeActions(
+				Mock(), Mock(), Mock(), Mock(), Mock(), try_shortcut
+			),
+			False, _icon_provider()
+		)
+		event = QKeyEvent(
+			QEvent.KeyPress, Qt.Key_Left, Qt.ControlModifier
+		)
+
+		view.keyPressEvent(event)
+
+		try_shortcut.assert_called_once_with(event)
+
+	def test_move_cursor_shortcut_moves_tree_cursor_without_dispatch(self):
+		try_shortcut = Mock(return_value=True)
+		view = FolderTreeView(
+			True,
+			FolderTreeActions(
+				Mock(), Mock(), Mock(), Mock(), Mock(), try_shortcut
+			),
+			False, _icon_provider()
+		)
+		first = view._model.add_folder(
+			view._model.invisibleRootItem(), 'file:///first'
+		)
+		second = view._model.add_folder(
+			view._model.invisibleRootItem(), 'file:///second'
+		)
+		view.setCurrentIndex(first.index())
+		bindings = [{'keys': ['Ctrl+J'], 'command': 'move_cursor_down'}]
+
+		with patch('core.folder_tree_view.load_json', return_value=bindings):
+			view.keyPressEvent(QKeyEvent(
+				QEvent.KeyPress, Qt.Key_J, Qt.ControlModifier
+			))
+
+		self.assertEqual(second.index(), view.currentIndex())
+		try_shortcut.assert_not_called()
+
+	def test_unmatched_letter_is_offered_and_falls_through(self):
+		try_shortcut = Mock(return_value=False)
+		view = FolderTreeView(
+			True,
+			FolderTreeActions(
+				Mock(), Mock(), Mock(), Mock(), Mock(), try_shortcut
+			),
+			False, _icon_provider()
+		)
+		event = QKeyEvent(QEvent.KeyPress, Qt.Key_X, Qt.NoModifier)
+
+		view.keyPressEvent(event)
+
+		try_shortcut.assert_called_once_with(event)
+
 	def test_file_added_notification_refreshes_its_parent(self):
 		fs = Mock()
 		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
@@ -251,9 +353,9 @@ class FolderTreeViewTest(TestCase):
 		def list_children(url, show_hidden):
 			return children if url == 'file:///' else []
 		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
-		with patch('core.folder_tree_view.Thread', SynchronousThread), \
+		with patch('core.folder_tree_model.Thread', SynchronousThread), \
 				patch(
-					'core.folder_tree_view.list_subfolders',
+					'core.folder_tree_model.list_subfolders',
 					side_effect=list_children
 				):
 			view = FolderTreeView(

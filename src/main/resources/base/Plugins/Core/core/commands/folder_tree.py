@@ -38,16 +38,18 @@ class ToggleFolderTree(DirectoryPaneCommand):
 				drop_command(urls, dest_dir, is_copy),
 				{'files': urls, 'dest_dir': dest_dir}
 			)
+		widget = self.pane._widget
 		actions = FolderTreeActions(
 			navigate, self.pane.unmount_widget, drop,
 			lambda: self.pane.run_command('switch_panes'),
-			lambda: self.pane.run_command(_COMMAND_PALETTE)
+			lambda: self.pane.run_command(_COMMAND_PALETTE),
+			lambda event: widget._controller.handle_shortcut(widget, event)
 		)
 		view = FolderTreeView(
 			_is_showing_hidden_files(self.pane), actions,
 			get_setting(SETTINGS_FILE, FOLLOW_CURSOR_KEY, False),
-			self.pane._widget._model._fs._icon_provider,
-			self.pane._widget, fs=self.pane._widget._model._fs
+			widget._model._fs._icon_provider,
+			widget, fs=widget._model._fs
 		)
 		file_view = self.pane._widget._view_mode.visible_view()
 		view.set_font_size(get_saved_font_size(PANE_FONT_SIZE_KEY))

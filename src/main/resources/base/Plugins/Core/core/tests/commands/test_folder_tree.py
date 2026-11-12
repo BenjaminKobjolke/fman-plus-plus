@@ -1,4 +1,6 @@
 from core.commands.folder_tree import ToggleFolderTree, ToggleTreeFollowsCursor
+from fman import DirectoryPane, Window
+from fman.impl.controller import Controller
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, call, patch
@@ -9,6 +11,32 @@ _APP = QApplication.instance() or QApplication([])
 
 
 class ToggleFolderTreeTest(TestCase):
+	def test_passes_pane_shortcut_dispatch_to_tree_actions(self):
+		pane = MagicMock(spec=DirectoryPane)
+		pane.window = MagicMock(spec=Window)
+		controller = MagicMock(spec=Controller)
+		widget = MagicMock()
+		widget._controller = controller
+		pane._widget = widget
+		pane.window.get_panes.return_value = [pane, MagicMock()]
+		with patch('core.commands.folder_tree.begin_new_view'), \
+			patch('core.commands.folder_tree.FolderTreeView') as factory, \
+			patch(
+				'core.commands.folder_tree._is_showing_hidden_files',
+				return_value=False
+			), \
+			patch('core.commands.folder_tree.get_setting', return_value=False), \
+			patch('core.commands.folder_tree.tree_ancestors', return_value=[]):
+			ToggleFolderTree(pane)()
+
+		event = object()
+		handler = controller.handle_shortcut
+		handler.return_value = True
+		actions = factory.call_args.args[1]
+
+		self.assertTrue(actions.try_shortcut(event))
+
+		handler.assert_called_once_with(widget, event)
 	def test_applies_saved_font_size_to_tree_and_clears_missing_override(self):
 		for size in (12, None):
 			with self.subTest(size=size):
