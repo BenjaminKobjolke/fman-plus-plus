@@ -329,7 +329,9 @@ composing stale inputs.
   subfolders and takes one still with the current folder expanded (rows, icons,
   arrows and indentation). It exists so the screenshot check can judge folder
   tree changes. The tree starts at the drive root, so the still also shows the
-  scratch drive's top-level folders; stills are gitignored
+  scratch drive's top-level folders. Once the parents load, the tree centers the
+  current folder so the still shows `22-left` with its siblings and its
+  `archive`, `projects` and `reports` children; stills are gitignored
   (`media/demos/folder-tree/`). A change to the folder tree's look should add a
   `Screenshot` here.
 

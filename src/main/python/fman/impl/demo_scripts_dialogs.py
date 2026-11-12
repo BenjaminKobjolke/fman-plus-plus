@@ -261,7 +261,7 @@ DIALOG_CLIPS = {
 			Pause(1.0),
 			PressKey('Ctrl+Shift+P'), Pause(0.6),
 			Command('toggle folder tree'),
-			Pause(2.5),
+			Pause(4.0),
 			Screenshot('folder-tree-expanded'),
 			Pause(1.2),
 		),

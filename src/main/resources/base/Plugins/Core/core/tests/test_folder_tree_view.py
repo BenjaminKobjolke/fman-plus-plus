@@ -12,14 +12,15 @@ from unittest.mock import Mock, call, patch
 _app = QApplication.instance() or QApplication([])
 
 
+class SynchronousThread:
+	def __init__(self, target, daemon):
+		self._target = target
+	def start(self):
+		self._target()
+
+
 class FolderTreeModelTest(TestCase):
 	def load_children(self, model, parent, children):
-		class SynchronousThread:
-			def __init__(self, target, daemon):
-				self._target = target
-			def start(self):
-				self._target()
-
 		with patch('core.folder_tree_view.Thread', SynchronousThread), \
 				patch('core.folder_tree_view.list_subfolders', return_value=children):
 			model.load(parent)
@@ -84,6 +85,29 @@ class FolderTreeModelTest(TestCase):
 
 
 class FolderTreeViewTest(TestCase):
+	def test_open_to_keeps_the_target_visible_after_parents_load(self):
+		children = ['file:///f%02d' % i for i in range(60)] + ['file:///m']
+		def list_children(url, show_hidden):
+			return children if url == 'file:///' else []
+		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock())
+		with patch('core.folder_tree_view.Thread', SynchronousThread), \
+				patch(
+					'core.folder_tree_view.list_subfolders',
+					side_effect=list_children
+				):
+			view = FolderTreeView(
+				True, actions, False, ('#000000', '#ffffff')
+			)
+			view.resize(300, 200)
+			view.show()
+			view.open_to(['file:///', 'file:///m'])
+			QApplication.processEvents()
+
+		self.assertTrue(
+			view.viewport().rect().intersects(view.visualRect(view.currentIndex()))
+		)
+		self.assertEqual('file:///m', view.currentIndex().data(URL_ROLE))
+
 	def test_open_to_expands_the_target_folder(self):
 		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock())
 		with patch.object(FolderTreeModel, 'load') as load:

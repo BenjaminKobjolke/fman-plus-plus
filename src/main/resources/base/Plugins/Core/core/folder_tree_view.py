@@ -4,9 +4,11 @@ from fman.impl.util.qt import FMAN_URLS_MIME, MoveAction, CopyAction, \
 	IgnoreAction, get_urls, set_urls
 from fman.impl.util.qt.thread import run_in_main_thread
 from fman.impl.view.drag_and_drop import DragAndDrop
-from PyQt5.QtCore import QMimeData, QPersistentModelIndex, QModelIndex, Qt, QTimer
+from PyQt5.QtCore import (
+	QMimeData, QPersistentModelIndex, QModelIndex, Qt, QTimer, pyqtSignal,
+)
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QFileIconProvider, QTreeView
+from PyQt5.QtWidgets import QAbstractItemView, QFileIconProvider, QTreeView
 from dataclasses import dataclass
 from threading import Thread
 from typing import Callable, Optional
@@ -25,6 +27,8 @@ class FolderTreeActions:
 
 
 class FolderTreeModel(QStandardItemModel):
+	children_loaded = pyqtSignal(str)
+
 	def __init__(self, show_hidden, drop_callback, parent=None):
 		super().__init__(parent)
 		self._show_hidden = show_hidden
@@ -77,6 +81,7 @@ class FolderTreeModel(QStandardItemModel):
 					# shortcut: Existing rows are sorted already; an out-of-order one
 					# stays put.
 					self.add_folder(parent_item, child, row)
+				self.children_loaded.emit(url)
 			apply()
 		Thread(target=work, daemon=True).start()
 	def mimeTypes(self):
@@ -115,7 +120,10 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		super().__init__(parent)
 		self._actions = actions
 		self._follow_cursor = follow_cursor
+		self._reveal_url = None
+		self._reveal_pending = set()
 		self._model = FolderTreeModel(show_hidden, actions.drop, self)
+		self._model.children_loaded.connect(self._on_children_loaded)
 		self.setModel(self._model)
 		self.setHeaderHidden(True)
 		self.setUniformRowHeights(True)
@@ -140,9 +148,26 @@ class FolderTreeView(DragAndDrop, QTreeView):
 				child = self._model.add_folder(root, url)
 			root = child
 		self.setCurrentIndex(root.index())
-		self.scrollTo(root.index())
+		self._reveal_url = ancestors[-1] if ancestors else None
+		self._reveal_pending = set(ancestors)
+		self._reveal_current()
 		self.setFocus()
 		self._expand_to_target(ancestors)
+	def _reveal_current(self):
+		if self._reveal_url and \
+				self.currentIndex().data(URL_ROLE) == self._reveal_url:
+			self.scrollTo(self.currentIndex(), QAbstractItemView.PositionAtCenter)
+	def _on_children_loaded(self, url):
+		self._reveal_pending.discard(url)
+		# Ancestors load on separate threads and insert rows above the target, so
+		# re-center it after each one.
+		self._reveal_current()
+		if not self._reveal_pending:
+			QTimer.singleShot(0, self._finish_reveal)
+	def _finish_reveal(self):
+		if not self._reveal_pending:
+			self._reveal_current()
+			self._reveal_url = None
 	def _expand_to_target(self, ancestors):
 		parent = self._model.invisibleRootItem()
 		for url in ancestors:
@@ -157,6 +182,11 @@ class FolderTreeView(DragAndDrop, QTreeView):
 			if item.data(URL_ROLE) == url:
 				return item
 	def _current_changed(self, current, previous):
+		if self._reveal_url and current.data(URL_ROLE) != self._reveal_url:
+			self._reveal_url = None
+			self._reveal_pending.clear()
+			# shortcut: a manual wheel scroll during loading is undone once more;
+			# track scrollbar moves if users notice.
 		if self._follow_cursor:
 			self._follow_timer.start()
 	def set_follow_cursor(self, enabled):
