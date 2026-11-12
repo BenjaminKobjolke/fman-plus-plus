@@ -1,6 +1,6 @@
 from core.fileoperations import CopyFiles
 from core.tests import StubFS
-from fman import YES, OK, YES_TO_ALL, ABORT, PLATFORM
+from fman import YES, OK, YES_TO_ALL, ABORT, PLATFORM, Task
 from fman.impl.overwrite_dialog import OverwriteChoice
 from fman.url import join, dirname, as_url, as_human_readable
 from tempfile import TemporaryDirectory
@@ -335,6 +335,19 @@ class FileTreeOperationAT:
 				 YES | YES_TO_ALL | ABORT, YES),
 				answer=answer_2
 			)
+		if answer_1 & YES_TO_ALL:
+			verb = self.operation_descr_verb.capitalize()
+			if verb.endswith('e'):
+				verb = verb[:-1]
+			self._expect_alert(
+				('%sing 3 files: 1 error was skipped.\n\n'
+				 'Could not %s %s (%s).' % (
+					verb, self.operation_descr_verb,
+					as_human_readable(nonexistent_file_2),
+					self._NO_SUCH_FILE_MSG,
+				), OK, OK),
+				answer=OK
+			)
 		self._perform_on(nonexistent_file_1, nonexistent_file_2, existent_file)
 		if not answer_1 & ABORT and not answer_2 & ABORT:
 			expected_files = {'bar.txt'}
@@ -550,6 +563,53 @@ class CopyFilesTest(FileTreeOperationAT, TestCase):
 		self._assert_reported_after_second_copy_fails(ABORT)
 	def test_error_continued_reports_later_items_but_not_failed_item(self):
 		self._assert_reported_after_second_copy_fails(YES)
+	def test_yes_to_all_reports_silently_skipped_errors_once(self):
+		first, second, third = self._make_sources()
+		self._expect_copy_error('first', YES_TO_ALL)
+		self._expect_alert(
+			('Copying 3 files: 2 errors were skipped.\n\n'
+			 'Error copying second.txt (permission denied).\n'
+			 'Error copying third.txt (permission denied).', OK, OK),
+			answer=OK
+		)
+		self._run_with_all_copies_failing(first, second, third)
+	def test_yes_each_time_does_not_show_a_skipped_error_summary(self):
+		first, second, third = self._make_sources()
+		for name in ('first', 'second'):
+			self._expect_copy_error(name, YES)
+		self._expect_alert(
+			('Error copying third.txt (permission denied).', OK, OK),
+			answer=OK
+		)
+		self._run_with_all_copies_failing(first, second, third)
+	def _expect_copy_error(self, name, answer):
+		self._expect_alert(
+			('Error copying %s.txt (permission denied). '
+			 'Do you want to continue?' % name,
+			 YES | YES_TO_ALL | ABORT, YES), answer=answer
+		)
+	def _run_with_all_copies_failing(self, first, second, third, cancel_url=None):
+		backend = next(iter(self._fs._backends.values()))
+		def fail_all(src_url, _dst_url):
+			if src_url in (first, second, third):
+				if src_url == cancel_url:
+					self._progress_dialog.canceled = True
+				raise OSError(13, 'permission denied')
+		with patch.object(backend, 'copy', side_effect=fail_all):
+			task = CopyFiles([first, second, third], self.dest, fs=self._fs)
+			task._dialog = self._progress_dialog
+			task()
+		self._progress_dialog.verify_expected_dialogs_were_shown()
+	def test_yes_to_all_summary_is_shown_when_canceled(self):
+		first, second, third = self._make_sources()
+		self._expect_copy_error('first', YES_TO_ALL)
+		self._expect_alert(
+			('Copying 3 files: 1 error was skipped.\n\n'
+			 'Error copying second.txt (permission denied).', OK, OK),
+			answer=OK
+		)
+		with self.assertRaises(Task.Canceled):
+			self._run_with_all_copies_failing(first, second, third, second)
 	def test_overwrite_no_reports_only_the_other_item(self):
 		first, second, _ = self._make_sources()
 		self._touch(join(self.dest, 'second.txt'))

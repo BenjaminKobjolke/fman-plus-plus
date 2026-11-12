@@ -1,6 +1,6 @@
 from core.transfer_workers import DONE, TransferWorkers, WorkerProgress
 from core.file_tree_gathering import FileTreeGathering
-from fman import Task
+from fman import Task, OK
 from fman.url import basename, dirname, as_human_readable
 from queue import Queue
 from threading import Lock, Thread
@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from core.move_rollback import MoveRollback
 from core.transfer_completion import TransferCompletion
 from core.read_only_overwrite import ReadOnlyOverwrite
+from core.skipped_errors import SkippedErrors
 
 import fman.fs
 
@@ -51,6 +52,7 @@ class FileTreeOperation(FileTreeGathering, Task):
 		self._completion = TransferCompletion(
 			on_file_done or (lambda url: None)
 		)
+		self._skipped_errors = SkippedErrors()
 	def _transfer(self, src, dest):
 		raise NotImplementedError()
 	def _prepare_transfer(self, src, dest):
@@ -77,19 +79,24 @@ class FileTreeOperation(FileTreeGathering, Task):
 		counts = [count for count in counts if count is not None]
 		return sum(counts) if counts else None
 	def __call__(self):
-		# Gathering walks the whole tree first, which on a remote file system
-		# takes long. So it runs on its own thread while the workers already
-		# transfer the files found so far.
-		self.set_text('Gathering files...')
-		gatherer = Thread(target=self._gather_in_background, daemon=True)
-		gatherer.start()
 		try:
-			self._run_gathered_tasks()
+			# Gathering walks the whole tree first, which on a remote file system
+			# takes long. So it runs on its own thread while the workers already
+			# transfer the files found so far.
+			self.set_text('Gathering files...')
+			gatherer = Thread(target=self._gather_in_background, daemon=True)
+			gatherer.start()
+			try:
+				self._run_gathered_tasks()
+			finally:
+				self._stop_gathering = True
+				gatherer.join()
+			if self._gather_exception is not None:
+				raise self._gather_exception
 		finally:
-			self._stop_gathering = True
-			gatherer.join()
-		if self._gather_exception is not None:
-			raise self._gather_exception
+			text = self._skipped_errors.report(self.get_title())
+			if text:
+				self.show_alert(text, OK, OK)
 	def _gather_in_background(self):
 		try:
 			self._gather_aborted = not self._gather_files()

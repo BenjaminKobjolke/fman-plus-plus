@@ -187,10 +187,12 @@ class FileTreeGathering:
 		with self._alert_lock:
 			return self._ask_continue(message, is_last, exc)
 	def _ask_continue(self, message, is_last, exc):
-		if self._ignore_exceptions:
-			return True
 		cause = describe_error(exc)
-		message = '%s (%s).' % (message, cause)
+		failure = '%s (%s).' % (message, cause)
+		if self._ignore_exceptions:
+			self._skipped_errors.record(failure, silent=True)
+			return True
+		message = failure
 		if is_last:
 			buttons = OK
 			default_button = OK
@@ -199,6 +201,8 @@ class FileTreeGathering:
 			default_button = YES
 			message += ' Do you want to continue?'
 		choice = self.show_alert(message, buttons, default_button)
+		if not is_last and choice & (YES | YES_TO_ALL):
+			self._skipped_errors.record(failure, silent=False)
 		if is_last:
 			# The last task has no continue choice; an error still stops the move.
 			self._ended_early = True
