@@ -172,8 +172,9 @@ check** command to turn it off or back on. Its setting key is
 `check_locked_files` in `Core Settings.json`. Other platforms skip the check.
 
 Use **Toggle folder tree** (Alt+F10) to replace one pane's file list with a
-folder-only tree. Right and Left expand or collapse folders, Enter opens the
-selected folder in the other pane, and Esc restores the file list. Dragging
+folder-only tree, with the current folder expanded when it opens. Right and
+Left expand or collapse folders, Tab and Shift+Tab switch panes, Enter opens
+the selected folder in the other pane, and Esc restores the file list. Dragging
 onto a tree folder follows the same [drag-and-drop behavior](#drag-and-drop).
 **Toggle tree follows
 cursor** makes the other pane follow the selection after a short pause. It is

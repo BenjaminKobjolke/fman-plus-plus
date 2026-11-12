@@ -1,6 +1,11 @@
 from core.commands.folder_tree import ToggleFolderTree, ToggleTreeFollowsCursor
+from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, call, patch
+
+# The main-thread decorator needs a QApplication instance; keep it alive for
+# the duration of these command tests.
+_APP = QApplication.instance() or QApplication([])
 
 
 class ToggleFolderTreeTest(TestCase):
@@ -27,6 +32,8 @@ class ToggleFolderTreeTest(TestCase):
 		actions = factory.call_args.args[1]
 		actions.navigate('file:///chosen')
 		other.set_path.assert_called_once_with('file:///chosen')
+		actions.switch_panes()
+		pane.run_command.assert_called_once_with('switch_panes')
 	def test_single_pane_unmounts_before_navigating(self):
 		pane = MagicMock()
 		pane.window.get_panes.return_value = [pane]

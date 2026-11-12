@@ -21,6 +21,7 @@ class FolderTreeActions:
 	navigate: Callable[[str], None]
 	close: Callable[[], None]
 	drop: Callable[[list[str], str, bool], None]
+	switch_panes: Callable[[], None]
 
 
 class FolderTreeModel(QStandardItemModel):
@@ -118,7 +119,9 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		self.setStyleSheet(
 			'QTreeView { color: %s; background-color: %s; }' % (fg, bg)
 		)
-		self.expanded.connect(self._model.load)
+		self.expanded.connect(
+			lambda index: self._model.load(self._model.itemFromIndex(index))
+		)
 		self._follow_timer = QTimer(self)
 		self._follow_timer.setSingleShot(True)
 		self._follow_timer.setInterval(FOLLOW_CURSOR_DELAY_MS)
@@ -137,7 +140,7 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		self._expand_to_target(ancestors)
 	def _expand_to_target(self, ancestors):
 		parent = self._model.invisibleRootItem()
-		for url in ancestors[:-1]:
+		for url in ancestors:
 			item = self._find_child(parent, url)
 			if item is None:
 				return
@@ -164,5 +167,7 @@ class FolderTreeView(DragAndDrop, QTreeView):
 			self._navigate_current()
 		elif event.key() == Qt.Key_Escape:
 			self._actions.close()
+		elif event.key() in (Qt.Key_Tab, Qt.Key_Backtab):
+			self._actions.switch_panes()
 		else:
 			super().keyPressEvent(event)

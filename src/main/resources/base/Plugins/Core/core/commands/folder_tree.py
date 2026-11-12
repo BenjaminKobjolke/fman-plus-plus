@@ -7,6 +7,7 @@ from core.folder_tree_view import FolderTreeActions, FolderTreeView
 from core.settings import get_setting, save_setting, SETTINGS_FILE
 from core.textviewer_pane import begin_new_view
 from fman import ApplicationCommand, DirectoryPaneCommand, show_status_message
+from fman.impl.util.qt.thread import run_in_main_thread
 
 __all__ = ['ToggleFolderTree', 'ToggleTreeFollowsCursor']
 _FolderTreeView = FolderTreeView
@@ -14,6 +15,7 @@ _FolderTreeView = FolderTreeView
 
 class ToggleFolderTree(DirectoryPaneCommand):
 	aliases = ('Toggle folder tree',)
+	@run_in_main_thread
 	def __call__(self):
 		if isinstance(self.pane.get_mounted_widget(), _FolderTreeView):
 			self.pane.unmount_widget()
@@ -32,7 +34,10 @@ class ToggleFolderTree(DirectoryPaneCommand):
 				drop_command(urls, dest_dir, is_copy),
 				{'files': urls, 'dest_dir': dest_dir}
 			)
-		actions = FolderTreeActions(navigate, self.pane.unmount_widget, drop)
+		actions = FolderTreeActions(
+			navigate, self.pane.unmount_widget, drop,
+			lambda: self.pane.run_command('switch_panes')
+		)
 		view = FolderTreeView(
 			_is_showing_hidden_files(self.pane), actions,
 			get_setting(SETTINGS_FILE, FOLLOW_CURSOR_KEY, False),
@@ -44,6 +49,7 @@ class ToggleFolderTree(DirectoryPaneCommand):
 
 class ToggleTreeFollowsCursor(ApplicationCommand):
 	aliases = ('Toggle tree follows cursor',)
+	@run_in_main_thread
 	def __call__(self):
 		enabled = not get_setting(SETTINGS_FILE, FOLLOW_CURSOR_KEY, False)
 		save_setting(SETTINGS_FILE, FOLLOW_CURSOR_KEY, enabled)
