@@ -1,6 +1,10 @@
 from fman import DirectoryPane, DirectoryPaneCommand, DirectoryPaneListener
+from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 from unittest.mock import Mock
+
+
+_app = QApplication.instance() or QApplication([])
 
 
 class RewriteCommandTest(TestCase):
@@ -35,6 +39,7 @@ class RewriteCommandTest(TestCase):
 class ChosenFilesTest(TestCase):
 	def setUp(self):
 		self.widget = Mock()
+		self.widget._mounted_widget = None
 		self.pane = DirectoryPane(None, self.widget, Mock())
 
 	def test_selected_files_win_over_file_under_cursor(self):
@@ -76,4 +81,78 @@ class ChosenFilesTest(TestCase):
 			['file:///cursor'],
 			DirectoryPaneCommand(Pane()).get_chosen_files()
 		)
+
+	def test_mounted_widget_supplies_cursor_and_chosen_files(self):
+		class MountedWidget:
+			def get_file_under_cursor(self):
+				return 'file:///mounted'
+
+		class PaneWidget:
+			_mounted_widget = MountedWidget()
+
+			def get_selected_files(self):
+				return []
+
+			def get_file_under_cursor(self):
+				return 'file:///list'
+
+		pane = DirectoryPane(None, PaneWidget(), Mock())
+
+		self.assertEqual('file:///mounted', pane.get_file_under_cursor())
+		self.assertEqual(['file:///mounted'], pane.get_chosen_files())
+
+	def test_mounted_widget_methods_fall_back_individually(self):
+		class MountedWidget:
+			pass
+
+		class PaneWidget:
+			_mounted_widget = MountedWidget()
+
+			def get_selected_files(self):
+				return ['file:///selected']
+
+			def get_file_under_cursor(self):
+				return 'file:///list'
+
+			def place_cursor_at(self, url):
+				self.placed_url = url
+
+			def get_location(self):
+				return 'file:///location'
+
+		widget = PaneWidget()
+		pane = DirectoryPane(None, widget, Mock())
+
+		self.assertEqual(['file:///selected'], pane.get_selected_files())
+		self.assertEqual('file:///list', pane.get_file_under_cursor())
+		self.assertEqual('file:///location', pane.get_path())
+		pane.place_cursor_at('file:///target')
+		self.assertEqual('file:///target', widget.placed_url)
+
+	def test_mounted_widget_with_no_location_uses_mounted_location(self):
+		class MountedWidget:
+			def get_location(self):
+				return None
+
+		class PaneWidget:
+			_mounted_widget = MountedWidget()
+
+			def get_location(self):
+				return 'file:///location'
+
+		pane = DirectoryPane(None, PaneWidget(), Mock())
+
+		self.assertIsNone(pane.get_path())
+
+	def test_nothing_mounted_uses_file_list(self):
+		widget = Mock()
+		widget._mounted_widget = None
+		widget.get_selected_files.return_value = ['file:///selected']
+		widget.get_file_under_cursor.return_value = 'file:///list'
+		widget.get_location.return_value = 'file:///location'
+		pane = DirectoryPane(None, widget, Mock())
+
+		self.assertEqual(['file:///selected'], pane.get_selected_files())
+		self.assertEqual('file:///list', pane.get_file_under_cursor())
+		self.assertEqual('file:///location', pane.get_path())
 

@@ -179,6 +179,41 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		self._reveal_current()
 		self.setFocus()
 		self._expand_to_target(ancestors)
+	@run_in_main_thread
+	def get_file_under_cursor(self):
+		index = self.currentIndex()
+		return index.data(URL_ROLE) if index.isValid() else None
+	@run_in_main_thread
+	def get_selected_files(self):
+		return []
+	@run_in_main_thread
+	def get_location(self):
+		index = self.currentIndex()
+		if not index.isValid():
+			return None
+		url = index.data(URL_ROLE)
+		if url is None:
+			return None
+		parent_index = index.parent()
+		if not parent_index.isValid():
+			return url
+		parent = self._model.itemFromIndex(parent_index)
+		return parent.data(URL_ROLE) if parent is not None else url
+	@run_in_main_thread
+	def place_cursor_at(self, url):
+		if url is None:
+			return
+		root = self._model.invisibleRootItem()
+		items = [root.child(row) for row in reversed(range(root.rowCount()))]
+		while items:
+			item = items.pop()
+			if item.data(URL_ROLE) == url:
+				self.setCurrentIndex(item.index())
+				return
+			items.extend(
+				item.child(row)
+				for row in reversed(range(item.rowCount()))
+			)
 	def _reveal_current(self):
 		if self._reveal_url and \
 				self.currentIndex().data(URL_ROLE) == self._reveal_url:

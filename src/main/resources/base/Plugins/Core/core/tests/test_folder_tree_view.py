@@ -110,6 +110,35 @@ class FolderTreeModelTest(TestCase):
 
 
 class FolderTreeViewTest(TestCase):
+	def test_cursor_methods_report_the_current_folder_and_parent_location(self):
+		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
+		view = FolderTreeView(True, actions, False, _icon_provider())
+		view.open_to(['file:///', 'file:///parent', 'file:///parent/target'])
+
+		self.assertEqual('file:///parent/target', view.get_file_under_cursor())
+		self.assertEqual([], view.get_selected_files())
+		self.assertEqual('file:///parent', view.get_location())
+
+	def test_top_level_cursor_location_is_its_own_url(self):
+		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
+		view = FolderTreeView(True, actions, False, _icon_provider())
+		view.open_to(['file:///'])
+
+		self.assertEqual('file:///', view.get_location())
+
+	def test_place_cursor_at_finds_loaded_rows_and_ignores_unknown_urls(self):
+		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
+		view = FolderTreeView(True, actions, False, _icon_provider())
+		view.open_to(['file:///', 'file:///parent', 'file:///parent/target'])
+		root = view._find_child(view._model.invisibleRootItem(), 'file:///')
+		other = view._model.add_folder(root, 'file:///other')
+
+		view.place_cursor_at('file:///other')
+
+		self.assertEqual(other.index(), view.currentIndex())
+		view.place_cursor_at('file:///missing')
+		self.assertEqual(other.index(), view.currentIndex())
+
 	def test_set_font_size_styles_tree_or_clears_override(self):
 		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
 		view = FolderTreeView(True, actions, False, _icon_provider())

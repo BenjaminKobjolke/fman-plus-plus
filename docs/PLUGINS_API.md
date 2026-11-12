@@ -355,6 +355,14 @@ A pane can show **any `QWidget`** in place of its file list. This is what the
 built-in file viewers are built on, and it is available to plugins directly —
 your widget does not have to have a file behind it.
 
+A mounted widget can also stand in for the pane's file list when commands ask
+which item is current. Define `get_file_under_cursor()`,
+`get_selected_files()`, `place_cursor_at(url)` and `get_location()` on the
+widget to provide those values while it is mounted. `get_location()` supplies
+`pane.get_path()`. Methods the widget does not define continue to use the file
+list, so viewers that do not implement this protocol keep their existing
+behavior. fman calls these methods on the main thread.
+
 | Method | Does |
 |--------|------|
 | `pane.mount_widget(view, focus=True)` | Hides the file list, shows `view`, re-points the pane's focus proxy at it |

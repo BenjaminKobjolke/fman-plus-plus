@@ -7,6 +7,7 @@ from .localization import translate
 from .impl.portable import portable_data_directory
 from .impl.view.pane_mount import get_colors, mount_widget, unmount_widget
 from .impl.quicksearch_exit_keys import QuicksearchExit
+from .impl.util.qt.thread import run_in_main_thread
 from contextlib import contextmanager
 from numbers import Real
 from fbs_runtime import platform
@@ -142,10 +143,18 @@ class DirectoryPane:
 	def _remove_filter(self, filter_):
 		self._widget.remove_filter(filter_)
 
+	def _mounted(self, name):
+		return getattr(self.get_mounted_widget(), name, None)
+	@run_in_main_thread
 	def get_selected_files(self):
-		return self._widget.get_selected_files()
+		method = self._mounted('get_selected_files')
+		return method() if method is not None else \
+			self._widget.get_selected_files()
+	@run_in_main_thread
 	def get_file_under_cursor(self):
-		return self._widget.get_file_under_cursor()
+		method = self._mounted('get_file_under_cursor')
+		return method() if method is not None else \
+			self._widget.get_file_under_cursor()
 	def get_chosen_files(self) -> list[str]:
 		return _get_chosen_files(self)
 	def set_file_shading(
@@ -175,10 +184,18 @@ class DirectoryPane:
 		self._widget.move_cursor_page_down(toggle_selection)
 	def move_cursor_page_up(self, toggle_selection=False):
 		self._widget.move_cursor_page_up(toggle_selection)
+	@run_in_main_thread
 	def place_cursor_at(self, file_url):
-		self._widget.place_cursor_at(file_url)
+		method = self._mounted('place_cursor_at')
+		if method is not None:
+			return method(file_url)
+		return self._widget.place_cursor_at(file_url)
 	# TODO: Rename to get_location()
+	@run_in_main_thread
 	def get_path(self):
+		method = self._mounted('get_location')
+		if method is not None:
+			return method()
 		return self._widget.get_location()
 	# TODO: Rename to set_location(...)
 	def set_path(self, dir_url, callback=None, onerror=_set_path_onerror):
@@ -222,6 +239,10 @@ class DirectoryPane:
 		Shows `view` in this pane in place of its file list. The pane's key
 		handling is the widget's own from then on - fman only puts it there.
 		Call unmount_widget() to bring the file list back.
+
+		A mounted widget may define get_file_under_cursor(),
+		get_selected_files(), place_cursor_at(url) and get_location() to
+		provide the pane's cursor, selection and location while it is mounted.
 
 		focus=False mounts without grabbing keyboard focus, so the pane the
 		command ran from stays focused (see "View file in other pane").
