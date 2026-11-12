@@ -3,6 +3,7 @@
 	{ "command": "paste", "caption": "&Paste" },
 	{ "caption": "-", "id": "new" },
 	{ "command": "create_directory", "caption": "New &Folder" },
+	{ "command": "new_empty_file", "caption": "New f&ile" },
 	{ "caption": "-", "id": "properties" },
 	{ "command": "show_explorer_properties", "caption": "P&roperties" }
 ]

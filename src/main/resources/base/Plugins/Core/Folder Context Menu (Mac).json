@@ -1,6 +1,7 @@
 [
 	{ "caption": "-", "id": "new" },
 	{ "command": "create_directory" },
+	{ "command": "new_empty_file" },
 	{ "caption": "-", "id": "properties" },
 	{ "command": "get_info" },
 	{ "caption": "-", "id": "clipboard" },

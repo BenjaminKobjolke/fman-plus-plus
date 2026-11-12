@@ -29,7 +29,7 @@ _COMMAND_MODULES = (
 	'deselect_after_transfer', 'drag_to_app', 'duplicate',
 	'file_age_shading', 'file_comment', 'folder_tree', 'fman_account',
 	'console', 'drive_space', 'folder_refresh',
-	'editor', 'external', 'file_properties', 'file_types', 'goto',
+	'new_file', 'editor', 'external', 'file_properties', 'file_types', 'goto',
 	'hidden_files', 'language',
 	'last_visited', 'link_target', 'locked_files', 'locking_processes', 'mixed_sorting',
 	'overwrite_details',

@@ -6,7 +6,7 @@ from fman.localization_keys import (
 	NO_SELECTION as NO_SELECTION_KEY,
 	SHORTCUT_TARGET_MISSING as SHORTCUT_TARGET_MISSING_KEY,
 )
-from fman.fs import is_dir
+from fman.fs import FileSystem, is_dir, query
 from fman.url import as_human_readable, splitscheme
 from getpass import getuser
 from os.path import expanduser
@@ -162,6 +162,11 @@ def is_dir_checked(url, alert=show_alert):
 	except OSError as e:
 		alert(CANNOT_READ % (as_human_readable(url), e))
 		return None
+
+def _fs_implements(scheme, method_name):
+	# Query exposes the registered implementation for this file-system scheme.
+	method = query(scheme + method_name, '__getattr__')
+	return method.__func__ is not getattr(FileSystem, method_name)
 
 def require_file_url(url, gerund):
 	# The commands that hand a file to another program can only do so for a

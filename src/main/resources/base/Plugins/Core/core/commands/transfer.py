@@ -9,7 +9,7 @@ core/commands/pack.py.
 # `import *` skips underscore names: get_dest_suggestion splits the extension
 # off the name it suggests, the same way the editor's "New file" prompt does.
 from core import elevation
-from core.commands.editor import _find_extension_start
+from core.commands.new_file import _find_extension_start, get_dest_suggestion
 from core.commands.util import get_opposite_pane, \
 	CANNOT_READ, NO_SELECTION
 from core.commands.deselect_after_transfer import is_enabled as \
@@ -35,7 +35,6 @@ from typing import TYPE_CHECKING
 
 import fman
 import fman.fs
-import os
 import re
 
 __all__ = ['Copy', 'DragAndDropListener', 'Move', 'Symlink',
@@ -204,25 +203,6 @@ class _TreeCommand(DirectoryPaneCommand):
 		return cls.__name__.lower()
 	def is_visible(self):
 		return bool(self.pane.get_file_under_cursor())
-
-def get_dest_suggestion(dst_url):
-	scheme = splitscheme(dst_url)[0]
-	if scheme == 'file://':
-		sep = os.sep
-		suggested_dst = as_human_readable(dst_url)
-		offset = 0
-	else:
-		sep = '/'
-		suggested_dst = dst_url
-		offset = len(scheme)
-	try:
-		last_sep = suggested_dst.rindex(sep, offset)
-	except ValueError:
-		selection_start = offset
-	else:
-		selection_start = last_sep + 1
-	selection_end = _find_extension_start(suggested_dst, selection_start)
-	return suggested_dst, selection_start, selection_end
 
 def _from_human_readable(path_or_url, dest_dir, src_dir):
 	try:

@@ -238,14 +238,14 @@ class CommandHooksTest(_PatchingTest):
 	def _elevation(self, function, handled):
 		return patch('core.elevation.' + function, return_value=handled)
 	def _new_file_prompt(self, error=PermissionError):
-		editor = 'core.commands.editor.'
+		new_file = 'core.commands.new_file.'
 		result = ExitStack()
 		result.enter_context(
-			patch(editor + 'show_input', return_value='new.txt')
+			patch(new_file + 'show_input', return_value='new.txt')
 		)
-		result.enter_context(patch(editor + 'exists', return_value=False))
+		result.enter_context(patch(new_file + 'exists', return_value=False))
 		result.enter_context(
-			patch(editor + 'touch', side_effect=error)
+			patch(new_file + 'touch', side_effect=error)
 		)
 		return result
 	def _run_transfer(self, command_cls, function, handled):

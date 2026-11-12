@@ -17,6 +17,7 @@
 	{ "keys": ["Cmd+Left"], "command": "go_back" },
 	{ "keys": ["Cmd+Right"], "command": "go_forward" },
 	{ "keys": ["Cmd+I"], "command": "get_info" },
+	{ "keys": ["Cmd+N"], "command": "new_empty_file" },
   	{ "keys": ["Cmd+F5"], "command": "pack" },
 	{ "keys": ["Cmd+R"], "command": "reload" },
 	{ "keys": ["Cmd+F1"], "command": "sort_by_column", "args": {"column_index": 0}},

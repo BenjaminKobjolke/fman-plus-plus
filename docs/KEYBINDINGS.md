@@ -88,6 +88,7 @@ command palette — see
 | `F2` | `rename` |
 | `F4` | `open_with_editor` |
 | `Shift+F4` | `create_and_edit_file` |
+| `Ctrl+N` / `Cmd+N` | `new_empty_file` |
 | `F5` | `copy` |
 | `Shift+F5` | `symlink` |
 | `Shift+F6` | `rename` |

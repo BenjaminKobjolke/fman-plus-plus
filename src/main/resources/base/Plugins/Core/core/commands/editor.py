@@ -4,8 +4,9 @@
 handed straight to the same editor, with the same "pick one" flow when none is
 configured yet. `SetTextEditor` configures that external editor.
 """
-from core.commands.util import create_as_admin, get_program_files, \
+from core.commands.util import get_program_files, \
 	get_program_files_x86, require_file_url, NO_SELECTION
+from core.commands.new_file import create_file_if_missing, prompt_for_new_file
 from core.text_editor import (
 	MANUAL, PRESETS, build_editor_setting, format_arguments, parse_arguments,
 	split_editor_setting
@@ -14,11 +15,10 @@ from core.util import strformat_dict_values
 from fman import CANCEL, DirectoryPaneCommand, load_json, OK, PLATFORM, \
 	QuicksearchItem, save_json, show_alert, show_file_open_dialog, \
 	show_input, show_quicksearch, show_status_message
-from fman.fs import exists, is_dir, resolve, touch
-from fman.url import as_human_readable, join
+from fman.fs import resolve
+from fman.url import as_human_readable
 # os.path.basename, not fman.url's: it is applied to the name part of a URL,
 # which is what core/commands/__init__.py did before this module existed.
-from os.path import basename
 from pathlib import PurePath
 from subprocess import Popen
 
@@ -145,46 +145,19 @@ class CreateAndEditFile(OpenWithEditor):
 	usable_in_viewer = False
 
 	def __call__(self, url=None):
-		file_under_cursor = self.pane.get_file_under_cursor()
-		default_name = ''
-		if file_under_cursor:
-			try:
-				file_is_dir = is_dir(file_under_cursor)
-			except OSError:
-				file_is_dir = False
-			if not file_is_dir:
-				default_name = basename(file_under_cursor)
-		selection_end = _find_extension_start(default_name)
-		file_name = show_input(
-			'Enter file name to create/edit:', default_name,
-			selection_end=selection_end
+		file_to_edit = prompt_for_new_file(
+			self.pane, 'Enter file name to create/edit:'
 		)
-		if file_name:
-			file_to_edit = join(self.pane.get_path(), file_name)
-			if not exists(file_to_edit):
-				try:
-					touch(file_to_edit)
-				except PermissionError as e:
-					if not create_as_admin(file_to_edit, is_dir=False, error=e):
-						return
-				except NotImplementedError:
-					show_alert(
-						'Sorry, creating a file for editing is not supported '
-						'here.'
-					)
-					return
-			try:
-				self.pane.place_cursor_at(file_to_edit)
-			except ValueError:
-				# This can happen when the file is hidden. Eg .bashrc on Linux.
-				pass
-			super().__call__(file_to_edit)
-
-def _find_extension_start(file_name, start=0):
-	for dual_extension in ('.pkg.tar.xz', '.tar.xz', '.tar.gz'):
-		if file_name.endswith(dual_extension):
-			return len(file_name) - len(dual_extension)
-	try:
-		return file_name.rindex('.', start)
-	except ValueError:
-		return None
+		if file_to_edit is None:
+			return
+		if create_file_if_missing(
+			self.pane, file_to_edit,
+			'Sorry, creating a file for editing is not supported here.'
+		) is None:
+			return
+		try:
+			self.pane.place_cursor_at(file_to_edit)
+		except ValueError:
+			# This can happen when the file is hidden. Eg .bashrc on Linux.
+			pass
+		super().__call__(file_to_edit)

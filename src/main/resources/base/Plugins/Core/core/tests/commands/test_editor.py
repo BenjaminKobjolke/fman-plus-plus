@@ -1,26 +1,12 @@
 import os
 import tempfile
 from core.commands import editor as editor_module
-from core.commands.editor import _find_extension_start, configure_editor
+from core.commands.editor import configure_editor
 from core.text_editor import build_editor_setting, format_arguments
 from fman import CANCEL, OK
 from fman.url import as_url
 from unittest import TestCase
 from unittest.mock import patch
-
-
-class FindExtensionStartTest(TestCase):
-	def test_no_extension(self):
-		self.assertIsNone(_find_extension_start('File'))
-
-	def test_normal_extension(self):
-		self.assertEqual(4, _find_extension_start('test.zip'))
-
-	def test_tar_xz(self):
-		self.assertEqual(7, _find_extension_start('archive.tar.xz'))
-
-	def test_tar_gz(self):
-		self.assertEqual(7, _find_extension_start('archive.tar.gz'))
 
 
 class ConfigureEditorTest(TestCase):

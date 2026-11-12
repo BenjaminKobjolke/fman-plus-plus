@@ -5,17 +5,18 @@ offer Retry without the user retyping the new name - see its own comment.
 """
 from core import elevation
 from core.file_extension import name_with_hidden_extension
-from core.commands.editor import _find_extension_start
+from core.commands.new_file import _find_extension_start
 from core.commands import show_file_comment_error
-from core.commands.util import create_as_admin, is_dir_checked, NO_SELECTION
+from core.commands.util import (
+	_fs_implements, create_as_admin, is_dir_checked, NO_SELECTION
+)
 from core.undo_history import RenameRecord, history
 from core.descript_ion import move_comments
 from core.util import is_relative_name
 from functools import partial
 from fman import CANCEL, DirectoryPaneCommand, DirectoryPaneListener, \
 	PLATFORM, RETRY, show_alert, show_input, submit_task, Task
-from fman.fs import exists, FileSystem, makedirs, prepare_move, \
-	query, samefile
+from fman.fs import exists, makedirs, prepare_move, samefile
 from fman.url import dirname, join, normalize, relpath, splitscheme
 # os.path.basename, not fman.url's, matching what core/commands/__init__.py
 # resolved this name to before this module existed.
@@ -171,8 +172,3 @@ class CreateDirectory(DirectoryPaneCommand):
 	def is_visible(self):
 		fs = splitscheme(self.pane.get_path())[0]
 		return _fs_implements(fs, 'mkdir')
-
-def _fs_implements(scheme, method_name):
-	# Using query(...) in this way is quite hacky, but works:
-	method = query(scheme + method_name, '__getattr__')
-	return method.__func__ is not getattr(FileSystem, method_name)

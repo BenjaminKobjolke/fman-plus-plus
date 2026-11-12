@@ -15,7 +15,7 @@ the project's 300-line file cap - same reason core/textviewer_save.py is
 split off core/textviewer.py.
 """
 from core.commands.deletion import confirm_delete, confirm_trash, delete, trash
-from core.commands.editor import _find_extension_start
+from core.commands.new_file import _find_extension_start
 from core.commands.rename import rename_to
 from core.settings import get_setting, save_setting, SETTINGS_FILE
 from core.viewer_status import viewer_status
