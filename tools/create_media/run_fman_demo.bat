@@ -193,6 +193,11 @@ REM - either would put the recordist private folders on camera.
 if "%1"=="8" mkdir "%LEFT%\projects\alpha" 2>nul
 if "%1"=="8" mkdir "%LEFT%\projects\beta" 2>nul
 if "%1"=="8" mkdir "%LEFT%\reports" 2>nul
+REM The example files have no subfolders; the expanded tree still needs child rows.
+if "%1"=="22" mkdir "%LEFT%\projects\alpha" 2>nul
+if "%1"=="22" mkdir "%LEFT%\projects\beta" 2>nul
+if "%1"=="22" mkdir "%LEFT%\reports" 2>nul
+if "%1"=="22" mkdir "%LEFT%\archive" 2>nul
 if "%1"=="8" set "SETTINGS_DIR=%FMAN_DATA_DIRECTORY%\Plugins\User\Settings"
 if "%1"=="8" powershell -NoProfile -Command "$s=$env:SETTINGS_DIR; New-Item -ItemType Directory -Force -Path $s | Out-Null; $l=$env:LEFT; $p=Join-Path $l 'projects'; $h=[ordered]@{}; $h[$l]=5; $h[$p]=4; $h[(Join-Path $p 'alpha')]=3; $h[(Join-Path $p 'beta')]=2; $h[(Join-Path $l 'reports')]=1; [System.IO.File]::WriteAllText((Join-Path $s 'Visited Paths.json'), ($h | ConvertTo-Json))"
 

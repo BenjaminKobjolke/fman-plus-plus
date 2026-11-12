@@ -67,6 +67,8 @@
     {"id": 19, "name": "transfer-failure", "fps": 2, "formats": [],
      "width": 1920, "height": 1080},
     {"id": 20, "name": "dialogs-after-video", "fps": 2, "formats": [],
+     "width": 1920, "height": 1080},
+    {"id": 22, "name": "folder-tree", "fps": 2, "formats": [],
      "width": 1920, "height": 1080}
   ],
   "compose": [

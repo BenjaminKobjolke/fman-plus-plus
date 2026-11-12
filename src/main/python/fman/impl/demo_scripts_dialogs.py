@@ -29,6 +29,9 @@ the file that did copy.
 
 Demo 20 opens and closes the seeded video before the dialogs, because the
 native video surface changes how in-window dialogs are shown (#15803).
+
+Demo 22 holds a folder tree still with the current folder expanded, for the
+screenshot check.
 """
 
 from automated_screenshot_connector import (
@@ -249,6 +252,18 @@ DIALOG_CLIPS = {
 			PressKey('F5'), Pause(1.8), PressKey('Return'), Pause(2.0),
 			ScreenStill('after-video-overwrite'),
 			PressKey('Escape'), Pause(1.2), Pause(1.0),
+		),
+	),
+	22: DemoScript(
+		id=22,
+		name='folder-tree',
+		steps=(
+			Pause(1.0),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('toggle folder tree'),
+			Pause(2.5),
+			Screenshot('folder-tree-expanded'),
+			Pause(1.2),
 		),
 	),
 }

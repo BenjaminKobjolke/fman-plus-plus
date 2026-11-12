@@ -325,6 +325,13 @@ composing stale inputs.
   in-window dialog changes after the video viewer. The demo posts Qt key events,
   so real mouse and operating-system input remains a by-hand check; stills are
   gitignored (`media/demos/dialogs-after-video/`).
+- **22 `folder-tree`** — opens Toggle folder tree on a scratch folder with seeded
+  subfolders and takes one still with the current folder expanded (rows, icons,
+  arrows and indentation). It exists so the screenshot check can judge folder
+  tree changes. The tree starts at the drive root, so the still also shows the
+  scratch drive's top-level folders; stills are gitignored
+  (`media/demos/folder-tree/`). A change to the folder tree's look should add a
+  `Screenshot` here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
