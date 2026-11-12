@@ -70,7 +70,8 @@ _gather_files()                        _run_gathered_tasks()
   `_gather_files()` as before. `_enqueue(...)` puts each task on a `Queue` the
   moment the file system yields it, instead of collecting them in a list.
 - **The transferring thread** is the command's own worker thread. It takes
-  tasks off the queue and runs them with the same error handling as before.
+  tasks off the queue and runs them. A failed transfer task is recorded and
+  the worker continues with the next task.
 - **`_DONE`** always ends the queue, however the gathering stopped: done,
   canceled, aborted or crashed. An exception raised while gathering is stored
   and raised again once the transfers have ended.
@@ -88,19 +89,31 @@ _gather_files()                        _run_gathered_tasks()
   cached like a pane's, so a file someone else added since is not seen.
 - **One task of look-ahead.** Before running a task, the transferring thread
   waits until the queue holds its next item, without taking it. That is how
-  it knows a failing task is the last one, which decides whether the error
-  prompt offers `OK` or `Yes / Yes to all / Abort`.
-- **One prompt at a time.** Overwrite prompts come from the gathering thread,
-  error prompts from the transferring one. Without a lock the second modal
-  dialog would open inside the first's event loop. `_alert_lock` is held
-  around both `_should_overwrite(...)` and `_handle_exception(...)`.
-- **Stopping.** Cancel is seen by both threads. When the transfers end early
-  (Abort on an error prompt), `_stop_gathering` makes `_iter(...)` stop the
-  walk, and the transferring thread waits for the gathering thread before it
-  returns.
+  it knows when the queue has no next task. Transfer failures no longer use
+  this look-ahead to decide whether to show a prompt.
+- **One prompt at a time.** Overwrite prompts and errors found while walking
+  the tree come from the gathering thread. `_alert_lock` prevents a second
+  modal dialog from opening inside the first one's event loop.
+- **Stopping.** Cancel is seen by both threads. An aborted walk or cancellation
+  prevents the transfer retry prompt; the transferring thread waits for the
+  gathering thread before it returns.
 - **Abort on an overwrite prompt** stops the queued tasks that have not started
-  yet. Files transferred before that point stay transferred, the same as an
-  Abort on an error prompt mid-copy.
+  yet. Files transferred before that point stay transferred.
+
+## Transfer failures
+
+A file that fails while its transfer task is running does not open a dialog in
+the middle of the operation. Its name and reason are collected while the
+workers continue with other files. After the walk and all workers finish, Core
+shows one prompt listing the failed files and asks whether to retry them. Yes
+runs those tasks one by one; any tasks that fail again are offered in another
+prompt. Errors found while walking the tree still use their existing
+continue/abort prompt.
+
+For a move, a file that fails and is not successfully retried stays at its
+source. Other completed moves stay at their destinations. Canceling the move,
+aborting an overwrite prompt, or an aborted walk still rolls back completed
+local moves.
 
 ## Overwrite prompts
 
@@ -125,9 +138,10 @@ undoing a copy or move removes the renamed destination.
 ## When a move stops halfway
 
 Core automatically moves completed local files back to their original
-locations when you cancel a move, choose Abort on an overwrite or error prompt,
-or an unexpected error stops the operation. An error on the last file also
-counts as stopping: its prompt only offers OK, so there is no way to continue.
+locations when you cancel a move, choose Abort on an overwrite prompt, an
+aborted walk or an unexpected error stops the operation. A transfer failure
+does not roll back other files: the failed file remains at its source and
+successful moves stay at the destination unless you cancel or the walk aborts.
 If a source location has been filled again before rollback reaches it, Core
 leaves that moved file at the destination and reports the paths it could not
 restore. The alert lists up to ten paths and gives the count of any remaining
@@ -147,8 +161,8 @@ removes the temporary file and preserves any old destination file until that
 publish. Ordinary symlinks keep their existing handling. WSL links to Linux-only paths
 are copied as identical links without administrator rights, but their timestamps
 are not preserved. A destination that cannot store reparse points (FAT, exFAT,
-or some network shares) shows the usual per-file error and lets the rest of the
-copy continue.
+or some network shares) is listed in the end-of-operation retry prompt while
+the rest of the copy continues.
 
 Before a local file is moved across drives or replaces an existing copy
 destination, Core checks whether another program has it open. This happens

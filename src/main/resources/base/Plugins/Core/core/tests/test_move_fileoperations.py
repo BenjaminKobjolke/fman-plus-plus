@@ -7,7 +7,7 @@ from core.fileoperations import MoveFiles
 from core.fs.local import LocalFileSystem
 from core.tests.test_fileoperations import FileTreeOperationAT
 from core.transfer_workers import DONE
-from fman import ABORT, OK, PLATFORM, Task, YES, YES_TO_ALL
+from fman import PLATFORM, Task, YES, NO
 from fman.impl.overwrite_dialog import OverwriteChoice
 from fman.impl.plugins.mother_fs import MotherFileSystem
 from fman.url import join
@@ -83,18 +83,20 @@ class MoveFilesTest(FileTreeOperationAT, TestCase):
 	def test_overwrite_directory_file_in_subdir(self):
 		super().test_overwrite_directory_file_in_subdir()
 		self.assertNotIn('dir1', self._fs.iterdir(self.src))
-	def test_abort_after_second_move_error_restores_first(self):
+	def test_failure_after_second_move_keeps_other_successes(self):
 		first, second, third = self._make_sources()
-		self._expect_alert(
-			('Error moving second.txt (permission denied). Do you want to continue?',
-			 YES | YES_TO_ALL | ABORT, YES), answer=ABORT
-		)
+		self._expect_alert((
+			'Moving 3 files: 1 file failed.\n\n'
+			'Error moving second.txt (permission denied).\n\nRetry it?',
+			YES | NO, YES
+		), answer=NO)
 		self._run_move_with_error(second)
-		self.assertTrue(self._fs.exists(first))
-		self.assertFalse(self._fs.exists(join(self.dest, 'first.txt')))
+		self.assertFalse(self._fs.exists(first))
+		self.assertTrue(self._fs.exists(join(self.dest, 'first.txt')))
 		self.assertTrue(self._fs.exists(second))
 		self.assertFalse(self._fs.exists(join(self.dest, 'second.txt')))
-		self.assertTrue(self._fs.exists(third))
+		self.assertFalse(self._fs.exists(third))
+		self.assertTrue(self._fs.exists(join(self.dest, 'third.txt')))
 	def test_abort_on_overwrite_restores_completed_moves(self):
 		first, second, third = self._make_sources()
 		dest_second = join(self.dest, 'second.txt')
@@ -145,20 +147,26 @@ class MoveFilesTest(FileTreeOperationAT, TestCase):
 		self.assertFalse(self._fs.exists(join(self.dest, 'first.txt')))
 		self.assertTrue(self._fs.exists(second))
 		self.assertTrue(self._fs.exists(third))
-	def test_last_file_error_with_ok_restores_completed_moves(self):
+	def test_last_file_error_keeps_completed_moves(self):
 		first, second, third = self._make_sources()
-		self._expect_alert(('Error moving third.txt (permission denied).', OK, OK), OK)
+		self._expect_alert((
+			'Moving 3 files: 1 file failed.\n\n'
+			'Error moving third.txt (permission denied).\n\nRetry it?',
+			YES | NO, YES
+		), NO)
 		self._run_move_with_error(third)
-		self.assertTrue(self._fs.exists(first))
-		self.assertTrue(self._fs.exists(second))
-		self.assertFalse(self._fs.exists(join(self.dest, 'first.txt')))
+		self.assertFalse(self._fs.exists(first))
+		self.assertFalse(self._fs.exists(second))
+		self.assertTrue(self._fs.exists(join(self.dest, 'first.txt')))
+		self.assertTrue(self._fs.exists(join(self.dest, 'second.txt')))
 		self.assertTrue(self._fs.exists(third))
-	def test_continue_after_error_keeps_successful_move(self):
+	def test_failed_move_does_not_prevent_later_moves(self):
 		first, second, third = self._make_sources()
-		self._expect_alert(
-			('Error moving first.txt (permission denied). Do you want to continue?',
-			 YES | YES_TO_ALL | ABORT, YES), answer=YES
-		)
+		self._expect_alert((
+			'Moving 3 files: 1 file failed.\n\n'
+			'Error moving first.txt (permission denied).\n\nRetry it?',
+			YES | NO, YES
+		), answer=NO)
 		self._run_move_with_error(first)
 		self.assertTrue(self._fs.exists(first))
 		self.assertFalse(self._fs.exists(join(self.dest, 'first.txt')))
@@ -166,32 +174,67 @@ class MoveFilesTest(FileTreeOperationAT, TestCase):
 		self.assertTrue(self._fs.exists(join(self.dest, 'second.txt')))
 		self.assertFalse(self._fs.exists(third))
 		self.assertTrue(self._fs.exists(join(self.dest, 'third.txt')))
-	def test_abort_removes_new_destination_folder(self):
+	def test_successful_move_retry_is_recorded_for_rollback(self):
+		first, second, third = self._make_sources()
+		self._expect_alert((
+			'Moving 3 files: 1 file failed.\n\n'
+			'Error moving second.txt (permission denied).\n\nRetry it?',
+			YES | NO, YES
+		), answer=YES)
+		backend = self._fs._children['file://']
+		rename = backend._rename
+		attempts = {second: 0}
+		def rename_once_then_succeed(src_url, dst_url):
+			if src_url == second:
+				attempts[src_url] += 1
+				if attempts[src_url] == 1:
+					raise OSError(13, 'permission denied')
+			rename(src_url, dst_url)
+		task = MoveFiles([first, second, third], self.dest, fs=self._fs)
+		task._get_worker_count = lambda: 1
+		task._dialog = self._progress_dialog
+		done = []
+		on_task_done = task._on_task_done
+		def record_and_track(completed_task):
+			done.append(completed_task)
+			on_task_done(completed_task)
+		task._on_task_done = record_and_track
+		with patch.object(backend, '_rename', side_effect=rename_once_then_succeed):
+			task()
+		self._progress_dialog.verify_expected_dialogs_were_shown()
+		self.assertEqual(2, attempts[second])
+		self.assertIn(
+			'Moving second.txt', [item.get_title() for item in done]
+		)
+		self.assertTrue(self._fs.exists(join(self.dest, 'second.txt')))
+	def test_failed_move_keeps_new_destination_and_completed_files(self):
 		first, second, third = self._make_sources()
 		new_dest = join(self.dest, 'new-destination')
-		self._expect_alert(
-			('Error moving second.txt (permission denied). Do you want to continue?',
-			 YES | YES_TO_ALL | ABORT, YES), answer=ABORT
-		)
+		self._expect_alert((
+			'Moving 3 files: 1 file failed.\n\n'
+			'Error moving second.txt (permission denied).\n\nRetry it?',
+			YES | NO, YES
+		), answer=NO)
 		self._run_move_with_error(second, dest_dir=new_dest)
-		self.assertFalse(self._fs.exists(new_dest))
+		self.assertTrue(self._fs.exists(new_dest))
 		self.assertTrue(self._fs.exists(self.dest))
-		self.assertTrue(self._fs.exists(first))
+		self.assertFalse(self._fs.exists(first))
 		self.assertTrue(self._fs.exists(second))
-		self.assertTrue(self._fs.exists(third))
-	def test_abort_preserves_preexisting_destination_folder(self):
+		self.assertFalse(self._fs.exists(third))
+	def test_failed_move_preserves_preexisting_destination_folder(self):
 		first, second, third = self._make_sources()
 		foreign_file = join(self.dest, 'foreign.txt')
 		self._touch(foreign_file, 'foreign')
-		self._expect_alert(
-			('Error moving second.txt (permission denied). Do you want to continue?',
-			 YES | YES_TO_ALL | ABORT, YES), answer=ABORT
-		)
+		self._expect_alert((
+			'Moving 3 files: 1 file failed.\n\n'
+			'Error moving second.txt (permission denied).\n\nRetry it?',
+			YES | NO, YES
+		), answer=NO)
 		self._run_move_with_error(second)
 		self.assertTrue(self._fs.exists(self.dest))
 		self._assert_file_contents_equal(foreign_file, 'foreign')
-		self.assertTrue(self._fs.exists(first))
-		self.assertTrue(self._fs.exists(third))
+		self.assertFalse(self._fs.exists(first))
+		self.assertFalse(self._fs.exists(third))
 	def _run_move(self, dest_dir=None):
 		if dest_dir is None:
 			dest_dir = self.dest

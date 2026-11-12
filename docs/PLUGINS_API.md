@@ -554,6 +554,8 @@ the open connections it holds to the server behind that path, or `None` (the
 default) when it has no such count. The multi-worker progress dialog then shows
 `Threads: N · Connections: M`. This hook runs on the GUI thread on every
 refresh and must only read in-memory state; an exception is treated as `None`.
+A task returned by `prepare_copy(...)` or `prepare_move(...)` may be run again
+after it fails, so it must be safe to run twice.
 Set `task.blocks_later_tasks = True` on a task that later ones depend
 on (creating a folder), and `task.waits_for_earlier_tasks = True` on one that
 depends on all earlier ones (deleting an emptied folder). See

@@ -71,6 +71,21 @@ class ReadOnlyOverwriteTest(TestCase):
 		self.assertEqual('incoming a.txt', self._read_dest('a.txt'))
 		self.assertEqual('incoming b.txt', self._read_dest('b.txt'))
 
+	def test_failed_write_after_read_only_confirmation_uses_end_prompt(self):
+		self._reset_files(('a.txt',))
+		self._expect_overwrite('a.txt', OverwriteChoice.OVERWRITE)
+		self._expect_read_only_question('a.txt', YES)
+		self._dialog.expect_alert((
+			'Copying a.txt: 1 file failed.\n\n'
+			'Error copying a.txt (permission denied).\n\nRetry it?',
+			YES | NO, YES
+		), NO)
+		backend = next(iter(self._fs._backends.values()))
+		with patch.object(
+			backend, 'copy', side_effect=OSError(13, 'permission denied')
+		):
+			self._run(CopyFiles, ('a.txt',))
+
 	def test_writable_target_has_no_second_question(self):
 		self._reset_files(('a.txt',), read_only=False)
 		self._dialog.expect_overwrite(

@@ -1,6 +1,6 @@
 from core.transfer_workers import DONE, TransferWorkers, WorkerProgress
-from core.file_tree_gathering import FileTreeGathering
-from fman import Task, OK
+from core.file_tree_gathering import FileTreeGathering, describe_error
+from fman import Task, OK, YES, NO
 from fman.url import basename, dirname, as_human_readable
 from queue import Queue
 from threading import Lock, Thread
@@ -9,8 +9,19 @@ from core.move_rollback import MoveRollback
 from core.transfer_completion import TransferCompletion
 from core.read_only_overwrite import ReadOnlyOverwrite
 from core.skipped_errors import SkippedErrors
+from core.failed_transfers import FailedTransfers
+from fman.impl.task import ChildProgressDialog
 
 import fman.fs
+
+class _RetryProgressDialog(ChildProgressDialog):
+	def __init__(self, parent):
+		super().__init__(parent)
+		self._progress = 0
+	def set_progress(self, progress):
+		self._progress = progress
+	def get_progress(self):
+		return self._progress
 
 class FileTreeOperation(FileTreeGathering, Task):
 	minimizable = True
@@ -53,8 +64,13 @@ class FileTreeOperation(FileTreeGathering, Task):
 			on_file_done or (lambda url: None)
 		)
 		self._skipped_errors = SkippedErrors()
+		self._failed_transfers = FailedTransfers()
 	def _transfer(self, src, dest):
 		raise NotImplementedError()
+	def _failure_text(self, task, error):
+		title = task.get_title()
+		message = 'Error ' + title[0].lower() + title[1:]
+		return '%s (%s).' % (message, describe_error(error))
 	def _prepare_transfer(self, src, dest):
 		raise NotImplementedError()
 	def _can_transfer_samefile(self):
@@ -93,6 +109,11 @@ class FileTreeOperation(FileTreeGathering, Task):
 				gatherer.join()
 			if self._gather_exception is not None:
 				raise self._gather_exception
+			if not (
+				self._gather_aborted or self._gather_canceled or
+				self._gather_exception or self._dialog.was_canceled()
+			):
+				self._retry_failed()
 		finally:
 			text = self._skipped_errors.report(self.get_title())
 			if text:
@@ -119,6 +140,30 @@ class FileTreeOperation(FileTreeGathering, Task):
 			self.show_workers(workers)
 		workers.start()
 		workers.join()
+	# Retried tasks must be safe to run twice. A file that fails once and then
+	# succeeds remains incomplete for TransferCompletion, so on_file_done is not
+	# called.
+	def _retry_failed(self):
+		failures = self._failed_transfers.take()
+		while failures:
+			answer = self.show_alert(
+				self._failed_transfers.message(self.get_title(), failures),
+				YES | NO, YES
+			)
+			if not answer & YES:
+				return
+			for task, _failure in failures:
+				self.check_canceled()
+				progress = _RetryProgressDialog(self._dialog)
+				try:
+					self._run_with_dialog(task, progress)
+				except (OSError, IOError) as e:
+					self._failed_transfers.record(
+						task, self._failure_text(task, e)
+					)
+				else:
+					self._on_task_done(task)
+			failures = self._failed_transfers.take()
 	def _run_one(self, worker, task, is_last):
 		# When the transfers end early, the walk must stop too: the other
 		# workers wait for its end of the queue.
@@ -145,10 +190,7 @@ class FileTreeOperation(FileTreeGathering, Task):
 			self._run_with_dialog(task, progress)
 		except (OSError, IOError) as e:
 			self._completion.task_finished(task, False)
-			title = task.get_title()
-			message = 'Error ' + (title[0].lower() + title[1:])
-			if not self._handle_exception(message, is_last, e):
-				return False
+			self._failed_transfers.record(task, self._failure_text(task, e))
 			progress.set_progress(size)
 		else:
 			self._completion.task_finished(task, True)
