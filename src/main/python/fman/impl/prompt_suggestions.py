@@ -64,10 +64,11 @@ class PromptSuggestions(QObject):
 			except Exception:
 				_LOG.exception('Could not load prompt path suggestions for %r.', text)
 				matches = []
-			if self._closed:
-				return
 			try:
-				self._results_ready.emit(text, matches)
+				with self._lock:
+					if self._closed:
+						return
+					self._results_ready.emit(text, matches)
 			except RuntimeError:
 				# The prompt may have closed while the filesystem was being listed.
 				return
