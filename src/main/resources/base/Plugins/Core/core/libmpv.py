@@ -2,16 +2,13 @@
 Ensures the native libmpv-2.dll (required by python-mpv, see core/videoviewer.py)
 is available on Windows, downloading and caching it on first use.
 
-Not bundled in the repo: LGPL builds like this one may be redistributed, but
-fetching from upstream on first use avoids shipping a ~30 MB binary in git and
-keeps fman itself from redistributing it at all - same pattern apps use for
-ffmpeg. macOS/Linux are expected to install mpv via the system package manager
-(brew/apt). On Apple Silicon, Homebrew installs libmpv under /opt/homebrew/lib,
-which dyld does not search by default, so that directory is added to its fallback path.
-
-Pinned to a specific LGPLv2.1+ build from zhongfly/mpv-winbuild (not the more
-common shinchiro/mpv-winbuild-cmake builds, which are GPL-2.0-or-later by
-default) - verified by SHA-256 before use.
+The archive is an unmodified LGPLv2.1+ build from zhongfly/mpv-winbuild,
+re-hosted as a pre-release asset of the fman++ repository because upstream
+deletes builds after about a month. It is verified by SHA-256 before use; see
+docs/views/VIDEO_VIEWER.md for how to replace the hosted archive. macOS/Linux
+are expected to install mpv via the system package manager (brew/apt). On Apple
+Silicon, Homebrew installs libmpv under /opt/homebrew/lib, which dyld does not
+search by default, so that directory is added to its fallback path.
 
 A %PATH% prepend (not os.add_dll_directory()) is what's needed: python-mpv
 resolves the DLL itself via ctypes.util.find_library(), which on Windows
@@ -30,7 +27,7 @@ PaneCommandRegistry._run_outside_main_thread), so calling this from there
 keeps the Qt event loop free during the download instead of freezing the
 whole app for its multi-second duration.
 """
-from fman import DATA_DIRECTORY, Task, submit_task
+from fman import DATA_DIRECTORY, Task, links, submit_task
 from os.path import join
 from subprocess import run
 
@@ -40,13 +37,13 @@ import requests
 import sys
 import tempfile
 
-LIBMPV_VERSION = '2026-08-22-b955aa28f3'
-LIBMPV_URL = (
-	'https://github.com/zhongfly/mpv-winbuild/releases/download/'
-	'2026-08-22-b955aa28f3/mpv-dev-lgpl-x86_64-20260822-git-b955aa28f3.7z'
+LIBMPV_RELEASE_TAG = 'libmpv-20261111-bcde6b93cc'
+LIBMPV_ASSET = 'mpv-dev-lgpl-x86_64-20261111-git-bcde6b93cc.7z'
+LIBMPV_URL = 'https://github.com/%s/releases/download/%s/%s' % (
+	links.GITHUB_REPO, LIBMPV_RELEASE_TAG, LIBMPV_ASSET,
 )
 LIBMPV_SHA256 = \
-	'a932332b15293f3fbf673ff78b08824de73af7da637fabb472163092a2d7861f'
+	'1b76d39ac5e653b07e047674836e0b699d7eca4c842f3fa7677cacc9a3e17b8b'
 LIBMPV_DLL_NAME = 'libmpv-2.dll'
 HOMEBREW_LIBRARY_DIR = '/opt/homebrew/lib'
 DYLD_DEFAULT_FALLBACK_LIBRARY_PATH = '~/lib:/usr/local/lib:/lib:/usr/lib'

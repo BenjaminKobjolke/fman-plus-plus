@@ -119,14 +119,16 @@ without depending on whatever codecs happen to be installed on the OS.
   - **Windows: auto-downloaded on first use, no manual setup.**
     `core/libmpv.py::ensure_libmpv_on_path()` checks
     `DATA_DIRECTORY/Local/libmpv/libmpv-2.dll`; if missing, it downloads a
-    **pinned** LGPLv2.1+ build from
-    [`zhongfly/mpv-winbuild`](https://github.com/zhongfly/mpv-winbuild)
+    **pinned** LGPLv2.1+ build re-hosted as a pre-release asset in the
+    [fman++ repository](https://github.com/BenjaminKobjolke/fman-plus-plus)
+    (the asset keeps its upstream filename). The archive is an unmodified
+    build from [`zhongfly/mpv-winbuild`](https://github.com/zhongfly/mpv-winbuild)
     (deliberately not the more common
     [`shinchiro/mpv-winbuild-cmake`](https://github.com/shinchiro/mpv-winbuild-cmake)
-    builds, which are GPL-2.0-or-later by default), verifies it by SHA-256,
-    and extracts just the DLL with the project's bundled `7z.exe`. The DLL
-    is never committed to the repo — only fetched from upstream, once, into
-    the user data dir.
+    builds, which are GPL-2.0-or-later by default). `core/libmpv.py` verifies
+    the archive by SHA-256 and extracts just the DLL with the project's bundled
+    `7z.exe`. The archive is kept out of git and fetched once into the user
+    data dir.
   - **Real progress dialog, not a status-bar message.** The download runs
     as an `fman.Task` submitted via `fman.submit_task` — the same mechanism
     `core/commands/` uses for copy/move/delete/rename — which
@@ -161,6 +163,21 @@ without depending on whatever codecs happen to be installed on the OS.
     bundle-and-inject doesn't translate to these platforms: their dynamic
     loaders read `DYLD_LIBRARY_PATH`/`LD_LIBRARY_PATH` at process *launch*,
     not at import time, so a runtime `os.environ` tweak is too late.
+
+### Updating the hosted libmpv
+
+Upstream removes old builds after about a month, so the fman++ pre-release
+keeps the selected archive available. To replace it, download an unmodified
+LGPL build from `zhongfly/mpv-winbuild` (choose the plain `x86_64` asset, not
+the `-v3-` variant), compute its SHA-256, and create a new pre-release in
+`BenjaminKobjolke/fman-plus-plus` with the archive attached. Include links to
+the upstream release and the corresponding mpv source commit in the release
+notes. Use `gh release create <tag> <archive> -R BenjaminKobjolke/fman-plus-plus --prerelease --latest=false`
+so it cannot become the latest fman++ release: fman's update check reads
+GitHub's `releases/latest` endpoint. Then update `LIBMPV_RELEASE_TAG`,
+`LIBMPV_ASSET` and `LIBMPV_SHA256` in `core/libmpv.py` to match the uploaded
+asset.
+
 - **Missing libmpv doesn't break fman.** `import mpv` raises `OSError`
   immediately if the native library isn't found — and since `videoviewer.py`
   is imported unconditionally by `core/commands/opening.py`, an eager

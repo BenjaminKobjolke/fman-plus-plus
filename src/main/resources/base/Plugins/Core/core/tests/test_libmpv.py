@@ -1,8 +1,9 @@
 from core.libmpv import (
-	LIBMPV_DLL_NAME, _DownloadLibmpv, cache_dir, ensure_libmpv_on_path,
+	LIBMPV_ASSET, LIBMPV_DLL_NAME, LIBMPV_RELEASE_TAG, LIBMPV_URL,
+	_DownloadLibmpv, cache_dir, ensure_libmpv_on_path,
 )
 import core.libmpv
-from fman import DATA_DIRECTORY
+from fman import DATA_DIRECTORY, links
 from os.path import join
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
@@ -10,6 +11,15 @@ from unittest.mock import MagicMock, patch
 import os
 import requests
 import tempfile
+
+class LibmpvUrlTest(TestCase):
+	def test_download_url_uses_the_fman_github_release(self):
+		self.assertEqual(
+			'https://github.com/%s/releases/download/%s/%s'
+			% (links.GITHUB_REPO, LIBMPV_RELEASE_TAG, LIBMPV_ASSET),
+			LIBMPV_URL,
+		)
+		self.assertTrue(LIBMPV_ASSET.endswith('.7z'))
 
 class ExtractTest(TestCase):
 	def test_uses_shared_seven_zip_binary(self):
