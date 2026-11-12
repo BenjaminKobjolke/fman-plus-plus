@@ -27,7 +27,8 @@ the main window starts.
 Right-button selection is also applied here so its saved mode reaches panes
 before the main window starts.
 Drag selection is applied here for the same reason: its saved mode must reach
-each pane at startup.
+each pane at startup. Pane location bar visibility is applied here for the
+same reason.
 """
 
 from .pane_status import PaneStatusMode
@@ -43,10 +44,13 @@ TITLE_BAR_SETTING = 'title_bar_visible'
 MENU_BAR_SETTING = 'menu_bar_visible'
 STATUS_BAR_SETTING = 'status_bar_visible'
 PANE_STATUS_LINES_VISIBLE_SETTING = 'pane_status_lines_visible'
+PANE_LOCATION_BARS_VISIBLE_SETTING = 'pane_location_bars_visible'
 PANE_MESSAGES_IN_STATUS_BAR_SETTING = 'pane_messages_in_status_bar'
 DRAG_SELECTION_SETTING = 'drag_selection'
 DRAG_SELECTION_ON_MESSAGE = 'Drag selection on.'
 DRAG_SELECTION_OFF_MESSAGE = 'Drag selection off.'
+PANE_LOCATION_BARS_ON_MESSAGE = 'Pane location bars on.'
+PANE_LOCATION_BARS_OFF_MESSAGE = 'Pane location bars off.'
 
 def save_visible_flag(settings, key, visible):
 	if visible:
@@ -96,6 +100,24 @@ class DragSelectionSetting:
 		self.apply(window)
 		return DRAG_SELECTION_ON_MESSAGE if enabled else DRAG_SELECTION_OFF_MESSAGE
 
+class PaneLocationBarsSetting:
+	"""Persist and apply the default-on pane location bars."""
+
+	def __init__(self, settings):
+		self._settings = settings
+	def is_visible(self):
+		return self._settings.get(
+			PANE_LOCATION_BARS_VISIBLE_SETTING, True) is not False
+	def apply(self, window):
+		window.set_pane_location_bars_visible(self.is_visible())
+	def toggle(self, window):
+		visible = not self.is_visible()
+		save_visible_flag(
+			self._settings, PANE_LOCATION_BARS_VISIBLE_SETTING, visible)
+		self.apply(window)
+		return PANE_LOCATION_BARS_ON_MESSAGE if visible \
+			else PANE_LOCATION_BARS_OFF_MESSAGE
+
 class WindowChrome:
 	def __init__(self, settings):
 		self._settings = settings
@@ -103,6 +125,7 @@ class WindowChrome:
 		self.right_button_selection = RightButtonSelectionSetting(settings)
 		self.drag_selection = DragSelectionSetting(settings)
 		self.clickable_path = ClickablePathSetting(settings)
+		self.pane_location_bars = PaneLocationBarsSetting(settings)
 	def is_title_bar_visible(self):
 		return self._settings.get(TITLE_BAR_SETTING, True)
 	def is_menu_bar_visible(self):
@@ -129,5 +152,6 @@ class WindowChrome:
 		self.right_button_selection.apply(window)
 		self.drag_selection.apply(window)
 		self.clickable_path.apply(window)
+		self.pane_location_bars.apply(window)
 	def _save(self, setting, visible):
 		save_visible_flag(self._settings, setting, visible)

@@ -157,6 +157,10 @@ class DirectoryPaneWidget(QWidget):
 		self._file_view.set_drag_selection(enabled)
 	def set_clickable_path(self, enabled: bool) -> None:
 		self._location_bar.set_clickable(enabled)
+	def set_location_bar_visible(self, visible):
+		if not visible and self._location_bar.hasFocus():
+			self._file_view.setFocus()
+		self._location_bar.setVisible(visible)
 	def get_file_view(self):
 		return self._file_view
 	def is_compact_view(self):
@@ -464,6 +468,7 @@ class MainWindow(QMainWindow):
 		self._right_button_selection = False
 		self._drag_selection = True
 		self._clickable_path = True
+		self._pane_location_bars_visible = True
 		self._backgrounds = ()
 		self._pane_status_mode = PaneStatusMode(True, True)
 		self._pane_status_bar_owner = None
@@ -532,6 +537,11 @@ class MainWindow(QMainWindow):
 		self._clickable_path = enabled
 		for pane in self._panes:
 			pane.set_clickable_path(enabled)
+	@run_in_main_thread
+	def set_pane_location_bars_visible(self, visible):
+		self._pane_location_bars_visible = visible
+		for pane in self._panes:
+			pane.set_location_bar_visible(visible)
 	@run_in_main_thread
 	def set_backgrounds(self, backgrounds):
 		# Remembered as well as applied, for the same reason as the icon
@@ -769,6 +779,7 @@ class MainWindow(QMainWindow):
 		result.set_right_button_selection(self._right_button_selection)
 		result.set_drag_selection(self._drag_selection)
 		result.set_clickable_path(self._clickable_path)
+		result.set_location_bar_visible(self._pane_location_bars_visible)
 		result.set_status_line_visible(self._pane_status_mode.lines_visible)
 		self._panes.append(result)
 		# After the append, because the pane's own index is what decides

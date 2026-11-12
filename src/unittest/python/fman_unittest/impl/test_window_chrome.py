@@ -4,6 +4,8 @@ from fman.impl.window_chrome import MENU_BAR_SETTING, STATUS_BAR_SETTING, \
 	TITLE_BAR_SETTING, PANE_STATUS_LINES_VISIBLE_SETTING, \
 	PANE_MESSAGES_IN_STATUS_BAR_SETTING, DRAG_SELECTION_SETTING, \
 	DRAG_SELECTION_ON_MESSAGE, DRAG_SELECTION_OFF_MESSAGE, \
+	PANE_LOCATION_BARS_VISIBLE_SETTING, PANE_LOCATION_BARS_ON_MESSAGE, \
+	PANE_LOCATION_BARS_OFF_MESSAGE, PaneLocationBarsSetting, \
 	PaneStatusSettings, WindowChrome
 from fman.impl.pane_status import PaneStatusMode
 from json import dump, load
@@ -79,6 +81,28 @@ class WindowChromeTest(TestCase):
 				getattr(self._window, setter).assert_called_once_with(True)
 		self._window.set_pane_status_mode.assert_called_once_with(
 			PaneStatusMode(lines_visible=True, in_status_bar=True))
+	def test_pane_location_bars_are_visible_by_default_and_false_is_hidden(self):
+		for saved, expected in (({}, True),
+				({PANE_LOCATION_BARS_VISIBLE_SETTING: False}, False),
+				({PANE_LOCATION_BARS_VISIBLE_SETTING: None}, True)):
+			with self.subTest(saved=saved):
+				setting = PaneLocationBarsSetting(self._make_settings(saved))
+				self.assertEqual(expected, setting.is_visible())
+	def test_toggling_pane_location_bars_persists_false_then_removes_key(self):
+		setting = PaneLocationBarsSetting(self._make_settings())
+		self.assertEqual(PANE_LOCATION_BARS_OFF_MESSAGE,
+			setting.toggle(self._window))
+		self._window.set_pane_location_bars_visible.assert_called_once_with(False)
+		self.assertEqual({PANE_LOCATION_BARS_VISIBLE_SETTING: False},
+			self._read_settings_file())
+		self.assertEqual(PANE_LOCATION_BARS_ON_MESSAGE,
+			setting.toggle(self._window))
+		self._window.set_pane_location_bars_visible.assert_called_with(True)
+		self.assertEqual({}, self._read_settings_file())
+	def test_apply_pushes_saved_pane_location_bar_visibility(self):
+		chrome = self._make_chrome({PANE_LOCATION_BARS_VISIBLE_SETTING: False})
+		chrome.apply(self._window)
+		self._window.set_pane_location_bars_visible.assert_called_once_with(False)
 	def test_drag_selection_is_enabled_by_default(self):
 		self.assertTrue(self._make_chrome().drag_selection.is_enabled())
 	def test_toggling_drag_selection_persists_false_and_removes_default(self):
@@ -111,6 +135,10 @@ class WindowChromeTest(TestCase):
 	def _read_settings_file(self):
 		with open(self._settings_path, 'r') as f:
 			return load(f)
+	def _make_settings(self, saved=None):
+		with open(self._settings_path, 'w') as f:
+			dump(saved or {}, f)
+		return Settings(self._settings_path)
 	def setUp(self):
 		self._tmp_dir = TemporaryDirectory()
 		self.addCleanup(self._tmp_dir.cleanup)

@@ -122,6 +122,10 @@ change how a recording looks rather than how it behaves:
 - `%APPDATA%\fman\Themes` — mirrored so a *custom* theme resolves instead of
   silently falling back to the default.
 
+To keep the Windows user name out of a recording, set
+`"pane_location_bars_visible": false` in the demo profile's
+`Local\Settings.json`; this hides the full folder path above each pane.
+
 Every demo gets one thing seeded that no profile of yours supplies:
 `Plugins\User\DemoFont\Theme.css`. Demos use the 1920x1080 window and enable
 the recorder's `scale_to_window_size` option, so scaled displays cannot make

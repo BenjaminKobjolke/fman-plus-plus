@@ -2,7 +2,7 @@
 
 from fman.impl.pane_status import PaneStatusLine, PaneStatusMode
 from fman import DirectoryPane
-from fman.impl.widgets import MainWindow
+from fman.impl.widgets import DirectoryPaneWidget, MainWindow
 from PyQt5.QtWidgets import QApplication, QSizePolicy, QWidget
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
@@ -149,10 +149,39 @@ class MainWindowPaneStatusTest(TestCase):
 		pane.set_drag_selection = MagicMock()
 		pane.set_clickable_path = MagicMock()
 		pane.set_status_line_visible = MagicMock()
+		pane.set_location_bar_visible = MagicMock()
 		pane.set_backgrounds = MagicMock()
 		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):
 			self.window.add_pane()
 		pane.set_status_line_visible.assert_called_once_with(False)
+
+	def test_location_bar_visibility_is_applied_to_existing_and_new_panes(self):
+		self.window.set_pane_location_bars_visible(False)
+		self.left.set_location_bar_visible.assert_called_once_with(False)
+		self.right.set_location_bar_visible.assert_called_once_with(False)
+		pane = self._new_pane()
+		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):
+			self.window.add_pane()
+		pane.set_location_bar_visible.assert_called_once_with(False)
+		self.window.set_pane_location_bars_visible(True)
+		self.left.set_location_bar_visible.assert_called_with(True)
+		self.right.set_location_bar_visible.assert_called_with(True)
+
+	def test_hiding_focused_location_bar_moves_focus_to_file_list(self):
+		pane = MagicMock()
+		pane._location_bar.hasFocus.return_value = True
+		DirectoryPaneWidget.set_location_bar_visible(pane, False)
+		pane._file_view.setFocus.assert_called_once_with()
+		pane._location_bar.setVisible.assert_called_once_with(False)
+
+	def _new_pane(self):
+		pane = QWidget()
+		for method in ('set_icon_size', 'set_scroll_margin',
+				'set_right_button_selection', 'set_drag_selection',
+				'set_clickable_path', 'set_status_line_visible',
+				'set_location_bar_visible', 'set_backgrounds'):
+			setattr(pane, method, MagicMock())
+		return pane
 
 	def test_right_button_selection_mode_is_applied_to_existing_panes(self):
 		self.window.set_right_button_selection(True)
@@ -169,6 +198,7 @@ class MainWindowPaneStatusTest(TestCase):
 		pane.set_drag_selection = MagicMock()
 		pane.set_clickable_path = MagicMock()
 		pane.set_status_line_visible = MagicMock()
+		pane.set_location_bar_visible = MagicMock()
 		pane.set_backgrounds = MagicMock()
 		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):
 			self.window.add_pane()
@@ -189,6 +219,7 @@ class MainWindowPaneStatusTest(TestCase):
 		pane.set_drag_selection = MagicMock()
 		pane.set_clickable_path = MagicMock()
 		pane.set_status_line_visible = MagicMock()
+		pane.set_location_bar_visible = MagicMock()
 		pane.set_backgrounds = MagicMock()
 		with patch('fman.impl.widgets.DirectoryPaneWidget', return_value=pane):
 			self.window.add_pane()

@@ -69,9 +69,15 @@ stay off across restarts:
 |----------------------|------------------------------------------------------|
 | `toggle_title_bar`   | The OS title bar: the title above, and the window frame with it |
 | `toggle_menu_bar`    | fman's **Help** menu — **macOS only**, and in the system menu bar, not in fman's window |
+| `toggle_pane_location_bars` | The full folder path line above each pane |
 
 There is no menu on Windows or Linux, so `toggle_menu_bar` is not registered
 there and never shows up in the palette.
+
+`toggle_pane_location_bars` hides or restores the path line above both panes.
+Its `pane_location_bars_visible` setting is saved in
+`%APPDATA%/fman/Local/Settings.json`; an absent key means visible. See
+[`window-bars.md`](functions/window-bars.md) for details.
 
 The bars and messages below the panes have three more commands:
 `toggle_status_bar` hides the window-wide status bar,

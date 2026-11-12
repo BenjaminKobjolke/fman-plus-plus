@@ -156,6 +156,9 @@
 		"pane messages in status bar", "copy pane messages",
 		"status bar pane messages"
 	],
+	"toggle_pane_location_bars": [
+		"path", "location", "bar", "hide", "show"
+	],
 	"toggle_pane_status_lines": [
 		"pane status lines", "pane status bar", "show pane status"
 	],

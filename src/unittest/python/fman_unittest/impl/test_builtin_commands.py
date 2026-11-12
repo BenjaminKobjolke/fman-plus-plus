@@ -60,6 +60,19 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 		window._widget.show_status_message.assert_called_once_with(
 			'Clickable path off.')
 
+	def test_pane_location_bars_toggle_is_registered_and_shows_message(self):
+		window_chrome = MagicMock()
+		commands = self._application_commands(window_chrome=window_chrome)
+		self.assertIn('TogglePaneLocationBars', commands)
+		window_chrome.pane_location_bars.toggle.return_value = \
+			'Pane location bars off.'
+		window = SimpleNamespace(_widget=MagicMock())
+		commands['TogglePaneLocationBars'](window)()
+		window_chrome.pane_location_bars.toggle.assert_called_once_with(
+			window._widget)
+		window._widget.show_status_message.assert_called_once_with(
+			'Pane location bars off.')
+
 	def test_registers_both_pane_status_commands_on_every_platform(self):
 		commands = []
 		args = [MagicMock() for _ in range(7)]
@@ -98,6 +111,9 @@ class BuiltinPaneStatusCommandsTest(TestCase):
 		self.assertEqual(
 			['pane status lines', 'pane status bar', 'show pane status'],
 			keywords['toggle_pane_status_lines'])
+		self.assertEqual(
+			['path', 'location', 'bar', 'hide', 'show'],
+			keywords['toggle_pane_location_bars'])
 		self.assertEqual(
 			['pane messages in status bar', 'copy pane messages',
 			 'status bar pane messages'],

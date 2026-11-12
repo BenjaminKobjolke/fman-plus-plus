@@ -15,6 +15,7 @@ except *Center window* are remembered across restarts.
 | `toggle_menu_bar` | Hides fman's **Help** menu — **macOS only** | [window-bars.md](functions/window-bars.md) |
 | `toggle_status_bar` | Hides the message strip along the bottom | [STATUSBAR.md](STATUSBAR.md) |
 | `toggle_pane_status_lines` | Shows or hides the message line under each pane | [STATUSBAR.md](STATUSBAR.md#pane-status-lines) |
+| `toggle_pane_location_bars` | Shows or hides the full folder path above each pane | [window-bars.md](functions/window-bars.md) |
 | `toggle_pane_messages_in_status_bar` | Copies pane messages to the window status bar | [STATUSBAR.md](STATUSBAR.md#pane-status-lines) |
 | `set_window_opacity` | Makes the whole window see-through | [window-opacity.md](functions/window-opacity.md) |
 | `center_window` | Puts the window back in the middle of its screen | [below](#center-window) |
@@ -34,6 +35,8 @@ and each stay off across restarts, sharing one persistence mechanism
 (`WindowChrome`). The pane status commands configure the per-pane message lines
 and whether their messages are copied to the window status bar; see
 [Pane status lines](STATUSBAR.md#pane-status-lines).
+The path line above each pane has its own saved `toggle_pane_location_bars`
+command; its setting is described in [window-bars.md](functions/window-bars.md).
 
 Two things worth knowing before hiding the title bar:
 

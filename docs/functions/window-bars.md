@@ -18,10 +18,14 @@ see [`docs/STATUSBAR.md`](../STATUSBAR.md):
 |---------|------------------|
 | `toggle_status_bar` | The window-wide message strip at the bottom |
 | `toggle_pane_status_lines` | The message line under each pane |
+| `toggle_pane_location_bars` | The full folder path line above each pane |
 | `toggle_pane_messages_in_status_bar` | Whether pane messages are also copied to the window bar |
 
 Their settings persist across restarts. The pane commands do not share the
 title-bar caveats described here.
+The pane location bar defaults to visible; its setting is
+`pane_location_bars_visible` in `%APPDATA%/fman/Local/Settings.json`. The key
+is absent while the bars are visible and is `false` while they are hidden.
 
 The two are never stacked inside the window: hiding the title bar does not
 uncover a menu row below it, because on the platforms where the title bar sits
@@ -42,6 +46,7 @@ There is no "on/off" list to pick from: each command flips the bar it names.
 |---------------------|-------------------|-----------|----------------------|
 | `toggle_title_bar`  | Toggle title bar  | all       | none (palette only)  |
 | `toggle_menu_bar`   | Toggle menu bar   | macOS only | none (palette only) |
+| `toggle_pane_location_bars` | Toggle pane location bars | all | none (palette only) |
 
 *Frameless*, *borderless*, *window frame* and *caption* find the title bar
 one; *help menu*, *hide menu* and *chrome* find the other where it exists.

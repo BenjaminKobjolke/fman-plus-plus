@@ -85,6 +85,13 @@ class BuiltinPlugin(Plugin):
 					self.window._widget)
 				self.window._widget.show_status_message(message)
 
+		class TogglePaneLocationBars(ApplicationCommand):
+			aliases = ('Toggle pane location bars',)
+			def __call__(self):
+				message = window_chrome.pane_location_bars.toggle(
+					self.window._widget)
+				self.window._widget.show_status_message(message)
+
 		class ResumeToolWindow(ApplicationCommand):
 			aliases = ('Resume tool window',)
 			def __call__(self):
@@ -207,6 +214,7 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(ToggleStatusBar)
 		self._register_application_command(ToggleDragSelection)
 		self._register_application_command(ToggleClickablePath)
+		self._register_application_command(TogglePaneLocationBars)
 		self._register_application_command(ToggleRightButtonSelection)
 		self._register_application_command(ToggleIncognito)
 		self._register_application_command(ResumeToolWindow)
