@@ -55,8 +55,9 @@ class ToggleFolderTree(DirectoryPaneCommand):
 		set_transparent(
 			view, file_view.property(TRANSPARENT_PROPERTY)
 		)
+		path = self.pane.get_path()
 		self.pane.mount_widget(view)
-		view.open_to(tree_ancestors(self.pane.get_path()))
+		view.open_to(tree_ancestors(path))
 
 
 class ToggleTreeFollowsCursor(ApplicationCommand):

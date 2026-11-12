@@ -63,6 +63,35 @@ class ToggleFolderTreeTest(TestCase):
 		other.set_path.assert_called_once_with('file:///chosen')
 		actions.switch_panes()
 		pane.run_command.assert_called_once_with('switch_panes')
+	def test_reads_path_before_mounting_tree(self):
+		pane = MagicMock()
+		view = MagicMock()
+		mounted = False
+
+		def get_path():
+			return None if mounted else 'file:///current'
+
+		def mount_widget(widget):
+			nonlocal mounted
+			mounted = True
+
+		pane.get_path.side_effect = get_path
+		pane.mount_widget.side_effect = mount_widget
+		with patch('core.commands.folder_tree.begin_new_view'), \
+			patch(
+				'core.commands.folder_tree.FolderTreeView', return_value=view
+			), \
+			patch(
+				'core.commands.folder_tree._is_showing_hidden_files', return_value=False
+			), \
+			patch('core.commands.folder_tree.get_setting', return_value=False), \
+			patch(
+				'core.commands.folder_tree.tree_ancestors',
+				return_value=['file:///', 'file:///current'],
+			):
+			ToggleFolderTree(pane)()
+
+		view.open_to.assert_called_once_with(['file:///', 'file:///current'])
 	def test_single_pane_unmounts_before_navigating(self):
 		pane = MagicMock()
 		pane.window.get_panes.return_value = [pane]
