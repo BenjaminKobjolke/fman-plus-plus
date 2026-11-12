@@ -25,6 +25,9 @@ checks that the progress window hides during a task question and returns after.
 Demo 19 needs the locked file seeded by run_fman_demo.bat. It shows the single
 retry question after a copy with a failed file, again after a failed retry, and
 the file that did copy.
+
+Demo 20 opens and closes the seeded video before the dialogs, because the
+native video surface changes how in-window dialogs are shown (#15803).
 """
 
 from automated_screenshot_connector import (
@@ -203,6 +206,37 @@ DIALOG_CLIPS = {
 			PressKey('Return'), Pause(1.5),
 			Screenshot('transfer-failure-copied-rest'),
 			Pause(1.0),
+		),
+	),
+	20: DemoScript(
+		id=20,
+		name='dialogs-after-video',
+		steps=(
+			Pause(1.5),
+			PressKey('Down'), Pause(0.2),
+			PressKey('Down'), Pause(0.2),
+			PressKey('Down'), Pause(0.2),
+			PressKey('Ctrl+Shift+P'), Pause(1.0),
+			Command('view file'), Pause(4.0),
+			ScreenStill('after-video-playing'),
+			PressKey('Escape'), Pause(1.5),
+			ScreenStill('after-video-closed'),
+			PressKey('Up'), Pause(0.2),
+			PressKey('Up'), Pause(0.2),
+			PressKey('Up'), Pause(0.2),
+			PressKey('F8'), Pause(1.5),
+			ScreenStill('after-video-delete-confirm'),
+			PressKey('Escape'), Pause(1.2),
+			ScreenStill('after-video-delete-cancelled'),
+			PressKey('Ctrl+Shift+P'), Pause(1.0),
+			ScreenStill('after-video-command-palette'),
+			PressKey('Escape'), Pause(1.2),
+			PressKey('F5'), Pause(1.8),
+			ScreenStill('after-video-copy-prompt'),
+			PressKey('Return'), Pause(2.0),
+			PressKey('F5'), Pause(1.8), PressKey('Return'), Pause(2.0),
+			ScreenStill('after-video-overwrite'),
+			PressKey('Escape'), Pause(1.2), Pause(1.0),
 		),
 	),
 }

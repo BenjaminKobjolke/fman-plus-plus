@@ -301,6 +301,12 @@ composing stale inputs.
   retry question, the question again after a failed retry, and the file that did
   copy. It exists so the screenshot check can judge copy and move failure
   handling; stills are gitignored (`media/demos/transfer-failure/`).
+- **20 `dialogs-after-video`** — opens and closes the seeded in-pane video before
+  taking stills of the playing video, Delete confirmation, command palette, copy
+  prompt and overwrite question. It exists so the screenshot check can judge
+  in-window dialog changes after the video viewer. The demo posts Qt key events,
+  so real mouse and operating-system input remains a by-hand check; stills are
+  gitignored (`media/demos/dialogs-after-video/`).
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.

@@ -78,6 +78,33 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_dialogs_after_video_demo_takes_video_and_dialog_stills(self):
+		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+
+		demo = DIALOG_CLIPS[20]
+		still_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ in ('ScreenStill', 'Screenshot')
+		]
+
+		self.assertEqual(demo.name, 'dialogs-after-video')
+		self.assertEqual(
+			still_names,
+			[
+				'after-video-playing',
+				'after-video-closed',
+				'after-video-delete-confirm',
+				'after-video-delete-cancelled',
+				'after-video-command-palette',
+				'after-video-copy-prompt',
+				'after-video-overwrite',
+			],
+		)
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_dialogs_demo_takes_a_still_of_each_dialog(self):
 		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
 
