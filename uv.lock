@@ -21,7 +21,7 @@ wheels = [
 [[package]]
 name = "automated-screenshot-connector"
 version = "0.7.0"
-source = { git = "https://github.com/BenjaminKobjolke/automated-application-screenshots-python-connector.git#183322de7f33c869378a9b98bb9924ba417b9669" }
+source = { git = "https://github.com/BenjaminKobjolke/automated-application-screenshots-python-connector.git#992d2c56d17ca5cb6f75e3a2691e0c014fa34ccf" }
 
 [[package]]
 name = "boto3"
