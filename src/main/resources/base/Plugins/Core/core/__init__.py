@@ -10,12 +10,16 @@ from PyQt5.QtCore import QLocale, QDate, QDateTime, QTime
 from .util import format_size
 from .file_extension import name_for_name_column
 from .mixed_sort import DirsFirstColumn
+from .settings import get_setting
 
 
 def _format_mtime(mtime_qt):
 	time_format = QLocale().dateTimeFormat(QLocale.ShortFormat)
-	# Always show two-digit years, not four digits:
-	time_format = time_format.replace('yyyy', 'yy')
+	if get_setting(
+		'Core Settings.json', 'modified_date_use_locale_format', False
+	) is not True:
+		# Preserve fman's historical two-digit year format by default.
+		time_format = time_format.replace('yyyy', 'yy')
 	return mtime_qt.toString(time_format)
 
 for _module_name in ('.commands', '.fs', '.viewers'):

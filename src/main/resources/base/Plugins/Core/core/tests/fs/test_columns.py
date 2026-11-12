@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest import TestCase
+from unittest.mock import patch
 
 from core import Name, Size, Modified
 from core.tests import StubFS
@@ -147,6 +148,21 @@ class ModifiedTest(ColumnTest, TestCase):
 		self.assertEqual(
 			self._column.get_widest_str(), self._column.get_str(url)
 		)
+
+	@patch('core.QLocale')
+	@patch('core.get_setting', return_value=True)
+	def test_can_keep_locale_short_date_format(self, get_setting, locale):
+		locale.return_value.dateTimeFormat.return_value = 'dd/MM/yyyy'
+		self.assertIn('2000', self._column.get_widest_str())
+		get_setting.assert_called_once_with(
+			'Core Settings.json', 'modified_date_use_locale_format', False
+		)
+
+	@patch('core.QLocale')
+	@patch('core.get_setting', return_value=False)
+	def test_defaults_to_two_digit_years(self, get_setting, locale):
+		locale.return_value.dateTimeFormat.return_value = 'dd/MM/yyyy'
+		self.assertNotIn('2000', self._column.get_widest_str())
 
 	def test_less(self):
 		self.assert_is_less('a', 'b')
