@@ -21,6 +21,7 @@ from fman.impl.scripting.config import (
 	ORIGIN_HEADER,
 	SCREENSHOT_PATH,
 	STATE_PATH,
+	VIEWER_PATH,
 )
 from fman.impl.scripting.actions import InvalidPane, UnknownCommand
 from fman.impl.scripting.automation import UnknownFile, UnsafeDrag
@@ -29,6 +30,16 @@ from fman.impl.util.qt.key_events import parse_chord
 
 _LOG = logging.getLogger(__name__)
 _MAX_BODY_SIZE = 1024 * 1024
+
+
+def _pane_index(query):
+	values = query.get('pane', ['0'])
+	if len(values) != 1:
+		raise ValueError()
+	try:
+		return int(values[0])
+	except ValueError:
+		raise ValueError('pane must be an integer.') from None
 
 
 class ScriptingServer:
@@ -89,16 +100,24 @@ class ScriptingServer:
 					if not self._automation_enabled():
 						return
 					query = parse_qs(path.query, keep_blank_values=True)
-					pane_value = query.get('pane', ['0'])
 					try:
-						pane = int(pane_value[0])
-						if len(pane_value) != 1:
-							raise ValueError()
+						pane = _pane_index(query)
 						files = server._automation_actions.get_visible_files(pane)
 					except (ValueError, InvalidPane) as error:
 						self._send_error(400, str(error) or 'pane must be an integer.')
 					else:
 						self._send_json(200, {'pane': pane, 'files': files})
+				elif path.path == VIEWER_PATH:
+					if not self._automation_enabled():
+						return
+					query = parse_qs(path.query, keep_blank_values=True)
+					try:
+						pane = _pane_index(query)
+						viewer = server._automation_actions.get_viewer(pane)
+					except (ValueError, InvalidPane) as error:
+						self._send_error(400, str(error) or 'pane must be an integer.')
+					else:
+						self._send_json(200, {'pane': pane, 'viewer': viewer})
 				else:
 					self._send_error(404, 'Unknown path.')
 

@@ -115,7 +115,7 @@ class ScriptingServerTest(TestCase):
 	def test_automation_routes_are_disabled_by_default(self):
 		for method, path, payload in (
 			('GET', '/v1/files', None), ('GET', '/v1/screenshot', None),
-			('GET', '/v1/dialog', None),
+			('GET', '/v1/dialog', None), ('GET', '/v1/viewer', None),
 			('POST', '/v1/keys', {'keys': ['A']}),
 			('POST', '/v1/click', {'x': 1, 'y': 2}),
 			('POST', '/v1/drag', {
@@ -136,6 +136,13 @@ class ScriptingServerTest(TestCase):
 		actions.get_dialog.return_value = {
 			'type': 'MessageBox', 'title': 'Confirm', 'text': 'Continue?',
 			'buttons': ['&Yes', '&No'],
+		}
+		actions.get_viewer.return_value = {
+			'type': 'PaneVideoView',
+			'playback': {
+				'loaded': True, 'paused': False,
+				'position': 12.5, 'duration': 30.0,
+			},
 		}
 		server = ScriptingServer(config, self.TOKEN, self.actions, actions)
 		server.start()
@@ -161,11 +168,15 @@ class ScriptingServerTest(TestCase):
 			self.assertEqual({
 				'dialog': actions.get_dialog.return_value,
 			}, self._request_at(base_url, 'GET', '/v1/dialog'))
+			self.assertEqual({
+				'pane': 1, 'viewer': actions.get_viewer.return_value,
+			}, self._request_at(base_url, 'GET', '/v1/viewer?pane=1'))
 			actions.send_keys.assert_called_once_with(['Ctrl+P'])
 			actions.type_text.assert_called_once_with('x')
 			actions.click_at.assert_called_once_with(10, 20, 'left', False)
 			actions.drag_at.assert_called_once_with(QPoint(1, 2), QPoint(3, 4))
 			actions.get_dialog.assert_called_once_with()
+			actions.get_viewer.assert_called_once_with(1)
 		finally:
 			server.stop()
 
@@ -177,6 +188,7 @@ class ScriptingServerTest(TestCase):
 		actions = MagicMock(spec=AutomationActions)
 		actions.click_file.side_effect = UnknownFile('missing')
 		actions.get_visible_files.side_effect = InvalidPane('out of range')
+		actions.get_viewer.side_effect = InvalidPane('out of range')
 		server = ScriptingServer(config, self.TOKEN, self.actions, actions)
 		server.start()
 		try:
@@ -197,6 +209,8 @@ class ScriptingServerTest(TestCase):
 				base_url, 'POST', '/v1/click', {'pane': 0, 'file': 'file:///x'}))
 			self.assertEqual(400, self._request_error_at(
 				base_url, 'GET', '/v1/files?pane=nope'))
+			self.assertEqual(400, self._request_error_at(
+				base_url, 'GET', '/v1/viewer?pane=9'))
 			self.assertEqual(401, self._request_error_at(
 				base_url, 'GET', '/v1/files', token=None))
 		finally:

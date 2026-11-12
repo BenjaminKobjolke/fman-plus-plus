@@ -1,12 +1,33 @@
 from core.tests.viewer_stubs import FakeSettings
 from core.videoviewer import (
-	VIDEO_EXTENSIONS, format_time, get_saved_mute, get_saved_volume, is_video,
-	save_mute, save_volume, show_video_viewer,
+	VIDEO_EXTENSIONS, PaneVideoView, VideoPlaybackState, format_time,
+	get_saved_mute, get_saved_volume, is_video, save_mute, save_volume,
+	show_video_viewer,
 )
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import sys
+from types import SimpleNamespace
+
+
+class PlaybackStateTest(TestCase):
+	def test_empty_before_player_is_created(self):
+		view = SimpleNamespace(_player=None)
+		self.assertEqual(
+			VideoPlaybackState(False, None, None, None),
+			PaneVideoView.playback_state(view),
+		)
+
+	def test_reads_pause_position_and_duration_from_player(self):
+		player = SimpleNamespace(
+			pause=False, time_pos=12.5, duration=30.0,
+		)
+		view = SimpleNamespace(_player=player)
+		self.assertEqual(
+			VideoPlaybackState(True, False, 12.5, 30.0),
+			PaneVideoView.playback_state(view),
+		)
 
 class IsVideoTest(TestCase):
 	def test_matches_every_known_video_extension(self):
@@ -72,6 +93,6 @@ class ShowVideoViewerTest(TestCase):
 				patch('core.videoviewer.ensure_libmpv_on_path'), \
 				patch('core.videoviewer.show_alert') as alert, \
 				patch('core.videoviewer._open_video_view') as open_view:
-			show_video_viewer(MagicMock(), 'file:///a/b/c.mp4')
+			show_video_viewer(None, 'file:///a/b/c.mp4')
 		self.assertEqual(1, alert.call_count)
 		open_view.assert_not_called()

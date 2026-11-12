@@ -40,6 +40,9 @@ from fman.url import as_human_readable
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
 
+from dataclasses import dataclass
+from typing import Optional
+
 import sys
 
 VIDEO_EXTENSIONS = (
@@ -49,6 +52,15 @@ VIDEO_EXTENSIONS = (
 
 _VOLUME_KEY = 'video_viewer_volume'
 _MUTE_KEY = 'video_viewer_muted'
+
+
+@dataclass(frozen=True)
+class VideoPlaybackState:
+	loaded: bool
+	paused: Optional[bool]
+	position: Optional[float]
+	duration: Optional[float]
+
 
 def is_video(url):
 	return url.lower().endswith(VIDEO_EXTENSIONS)
@@ -102,6 +114,14 @@ class PaneVideoView(QWidget):
 		layout.addWidget(self._time_label)
 		self._timer = QTimer(self)
 		self._timer.timeout.connect(self._update_time_label)
+
+	def playback_state(self) -> VideoPlaybackState:
+		if self._player is None:
+			return VideoPlaybackState(False, None, None, None)
+		return VideoPlaybackState(
+			True, self._player.pause, self._player.time_pos,
+			self._player.duration,
+		)
 
 	def start_playback(self, mpv_module, path):
 		# Must run after this view is mounted into the pane's layout and

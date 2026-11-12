@@ -36,6 +36,28 @@ class FixturesTest(TestCase):
 			hide.assert_any_call(root / 'hidden.txt')
 			hide.assert_any_call(root / fixtures.AGE_FOLDER / 'age_10d_hidden.txt')
 
+	def test_copy_video_fixture_copies_the_source(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp)
+			source = root / 'source.mp4'
+			source.write_bytes(b'video fixture')
+			destination = root / 'left'
+			destination.mkdir()
+			with patch.object(fixtures, 'VIDEO_SOURCE', Path('source.mp4')):
+				fixtures.copy_video_fixture(destination, root)
+			video = destination / fixtures.VIDEO_FIXTURE_NAME
+			self.assertEqual(source.stat().st_size, video.stat().st_size)
+			self.assertEqual(source.read_bytes(), video.read_bytes())
+
+	def test_copy_video_fixture_reports_a_missing_source(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp)
+			source = root / 'missing.mp4'
+			with patch.object(fixtures, 'VIDEO_SOURCE', Path('missing.mp4')):
+				with self.assertRaises(FileNotFoundError) as error:
+					fixtures.copy_video_fixture(root / 'left', root)
+			self.assertIn(str(source), str(error.exception))
+
 	def test_hide_sets_windows_hidden_attribute(self):
 		with TemporaryDirectory() as temp:
 			path = Path(temp) / 'hidden.txt'

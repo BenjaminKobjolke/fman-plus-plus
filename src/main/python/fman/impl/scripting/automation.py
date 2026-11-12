@@ -1,9 +1,11 @@
 """Drive and inspect the fman window through Qt's event loop."""
 
+from dataclasses import asdict, is_dataclass
+
 from PyQt5.QtCore import QBuffer, QIODevice, QPoint, QPointF, Qt, QEvent
 from PyQt5.QtGui import QContextMenuEvent, QMouseEvent
 from PyQt5.QtWidgets import (
-	QAbstractItemView, QApplication, QHeaderView, QMessageBox,
+	QAbstractItemView, QApplication, QHeaderView, QMessageBox, QProgressDialog,
 )
 
 from fman.impl.scripting.actions import get_pane
@@ -38,6 +40,21 @@ class AutomationActions:
 		pane = get_pane(self._plugin_support, self._main_window, pane_index)
 		model = pane._widget.get_file_view().model()
 		return [model.url(model.index(row, 0)) for row in range(model.rowCount())]
+
+	@run_in_main_thread
+	def get_viewer(self, pane_index: int) -> dict[str, object] | None:
+		pane = get_pane(self._plugin_support, self._main_window, pane_index)
+		widget = pane.get_mounted_widget()
+		if widget is None:
+			return None
+		result = {'type': type(widget).__name__}
+		playback_state = getattr(widget, 'playback_state', None)
+		if callable(playback_state):
+			state = playback_state()
+			result['playback'] = (
+				asdict(state) if is_dataclass(state) else vars(state)
+			)
+		return result
 
 	@run_in_main_thread
 	def click_file(self, pane_index, file_url, button='left', double=False):
@@ -102,7 +119,21 @@ class AutomationActions:
 		dialog = QApplication.activeModalWidget() or \
 			self._main_window.get_open_dialog()
 		if dialog is None:
+			dialog = next((widget for widget in QApplication.topLevelWidgets()
+				if isinstance(widget, QProgressDialog) and widget.isVisible()), None)
+		if dialog is None:
 			return None
+		if isinstance(dialog, QProgressDialog):
+			return {
+				'type': type(dialog).__name__,
+				'title': dialog.windowTitle(),
+				'text': dialog.labelText(),
+				'buttons': [],
+				'progress': {
+					'value': dialog.value(),
+					'maximum': dialog.maximum(),
+				},
+			}
 		if not isinstance(dialog, QMessageBox):
 			return {
 				'type': type(dialog).__name__,

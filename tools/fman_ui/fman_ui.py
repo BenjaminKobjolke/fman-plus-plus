@@ -14,10 +14,11 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 import uuid
 
+from build_info import describe_build
 from parser import parser as _parser
 from restart import restart_session
 from fixtures import (
-	make_fixture, make_large_folder, parse_core_settings,
+	copy_video_fixture, make_fixture, make_large_folder, parse_core_settings,
 	validate_large_count, write_core_settings,
 )
 from session_reaper import (
@@ -142,6 +143,7 @@ def _launch(args):
 	right = Path(args.right).resolve() if args.right else session_root / 'right'
 	if not args.left:
 		make_fixture(left, now)
+		copy_video_fixture(left, Path(__file__).resolve().parents[2])
 	if not args.right:
 		make_fixture(right, now)
 	if not args.left:
@@ -167,6 +169,10 @@ def _launch(args):
 		'session_id': session_id, 'pid': None, 'port': port,
 		'token_path': str(token_path), 'profile': str(profile),
 		'left': str(left), 'right': str(right),
+		'build': describe_build(
+			Path(__file__).resolve().parents[2],
+			os.environ.get('FMAN_PYTHON', sys.executable),
+		).to_dict(),
 	}
 	try:
 		_start_fman(session, session_root)
@@ -218,6 +224,8 @@ def _run(args):
 		return _api(session, 'GET', '/v1/files?pane=%d' % args.pane)
 	if args.action == 'dialog':
 		return _api(session, 'GET', '/v1/dialog')
+	if args.action == 'viewer':
+		return _api(session, 'GET', '/v1/viewer?pane=%d' % args.pane)
 	if args.action == 'command':
 		payload = {
 			'name': args.name, 'args': json.loads(args.args_json),

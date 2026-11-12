@@ -16,6 +16,8 @@ def parser():
 			"before fman starts"))
 	for name in ('state', 'commands', 'close', 'dialog', 'restart'):
 		commands.add_parser(name)
+	viewer = commands.add_parser('viewer')
+	viewer.add_argument('--pane', type=int, default=0)
 	command = commands.add_parser('command')
 	command.add_argument('name')
 	command.add_argument('args_json', nargs='?', default='{}')

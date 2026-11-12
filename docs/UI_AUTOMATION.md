@@ -14,6 +14,11 @@ own keyring entry, so it does not sync account plugins or settings. By default,
 it creates two
 fixture folders there with `visible.txt`, a Windows-hidden `hidden.txt`, a
 `folder` subfolder, and a `[--brackets--]` subfolder containing `visible.txt`.
+The generated left fixture also includes `video.mp4`, copied from the committed
+`examples/left_pane/dummy.mp4`; the right fixture does not. Caller-provided
+`--left` and `--right` folders are left untouched. `launch` includes a `build`
+object in its JSON result and saved session with the checkout's `version`,
+short `commit`, `dirty` status, `checkout_path`, and `python` executable.
 They also include an `ages` folder with `age_0d_fresh.txt` (0.1 days old),
 `age_2d.txt`, `age_10d.txt`, `age_45d.txt`, `age_200d.txt`,
 `age_400d_old.txt`, and the Windows-hidden `age_10d_hidden.txt`.
@@ -119,6 +124,7 @@ tools\fman_ui.bat commands
 tools\fman_ui.bat dialog
 tools\fman_ui.bat command reload --pane 0
 tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat viewer --pane 0
 tools\fman_ui.bat keys Ctrl+Shift+P
 tools\fman_ui.bat type hidden
 tools\fman_ui.bat click --file visible.txt --pane 0 --double
@@ -152,6 +158,36 @@ tools\fman_ui.bat dialog
 tools\fman_ui.bat keys Return
 tools\fman_ui.bat dialog
 ```
+
+`dialog` also reports visible non-modal progress dialogs. Their `text` is the
+dialog label, and `progress` contains its current `value` and `maximum`.
+`viewer --pane N` reads the mounted viewer in that pane. For video it reports
+`loaded`, `paused`, `position` (seconds), and `duration` (seconds); before the
+player starts, the last three values are `null`. Video areas remain black in
+screenshots, so use this readout to check playback.
+
+## Example: first-use video playback
+
+This checks the video player's first-use download in a fresh profile. The
+launch result identifies the checkout build. While `view_file` is waiting,
+`dialog` shows download progress; poll `viewer` before and after playback starts
+to see its position advance.
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat click --file video.mp4 --pane 0
+tools\fman_ui.bat command view_file --pane 0
+tools\fman_ui.bat dialog
+tools\fman_ui.bat viewer --pane 0
+timeout /t 2 /nobreak >nul
+tools\fman_ui.bat viewer --pane 0
+tools\fman_ui.bat close
+```
+
+The download dialog may already be gone by the time `dialog` is run if the
+download completed quickly. When the libmpv archive is unavailable, `dialog`
+reports the failure alert instead. Always close the session when the check is
+finished.
 
 ## macOS
 

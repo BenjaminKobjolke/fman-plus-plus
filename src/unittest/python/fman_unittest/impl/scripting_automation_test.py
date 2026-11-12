@@ -2,11 +2,13 @@
 
 from unittest import TestCase
 from unittest.mock import patch
+from types import SimpleNamespace
 
 from PyQt5.QtCore import QEvent, QPoint
 from PyQt5.QtGui import QImage, QStandardItemModel
 from PyQt5.QtWidgets import (
-	QApplication, QDialog, QHeaderView, QMessageBox, QTableView, QWidget,
+	QApplication, QDialog, QHeaderView, QMessageBox, QProgressDialog,
+	QTableView, QWidget,
 )
 
 from fman.impl.scripting.automation import (
@@ -85,6 +87,36 @@ class ScriptingAutomationTest(TestCase):
 				'buttons': ['&Yes', '&No'],
 			}, actions.get_dialog())
 
+	def test_get_dialog_returns_visible_progress_dialog_details(self):
+		dialog = QProgressDialog('Downloading component...', '', 0, 100)
+		dialog.setWindowTitle('Downloading video player component (one-time)...')
+		dialog.setValue(40)
+		dialog.show()
+		self.addCleanup(dialog.close)
+		actions = AutomationActions(_Window(), None)
+		with patch(
+			'fman.impl.scripting.automation.QApplication.activeModalWidget',
+			return_value=None,
+		), patch.object(_Window, 'get_open_dialog', return_value=None):
+			self.assertEqual({
+				'type': 'QProgressDialog',
+				'title': 'Downloading video player component (one-time)...',
+				'text': 'Downloading component...',
+				'buttons': [],
+				'progress': {'value': 40, 'maximum': 100},
+			}, actions.get_dialog())
+
+	def test_get_dialog_ignores_hidden_progress_dialog(self):
+		dialog = QProgressDialog('Downloading component...', '', 0, 100)
+		dialog.hide()
+		self.addCleanup(dialog.close)
+		actions = AutomationActions(_Window(), None)
+		with patch(
+			'fman.impl.scripting.automation.QApplication.activeModalWidget',
+			return_value=None,
+		), patch.object(_Window, 'get_open_dialog', return_value=None):
+			self.assertIsNone(actions.get_dialog())
+
 	def test_visible_files_follow_the_model_display_order(self):
 		model = _Rows(['file:///second', 'file:///first'])
 		pane = _Pane(model)
@@ -92,6 +124,33 @@ class ScriptingAutomationTest(TestCase):
 		actions = AutomationActions(_Window(), plugin_support)
 		self.assertEqual(
 			['file:///second', 'file:///first'], actions.get_visible_files(0))
+
+	def test_get_viewer_returns_none_when_no_widget_is_mounted(self):
+		pane = _Pane(_Rows([]))
+		pane.get_mounted_widget = lambda: None
+		actions = AutomationActions(_Window(), _PluginSupport(pane))
+		self.assertIsNone(actions.get_viewer(0))
+
+	def test_get_viewer_includes_optional_playback_state(self):
+		pane = _Pane(_Rows([]))
+		pane.get_mounted_widget = lambda: _MountedWidget(
+			SimpleNamespace(
+				loaded=True, paused=False, position=12.5, duration=30.0,
+			))
+		actions = AutomationActions(_Window(), _PluginSupport(pane))
+		self.assertEqual({
+			'type': '_MountedWidget',
+			'playback': {
+				'loaded': True, 'paused': False,
+				'position': 12.5, 'duration': 30.0,
+			},
+		}, actions.get_viewer(0))
+
+	def test_get_viewer_omits_playback_state_when_widget_has_no_method(self):
+		pane = _Pane(_Rows([]))
+		pane.get_mounted_widget = lambda: QWidget()
+		actions = AutomationActions(_Window(), _PluginSupport(pane))
+		self.assertEqual({'type': 'QWidget'}, actions.get_viewer(0))
 
 	def test_click_at_posts_press_release_and_double_click_events(self):
 		window = _MouseCapture()
@@ -228,6 +287,14 @@ class _Widget:
 
 	def get_file_view(self):
 		return self._view
+
+
+class _MountedWidget:
+	def __init__(self, state):
+		self._state = state
+
+	def playback_state(self):
+		return self._state
 
 
 class _Pane:

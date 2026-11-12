@@ -53,6 +53,7 @@ or global hotkeys.
 | `GET /v1/screenshot` | — | PNG image of the active modal, popup or main window |
 | `GET /v1/dialog` | — | `{"dialog": {"type": "MessageBox", "title": "Confirm", "text": "Continue?", "buttons": ["&Yes", "&No"]}}` or `{"dialog": null}` |
 | `GET /v1/files?pane=0` | Pane index is active-first and defaults to `0` | `{"pane": 0, "files": ["<url>"]}` |
+| `GET /v1/viewer?pane=0` | Pane index is active-first and defaults to `0` | `{"pane": 0, "viewer": {"type": "PaneVideoView", "playback": {"loaded": true, "paused": false, "position": 2.5, "duration": 30.5}}}` or `{"pane": 0, "viewer": null}` |
 
 The click `button` may be `left` or `right`; `double` defaults to `false`.
 Coordinates refer to the screenshot of the current window target. An unknown
@@ -60,6 +61,15 @@ file returns 404, invalid input or pane indexes return 400, and all automation
 routes return 403 while automation is disabled. The dialog endpoint returns
 the active fman message box's type, title, text and button labels, or `null`
 when no modal dialog is open.
+
+For a visible `QProgressDialog`, `/v1/dialog` includes its label as `text`, an
+empty `buttons` list, and `progress: {"value": <current>, "maximum": <maximum>}`.
+Other dialog response shapes are unchanged. `/v1/viewer` reports the mounted
+widget's type and, when it provides playback state, its serialized `playback`
+object. The Core video viewer reports `loaded`, `paused`, `position` in seconds,
+and `duration` in seconds; before playback loads, the last three values are
+`null`. A pane with no mounted viewer returns `viewer: null`. The route is
+automation-gated like the other desktop automation endpoints.
 
 Drags that start on a file-list viewport are rejected with 400 to prevent
 starting a file drag-and-drop operation.

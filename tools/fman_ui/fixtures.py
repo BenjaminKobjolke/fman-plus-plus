@@ -3,6 +3,7 @@
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 
 
@@ -11,6 +12,8 @@ LARGE_FOLDER = 'large'
 MAX_LARGE_COUNT = 50000
 DAY_SECONDS = 86400
 CORE_SETTINGS_PATH = ('Plugins', 'User', 'Settings', 'Core Settings.json')
+VIDEO_FIXTURE_NAME = 'video.mp4'
+VIDEO_SOURCE = Path('examples/left_pane/dummy.mp4')
 AGE_FIXTURE_DAYS = (
 	('age_0d_fresh.txt', 0.1, False),
 	('age_2d.txt', 2, False),
@@ -49,6 +52,13 @@ def make_fixture(path: Path, now: float) -> None:
 		os.utime(age_file, (mtime, mtime))
 		if is_hidden:
 			_hide(age_file)
+
+
+def copy_video_fixture(path: Path, repo_root: Path) -> None:
+	source = Path(repo_root) / VIDEO_SOURCE
+	if not source.is_file():
+		raise FileNotFoundError('Video fixture source does not exist: %s' % source)
+	shutil.copyfile(source, Path(path) / VIDEO_FIXTURE_NAME)
 
 
 def validate_large_count(count: int) -> None:

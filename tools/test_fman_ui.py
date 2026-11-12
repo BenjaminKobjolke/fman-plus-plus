@@ -17,6 +17,7 @@ import test_fman_ui_session_reaper
 import test_fman_ui_fixtures
 import test_fman_ui_launch
 import test_fman_ui_restart
+import test_fman_ui_build_info
 
 
 class FmanUiTest(TestCase):
@@ -163,6 +164,13 @@ class FmanUiTest(TestCase):
 			self.assertEqual({'dialog': None}, fman_ui._run(args))
 		api.assert_called_once_with({}, 'GET', '/v1/dialog')
 
+	def test_viewer_subcommand_reads_the_selected_pane(self):
+		args = fman_ui._parser().parse_args(['viewer', '--pane', '1'])
+		with patch.object(fman_ui, '_read_current', return_value={}), \
+			patch.object(fman_ui, '_api', return_value={'viewer': None}) as api:
+			self.assertEqual({'viewer': None}, fman_ui._run(args))
+		api.assert_called_once_with({}, 'GET', '/v1/viewer?pane=1')
+
 	def test_bare_file_name_is_resolved_against_selected_pane(self):
 		with TemporaryDirectory() as temp:
 			self._write_session(temp)
@@ -234,6 +242,8 @@ def load_tests(loader, tests, pattern):
 		test_fman_ui_launch.FmanUiLaunchTest))
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_restart.FmanUiRestartTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_build_info.BuildInfoTest))
 	return tests
 
 

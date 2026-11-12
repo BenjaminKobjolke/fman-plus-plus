@@ -71,6 +71,17 @@ class FmanUiLaunchTest(TestCase):
 					'visible.txt').exists())
 				self.assertTrue((Path(session['left']) / 'ages' /
 					'age_400d_old.txt').exists())
+				video = Path(session['left']) / 'video.mp4'
+				self.assertEqual(
+					(Path(fman_ui.__file__).resolve().parents[2] /
+						'examples' / 'left_pane' / 'dummy.mp4').stat().st_size,
+					video.stat().st_size)
+				self.assertFalse((Path(session['right']) / 'video.mp4').exists())
+				self.assertEqual('1.9.0', session['build']['version'])
+				self.assertIn('commit', session['build'])
+				self.assertIn('dirty', session['build'])
+				self.assertIn('checkout_path', session['build'])
+				self.assertIn('python', session['build'])
 				if os.name == 'nt':
 					fman_ui.subprocess.run.assert_any_call(
 						['attrib', '+h', str(Path(session['left']) / 'hidden.txt')],
@@ -80,6 +91,7 @@ class FmanUiLaunchTest(TestCase):
 				reap_stale.assert_called_once()
 				session_data = json.loads((Path(session['profile']).parent /
 					'session.json').read_text())
+				self.assertEqual(session['build'], session_data['build'])
 				self.assertEqual(123, session_data['pid'])
 				self.assertEqual(10.5, session_data['start_time'])
 				self.assertEqual(456, session_data['fman_pid'])
