@@ -4,7 +4,7 @@ Which changes from the RoyiFileManager fork have been ported into this fork.
 Maintained by the `royi-sync` skill (`.claude/skills/royi-sync/SKILL.md`).
 
 Source: https://github.com/RoyiAvital/RoyiFileManager (local: `D:\GIT\GitHub\RoyiFileManager`)
-Last reviewed: v0.20.3 (fe3842b)
+Last reviewed: v0.20.4 (83f5d66)
 
 The two repositories share no git history, so nothing can be merged or
 cherry-picked — every row is a manual re-implementation. Rows follow the
@@ -15,8 +15,11 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 
 | Version | Change | Status | Note |
 |---------|--------|--------|------|
-| 0.20.3 | Backspace at a drive root opens and highlights that drive | pending | |
-| 0.20.2 | Empty-space context menu creates a new file | pending | |
+| 0.20.4 | Explorer archive copy/paste and drag/drop | pending | easy — archive items enter panes through the normal copy flow |
+| 0.20.4 | Archives nested in archive-named folders fail to open or copy | pending | easy — archive path recognition issue |
+| 0.20.4 | Archives guide and plug-in API documentation | skipped | his docs |
+| 0.20.3 | Backspace at a drive root opens and highlights that drive | ported | 2026-11-11 — `src/main/resources/base/Plugins/Core/core/commands/navigation.py` |
+| 0.20.2 | Empty-space context menu creates a new file | ported | 2026-11-11 — `src/main/resources/base/Plugins/Core/Folder Context Menu (Windows).json`, `(Linux).json`, `(Mac).json`, `core/commands/new_file.py`; `CreateAndEditFile` alias rename not ported |
 | 0.20.2 | Command Center updates settings file template with missing defaults | pending | |
 | 0.20.2 | Batch File Renamer adds UUID, HASHID and SQIDS aliases | pending | |
 | 0.20.1 | Find blocking processes | skipped | already implemented in `Plugins/ProcessPane` and `core/tests/commands/test_locking_processes.py` |
@@ -109,7 +112,7 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | 0.15.0 | `DirectoryPane.reload(on_done=...)` | pending | his code reads snapshot-model internals (0.9.0) |
 | 0.15.0 | Favorites Manager added / last opened / count | skipped | own external plug-in FMAN-Favorites |
 | 0.15.0 | Copy/Move cancellable preparation before validation, missing nested destinations | pending | adapt — `transfer.py` creates the destination before the task; prepare before validation |
-| 0.15.0 | Yes to all: skipped errors reported once at the end | pending | easy — `fileoperations.py` swallows errors after Yes to all |
+| 0.15.0 | Yes to all: skipped errors reported once at the end | ported | 2026-11-11 — `core/file_tree_gathering.py`, `core/fileoperations.py`, `core/skipped_errors.py`, `core/tests/test_fileoperations.py`, `core/tests/test_skipped_errors.py` |
 | 0.15.0 | Public file selection batches Qt selection updates | ported | 2026-10-08 — `fman/impl/view/__init__.py`, `fman_unittest/impl/view/selection_test.py`, `tools/run_view_tests.bat` |
 | 0.15.0 | QuickTable initial focus / visibility by source position | pending | needs QuickTable (0.12.0) |
 | 0.15.0 | QuickList footer, third-press sort reset, frameless | pending | needs QuickList (0.3.0 / 0.14.0) |
@@ -147,7 +150,7 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | 0.10.2 | QuickView Find field forwards modified Enter shortcuts | pending | needs QuickView (0.8.0 / 0.10.0) |
 | 0.10.2 | Compare directories reports selected visible differences | pending | easy — `core/commands/external.py` compares names; count selected visible differences |
 | 0.10.2 | Pack at drive root suggests `C.zip` instead of `C:.zip` | ported | 2026-10-03 — `core/commands/pack.py` (`_suggest_archive_name`), `core/tests/commands/test_pack.py` |
-| 0.10.2 | Delete continuation prompts use the task dialog, explicit Yes default | pending | easy — `core/commands/deletion.py` has no explicit Yes default |
+| 0.10.2 | Delete continuation prompts use the task dialog, explicit Yes default | ported | 2026-11-11 — `core/commands/deletion.py`, `core/tests/commands/test_deletion.py` |
 | 0.10.1 | Removed macOS/Linux runtime branches | skipped | this fork stays cross-platform |
 | 0.10.1 | Removed GitHub plug-in installer | skipped | this fork keeps it (`docs/INSTALL_PLUGINS.md`) |
 | 0.10.1 | Removed telemetry / event history | pending | adapt — telemetry is sent by `impl/metrics.py`; tours read the metrics state, product decision needed |
@@ -245,7 +248,7 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | 0.2.0 | Optional extended status bar (Ctrl+S) | pending | this fork has own status bar work (`docs/STATUSBAR.md`) |
 | 0.2.0 | Sync Pane Location command | pending | easy — navigation only opens the folder under the cursor in the other pane |
 | 0.2.0 | Favorites plug-in (Ctrl+B) | skipped | covered by own external plug-in FMAN-Favorites (README "Plugins") |
-| 0.2.0 | Ctrl+N creates an empty file without opening an editor | pending | easy — only Shift+F4 `CreateAndEditFile` exists; add Ctrl+N and rename Shift+F4 |
+| 0.2.0 | Ctrl+N creates an empty file without opening an editor | ported | 2026-11-11 — `src/main/resources/base/Plugins/Core/Key Bindings.json`, `(Mac).json`, `core/commands/new_file.py`; `CreateAndEditFile` alias rename not ported |
 | 0.2.0 | README, provenance metadata, release-build hardening | skipped | his repo housekeeping |
 | 0.1.0 | Portable distribution, conda workflow, PyInstaller packaging, 7-Zip retrieval | skipped | his packaging |
 | 0.1.0 | Rebrand, local `fbs_runtime`, removed non-Windows and licensing code | skipped | his fork identity |
