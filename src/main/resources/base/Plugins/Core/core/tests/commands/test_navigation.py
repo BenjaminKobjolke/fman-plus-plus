@@ -36,6 +36,15 @@ class _NavigationPane(FakePane):
 		self.cursor_url = url
 
 class GoUpTest(TestCase):
+	def test_unix_root_opens_volumes(self):
+		pane = self._pane('file:///')
+		with patch(
+			'core.commands.navigation._get_volumes_url',
+			return_value='file:///Volumes'
+		):
+			navigation.go_up(pane)
+		self.assertEqual(['file:///Volumes'], pane.set_path_calls)
+
 	def test_drive_root_opens_volumes_and_highlights_uppercase_drive(self):
 		for path in ('file://C:', 'file://C:/', 'file://c:'):
 			with self.subTest(path=path):

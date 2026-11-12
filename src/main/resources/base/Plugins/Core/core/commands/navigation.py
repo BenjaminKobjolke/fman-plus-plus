@@ -1,5 +1,7 @@
 """Moving around: the cursor, the selection, the directory stack, volumes.
 
+Going up from a filesystem root opens the volumes view.
+
 `go_up` is a module-level function rather than only `GoUp.__call__` because
 `HistoryListener` reuses it - going back to the parent directory has to place
 the cursor on the directory just left, which plain `set_path` does not do.
@@ -70,6 +72,9 @@ def go_up(pane):
 		path = path.rstrip('/').upper()
 	else:
 		parent_dir = dirname(path_before)
+		if parent_dir == 'file://':
+			# Above the Unix filesystem root there is no folder: show the volumes view.
+			parent_dir = _get_volumes_url()
 	def callback():
 		path_now = pane.get_path()
 		# Only move the cursor if directories changed. Don't move it on
@@ -87,8 +92,7 @@ def go_up(pane):
 	try:
 		pane.set_path(parent_dir, callback)
 	except FileNotFoundError:
-		# This for instance happens when the user pressed backspace when at
-		# file:/// on Unix.
+		# The destination may disappear between calculating it and loading it.
 		pass
 
 class SelectAll(DirectoryPaneCommand):
