@@ -5,7 +5,8 @@ from core.fs.local import LocalFileSystem
 from core.tests import StubFS
 from core.tests.test_fileoperations import MockProgressDialog
 from fman import OK, PLATFORM
-from fman.url import as_url, join, splitscheme
+from fman.impl.overwrite_dialog import OverwriteChoice
+from fman.url import as_human_readable, as_url, join, splitscheme
 from fman.impl.plugins.mother_fs import MotherFileSystem
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -139,6 +140,106 @@ class ConnectionCountTest(TestCase):
 		self.assertIsNone(
 			CopyFiles(['file:///a'], 'file:///b', fs=fs)._get_connection_count()
 		)
+
+class MergeListingTest(TestCase):
+	"""Merging into an existing remote folder lists it once, not per file."""
+
+	_NAMES = ParallelTransferTest._NAMES
+
+	def setUp(self):
+		tmp_dir = TemporaryDirectory()
+		self.addCleanup(tmp_dir.cleanup)
+		self._path = splitscheme(as_url(tmp_dir.name))[1]
+	def test_remote_folder_is_listed_once(self):
+		fs, src, dest = self._make('stub://', self._NAMES)
+		enqueued = self._gather(fs, src, dest)
+		self.assertEqual(len(self._NAMES), len(enqueued))
+		self.assertEqual(1, fs.calls['iterdir'].count(join(dest, 'dir')))
+		self.assertEqual([join(dest, 'dir')], fs.calls['exists'])
+	def test_listed_name_still_asks_to_overwrite(self):
+		fs, src, dest = self._make('stub://', ['a.txt'], existing=['a.txt'])
+		dialog = MockProgressDialog(self)
+		dialog.expect_overwrite(
+			'a.txt exists. Do you want to overwrite it?', OverwriteChoice.SKIP
+		)
+		self.assertEqual([], self._gather(fs, src, dest, dialog))
+		dialog.verify_expected_dialogs_were_shown()
+	def test_name_differing_in_case_falls_back_to_exists(self):
+		fs, src, dest = self._make('stub://', ['a.txt'], existing=['A.TXT'])
+		self._gather(fs, src, dest, policy=OverwriteChoice.OVERWRITE)
+		self.assertIn(join(dest, 'dir', 'a.txt'), fs.calls['exists'])
+	def test_failed_listing_falls_back_to_exists(self):
+		fs, src, dest = self._make('stub://', self._NAMES)
+		fs.unlistable = join(dest, 'dir')
+		self.assertEqual(len(self._NAMES), len(self._gather(fs, src, dest)))
+		self.assertEqual(1 + len(self._NAMES), len(fs.calls['exists']))
+	def test_local_folder_still_checks_each_file(self):
+		fs, src, dest = self._make('file://', self._NAMES)
+		self._gather(fs, src, dest)
+		self.assertNotIn(join(dest, 'dir'), fs.calls['iterdir'])
+		self.assertEqual(1 + len(self._NAMES), len(fs.calls['exists']))
+	def test_unlisted_subfolder_is_not_probed(self):
+		fs, src, dest = self._make('stub://', [])
+		fs.makedirs(join(src, 'dir', 'sub'))
+		fs.calls['is_dir'].clear()
+		enqueued = self._gather(fs, src, dest)
+		self.assertEqual(
+			[(join(src, 'dir', 'sub'), join(dest, 'dir', 'sub'))], enqueued
+		)
+		self.assertNotIn(join(dest, 'dir', 'sub'), fs.calls['is_dir'])
+	def test_reserved_name_is_taken_although_unlisted(self):
+		fs, src, dest = self._make('stub://', ['a.txt'])
+		reserved = join(dest, 'dir', 'a.txt')
+		enqueued = self._gather(
+			fs, src, dest, policy=OverwriteChoice.RENAME, reserved=[reserved]
+		)
+		self.assertEqual(1, len(enqueued))
+		self.assertNotEqual(reserved, enqueued[0][1])
+	def _make(self, scheme, names, existing=()):
+		fs = _CountingStubFS(_StubSchemeFS() if scheme == 'stub://' else None)
+		src = join(scheme + self._path, 'src')
+		dest = join(scheme + self._path, 'dest')
+		for root, files in ((src, names), (dest, existing)):
+			fs.makedirs(join(root, 'dir'))
+			for name in files:
+				fs.touch(join(root, 'dir', name))
+		for calls in fs.calls.values():
+			calls.clear()
+		return fs, src, dest
+	def _gather(self, fs, src, dest, dialog=None, policy=None, reserved=()):
+		task = CopyFiles([join(src, 'dir')], dest, fs=fs)
+		task._dialog = dialog or MockProgressDialog(self)
+		task._conflict_policy = policy
+		task._reserved_dests.update(reserved)
+		# Only the walk is under test, so no transfer runs.
+		enqueued = []
+		task._prepare_transfer = lambda src, dest: [(src, dest)]
+		task._enqueue = enqueued.extend
+		self.assertTrue(task._gather_files())
+		return enqueued
+
+class _StubSchemeFS(LocalFileSystem):
+	"""Local files under a scheme that is not file://, like a remote one."""
+	scheme = 'stub://'
+	def _url_to_os_path(self, path):
+		return as_human_readable('file://' + path)
+
+class _CountingStubFS(StubFS):
+	def __init__(self, backend=None):
+		super().__init__(backend)
+		self.calls = {'exists': [], 'iterdir': [], 'is_dir': []}
+		self.unlistable = None
+	def exists(self, url):
+		self.calls['exists'].append(url)
+		return super().exists(url)
+	def iterdir(self, url):
+		self.calls['iterdir'].append(url)
+		if url == self.unlistable:
+			raise OSError('Listing failed')
+		return super().iterdir(url)
+	def is_dir(self, url):
+		self.calls['is_dir'].append(url)
+		return super().is_dir(url)
 
 class _ConnectionCountFS(StubFS):
 	def __init__(self, answers):

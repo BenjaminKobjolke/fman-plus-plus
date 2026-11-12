@@ -82,6 +82,7 @@ class FileTreeGathering:
 			self._enqueue(self._prepare_transfer(src, dest))
 		return True
 	def _merge_directory(self, src):
+		names = self._list_remote_names(self._get_dest_url(src))
 		for file_name in self._fs.iterdir(src):
 			file_url = join(src, file_name)
 			try:
@@ -89,9 +90,10 @@ class FileTreeGathering:
 			except OSError:
 				src_is_dir = False
 			dst = self._get_dest_url(file_url)
+			known = self._taken_in_listing(dst, names)
 			if src_is_dir:
 				try:
-					dst_is_dir = self._fs.is_dir(dst)
+					dst_is_dir = known is not False and self._fs.is_dir(dst)
 				except OSError:
 					dst_is_dir = False
 				if dst_is_dir:
@@ -100,7 +102,7 @@ class FileTreeGathering:
 				else:
 					self._enqueue(self._prepare_transfer(file_url, dst))
 			else:
-				dst = self._resolve_conflict(file_url, dst)
+				dst = self._resolve_conflict(file_url, dst, known)
 				if dst is OverwriteChoice.ABORT:
 					return False
 				if dst is None:
@@ -112,10 +114,37 @@ class FileTreeGathering:
 			# ensures that each directory is empty when post-processing.
 			self._enqueue([self._postprocess_directory(src)])
 		return True
-	def _is_taken(self, dest):
-		return self._fs.exists(dest) or dest in self._reserved_dests
-	def _resolve_conflict(self, src, dest):
-		if not self._is_taken(dest):
+	def _list_remote_names(self, dest_dir):
+		# One listing per folder instead of one exists(...) per file: on a
+		# remote file system each of those is a round trip, and the workers
+		# idle while this thread makes them. The listing is cached like a
+		# pane's, so a file someone else added since is not seen and gets
+		# overwritten without a prompt. Local folders keep exists(...): it is
+		# cheap there, and matching names is the OS's job.
+		if splitscheme(dest_dir)[0] == 'file://':
+			return None
+		try:
+			names = set(self._fs.iterdir(dest_dir))
+		except OSError:
+			return None
+		return names, {name.casefold() for name in names}
+	def _taken_in_listing(self, dest, names):
+		"""True or False when the listing settles it, None to ask exists()."""
+		if names is None:
+			return None
+		exact, folded = names
+		name = basename(dest)
+		if name in exact:
+			return True
+		if name.casefold() not in folded:
+			return False
+		return None
+	def _is_taken(self, dest, known=None):
+		if known is None:
+			known = self._fs.exists(dest)
+		return known or dest in self._reserved_dests
+	def _resolve_conflict(self, src, dest, known=None):
+		if not self._is_taken(dest, known):
 			return dest
 		with self._alert_lock:
 			result = self._ask_overwrite(src, dest)
