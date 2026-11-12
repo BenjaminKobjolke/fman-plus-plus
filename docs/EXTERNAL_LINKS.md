@@ -27,7 +27,7 @@ which does URL path manipulation, not web links.
 
 | Constant           | Default                                | Used by                                |
 |--------------------|----------------------------------------|----------------------------------------|
-| `HELP`             | `fman.io/docs/key-bindings?s=f`        | Help command (F1)                      |
+| `HELP`             | `workflow-tools.com/fman-plus-plus/help` | Help command (F1)                      |
 | `CHANGELOG`        | `fman.io/changelog?s=f`                | Startup "Updated to vX" status message |
 | `ISSUES`           | `fman.io/issues?s=f`                   | File-properties load-failure alert     |
 | `ZEN`              | `fman.io/zen`                          | "Zen of fman" command                  |
@@ -42,7 +42,7 @@ which does URL path manipulation, not web links.
 Edit the constant in `src/main/python/fman/links.py`, then rebuild. Example:
 
 ```python
-HELP = 'https://workflow-tools.com/fast-file-manager/help'
+HELP = 'https://workflow-tools.com/fman-plus-plus/help'
 ```
 
 ## Out of scope

@@ -8,7 +8,7 @@ setting in userdata — the URLs are baked into the build.
 Named ``links`` (not ``urls``) to avoid confusion with ``fman.url``, which does
 URL path manipulation, not web links.
 """
-HELP             = 'https://workflow-tools.com/fast-file-manager/help'
+HELP             = 'https://workflow-tools.com/fman-plus-plus/help'
 CHANGELOG        = 'https://fman.io/changelog?s=f'
 ISSUES           = 'https://fman.io/issues?s=f'
 ZEN              = 'https://fman.io/zen'
