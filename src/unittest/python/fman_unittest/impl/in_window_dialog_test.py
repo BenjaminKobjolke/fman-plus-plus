@@ -45,6 +45,44 @@ class InWindowDialogTest(TestCase):
 		self.assertEqual(QDialog.Accepted, exec_in_window(dialog, self.parent))
 		self.assertEqual([(None, False, True)], observed)
 
+	def test_message_box_does_not_block_window_when_widgets_are_native(self):
+		native_child = QWidget(self.parent)
+		native_child.setAttribute(Qt.WA_NativeWindow)
+		native_child.show()
+		native_child.winId()
+		self.parent.winId()
+
+		dialog = MessageBox(self.parent, True)
+		dialog.setText('Are you sure?')
+		dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+		# A real QMessageBox window aborts under Qt's offscreen platform.
+		dialog.show = lambda: None
+		observed = []
+		def check_and_accept():
+			observed.append((
+				dialog.isModal(), QApplication.modalWindow()
+			))
+			dialog.accept()
+		QTimer.singleShot(0, check_and_accept)
+		self.assertEqual(QDialog.Accepted, exec_in_window(dialog, self.parent))
+		self.assertEqual([(False, None)], observed)
+
+	def test_message_box_is_shown_non_modally(self):
+		dialog = MessageBox(self.parent, True)
+		dialog.setText('Are you sure?')
+		dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+		# A real QMessageBox window aborts under Qt's offscreen platform.
+		dialog.show = lambda: None
+		observed = []
+		def check_and_accept():
+			observed.append((
+				dialog.isModal(), QApplication.modalWindow()
+			))
+			dialog.accept()
+		QTimer.singleShot(0, check_and_accept)
+		self.assertEqual(QDialog.Accepted, exec_in_window(dialog, self.parent))
+		self.assertEqual([(False, None)], observed)
+
 	def test_plain_dialog_gets_the_frameless_outline_style(self):
 		dialog = QDialog()
 		observed = []

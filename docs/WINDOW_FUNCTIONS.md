@@ -68,6 +68,10 @@ drawn inside the window, which stays movable and resizable; clicking the scrim
 closes the dialog like Esc. Alerts and the file-open dialog remain separate
 modal windows.
 
+In-window dialogs are shown without Qt modality; the scrim and nested event loop
+provide the blocking behavior without Qt disabling the main window when a dialog
+owns a native window.
+
 Because embedded dialogs follow the window's opacity, the scrim keeps the
 underlying file list distinct while the palette or prompt is open.
 

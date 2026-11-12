@@ -11,6 +11,8 @@ def exec_in_window(dialog, parent):
 	make_frameless(dialog)
 	# Set the property before reparenting so Qt polishes with the dialog style.
 	dialog.setParent(parent, Qt.SubWindow)
+	# A modal native child makes Qt disable the main window around the dialog.
+	dialog.setModal(False)
 	dialog.setAutoFillBackground(True)
 	scrim = Scrim(parent)
 	scrim.clicked.connect(dialog.reject)
