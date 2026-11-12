@@ -83,9 +83,14 @@ fixtures, wiped and re-seeded on each run:
 
 | path | contents |
 |------|----------|
-| `%TEMP%\fman-demo-<id>-left` | both example folders merged — 11 images/video + 6 text files |
-| `%TEMP%\fman-demo-<id>-right` | empty |
+| `D:\fman-demo\<id>-left` | both example folders merged — 11 images/video + 6 text files |
+| `D:\fman-demo\<id>-right` | empty |
 | `%TEMP%\fman-demo-profile` | the throwaway fman data directory |
+
+The scratch folders are not in `%TEMP%` because that path holds the Windows
+user name, and the Move, Copy and Pack prompts show the scratch path on camera.
+Set `FMAN_DEMO_SCRATCH` to use another base folder. If the base cannot be
+created, the launcher stops with an error instead of recording empty panes.
 
 Two ids get extra seeding on top of that shared copy, because their feature
 cannot be shown without it:
@@ -122,9 +127,10 @@ change how a recording looks rather than how it behaves:
 - `%APPDATA%\fman\Themes` — mirrored so a *custom* theme resolves instead of
   silently falling back to the default.
 
-To keep the Windows user name out of a recording, set
+For the tour chapters (ids 3-7) the launcher sets
 `"pane_location_bars_visible": false` in the demo profile's
-`Local\Settings.json`; this hides the full folder path above each pane.
+`Local\Settings.json`; this hides the full folder path above each pane. Other
+demos keep the path line, which reads `D:\fman-demo\…` and holds no user name.
 
 Every demo gets one thing seeded that no profile of yours supplies:
 `Plugins\User\DemoFont\Theme.css`. Demos use the 1920x1080 window and enable
@@ -512,7 +518,7 @@ itself:
     set FMAN_DATA_DIRECTORY=%TEMP%\fman-demo-profile
     python src\main\python\fman\main.py --automation-demo 1 examples\left_pane examples\right_pane
 
-For a tour chapter, pass its scratch folders instead (create them the way
+For a tour chapter, pass its scratch folders `D:\fman-demo\<id>-left` and `-right` instead (create them the way
 `run_fman_demo.bat` does, or just run the chapter through the recorder once so
 they exist).
 
@@ -528,7 +534,7 @@ every risky step landed:
 | 5 `tour-c-viewers` | `changelog.txt` ends with `Edited in fman` |
 | 6 `tour-d-video` | `Core Settings (Windows).json` has `video_viewer_volume` — written only from the video viewer's own key handler, so it proves the viewer had keyboard focus |
 | 7 `tour-e-archives` | `images.zip` in the left folder holds three JPEGs, and the right folder holds the one copied back out |
-| 8 `feature-goto` | the left pane ends on `projects\alpha` — and `Visited Paths.json` in the demo profile lists only `fman-demo-8-*` paths |
+| 8 `feature-goto` | the left pane ends on `projects\alpha` — and `Visited Paths.json` in the demo profile lists only `D:\fman-demo\8-*` paths |
 | 9 `feature-tail` | `service.log` is longer than the 12 seeded lines (the appender adds ~40 more over a minute) |
 | 10 `plugin-matrix-rain` | `Matrix Rain (Windows).json` in the demo profile's `Plugins\User\Settings` holds `"transparency": 70` - which proves the palette query resolved, the prompt took the typed value, and the rain re-mounted |
 

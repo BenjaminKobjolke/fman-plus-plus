@@ -15,6 +15,10 @@ call "%~dp0..\find_build_python.bat"
 if errorlevel 1 exit /b 1
 cd /d "%~dp0..\.."
 set "PYTHONPATH=%CD%\src\main\python"
+REM The tour chapters are ids 3-7 (TOUR_CHAPTERS in demo_scripts_tour.py,
+REM "group": "tour" in fman.json).
+set "IS_TOUR="
+if %1 GEQ 3 if %1 LEQ 7 set "IS_TOUR=1"
 
 REM Record against a throwaway fman profile, never the developer's own: their
 REM third-party plugins prepend key bindings (so they'd beat Core's) and add
@@ -48,15 +52,20 @@ REM demo mode pins DEMO_OPACITY so every chapter records at a known value.
 if exist "%APPDATA%\fman\Local\Settings.json" (
 	copy /y "%APPDATA%\fman\Local\Settings.json" "%FMAN_DATA_DIRECTORY%\Local\" >nul
 )
+set "SETTINGS_FILE=%FMAN_DATA_DIRECTORY%\Local\Settings.json"
 if "%1"=="18" (
-	set "SETTINGS_FILE=%FMAN_DATA_DIRECTORY%\Local\Settings.json"
 	REM A copied single_instance=false would make the plain launch open its own window.
 	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; New-Item -ItemType Directory -Force -Path (Split-Path $p) | Out-Null; $s=if (Test-Path -LiteralPath $p) { Get-Content -Raw -LiteralPath $p | ConvertFrom-Json } else { [pscustomobject]@{} }; $s | Add-Member -NotePropertyName single_instance -NotePropertyValue $true -Force; [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false))"
 )
 if "%1"=="15" (
-	set "SETTINGS_FILE=%FMAN_DATA_DIRECTORY%\Local\Settings.json"
 	REM A copied pane_location_bars_visible=false would make the first toggle show them.
 	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; if (Test-Path -LiteralPath $p) { $s=Get-Content -Raw -LiteralPath $p | ConvertFrom-Json; $null=$s.PSObject.Properties.Remove('pane_location_bars_visible'); [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false)) }"
+)
+if defined IS_TOUR (
+	REM The path line above each pane would put the scratch path on camera.
+	REM $false, not false: a bare false is stored as the STRING "false", and
+	REM window_chrome.py reads anything that is not False as visible.
+	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; New-Item -ItemType Directory -Force -Path (Split-Path $p) | Out-Null; $s=if (Test-Path -LiteralPath $p) { Get-Content -Raw -LiteralPath $p | ConvertFrom-Json } else { [pscustomobject]@{} }; $s | Add-Member -NotePropertyName pane_location_bars_visible -NotePropertyValue $false -Force; [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false))"
 )
 REM A custom theme lives outside the bundled Themes dir, so mirror those too -
 REM otherwise load_theme silently falls back to the default.
@@ -71,7 +80,7 @@ REM The tour chapters (3-7) and the standalone feature/plugin clips need the
 REM larger variant; all others use Core sizes at 1.5x. See
 REM tools/create_media/demo_Theme*.css.
 set "FONT_CSS=demo_Theme_default.css"
-if %1 GEQ 3 if %1 LEQ 7 set "FONT_CSS=demo_Theme.css"
+if defined IS_TOUR set "FONT_CSS=demo_Theme.css"
 if "%1"=="8" set "FONT_CSS=demo_Theme.css"
 if "%1"=="9" set "FONT_CSS=demo_Theme.css"
 if "%1"=="10" set "FONT_CSS=demo_Theme.css"
@@ -114,13 +123,21 @@ REM rename, move and pack files, so they get a fresh scratch copy of both
 REM example folders on the left and an empty folder on the right.
 set "LEFT=%CD%\examples\left_pane"
 set "RIGHT=%CD%\examples\right_pane"
+REM Not %TEMP%: its path holds the Windows user name, and the Move, Copy and
+REM Pack prompts show the scratch path on camera. Override with FMAN_DEMO_SCRATCH.
+if not defined FMAN_DEMO_SCRATCH set "FMAN_DEMO_SCRATCH=D:\fman-demo"
 if %1 GEQ 3 (
-	set "LEFT=%TEMP%\fman-demo-%1-left"
-	set "RIGHT=%TEMP%\fman-demo-%1-right"
+	set "LEFT=%FMAN_DEMO_SCRATCH%\%1-left"
+	set "RIGHT=%FMAN_DEMO_SCRATCH%\%1-right"
 	if exist "!LEFT!" rmdir /s /q "!LEFT!"
 	if exist "!RIGHT!" rmdir /s /q "!RIGHT!"
 	mkdir "!LEFT!"
 	mkdir "!RIGHT!"
+	REM Unlike %TEMP% the base can be missing; an empty pane would only show up as a wasted take.
+	if not exist "!LEFT!" (
+		echo ERROR: cannot create !LEFT! - set FMAN_DEMO_SCRATCH to a writable folder.
+		exit /b 1
+	)
 	xcopy /q /y "%CD%\examples\left_pane\*" "!LEFT!\" >nul
 	xcopy /q /y "%CD%\examples\right_pane\*" "!LEFT!\" >nul
 )
