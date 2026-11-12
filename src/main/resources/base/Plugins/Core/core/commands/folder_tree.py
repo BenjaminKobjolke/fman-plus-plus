@@ -7,10 +7,12 @@ from core.folder_tree_view import FolderTreeActions, FolderTreeView
 from core.settings import get_setting, save_setting, SETTINGS_FILE
 from core.textviewer_pane import begin_new_view
 from fman import ApplicationCommand, DirectoryPaneCommand, show_status_message
+from fman.impl.view.backgrounds import TRANSPARENT_PROPERTY, set_transparent
 from fman.impl.util.qt.thread import run_in_main_thread
 
 __all__ = ['ToggleFolderTree', 'ToggleTreeFollowsCursor']
 _FolderTreeView = FolderTreeView
+_COMMAND_PALETTE = 'command_palette'
 
 
 class ToggleFolderTree(DirectoryPaneCommand):
@@ -36,12 +38,20 @@ class ToggleFolderTree(DirectoryPaneCommand):
 			)
 		actions = FolderTreeActions(
 			navigate, self.pane.unmount_widget, drop,
-			lambda: self.pane.run_command('switch_panes')
+			lambda: self.pane.run_command('switch_panes'),
+			lambda: self.pane.run_command(_COMMAND_PALETTE)
 		)
 		view = FolderTreeView(
 			_is_showing_hidden_files(self.pane), actions,
 			get_setting(SETTINGS_FILE, FOLLOW_CURSOR_KEY, False),
-			self.pane.get_colors(), self.pane._widget
+			self.pane._widget._model._fs._icon_provider,
+			self.pane._widget
+		)
+		file_view = self.pane._widget._view_mode.visible_view()
+		view.setFont(file_view.font())
+		view.viewport().setAutoFillBackground(False)
+		set_transparent(
+			view, file_view.property(TRANSPARENT_PROPERTY)
 		)
 		self.pane.mount_widget(view)
 		view.open_to(tree_ancestors(self.pane.get_path()))

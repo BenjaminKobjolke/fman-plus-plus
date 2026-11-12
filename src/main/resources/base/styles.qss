@@ -3,6 +3,29 @@ QTableView, QMessageBox, QDialog, QListView {
 	border: none;
 }
 
+FolderTreeView {
+	background-color: $pane_bg;
+	border: none;
+}
+
+FolderTreeView::item {
+	color: $pane_fg_dir;
+}
+
+FolderTreeView::item:selected {
+	color: $pane_selected_fg;
+	background-color: $pane_bg;
+}
+
+FolderTreeView::item:selected:active,
+FolderTreeView::item:selected:focus {
+	background-color: $pane_cursor_bg;
+}
+
+FolderTreeView::branch:selected {
+	background-color: $pane_bg;
+}
+
 QHeaderView, QHeaderView::section {
 	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 $header_bg, stop: 1 $pane_bg);
 }
@@ -89,6 +112,17 @@ QStatusBar[fman_background="true"],
 PaneStatusLine[fman_background="true"],
 LocationBar[fman_background="true"] {
 	background: transparent;
+}
+
+FolderTreeView[fman_background="true"],
+FolderTreeView[fman_background="true"]::item:selected,
+FolderTreeView[fman_background="true"]::branch {
+	background: transparent;
+}
+
+FolderTreeView[fman_background="true"]::item:selected:active,
+FolderTreeView[fman_background="true"]::item:selected:focus {
+	background-color: $pane_cursor_bg;
 }
 
 QTableView #editor, CompactFileView #editor {

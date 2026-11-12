@@ -61,6 +61,29 @@ class ListSubfoldersTest(TestCase):
 			patch('core.folder_tree.fs.is_dir') as is_dir:
 			self.assertEqual([], list_subfolders('file:///parent', show_hidden=True))
 		is_dir.assert_not_called()
+	def test_returns_empty_when_lazy_directory_listing_fails(self):
+		def names():
+			raise FileNotFoundError()
+			yield
+		with patch('core.folder_tree.fs.iterdir', return_value=names()), \
+			patch('core.folder_tree.fs.resolve', side_effect=OSError()):
+			self.assertEqual(
+				[], list_subfolders('file:///parent', show_hidden=True)
+			)
+	def test_lists_resolved_location_when_virtual_url_cannot_be_listed(self):
+		with patch('core.folder_tree.fs.iterdir', side_effect=[
+			FileNotFoundError(), ['folder']
+		]) as iterdir, \
+			patch('core.folder_tree.fs.resolve', return_value='file://D:/'), \
+			patch('core.folder_tree.fs.is_dir', return_value=True):
+			self.assertEqual(
+				['file://D:/folder'],
+				list_subfolders('drives://D:', show_hidden=True)
+			)
+		self.assertEqual(
+			['drives://D:', 'file://D:/'],
+			[c.args[0] for c in iterdir.call_args_list]
+		)
 
 
 class CanDropTest(TestCase):

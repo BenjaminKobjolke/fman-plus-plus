@@ -24,12 +24,24 @@ def tree_ancestors(url):
 def list_subfolders(url, show_hidden):
 	"""List readable child folders, sorted by name without case sensitivity."""
 	try:
-		names = fs.iterdir(url)
+		return _list_subfolders_at(url, show_hidden)
 	except OSError:
-		return []
+		try:
+			resolved_url = fs.resolve(url)
+		except OSError:
+			return []
+		if resolved_url == url:
+			return []
+		try:
+			return _list_subfolders_at(resolved_url, show_hidden)
+		except OSError:
+			return []
 
+
+def _list_subfolders_at(url, show_hidden):
+	"""List children at one location; the caller handles listing failures."""
 	folders = []
-	for name in names:
+	for name in fs.iterdir(url):
 		child_url = join(url, name)
 		try:
 			if not fs.is_dir(child_url):
