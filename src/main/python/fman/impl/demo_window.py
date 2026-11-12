@@ -73,10 +73,10 @@ def _parent_by_pid():
 	return parent_by_pid
 
 
-def foreground_process_window(process_id, title_part):
+def foreground_process_window(process_id: int, title_part: str) -> int | None:
 	"""Restore and foreground a visible top-level window owned by a process."""
 	if sys.platform != 'win32':
-		return False
+		return None
 
 	from ctypes import wintypes
 
@@ -130,7 +130,7 @@ def foreground_process_window(process_id, title_part):
 	callback = callback_type(visit)
 	user32.EnumWindows(callback, 0)
 	if not windows:
-		return False
+		return None
 
 	hwnd = windows[0]
 	user32.AllowSetForegroundWindow(process_id)
@@ -138,16 +138,16 @@ def foreground_process_window(process_id, title_part):
 	user32.BringWindowToTop(hwnd)
 	user32.SetForegroundWindow(hwnd)
 	if user32.GetForegroundWindow() == hwnd:
-		return True
+		return int(hwnd)
 
 	foreground = user32.GetForegroundWindow()
 	foreground_thread = user32.GetWindowThreadProcessId(foreground, None)
 	current_thread = ctypes.windll.kernel32.GetCurrentThreadId()
 	if not user32.AttachThreadInput(current_thread, foreground_thread, True):
-		return False
+		return None
 	try:
 		user32.BringWindowToTop(hwnd)
 		user32.SetForegroundWindow(hwnd)
-		return user32.GetForegroundWindow() == hwnd
+		return int(hwnd) if user32.GetForegroundWindow() == hwnd else None
 	finally:
 		user32.AttachThreadInput(current_thread, foreground_thread, False)

@@ -62,7 +62,9 @@ class DemoPlayerTest(TestCase):
 		with patch('fman.impl.demo.subprocess.Popen') as popen:
 			with patch('fman.impl.demo.sys.executable', 'python.exe'):
 				with patch('fman.impl.demo.sys.argv', ['main.py']):
-					with patch('fman.impl.demo.os.path.abspath', return_value='main.py'):
+					with patch(
+						'fman.impl.demo.os.path.abspath', return_value='main.py',
+					):
 						player._launch_fman(LaunchFman(('--new-instance', 'separate')))
 
 		popen.assert_called_once_with([
@@ -79,13 +81,14 @@ class DemoPlayerTest(TestCase):
 		player._children = [child]
 
 		with patch(
-			'fman.impl.demo.foreground_process_window', return_value=True,
+			'fman.impl.demo.foreground_process_window', return_value=456,
 		) as foreground:
 			with patch.object(player, '_advance') as advance:
 				player._expect_child_window(
 					ExpectChildWindow('opened-by-new-instance'))
 
 		foreground.assert_called_once_with(123, 'opened-by-new-instance')
+		self.assertEqual(456, player._child_window_hwnd)
 		advance.assert_called_once_with()
 
 	def test_expect_child_window_fails_when_child_window_never_appears(self):
@@ -97,7 +100,7 @@ class DemoPlayerTest(TestCase):
 
 		with patch('fman.impl.demo.time.monotonic', side_effect=(0, 1)):
 			with patch(
-				'fman.impl.demo.foreground_process_window', return_value=False,
+				'fman.impl.demo.foreground_process_window', return_value=None,
 			):
 				with patch('fman.impl.demo.QTimer.singleShot') as single_shot:
 					with patch.object(player, '_fail') as fail:
@@ -233,6 +236,26 @@ class DemoPlayerTest(TestCase):
 			player._execute(CustomStep(ScreenStill('x')))
 
 		client.send_screenshot.assert_called_once_with('x')
+
+	def test_screen_still_targets_the_foreground_child_window(self):
+		client = MagicMock(spec=DemoClient)
+		player = self._player(client, MagicMock())
+		child = MagicMock()
+		child.pid = 123
+		child.poll.return_value = None
+		player._children = [child]
+
+		with patch(
+			'fman.impl.demo.foreground_process_window', return_value=456,
+		):
+			with patch.object(player, '_advance'):
+				player._expect_child_window(
+					ExpectChildWindow('opened-by-new-instance'))
+
+		with patch('fman.impl.demo.QTimer'):
+			player._execute(CustomStep(ScreenStill('new-window')))
+
+		client.send_screenshot.assert_called_once_with('new-window', hwnd=456)
 
 	def test_overwrite_wait_captures_only_after_the_question_is_open(self):
 		from fman.impl.overwrite_dialog import OverwriteDialog

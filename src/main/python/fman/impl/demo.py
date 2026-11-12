@@ -100,6 +100,7 @@ class DemoPlayer(QObject):
 		self._client = client
 		self._script = script
 		self._hwnd = hwnd
+		self._child_window_hwnd = None
 		self._screenshots = screenshots
 		self._plugin_support = plugin_support
 		self._children = []
@@ -142,7 +143,12 @@ class DemoPlayer(QObject):
 			if isinstance(action.step, OpenContextMenu):
 				self._open_context_menu()
 			elif isinstance(action.step, ScreenStill):
-				self._client.send_screenshot(action.step.name)
+				if self._child_window_hwnd is None:
+					self._client.send_screenshot(action.step.name)
+				else:
+					self._client.send_screenshot(
+						action.step.name, hwnd=self._child_window_hwnd,
+					)
 			elif isinstance(action.step, WaitForOverwriteQuestion):
 				self._wait_for_overwrite_question(action.step)
 				return
@@ -203,11 +209,18 @@ class DemoPlayer(QObject):
 
 		def check():
 			child = self._children[-1] if self._children else None
+			window_hwnd = (
+				foreground_process_window(child.pid, step.folder)
+				if child is not None and child.poll() is None else None
+			)
 			if (
-				child is not None
-				and child.poll() is None
-				and foreground_process_window(child.pid, step.folder)
+				child is not None and window_hwnd is not None
 			):
+				self._child_window_hwnd = window_hwnd
+				logging.getLogger(__name__).info(
+					'Foreground child window HWND %s from PID %s for folder %r.',
+					window_hwnd, child.pid, step.folder,
+				)
 				self._advance()
 			elif time.monotonic() >= deadline:
 				if child is None:
