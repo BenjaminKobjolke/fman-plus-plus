@@ -1,5 +1,6 @@
 from core.commands.goto import _shrink_visited_paths, _with_well_known_dirs, \
 	GoTo, GoToListener
+from core.palette_switch import goto_query_exit
 from core.suggest_locations import SuggestLocations
 from core.util import filenotfounderror
 from fman import PLATFORM, QuicksearchItem
@@ -89,6 +90,20 @@ class GoToTitleTest(TestCase):
 		self.assertEqual(
 			'translated title', show.call_args.kwargs['title']
 		)
+	def test_strips_command_prefix_and_places_cursor_at_end_when_typing(self):
+		command = GoTo(Mock())
+		with patch.object(command, '_get_visited_paths', return_value=[]), \
+				patch('core.commands.goto.PLATFORM', 'Linux'), \
+				patch('core.commands.goto.SuggestLocations'), \
+				patch('core.commands.goto.load_json', return_value={}), \
+				patch(
+					'core.commands.goto.show_quicksearch', return_value=None
+			) as show:
+			command(query='>abc', continue_typing=True)
+
+		self.assertEqual('abc', show.call_args.args[2])
+		self.assertEqual(3, show.call_args.kwargs['select_from'])
+		self.assertIs(show.call_args.kwargs['query_exit'], goto_query_exit)
 
 
 class GoToListenerIncognitoTest(TestCase):

@@ -10,8 +10,9 @@ from core.command_titles import apply_custom_title
 from core.key_bindings import get_shortcuts_for_command as \
 	_get_shortcuts_for_command, format_shortcut_hint, KEY_BINDINGS_FILE
 from core.keyword_editor import edit_command_keywords
-from core.palette_switch import COMMAND_PALETTE, GO_TO, palette_exit_keys, \
-	run_palette_switch
+from core.palette_switch import COMMAND_PALETTE, COMMAND_PREFIX, GO_TO, \
+	palette_exit_keys, run_palette_switch, strip_command_prefix, \
+	palette_query_exit
 from core.quicksearch_matchers import bucket_count, contains_chars, \
 	contains_chars_after_separator, contains_chars_any_order, \
 	match_titles_or_keywords
@@ -34,20 +35,26 @@ class CommandPalette(DirectoryPaneCommand):
 		super().__init__(*args, **kwargs)
 		self._last_query = ''
 		self._last_cmd_name = ''
-	def __call__(self, query=None):
+	def __call__(self, query=None, continue_typing=False):
 		if query is not None:
-			self._last_query = query
+			self._last_query = strip_command_prefix(query)
 			self._last_cmd_name = ''
 		# A loop, not a single call: editing an entry's keywords (Shift+Enter)
 		# reopens the palette where the user left it instead of dropping them
 		# back into the panes.
 		while True:
+			shown_query = COMMAND_PREFIX + self._last_query
 			result = show_quicksearch(
-				self._suggest_commands, query=self._last_query,
+				self._suggest_commands, query=shown_query,
 				item=self._get_initial_item(), alt_accept=True,
 				title=translate(COMMAND_PALETTE_TITLE),
-				exit_keys=palette_exit_keys(COMMAND_PALETTE, GO_TO)
+				exit_keys=palette_exit_keys(COMMAND_PALETTE, GO_TO),
+				query_exit=palette_query_exit,
+				select_from=(
+					len(shown_query) if continue_typing else len(COMMAND_PREFIX)
+				)
 			)
+			continue_typing = False
 			if not result:
 				self._last_query = self._last_cmd_name = ''
 				return
@@ -58,7 +65,7 @@ class CommandPalette(DirectoryPaneCommand):
 			query, command, alt = result
 			if not command:
 				return
-			self._last_query = query
+			self._last_query = strip_command_prefix(query)
 			self._last_cmd_name = command.name
 			if not alt:
 				command()
@@ -76,6 +83,7 @@ class CommandPalette(DirectoryPaneCommand):
 		except ValueError:
 			return 0
 	def _suggest_commands(self, query):
+		query = strip_command_prefix(query)
 		# One bucket per matcher, plus the exact-match and loose-keyword
 		# ones the helper adds around them - see match_titles_or_keywords.
 		result = [[] for _ in range(bucket_count(self._MATCHERS))]

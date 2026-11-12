@@ -107,6 +107,63 @@ class QuicksearchTest(TestCase):
 		self.assertEqual('', self.dialog._header.text())
 		self.assertFalse(self.dialog._header.isVisible())
 		self.assertEqual('Quicksearch', self.dialog.windowTitle())
+	def test_query_exit_accepts_with_text_exit_result(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [],
+			query_exit=lambda text: (
+				'command_palette' if text.startswith('>') else None
+			)
+		)
+		dialog.show()
+		dialog._query.setText('>')
+
+		self.assertEqual(
+			QuicksearchExit('>', 'command_palette', from_text=True),
+			dialog.get_result()
+		)
+		self.assertFalse(dialog.isVisible())
+		dialog.close()
+	def test_query_without_exit_updates_items_and_keeps_dialog_open(self):
+		queries = []
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS,
+			lambda text: queries.append(text) or [],
+			query_exit=lambda text: (
+				'command_palette' if text.startswith('>') else None
+			)
+		)
+		dialog.show()
+		dialog._query.setText('a')
+
+		self.assertEqual(['', 'a'], queries)
+		self.assertTrue(dialog.isVisible())
+		self.assertIsNone(dialog.get_result())
+		dialog.close()
+	def test_select_from_leaves_prefix_unselected(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [],
+			query='>abc', select_from=1
+		)
+
+		self.assertEqual('abc', dialog._query.selectedText())
+		self.assertEqual(4, dialog._query.cursorPosition())
+		dialog.close()
+	def test_select_from_at_end_places_cursor_without_selection(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [],
+			query='abc', select_from=3
+		)
+
+		self.assertEqual('', dialog._query.selectedText())
+		self.assertEqual(3, dialog._query.cursorPosition())
+		dialog.close()
+	def test_initial_query_is_selected_by_default(self):
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [], query='abc'
+		)
+
+		self.assertEqual('abc', dialog._query.selectedText())
+		dialog.close()
 	def test_footer_is_visible_only_when_alternate_accept_is_enabled(self):
 		dialog = Quicksearch(
 			self.parent, _StubApp(), _CSS, lambda _query: [], alt_accept=True

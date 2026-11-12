@@ -440,11 +440,12 @@ def show_file_open_dialog(caption, dir_path, filter_text=''):
 
 def show_quicksearch(
 	get_items, get_tab_completion=None, query='', item=0, alt_accept=False,
-	set_refresh=None, title='', exit_keys=None
+	set_refresh=None, title='', exit_keys=None, query_exit=None, select_from=0
 ):
 	return _get_ui().show_quicksearch(
 		get_items, get_tab_completion, query, item, alt_accept,
-		set_refresh=set_refresh, title=title, exit_keys=exit_keys
+		set_refresh=set_refresh, title=title, exit_keys=exit_keys,
+		query_exit=query_exit, select_from=select_from
 	)
 
 class QuicksearchItem:

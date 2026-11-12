@@ -597,6 +597,12 @@ Pass `exit_keys` as a mapping of key bindings to command names to close the
 dialog and switch commands. A value of `None` closes it like Escape; a command
 name returns a `QuicksearchExit(query, command)` instead of the usual pair or
 triple. This result is only returned by callers that pass `exit_keys`.
+Pass `query_exit=f` to check each changed input string; when `f(text)` returns
+a command name, the dialog closes with `QuicksearchExit(query, command, from_text=True)`.
+`select_from` sets the start of the initial selection (default
+`0`, which selects the full query); set it to the query length to place the
+cursor at the end without selecting text. `QuicksearchExit.from_text` is
+`False` for key-based exits and `True` for `query_exit` exits.
 Pass `set_refresh=f` to receive a thread-safe function that re-runs `get_items`
 for the current query text. Call it when asynchronous results arrive to update
 the open list; calling it after the quicksearch dialog has closed does nothing.

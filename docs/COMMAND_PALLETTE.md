@@ -39,11 +39,18 @@ one of its hidden keywords, below), pick from the filtered list, press Enter.
 
 While the Command Palette is open, press the Go To shortcut (`Ctrl+P` on
 Windows/Linux or `Cmd+P` on macOS) to switch to Go To with the same text
-already entered. The text is selected, so typing replaces it; press End or
-Right to continue it. Press the Command Palette's own shortcut to close it,
-just like Escape. Go To works the same way in reverse: its own shortcut closes
-it, and the Command Palette shortcut switches back with the text preserved.
-Both shortcuts follow your current key bindings.
+already entered, without the `>` marker. The text is selected, so typing
+replaces it; press End or Right to continue it. Press the Command Palette's
+own shortcut to close it, just like Escape. Go To works the same way in
+reverse: its own shortcut switches back with `>` added, and the text is
+selected after the marker. Both shortcuts follow your current key bindings.
+
+## The `>` prefix
+
+The Command Palette input always starts with `>`. Delete it to switch to Go To
+with the remaining text, or type `>` at the start of Go To to switch to the
+palette. When switching by typing, the cursor stays at the end so you can keep
+typing. In the palette, `>` is a mode marker and is not part of command search.
 
 Commands worth knowing about that have no default key binding, so the
 palette is the only way to reach them:

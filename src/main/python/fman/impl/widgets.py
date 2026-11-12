@@ -645,13 +645,15 @@ class MainWindow(QMainWindow):
 	@run_in_main_thread
 	def show_quicksearch(
 		self, get_items, get_tab_completion=None, query='', item=0,
-		alt_accept=False, set_refresh=None, title='', exit_keys=None
+		alt_accept=False, set_refresh=None, title='', exit_keys=None,
+		query_exit=None, select_from=0
 	):
 		css = self._theme.get_quicksearch_item_css()
 		dialog = Quicksearch(
 			self, self._app, css, get_items, get_tab_completion, query, item,
 			alt_accept, width_store=self._quicksearch_width, title=title,
-			exit_keys=exit_keys
+			exit_keys=exit_keys, query_exit=query_exit,
+			select_from=select_from
 		)
 		if set_refresh is not None:
 			set_refresh(dialog.request_refresh)

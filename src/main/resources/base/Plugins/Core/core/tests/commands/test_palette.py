@@ -44,6 +44,11 @@ class CommandPaletteSuggestionsTest(TestCase):
 		self.assertEqual(['Quit', 'Extract to opposite'], titles)
 	def test_unknown_query_matches_nothing(self):
 		self.assertEqual([], self._suggest('zzz'))
+	def test_command_prefix_does_not_change_matching(self):
+		self.assertEqual(
+			[self._item_signature(item) for item in self._suggest('copy')],
+			[self._item_signature(item) for item in self._suggest('>copy')]
+		)
 	def test_a_renamed_command_shows_its_new_name(self):
 		items = self._suggest('bye', titles={'quit': 'Bye'})
 		self.assertEqual(['Bye'], [i.title for i in items])
@@ -58,7 +63,7 @@ class CommandPaletteSuggestionsTest(TestCase):
 		keywords = {
 			'set_window_opacity': ('transparency', 'reload'),
 			'reload': (),
-			'quit': ('exit',),
+			'quit': ('exit', 'copy'),
 			'extract_to_opposite': (),
 		}
 		pane = self._StubPane({
@@ -80,6 +85,8 @@ class CommandPaletteSuggestionsTest(TestCase):
 				side_effect=lambda _json, key, default: titles.get(key, default)
 			):
 			return list(CommandPalette(pane)._suggest_commands(query))
+	def _item_signature(self, item):
+		return item.value.name, item.title, item.highlight
 
 
 class CommandPaletteTitleTest(TestCase):
@@ -95,3 +102,19 @@ class CommandPaletteTitleTest(TestCase):
 		self.assertEqual(
 			'translated title', show.call_args.kwargs['title']
 		)
+	def test_shows_prefix_with_query_selected_after_it_by_default(self):
+		with patch(
+			'core.commands.palette.show_quicksearch', return_value=None
+		) as show:
+			CommandPalette(Mock())()
+
+		self.assertEqual('>', show.call_args.kwargs['query'])
+		self.assertEqual(1, show.call_args.kwargs['select_from'])
+	def test_text_switch_shows_query_and_places_cursor_at_end(self):
+		with patch(
+			'core.commands.palette.show_quicksearch', return_value=None
+		) as show:
+			CommandPalette(Mock())(query='abc', continue_typing=True)
+
+		self.assertEqual('>abc', show.call_args.kwargs['query'])
+		self.assertEqual(4, show.call_args.kwargs['select_from'])

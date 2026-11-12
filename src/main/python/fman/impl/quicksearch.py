@@ -26,7 +26,8 @@ class Quicksearch(QDialog):
 
 	def __init__(
 		self, parent, app, css, get_items, get_tab_completion=None, query='',
-		item=0, alt_accept=False, width_store=None, title='', exit_keys=None
+		item=0, alt_accept=False, width_store=None, title='', exit_keys=None,
+		query_exit=None, select_from=0
 	):
 		if get_tab_completion is None:
 			get_tab_completion = lambda q, i: None
@@ -43,6 +44,8 @@ class Quicksearch(QDialog):
 		self._title = title
 		self._alt_accept = alt_accept
 		self._exit_keys = exit_keys
+		self._query_exit = query_exit
+		self._select_from = select_from
 		self._width_store = width_store
 		self._curr_items = []
 		self._result = None
@@ -84,7 +87,9 @@ class Quicksearch(QDialog):
 		self._query.keyPressEventFilter = self._on_key_pressed
 		self._query.textChanged.connect(self._on_text_changed)
 		self._query.returnPressed.connect(self._on_return_pressed)
-		self._query.setSelection(0, len(self._initial_query))
+		self._query.setSelection(
+			self._select_from, len(self._initial_query) - self._select_from
+		)
 		self._items = QListView()
 		# Titles are elided from the left, so a horizontal bar would only cover
 		# the last row (upstream #195).
@@ -236,6 +241,12 @@ class Quicksearch(QDialog):
 			return True
 		return False
 	def _on_text_changed(self, text):
+		if self._query_exit is not None:
+			command = self._query_exit(text)
+			if command:
+				self._result = QuicksearchExit(text, command, from_text=True)
+				self.accept()
+				return
 		self._update_items(text)
 		self._place_cursor_at_item(0)
 	def _place_cursor_at_item(self, item):

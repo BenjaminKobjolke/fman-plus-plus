@@ -10,6 +10,7 @@ class QuicksearchExit:
 
 	query: str
 	command: str
+	from_text: bool = False
 
 
 def find_exit_key(exit_keys, key, modifiers):

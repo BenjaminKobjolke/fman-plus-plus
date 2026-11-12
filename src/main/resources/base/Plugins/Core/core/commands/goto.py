@@ -1,7 +1,7 @@
 from core.commands.util import get_user, get_well_known_dirs, is_hidden
 from core.suggest_locations import SuggestLocations
 from core.palette_switch import COMMAND_PALETTE, GO_TO, palette_exit_keys, \
-	run_palette_switch
+	run_palette_switch, strip_command_prefix, goto_query_exit
 from fman import DirectoryPaneCommand, show_quicksearch, PLATFORM, load_json, \
 	DirectoryPaneListener, is_incognito, translate, QuicksearchExit
 from fman.localization_keys import GOTO_TITLE
@@ -20,10 +20,13 @@ import sys
 __all__ = ['GoTo', 'GoToListener']
 
 class GoTo(DirectoryPaneCommand):
-	def __call__(self, query=''):
+	def __call__(self, query='', continue_typing=False):
+		query = strip_command_prefix(query)
 		visited_paths = self._get_visited_paths()
 		quicksearch_kwargs = {
-			'exit_keys': palette_exit_keys(GO_TO, COMMAND_PALETTE)
+			'exit_keys': palette_exit_keys(GO_TO, COMMAND_PALETTE),
+			'query_exit': goto_query_exit,
+			'select_from': len(query) if continue_typing else 0
 		}
 		if PLATFORM == 'Windows':
 			from core.network_suggestions import NetworkSuggestions

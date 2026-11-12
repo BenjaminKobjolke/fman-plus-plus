@@ -12,6 +12,7 @@ directory, Desktop, AppData, `%TEMP%`.
    starts with what you typed rank first, then ones whose *name* does, then
    substring matches, then loose character matches. Type `home` for your home
    directory, `desktop` for the Desktop.
+   Type `>` first to switch to the Command Palette.
 3. Press **`Tab`** to complete the highlighted entry and keep typing below it.
 4. Press **`Enter`** (or click) to open it in the active pane.
 
