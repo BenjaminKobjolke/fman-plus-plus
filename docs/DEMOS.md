@@ -121,10 +121,9 @@ change how a recording looks rather than how it behaves:
 - `Local\Settings.json` — your theme. Without it every demo records in the
   default Monokai. The `window_opacity` in that file has no effect: demo mode
   pins `DEMO_OPACITY` (`demo_scripts.py`) so every chapter starts at the same
-  known value, whatever your profile or a previous take says. The tour chapters
-  (ids 3-7) are the exception: `demo_opacity()` records them fully opaque,
-  because the tour is shown small on the website and a translucent window makes
-  its text hard to read.
+  known value, whatever your profile or a previous take says. That value is
+  fully opaque, because a translucent window makes the text hard to read on
+  the website.
 - `%APPDATA%\fman\Themes` — mirrored so a *custom* theme resolves instead of
   silently falling back to the default.
 
@@ -160,7 +159,8 @@ The recording tool minimizes every visible top-level window before it starts
 the launcher (`"minimize_all"` in its config, on by default). Two separate
 things make a leftover window fatal to a take: the recorder grabs screen
 *pixels* of fman's window rect, so anything drawn over it is burned into every
-frame; and demo mode pins `DEMO_OPACITY` at 0.8, so whatever sits *behind* fman
+frame; and while a script turns fman translucent (the overview's opacity
+chapter, a theme with its own `opacity`), whatever sits *behind* fman
 shows through it, putting that window's contents on camera without ever
 covering fman.
 
@@ -233,8 +233,8 @@ from `PATH`.)
    above) — but a window pinned above others survives that, and the capture is a
    screen region, so
    whatever is drawn over fman is burned into every frame and no setting in the
-   tool can exclude it. The same goes for anything left *behind* fman: at
-   `DEMO_OPACITY` 0.8 it shows through.
+   tool can exclude it. The same goes for anything left *behind* fman: it
+   shows through while a script turns the window translucent.
 2. **Check libmpv is cached** at
    `%TEMP%\fman-demo-profile\Local\libmpv\libmpv-2.dll` — the launcher copies it
    from your real profile. Without it the first video view downloads ~100 MB
@@ -355,7 +355,7 @@ Screenshot checks should not record demo 1: until the screenshot tool honors
   | id | name | shows | measured |
   |----|------|-------|----------|
   | 8 | `feature-goto` | `Ctrl+P` Go to: fuzzy jump, tab-complete, Enter | 101 frames, 20.2 s |
-  | 9 | `feature-tail` | tail mode following a log while it grows | 105 frames, 21.0 s |
+  | 9 | `feature-tail` | tail mode following a log while it grows | 106 frames, 21.2 s |
   | 21 | `feature-commands` | `Ctrl+Shift+P` palette: new folder, rename, view, delete, select all, deselect, copy | 249 frames, 49.8 s |
 
   They also record with a bigger font than everything else — see the demo
@@ -724,7 +724,7 @@ start, and end with a `Pause(1.0)` so the recording doesn't cut off abruptly.
 | the palette runs the wrong command | a shorter command title matched the query first | lengthen the query; see the table above |
 | the text in a `feature-*` or `plugin-*` GIF is too small to read | it uses the default demo font CSS instead of the larger standalone variant | add its id to the `demo_Theme.css` override lines in `run_fman_demo.bat` and re-record |
 | a clock/monitor overlay is visible in every frame | an always-on-top desktop widget | close it and re-record; the capture is a screen region |
-| file names or window contents show faintly *through* fman | a window was left behind fman, and `DEMO_OPACITY` is 0.8 | check the minimize count the tool logs — a zero on a bad take is the tell; a window pinned always-on-top survives the minimize and has to be closed by hand |
+| file names or window contents show faintly *through* fman | a window was left behind fman while the script had turned it translucent | check the minimize count the tool logs — a zero on a bad take is the tell; a window pinned always-on-top survives the minimize and has to be closed by hand |
 | a video demo records a download dialog | libmpv isn't cached in the demo profile | copy `libmpv-2.dll` into `%TEMP%\fman-demo-profile\Local\libmpv\` |
 | `Demo exceeded 300s cap` | one script is too long | split it into chapters |
 | `No demo event for 60s` | a long stretch with no `Screenshot` step | add `Screenshot` heartbeats or shorten the chapter |

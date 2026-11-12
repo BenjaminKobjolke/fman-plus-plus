@@ -30,18 +30,11 @@ from fman.impl.demo_scripts_features import FEATURE_CLIPS
 from fman.impl.demo_scripts_launch import LAUNCH_CLIPS
 from fman.impl.demo_scripts_tour import TOUR_CHAPTERS
 
-# Every recording starts translucent, so fman is shown the way it is meant to
-# be used and the overview's opacity chapter has something to move away from.
+# Every recording starts opaque: a translucent window blends the desktop into
+# the text and makes the clips hard to read on the website.
 # Forced in application_context._run_demo rather than read from the demo
 # profile: a take must never inherit whatever the recordist last picked.
-DEMO_OPACITY = 0.8
-
-
-def demo_opacity(demo_id):
-	"""The window opacity a recording of `demo_id` starts at."""
-	# The tour is shown small on the website: a translucent window blends the
-	# desktop into the text and makes it hard to read there.
-	return 1.0 if demo_id in TOUR_CHAPTERS else DEMO_OPACITY
+DEMO_OPACITY = 1.0
 
 # The themes demo has no entry in DEMOS: its steps are built per run from the
 # themes that are actually installed, so a new ``Themes/*.json`` reaches the
@@ -83,13 +76,13 @@ DEMOS = {
 			Pause(1.0),
 			# Window opacity is palette-only (no default key binding), so the
 			# palette is the only way to show it at all. 'Opacity' is an alias
-			# of Set window opacity. The window already records at
-			# DEMO_OPACITY, so the picker goes the other way first: '100'
-			# matches just the '100%' preset, '80' just the '80%' one.
+			# of Set window opacity. The window records opaque (DEMO_OPACITY),
+			# so the picker goes translucent first: '80' matches just the
+			# '80%' preset, '100' just the '100%' one.
 			PressKey('Ctrl+Shift+P'), Pause(0.5),
 			Command('opacity'), Pause(1.2),
-			Command('100'), Pause(1.8),
-			# A few moves at full opacity, so the difference reads in motion
+			Command('80'), Pause(1.8),
+			# A few moves while translucent, so the difference reads in motion
 			# and not only in a still frame.
 			PressKey('Ctrl+D'), Pause(0.8),
 			PressKey('Down'), Pause(0.5),
@@ -98,7 +91,7 @@ DEMOS = {
 			# ... and back to where the recording started.
 			PressKey('Ctrl+Shift+P'), Pause(0.5),
 			Command('opacity'), Pause(1.2),
-			Command('80'), Pause(1.8),
+			Command('100'), Pause(1.8),
 		),
 	),
 }
@@ -186,8 +179,8 @@ def build_themes_script(names):
 	"""
 	steps = [
 		Pause(1.0),
-		# Pin the opacity before the first switch. The recording starts at
-		# DEMO_OPACITY, but a theme may carry an `opacity` of its own, so
+		# Pin the opacity before the first switch. The recording starts
+		# opaque, but a theme may carry an `opacity` of its own, so
 		# every switch below could move it. These stills are about color,
 		# and a translucent window blends the desktop into the very colors
 		# they are meant to show.

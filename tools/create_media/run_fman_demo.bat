@@ -222,8 +222,9 @@ REM The desktop is cleared by the recording tool itself, before it starts this
 REM launcher ("minimize_all" in its config, on by default): it enumerates the
 REM top-level windows and minimizes each one, its own console included. A
 REM leftover window would otherwise be burned into every frame - the capture is
-REM a screen region - and at DEMO_OPACITY 0.8 anything left BEHIND fman shows
-REM through it too. Running fman by hand skips that; close what is on screen.
+REM a screen region - and while a script turns fman translucent, anything left
+REM BEHIND it shows through too. Running fman by hand skips that; close what is
+REM on screen.
 
 "%FMAN_PYTHON%" src\main\python\fman\main.py ^
   --automation-demo %1 ^

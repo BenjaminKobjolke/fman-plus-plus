@@ -55,6 +55,15 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_demos_record_opaque(self):
+		from fman.impl.demo_scripts import DEMO_OPACITY
+
+		self.assertEqual(1.0, DEMO_OPACITY)
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_transfer_failure_demo_takes_retry_and_result_stills(self):
 		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
 
