@@ -32,6 +32,53 @@ class _NavigationPane(FakePane):
 			callback()
 	def move_cursor_home(self):
 		pass
+	def place_cursor_at(self, url):
+		self.cursor_url = url
+
+class GoUpTest(TestCase):
+	def test_drive_root_opens_volumes_and_highlights_uppercase_drive(self):
+		for path in ('file://C:', 'file://C:/', 'file://c:'):
+			with self.subTest(path=path):
+				pane = self._pane(path)
+				with patch(
+					'core.commands.navigation._get_volumes_url',
+					return_value='drives://'
+				):
+					navigation.go_up(pane)
+				self.assertEqual(['drives://'], pane.set_path_calls)
+				self.assertEqual('drives://C:', pane.cursor_url)
+
+	def test_drive_child_keeps_its_existing_parent_and_cursor(self):
+		pane = self._pane('file://C:/Users')
+		with patch(
+			'core.commands.navigation._get_volumes_url',
+			return_value='drives://'
+		):
+			navigation.go_up(pane)
+		self.assertEqual(['file://C:'], pane.set_path_calls)
+		self.assertEqual('file://C:/Users', pane.cursor_url)
+
+	def test_zip_navigation_keeps_its_existing_parent_and_cursor(self):
+		path = 'zip://C:/archive.zip/folder'
+		pane = self._pane(path)
+		navigation.go_up(pane)
+		self.assertEqual(['zip://C:/archive.zip'], pane.set_path_calls)
+		self.assertEqual(path, pane.cursor_url)
+
+	def _pane(self, path):
+		pane = FakePane(url=path)
+		pane.path = path
+		pane.set_path_calls = []
+		pane.get_path = lambda: pane.path
+		def set_path(new_path, callback=None):
+			pane.set_path_calls.append(new_path)
+			pane.path = new_path
+			if callback:
+				callback()
+		pane.set_path = set_path
+		pane.place_cursor_at = lambda url: setattr(pane, 'cursor_url', url)
+		pane.move_cursor_home = lambda: setattr(pane, 'cursor_home', True)
+		return pane
 
 @skipUnless(PLATFORM == 'Windows', '.lnk shortcuts are a Windows concept')
 class FollowShortcutTest(TestCase):
