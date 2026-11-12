@@ -1,7 +1,7 @@
 from core.commands import deletion
 from core.commands.deletion import _Delete, _describe, DeletePermanently
 from core.undo_history import TrashRecord, history
-from fman import DirectoryPane, PLATFORM, Task, YES, NO
+from fman import DirectoryPane, PLATFORM, Task, YES, NO, YES_TO_ALL
 from fman.url import as_url
 from unittest import TestCase
 from unittest.mock import Mock, patch
@@ -64,10 +64,28 @@ class DeleteTest(TestCase):
 		with patch('core.commands.deletion.get_parallel_deletes', return_value=1), \
 				patch.object(delete_task, '_run_with_dialog',
 					 side_effect=lambda task, progress: task()), \
-				patch('core.commands.deletion.show_alert', return_value=NO):
+				patch.object(delete_task, 'show_alert', return_value=NO):
 			delete_task()
 
 		self.assertEqual([], run_order)
+
+	def test_continue_delete_error_defaults_to_yes_in_task_dialog(self):
+		delete_task = _Delete(['file:///first.txt', 'file:///second.txt'], Mock())
+		worker = Mock()
+		task = Mock()
+		task.get_title.return_value = 'Deleting first.txt'
+		error = OSError(5, 'Access is denied')
+		with patch('core.commands.deletion.WorkerProgress'), \
+				patch.object(delete_task, '_run_with_dialog', side_effect=error), \
+				patch.object(delete_task, 'show_alert', return_value=YES) as \
+						task_alert, \
+				patch('core.commands.deletion.show_alert') as module_alert:
+			delete_task._run_one(worker, task, is_last=False)
+		task_alert.assert_called_once_with(
+			'Error deleting first.txt: Access is denied. Do you want to continue?',
+			YES | NO | YES_TO_ALL, YES,
+		)
+		module_alert.assert_not_called()
 
 class TrashTest(TestCase):
 	def setUp(self):

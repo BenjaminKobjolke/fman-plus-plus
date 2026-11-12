@@ -202,7 +202,7 @@ class _Delete(Task):
 					self.show_alert(message)
 				else:
 					message += ' Do you want to continue?'
-					choice = show_alert(message, YES | NO | YES_TO_ALL)
+					choice = self.show_alert(message, YES | NO | YES_TO_ALL, YES)
 					if choice & NO:
 						return False
 					if choice & YES_TO_ALL:
