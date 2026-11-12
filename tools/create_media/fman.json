@@ -59,7 +59,7 @@
   ],
   "compose": [
     {"type": "tour", "group": "tour", "output": "demos/tour/feature-tour.mp4",
-     "width": 1280, "fps": 30, "caption_seconds": 5, "max_size": "3MB"},
+     "width": 1280, "fps": 30, "caption_seconds": 5},
 
     {"type": "stills_gif", "demo": "themes", "output": "demos/themes/themes.gif",
      "hold": 2.0, "width": 960},
