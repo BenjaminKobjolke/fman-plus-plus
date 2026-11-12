@@ -336,8 +336,12 @@ composing stale inputs.
   scratch drive's top-level folders. Once the parents load, the tree centers the
   current folder so the still shows `22-left` with its siblings and its
   `archive`, `projects` and `reports` children; stills are gitignored
-  (`media/demos/folder-tree/`). A change to the folder tree's look should add a
-  `Screenshot` here.
+  (`media/demos/folder-tree/`). After the expanded still, the demo moves the
+  tree cursor to `projects` while the file list cursor stays on `archive`, then
+  takes stills of the Delete confirmation and the Copy and Move prompts run
+  from the palette, cancelling each. They let the screenshot check judge that
+  pane commands act on the tree's folder. A change to which item tree commands
+  act on should add a still here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.

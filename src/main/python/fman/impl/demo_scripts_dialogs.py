@@ -31,8 +31,9 @@ the file that did copy.
 Demo 20 opens and closes the seeded video before the dialogs, because the
 native video surface changes how in-window dialogs are shown (#15803).
 
-Demo 22 holds a folder tree still with the current folder expanded, for the
-screenshot check.
+Demo 22 holds a folder tree still with the current folder expanded, then takes
+stills of Delete, Copy and Move from the palette with the tree cursor on
+`projects` while the file list cursor stays on `archive`.
 """
 
 from automated_screenshot_connector import (
@@ -272,7 +273,21 @@ DIALOG_CLIPS = {
 			Command('toggle folder tree'),
 			Pause(4.0),
 			Screenshot('folder-tree-expanded'),
-			Pause(1.2),
+			PressKey('Down'), Pause(0.3), PressKey('Down'), Pause(0.6),
+			Screenshot('folder-tree-cursor-on-projects'),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('delete'), Pause(2.5),
+			Screenshot('folder-tree-delete-confirm'),
+			PressKey('Escape'), Pause(1.2),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('copy'), Pause(1.8),
+			Screenshot('folder-tree-copy-prompt'),
+			PressKey('Escape'), Pause(1.2),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('move'), Pause(1.8),
+			Screenshot('folder-tree-move-prompt'),
+			PressKey('Escape'), Pause(1.2),
+			Pause(1.0),
 		),
 	),
 }
