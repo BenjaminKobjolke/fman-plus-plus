@@ -1,7 +1,9 @@
 """Commands for opening and configuring the folder tree pane view."""
 from core.commands.hidden_files import _is_showing_hidden_files
+from core.commands.pane_view import PANE_FONT_SIZE_KEY
 from core.commands.transfer import drop_command
 from core.commands.util import get_opposite_pane
+from core.font_size import get_saved_font_size
 from core.folder_tree import FOLLOW_CURSOR_KEY, tree_ancestors
 from core.folder_tree_view import FolderTreeActions, FolderTreeView
 from core.settings import get_setting, save_setting, SETTINGS_FILE
@@ -48,7 +50,7 @@ class ToggleFolderTree(DirectoryPaneCommand):
 			self.pane._widget
 		)
 		file_view = self.pane._widget._view_mode.visible_view()
-		view.setFont(file_view.font())
+		view.set_font_size(get_saved_font_size(PANE_FONT_SIZE_KEY))
 		view.viewport().setAutoFillBackground(False)
 		set_transparent(
 			view, file_view.property(TRANSPARENT_PROPERTY)

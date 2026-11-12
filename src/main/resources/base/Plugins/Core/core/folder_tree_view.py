@@ -155,6 +155,11 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		self._follow_timer.setInterval(FOLLOW_CURSOR_DELAY_MS)
 		self._follow_timer.timeout.connect(self._navigate_current)
 		self.selectionModel().currentChanged.connect(self._current_changed)
+	def set_font_size(self, size):
+		# A local type selector beats the theme's `*` font-size rule; setFont does not.
+		self.setStyleSheet(
+			'' if size is None else 'FolderTreeView { font-size: %dpt; }' % size
+		)
 	def _is_command_palette_key(self, event):
 		key_event = QtKeyEvent(event.key(), event.modifiers())
 		key_bindings = load_json(KEY_BINDINGS_FILE, default=[])

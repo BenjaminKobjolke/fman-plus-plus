@@ -9,6 +9,35 @@ _APP = QApplication.instance() or QApplication([])
 
 
 class ToggleFolderTreeTest(TestCase):
+	def test_applies_saved_font_size_to_tree_and_clears_missing_override(self):
+		for size in (12, None):
+			with self.subTest(size=size):
+				pane, view = MagicMock(), MagicMock()
+				pane.get_path.return_value = 'file:///current'
+				with patch('core.commands.folder_tree.begin_new_view'), \
+					patch(
+						'core.commands.folder_tree.FolderTreeView',
+						return_value=view
+					), \
+					patch(
+						'core.commands.folder_tree._is_showing_hidden_files',
+						return_value=False
+					), \
+					patch(
+						'core.commands.folder_tree.get_setting', return_value=False
+					), \
+					patch(
+						'core.commands.folder_tree.get_saved_font_size',
+						return_value=size
+					), \
+					patch(
+						'core.commands.folder_tree.tree_ancestors',
+						return_value=['file:///']
+					):
+					ToggleFolderTree(pane)()
+
+				view.set_font_size.assert_called_once_with(size)
+
 	def test_mounts_tree_and_navigates_opposite_pane(self):
 		pane, other = MagicMock(), MagicMock()
 		pane.window.get_panes.return_value = [pane, other]

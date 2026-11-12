@@ -110,6 +110,18 @@ class FolderTreeModelTest(TestCase):
 
 
 class FolderTreeViewTest(TestCase):
+	def test_set_font_size_styles_tree_or_clears_override(self):
+		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
+		view = FolderTreeView(True, actions, False, _icon_provider())
+
+		view.set_font_size(14)
+
+		self.assertEqual(
+			'FolderTreeView { font-size: 14pt; }', view.styleSheet()
+		)
+		view.set_font_size(None)
+		self.assertEqual('', view.styleSheet())
+
 	def test_open_to_keeps_the_target_visible_after_parents_load(self):
 		children = ['file:///f%02d' % i for i in range(60)] + ['file:///m']
 		def list_children(url, show_hidden):

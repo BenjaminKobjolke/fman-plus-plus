@@ -10,6 +10,7 @@ from core.commands.util import get_opposite_pane
 from core.commands.hidden_files import _forget_pane_info
 from core.font_size import change_font_size, effective_font_size, \
 	get_saved_font_size, reset_font_size
+from core.folder_tree_view import FolderTreeView
 from fman import DirectoryPaneCommand, DirectoryPaneListener
 # Not in fman's __all__, so a star import would not bring these in - the same
 # reason commands/theme.py names the icon functions explicitly.
@@ -92,7 +93,7 @@ class ShowAllPanes(DirectoryPaneCommand):
 			pane._widget.setVisible(True)
 		self.pane.focus()
 
-_SETTING_KEY = 'pane_font_size'
+PANE_FONT_SIZE_KEY = 'pane_font_size'
 # The read/clamp/save/apply algorithm lives in core/font_size (imported
 # above) so the text viewer's own zoom can reuse it without a circular
 # import - see that module's docstring. Only the two things below are the
@@ -121,6 +122,9 @@ def _apply_pane_font_size(pane, size):
 	css = '' if size is None else \
 		'FileListView, CompactFileView { font-size: %dpt; }' % size
 	pane._widget.set_file_list_style_sheet(css)
+	mounted = pane.get_mounted_widget()
+	if isinstance(mounted, FolderTreeView):
+		mounted.set_font_size(size)
 
 def _remember_base_pane_font_size(pane):
 	# Call before applying an override to `pane`: afterwards the view reports
@@ -154,13 +158,13 @@ def _change_pane_font_size(window, delta):
 	# it, and the theme's own size - the icon scale's baseline - is gone.
 	_remember_base_pane_font_size(first_pane)
 	change_font_size(
-		_SETTING_KEY, lambda: _pane_font(first_pane),
+		PANE_FONT_SIZE_KEY, lambda: _pane_font(first_pane),
 		lambda size: _apply_to_all_panes(window, size), delta
 	)
 
 def _reset_pane_font_size(window):
 	reset_font_size(
-		_SETTING_KEY, lambda size: _apply_to_all_panes(window, size)
+		PANE_FONT_SIZE_KEY, lambda size: _apply_to_all_panes(window, size)
 	)
 
 class IncreasePaneFontSize(DirectoryPaneCommand):
@@ -190,7 +194,7 @@ class InitPaneFontSize(DirectoryPaneListener):
 		super().__init__(*args, **kwargs)
 		# Mirrors InitHiddenFilesFilter: fman instantiates commands lazily,
 		# so re-applying a saved setting on startup has to happen here.
-		size = get_saved_font_size(_SETTING_KEY)
+		size = get_saved_font_size(PANE_FONT_SIZE_KEY)
 		# Unconditionally, and before applying: this is the only moment in a
 		# session where the pane still reports the theme's own font size, so
 		# it is the only moment the icon scale's baseline can be read.

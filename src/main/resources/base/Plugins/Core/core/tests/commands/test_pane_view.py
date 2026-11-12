@@ -1,6 +1,7 @@
 from core.commands import pane_view
 from core.commands.pane_view import ShowAllPanes, ShowOnlyActivePane, \
 	AddPane, RemovePane, SwitchPanes
+from core.folder_tree_view import FolderTreeView
 from PyQt5.QtGui import QFont
 from core.tests.commands import FakeWindow
 from PyQt5.QtWidgets import QApplication
@@ -154,6 +155,25 @@ class RememberBasePaneFontSizeTest(TestCase):
 			pane_view._base_pane_font_size = previous_base_size
 
 class ApplyPaneFontSizeTest(TestCase):
+	def test_applies_font_size_to_a_mounted_folder_tree(self):
+		pane = Mock()
+		tree = Mock(spec=FolderTreeView)
+		pane.get_mounted_widget.return_value = tree
+
+		pane_view._apply_pane_font_size(pane, 16)
+
+		tree.set_font_size.assert_called_once_with(16)
+	def test_ignores_other_or_missing_mounted_widgets(self):
+		for mounted in (None, object()):
+			with self.subTest(mounted=mounted):
+				pane = Mock()
+				pane.get_mounted_widget.return_value = mounted
+
+				pane_view._apply_pane_font_size(pane, None)
+
+				pane._widget.set_file_list_style_sheet.assert_called_once_with('')
+				pane.get_mounted_widget.assert_called_once_with()
+
 	def test_styles_both_file_view_modes_through_the_pane_widget(self):
 		pane = Mock()
 
