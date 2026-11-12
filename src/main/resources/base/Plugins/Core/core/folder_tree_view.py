@@ -57,7 +57,7 @@ class FolderTreeModel(QStandardItemModel):
 				self._loaded.add(url)
 				if not persistent.isValid():
 					return
-				parent_item = self.itemFromIndex(persistent)
+				parent_item = self.itemFromIndex(QModelIndex(persistent))
 				if parent_item is None:
 					return
 				existing = {
@@ -65,7 +65,11 @@ class FolderTreeModel(QStandardItemModel):
 					for row in range(parent_item.rowCount())
 					if parent_item.child(row).data(URL_ROLE)
 				}
-				parent_item.removeRows(0, parent_item.rowCount())
+				child_urls = set(children)
+				for row in reversed(range(parent_item.rowCount())):
+					child = parent_item.child(row)
+					if child.data(URL_ROLE) not in child_urls:
+						parent_item.removeRow(row)
 				for child in children:
 					folder = existing.get(child)
 					if folder is None:
