@@ -53,6 +53,8 @@
     {"id": 17, "name": "ftp-overwrite", "fps": 2, "formats": [],
      "width": 1920, "height": 1080},
     {"id": 18, "name": "single-instance", "fps": 2, "formats": [],
+     "width": 1920, "height": 1080},
+    {"id": 19, "name": "transfer-failure", "fps": 2, "formats": [],
      "width": 1920, "height": 1080}
   ],
   "compose": [

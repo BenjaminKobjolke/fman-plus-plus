@@ -21,6 +21,10 @@ never reaches the real account or network.
 
 Demo 17 needs the FTP plugin and fake server seeded by run_fman_demo.bat. It
 checks that the progress window hides during a task question and returns after.
+
+Demo 19 needs the locked file seeded by run_fman_demo.bat. It shows the single
+retry question after a copy with a failed file, again after a failed retry, and
+the file that did copy.
 """
 
 from automated_screenshot_connector import (
@@ -183,6 +187,22 @@ DIALOG_CLIPS = {
 			Pause(1.5),
 			ScreenStill('ftp-progress-after-answer'),
 			Pause(4.0),
+		),
+	),
+	19: DemoScript(
+		id=19,
+		name='transfer-failure',
+		steps=(
+			Pause(2.5),
+			PressKey('F5'), Pause(2.5), PressKey('Return'), Pause(6.0),
+			ScreenStill('transfer-failure-retry-question'),
+			PressKey('Return'), Pause(6.0),
+			ScreenStill('transfer-failure-retry-again'),
+			PressKey('Escape'), Pause(1.2),
+			PressKey('Tab'), PressKey('Ctrl+R'), Pause(1.0),
+			PressKey('Return'), Pause(1.5),
+			Screenshot('transfer-failure-copied-rest'),
+			Pause(1.0),
 		),
 	),
 }

@@ -55,6 +55,29 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_transfer_failure_demo_takes_retry_and_result_stills(self):
+		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+
+		demo = DIALOG_CLIPS[19]
+		still_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ in ('ScreenStill', 'Screenshot')
+		]
+
+		self.assertEqual(demo.name, 'transfer-failure')
+		self.assertEqual(
+			still_names,
+			[
+				'transfer-failure-retry-question',
+				'transfer-failure-retry-again',
+				'transfer-failure-copied-rest',
+			],
+		)
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_dialogs_demo_takes_a_still_of_each_dialog(self):
 		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
 

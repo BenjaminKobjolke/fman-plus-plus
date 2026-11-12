@@ -296,6 +296,11 @@ composing stale inputs.
   `single-instance-new-window` and `single-instance-forwarded-to-original`. It
   records stills only and exists so the screenshot check can judge
   single-instance and `--new-instance` changes.
+- **19 `transfer-failure`** — copies a folder in which `run_fman_demo.bat` holds
+  one file open, so only that file's copy fails. Stills show the end-of-copy
+  retry question, the question again after a failed retry, and the file that did
+  copy. It exists so the screenshot check can judge copy and move failure
+  handling; stills are gitignored (`media/demos/transfer-failure/`).
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.

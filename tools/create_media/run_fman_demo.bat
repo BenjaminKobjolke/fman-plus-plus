@@ -122,6 +122,26 @@ if "%1"=="18" >"%LEFT%\opened-by-new-instance\demo.txt" echo Separate window
 if "%1"=="18" mkdir "%LEFT%\forwarded-to-original"
 if "%1"=="18" >"%LEFT%\forwarded-to-original\demo.txt" echo Forwarded launch
 
+REM Demo 19 holds in-use.txt open so its copy fails and the end-of-copy retry question appears.
+if "%1"=="19" mkdir "%LEFT%\retry-demo"
+if "%1"=="19" >"%LEFT%\retry-demo\notes.txt" echo Copied fine
+if "%1"=="19" >"%LEFT%\retry-demo\in-use.txt" echo Held open by another program
+if "%1"=="19" set "LOCK_PID=%TEMP%\fman-demo-19-lock.pid"
+if "%1"=="19" set "LOCKED_FILE=%LEFT%\retry-demo\in-use.txt"
+if "%1"=="19" set "LOCK_READY=%TEMP%\fman-demo-19-lock.ready"
+if "%1"=="19" if exist "%LOCK_PID%" (
+	for /f %%p in (%LOCK_PID%) do taskkill /pid %%p /t /f >nul 2>nul
+	del "%LOCK_PID%"
+)
+if "%1"=="19" if exist "%LOCK_READY%" del "%LOCK_READY%"
+if "%1"=="19" powershell -NoProfile -Command "$p=Start-Process -WindowStyle Hidden -FilePath powershell -ArgumentList @('-NoProfile','-Command','$f=[IO.File]::Open($env:LOCKED_FILE,''Open'',''Read'',''None''); Set-Content -LiteralPath $env:LOCK_READY -Value ready; Start-Sleep 120') -PassThru; Set-Content -LiteralPath '%LOCK_PID%' -Value $p.Id; for($i=0; $i -lt 50 -and -not(Test-Path $env:LOCK_READY); $i++){ Start-Sleep -Milliseconds 100 }; if(-not(Test-Path $env:LOCK_READY)){ throw 'Demo file lock did not start' }"
+if "%1"=="19" if errorlevel 1 (
+	if exist "%LOCK_PID%" for /f %%p in (%LOCK_PID%) do taskkill /pid %%p /t /f >nul 2>nul
+	if exist "%LOCK_PID%" del "%LOCK_PID%"
+	if exist "%LOCK_READY%" del "%LOCK_READY%"
+	exit /b 1
+)
+
 REM Demo 17 uploads this small site; site sorts first and contains the conflict.
 if "%1"=="17" mkdir "%LEFT%\site\css" 2>nul
 if "%1"=="17" >"%LEFT%\site\index.html" echo Demo site
@@ -186,3 +206,8 @@ if "%1"=="17" if exist "%FTP_SERVER_PID%" (
 	for /f %%p in (%FTP_SERVER_PID%) do taskkill /pid %%p /t /f >nul 2>nul
 	del "%FTP_SERVER_PID%"
 )
+if "%1"=="19" if exist "%LOCK_PID%" (
+	for /f %%p in (%LOCK_PID%) do taskkill /pid %%p /t /f >nul 2>nul
+	del "%LOCK_PID%"
+)
+if "%1"=="19" if exist "%LOCK_READY%" del "%LOCK_READY%"
