@@ -17,7 +17,11 @@
 
     {"id": 3, "name": "tour-a-panes", "fps": 10, "formats": ["mp4"],
      "width": 1920, "height": 1080, "group": "tour",
-     "caption": "Two panes, one keyboard  \u00b7  select, copy, filter, sort"},
+     "caption": "Two panes, one keyboard  \u00b7  select, copy, filter, sort",
+     "subtitles": [
+       {"at": 18.5, "text": "Just type to filter the list", "seconds": 5.5},
+       {"at": 24.8, "text": "Ctrl+F2 sorts by size  ·  Ctrl+F1 by name", "seconds": 3.5}
+     ]},
     {"id": 4, "name": "tour-b-organize", "fps": 10, "formats": ["mp4"],
      "width": 1920, "height": 1080, "group": "tour",
      "caption": "Organize without leaving the keyboard  \u00b7  F7 new folder, F6 move, Shift+F6 rename"},
@@ -29,7 +33,11 @@
      "caption": "Video plays in the pane  \u00b7  and previews in the other one"},
     {"id": 7, "name": "tour-e-archives", "fps": 10, "formats": ["mp4"],
      "width": 1920, "height": 1080, "group": "tour",
-     "caption": "Archives are just folders  \u00b7  pack, step inside, copy out"},
+     "caption": "Archives are just folders  \u00b7  pack, step inside, copy out",
+     "subtitles": [
+       {"at": 5.3, "text": "Alt+F5 packs the selection into a zip", "seconds": 5},
+       {"at": 26, "text": "Compare directories  ·  from the command palette", "seconds": 6}
+     ]},
 
     {"id": 8, "name": "feature-goto", "fps": 5, "formats": ["mp4"],
      "width": 1920, "height": 1080, "group": "feature"},

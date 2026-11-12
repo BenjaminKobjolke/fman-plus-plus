@@ -59,15 +59,15 @@ TOUR_CHAPTERS = {
 			PressKey('F7'), Pause(1.8),       # prompt prefilled with the stem
 			TypeText('documents'), Pause(1.0),
 			PressKey('Return'), Pause(1.6),   # created, cursor placed on it
+			# Show the new folder in the other pane: Move suggests that pane,
+			# and a name typed into its prompt resolves against that pane too,
+			# never against this one.
+			PressKey('Ctrl+Right'), Pause(1.5),
 			PressKey('Down'), Pause(0.6),
 			PressKey('Ins'), Pause(0.6),
 			PressKey('Ins'), Pause(0.6),
 			PressKey('Ins'), Pause(1.2),      # the three text files
-			PressKey('F6'), Pause(1.8),
-			# A bare name in the Move prompt resolves against the SOURCE pane,
-			# and the target already exists as a directory, so moving into it
-			# needs no further confirmation.
-			TypeText('documents'), Pause(1.0),
+			PressKey('F6'), Pause(1.8),       # prefilled with the other pane
 			PressKey('Return'), Pause(2.5),
 			PressKey('Home'), Pause(0.8),     # directories sort first
 			PressKey('Return'), Pause(1.8),   # step into it
@@ -102,14 +102,16 @@ TOUR_CHAPTERS = {
 			PressKey('Ctrl+Shift+P'), Pause(1.0),
 			Command('view file'), Pause(2.0),
 			PressKey('Ctrl+Shift+P'), Pause(1.0),
-			Command('edit'), Pause(1.0),
+			# The full titles: a bare 'edit' matches the global Edit command
+			# (external editor) ahead of the viewer's own entry.
+			Command('edit file'), Pause(1.0),
 			PressKey('Ctrl+End'), Pause(0.5),
 			PressKey('Return'), Pause(0.3),   # a newline; TypeText can't carry one
 			TypeText('Edited in ' + APP_NAME), Pause(1.3),
 			PressKey('Ctrl+Shift+P'), Pause(1.0),
-			Command('save'), Pause(1.5),      # straight to disk, no dialog
+			Command('save file'), Pause(1.5), # straight to disk, no dialog
 			PressKey('Ctrl+Shift+P'), Pause(1.0),
-			Command('exit'), Pause(1.2),      # Escape doesn't close in edit mode
+			Command('exit viewer'), Pause(1.2), # Escape doesn't close in edit mode
 		),
 	),
 	6: DemoScript(
