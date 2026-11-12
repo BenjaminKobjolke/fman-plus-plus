@@ -2,6 +2,7 @@
 from core.folder_tree import FOLLOW_CURSOR_DELAY_MS, can_drop, list_subfolders
 from core.key_bindings import command_for_key_event, KEY_BINDINGS_FILE
 from fman import load_json
+from fman.url import dirname
 from fman.impl.util.qt import FMAN_URLS_MIME, MoveAction, CopyAction, \
 	IgnoreAction, get_urls, set_urls
 from fman.impl.util.qt.key_event import QtKeyEvent
@@ -40,6 +41,7 @@ class FolderTreeModel(QStandardItemModel):
 		self._drop_callback = drop_callback
 		self._loading = set()
 		self._loaded = set()
+		self._pending_refresh = set()
 		self._icon_provider = icon_provider
 		self._fallback_icon = QFileIconProvider().icon(
 			QFileIconProvider.Folder
@@ -78,6 +80,7 @@ class FolderTreeModel(QStandardItemModel):
 				self._loading.discard(url)
 				self._loaded.add(url)
 				if not persistent.isValid():
+					self._pending_refresh.discard(url)
 					return
 				parent_item = self.itemFromIndex(QModelIndex(persistent))
 				if parent_item is None:
@@ -97,8 +100,30 @@ class FolderTreeModel(QStandardItemModel):
 					# stays put.
 					self.add_folder(parent_item, child, row)
 				self.children_loaded.emit(url)
+				if url in self._pending_refresh:
+					self._pending_refresh.discard(url)
+					self._loaded.discard(url)
+					self.load(parent_item)
 			apply()
 		Thread(target=work, daemon=True).start()
+	def refresh(self, url):
+		if url in self._loading:
+			self._pending_refresh.add(url)
+			return
+		if url not in self._loaded:
+			return
+		root = self.invisibleRootItem()
+		items = [root.child(row) for row in reversed(range(root.rowCount()))]
+		while items:
+			item = items.pop()
+			if item.data(URL_ROLE) == url:
+				self._loaded.discard(url)
+				self.load(item)
+				return
+			items.extend(
+				item.child(row)
+				for row in reversed(range(item.rowCount()))
+			)
 	def mimeTypes(self):
 		return ['text/uri-list', FMAN_URLS_MIME]
 	def mimeData(self, indexes):
@@ -132,10 +157,12 @@ class FolderTreeModel(QStandardItemModel):
 
 class FolderTreeView(DragAndDrop, QTreeView):
 	def __init__(
-		self, show_hidden, actions, follow_cursor, icon_provider, parent=None
+		self, show_hidden, actions, follow_cursor, icon_provider, parent=None,
+		fs=None
 	):
 		super().__init__(parent)
 		self._actions = actions
+		self._fs = fs
 		self._follow_cursor = follow_cursor
 		self._reveal_url = None
 		self._reveal_pending = set()
@@ -155,6 +182,25 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		self._follow_timer.setInterval(FOLLOW_CURSOR_DELAY_MS)
 		self._follow_timer.timeout.connect(self._navigate_current)
 		self.selectionModel().currentChanged.connect(self._current_changed)
+		if fs is not None:
+			self._file_change_callback = self._on_file_changed
+			fs.file_added.add_callback(self._file_change_callback)
+			fs.file_removed.add_callback(self._file_change_callback)
+			self.destroyed.connect(self._unsubscribe)
+	def _unsubscribe(self, destroyed_object=None):
+		if self._fs is None:
+			return
+		for event, callback in (
+			(self._fs.file_added, self._file_change_callback),
+			(self._fs.file_removed, self._file_change_callback),
+		):
+			try:
+				event.remove_callback(callback)
+			except (ValueError, FileNotFoundError):
+				pass
+	@run_in_main_thread
+	def _on_file_changed(self, url):
+		self._model.refresh(dirname(url))
 	def set_font_size(self, size):
 		# A local type selector beats the theme's `*` font-size rule; setFont does not.
 		self.setStyleSheet(
@@ -249,7 +295,10 @@ class FolderTreeView(DragAndDrop, QTreeView):
 			# shortcut: a manual wheel scroll during loading is undone once more;
 			# track scrollbar moves if users notice.
 		if self._follow_cursor:
-			self._follow_timer.start()
+			if current.isValid():
+				self._follow_timer.start()
+			else:
+				self._follow_timer.stop()
 	def set_follow_cursor(self, enabled):
 		self._follow_cursor = enabled
 		if not enabled:

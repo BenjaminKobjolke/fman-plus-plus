@@ -47,7 +47,7 @@ class ToggleFolderTree(DirectoryPaneCommand):
 			_is_showing_hidden_files(self.pane), actions,
 			get_setting(SETTINGS_FILE, FOLLOW_CURSOR_KEY, False),
 			self.pane._widget._model._fs._icon_provider,
-			self.pane._widget
+			self.pane._widget, fs=self.pane._widget._model._fs
 		)
 		file_view = self.pane._widget._view_mode.visible_view()
 		view.set_font_size(get_saved_font_size(PANE_FONT_SIZE_KEY))

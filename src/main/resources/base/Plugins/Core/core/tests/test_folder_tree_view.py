@@ -25,6 +25,15 @@ class SynchronousThread:
 		self._target()
 
 
+class DeferredThread:
+	threads = []
+	def __init__(self, target, daemon):
+		self._target = target
+		self.threads.append(self)
+	def start(self):
+		pass
+
+
 class FolderTreeModelTest(TestCase):
 	def load_children(self, model, parent, children):
 		with patch('core.folder_tree_view.Thread', SynchronousThread), \
@@ -72,6 +81,62 @@ class FolderTreeModelTest(TestCase):
 		self.assertEqual(0, parent.rowCount())
 		self.assertNotIn('file:///p', model._loading)
 		self.assertIn('file:///p', model._loaded)
+	def test_refresh_reloads_a_loaded_parent_and_merges_children(self):
+		model = FolderTreeModel(True, Mock(), _icon_provider())
+		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		removed = model.add_folder(parent, 'file:///p/removed')
+		retained = model.add_folder(parent, 'file:///p/retained')
+		model._loaded.add('file:///p')
+
+		with patch('core.folder_tree_view.Thread', SynchronousThread), \
+				patch(
+					'core.folder_tree_view.list_subfolders',
+					return_value=['file:///p/added', 'file:///p/retained']
+				) as list_subfolders:
+			model.refresh('file:///p')
+
+		list_subfolders.assert_called_once_with('file:///p', True)
+		self.assertEqual(
+			['file:///p/added', 'file:///p/retained'],
+			[parent.child(row).data(URL_ROLE)
+			 for row in range(parent.rowCount())]
+		)
+		self.assertIs(retained, parent.child(1))
+		self.assertNotIn(removed, [
+			parent.child(row) for row in range(parent.rowCount())
+		])
+	def test_refresh_ignores_an_unloaded_parent(self):
+		model = FolderTreeModel(True, Mock(), _icon_provider())
+		model.add_folder(model.invisibleRootItem(), 'file:///p')
+
+		with patch.object(model, 'load') as load:
+			model.refresh('file:///p')
+
+		load.assert_not_called()
+	def test_refresh_during_load_relists_after_the_in_flight_listing(self):
+		model = FolderTreeModel(True, Mock(), _icon_provider())
+		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		DeferredThread.threads = []
+		with patch('core.folder_tree_view.Thread', DeferredThread), \
+				patch(
+					'core.folder_tree_view.list_subfolders',
+					side_effect=[['file:///p/stale'], ['file:///p/fresh']]
+				) as list_subfolders:
+			model.load(parent)
+			model.refresh('file:///p')
+
+			DeferredThread.threads[0]._target()
+
+			self.assertEqual(2, len(DeferredThread.threads))
+			self.assertIn('file:///p', model._loading)
+			DeferredThread.threads[1]._target()
+
+		self.assertEqual(2, list_subfolders.call_count)
+		self.assertEqual(
+			['file:///p/fresh'],
+			[parent.child(row).data(URL_ROLE)
+			 for row in range(parent.rowCount())]
+		)
 	def test_add_folder_uses_injected_icon_provider(self):
 		icons = Mock()
 		icons.get_icon.return_value = QIcon()
@@ -110,6 +175,36 @@ class FolderTreeModelTest(TestCase):
 
 
 class FolderTreeViewTest(TestCase):
+	def test_file_added_notification_refreshes_its_parent(self):
+		fs = Mock()
+		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
+		view = FolderTreeView(
+			True, actions, False, _icon_provider(), fs=fs
+		)
+
+		with patch.object(view._model, 'refresh') as refresh:
+			fs.file_added.add_callback.call_args.args[0]('file:///parent/child')
+
+		refresh.assert_called_once_with('file:///parent')
+		added_callback = fs.file_added.add_callback.call_args.args[0]
+		removed_callback = fs.file_removed.add_callback.call_args.args[0]
+		self.assertIs(added_callback, removed_callback)
+		view._unsubscribe()
+		fs.file_added.remove_callback.assert_called_once_with(added_callback)
+		fs.file_removed.remove_callback.assert_called_once_with(added_callback)
+	def test_current_change_to_invalid_index_stops_follow_navigation(self):
+		navigate = Mock()
+		view = FolderTreeView(
+			True,
+			FolderTreeActions(navigate, Mock(), Mock(), Mock(), Mock()),
+			True, _icon_provider()
+		)
+
+		view._current_changed(view.model().index(-1, -1), view.currentIndex())
+		view._navigate_current()
+
+		navigate.assert_not_called()
+
 	def test_cursor_methods_report_the_current_folder_and_parent_location(self):
 		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
 		view = FolderTreeView(True, actions, False, _icon_provider())
