@@ -33,7 +33,7 @@ class FolderTreeModel(QStandardItemModel):
 		self._loaded = set()
 		self._icons = QFileIconProvider()
 		self.setColumnCount(1)
-	def add_folder(self, parent, url):
+	def add_folder(self, parent, url, row=None):
 		item = QStandardItem(
 			self._icons.icon(QFileIconProvider.Folder),
 			url.rsplit('/', 1)[-1] or '/'
@@ -41,7 +41,10 @@ class FolderTreeModel(QStandardItemModel):
 		item.setEditable(False)
 		item.setData(url, URL_ROLE)
 		item.appendRow(QStandardItem())
-		parent.appendRow(item)
+		if row is None:
+			parent.appendRow(item)
+		else:
+			parent.insertRow(row, item)
 		return item
 	def load(self, item):
 		url = item.data(URL_ROLE)
@@ -60,22 +63,20 @@ class FolderTreeModel(QStandardItemModel):
 				parent_item = self.itemFromIndex(QModelIndex(persistent))
 				if parent_item is None:
 					return
-				existing = {
-					parent_item.child(row).data(URL_ROLE): parent_item.child(row)
-					for row in range(parent_item.rowCount())
-					if parent_item.child(row).data(URL_ROLE)
-				}
 				child_urls = set(children)
 				for row in reversed(range(parent_item.rowCount())):
 					child = parent_item.child(row)
 					if child.data(URL_ROLE) not in child_urls:
 						parent_item.removeRow(row)
-				for child in children:
-					folder = existing.get(child)
-					if folder is None:
-						self.add_folder(parent_item, child)
-					else:
-						parent_item.appendRow(folder)
+				# Keep existing rows in place so the current index and expanded subtree
+				# survive.
+				for row, child in enumerate(children):
+					if row < parent_item.rowCount() and \
+							parent_item.child(row).data(URL_ROLE) == child:
+						continue
+					# shortcut: Existing rows are sorted already; an out-of-order one
+					# stays put.
+					self.add_folder(parent_item, child, row)
 			apply()
 		Thread(target=work, daemon=True).start()
 	def mimeTypes(self):

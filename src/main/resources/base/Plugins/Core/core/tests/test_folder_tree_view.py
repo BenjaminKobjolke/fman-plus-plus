@@ -1,4 +1,6 @@
-from core.folder_tree_view import FolderTreeActions, FolderTreeModel, FolderTreeView
+from core.folder_tree_view import (
+	FolderTreeActions, FolderTreeModel, FolderTreeView, URL_ROLE,
+)
 from fman.impl.util.qt import CopyAction, MoveAction, get_urls, set_urls
 from PyQt5.QtCore import QEvent, QMimeData, Qt
 from PyQt5.QtGui import QKeyEvent
@@ -11,6 +13,48 @@ _app = QApplication.instance() or QApplication([])
 
 
 class FolderTreeModelTest(TestCase):
+	def load_children(self, model, parent, children):
+		class SynchronousThread:
+			def __init__(self, target, daemon):
+				self._target = target
+			def start(self):
+				self._target()
+
+		with patch('core.folder_tree_view.Thread', SynchronousThread), \
+				patch('core.folder_tree_view.list_subfolders', return_value=children):
+			model.load(parent)
+
+	def test_load_inserts_children_in_order_around_an_existing_child(self):
+		model = FolderTreeModel(True, Mock())
+		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		existing_child = model.add_folder(parent, 'file:///p/b')
+
+		self.load_children(
+			model, parent,
+			['file:///p/a', 'file:///p/b', 'file:///p/c']
+		)
+
+		self.assertEqual(3, parent.rowCount())
+		self.assertEqual(
+			['file:///p/a', 'file:///p/b', 'file:///p/c'],
+			[parent.child(row).data(URL_ROLE)
+			 for row in range(parent.rowCount())]
+		)
+		self.assertIs(existing_child, parent.child(1))
+
+	def test_load_keeps_the_loaded_subtree_of_an_existing_child(self):
+		model = FolderTreeModel(True, Mock())
+		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		existing_child = model.add_folder(parent, 'file:///p/b')
+		grandchild = model.add_folder(existing_child, 'file:///p/b/c')
+
+		self.load_children(model, parent, ['file:///p/a', 'file:///p/b'])
+
+		self.assertIn(
+			grandchild,
+			[existing_child.child(row) for row in range(existing_child.rowCount())]
+		)
+
 	def test_drag_urls_and_drop_to_folder(self):
 		drop = Mock()
 		model = FolderTreeModel(True, drop)
