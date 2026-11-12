@@ -141,7 +141,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 			from automated_screenshot_connector import DemoClient, \
 				localize_script, parse_demo_args
 			from fman.impl.demo import DemoPlayer
-			from fman.impl.demo_scripts import DEMO_OPACITY, demo_ids, \
+			from fman.impl.demo_scripts import demo_ids, demo_opacity, \
 				get_script
 			from fman.impl.demo_scripts_launch import LISTENING_DEMO_IDS
 		except ImportError:
@@ -173,7 +173,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 		# whatever a previous take left in the demo profile: every chapter
 		# starts at the same known value, and the overview's opacity chapter
 		# is written against it.
-		self.main_window.setWindowOpacity(DEMO_OPACITY)
+		self.main_window.setWindowOpacity(demo_opacity(options.demo))
 		if options.demo_width is not None and options.demo_height is not None:
 			# show_main_window may maximize (settings-less run) or restore old
 			# geometry; the recording needs the size the tool asked for.

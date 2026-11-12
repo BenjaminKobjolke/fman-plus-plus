@@ -62,9 +62,11 @@ if exist "%APPDATA%\fman\Themes" (
 REM The window is captured at 1920x1080, then the published tour is 1280px
 REM wide and the standalone GIFs are narrower. Seed a demo-only Theme.css for
 REM every recording so the text remains readable after composition.
-REM Standalone feature/plugin clips need the larger variant; all others use
-REM Core sizes at 1.5x. See tools/create_media/demo_Theme*.css.
+REM The tour chapters (3-7) and the standalone feature/plugin clips need the
+REM larger variant; all others use Core sizes at 1.5x. See
+REM tools/create_media/demo_Theme*.css.
 set "FONT_CSS=demo_Theme_default.css"
+if %1 GEQ 3 if %1 LEQ 7 set "FONT_CSS=demo_Theme.css"
 if "%1"=="8" set "FONT_CSS=demo_Theme.css"
 if "%1"=="9" set "FONT_CSS=demo_Theme.css"
 if "%1"=="10" set "FONT_CSS=demo_Theme.css"

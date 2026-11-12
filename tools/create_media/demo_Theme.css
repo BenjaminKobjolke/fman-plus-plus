@@ -1,13 +1,15 @@
 /*
- * Font sizes for standalone feature-* and plugin-* recordings (demos 8-10).
+ * Font sizes for the tour chapters (demos 3-7) and the standalone feature-*
+ * and plugin-* recordings (demos 8-10).
  *
  * They are captured at 1920x1080, then published at 800px wide for feature
  * clips (about 0.42x) and narrower for plugin clips. At 800px the 21pt app
  * font reads as about 8.75pt. CSS accepts whole pt values only, so these are
- * rounded.
+ * rounded. The tour is shown on the website at about 1100px (0.58x), where
+ * the 14pt default read as 8pt and was too small.
  *
  * run_fman_demo.bat copies this into the throwaway profile as
- * Plugins\User\DemoFont\Theme.css. The tour uses demo_Theme_default.css.
+ * Plugins\User\DemoFont\Theme.css. Stills use demo_Theme_default.css.
  * User plugins load after Core and Theme keeps load order, so these win over
  * Plugins/Core/Theme.css.
  *

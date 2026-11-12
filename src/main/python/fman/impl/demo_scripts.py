@@ -35,6 +35,13 @@ from fman.impl.demo_scripts_tour import TOUR_CHAPTERS
 # profile: a take must never inherit whatever the recordist last picked.
 DEMO_OPACITY = 0.8
 
+
+def demo_opacity(demo_id):
+	"""The window opacity a recording of `demo_id` starts at."""
+	# The tour is shown small on the website: a translucent window blends the
+	# desktop into the text and makes it hard to read there.
+	return 1.0 if demo_id in TOUR_CHAPTERS else DEMO_OPACITY
+
 # The themes demo has no entry in DEMOS: its steps are built per run from the
 # themes that are actually installed, so a new ``Themes/*.json`` reaches the
 # recording without an edit here. See ``build_themes_script``.

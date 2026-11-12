@@ -115,17 +115,21 @@ change how a recording looks rather than how it behaves:
 - `Local\Settings.json` — your theme. Without it every demo records in the
   default Monokai. The `window_opacity` in that file has no effect: demo mode
   pins `DEMO_OPACITY` (`demo_scripts.py`) so every chapter starts at the same
-  known value, whatever your profile or a previous take says.
+  known value, whatever your profile or a previous take says. The tour chapters
+  (ids 3-7) are the exception: `demo_opacity()` records them fully opaque,
+  because the tour is shown small on the website and a translucent window makes
+  its text hard to read.
 - `%APPDATA%\fman\Themes` — mirrored so a *custom* theme resolves instead of
   silently falling back to the default.
 
 Every demo gets one thing seeded that no profile of yours supplies:
 `Plugins\User\DemoFont\Theme.css`. Demos use the 1920x1080 window and enable
 the recorder's `scale_to_window_size` option, so scaled displays cannot make
-their stills or frames larger than Full HD. The tour is published at 1280 px
-wide; the default font file scales Core sizes by 1.5 so they retain today's
-effective size after composition. The standalone feature and plugin clips use
-`demo_Theme.css`: their 800 px feature GIFs need a 21pt app-wide font to read as
+their stills or frames larger than Full HD. The default font file scales Core
+sizes by 1.5 for the stills. The tour chapters (ids 3-7) and the standalone
+feature and plugin clips use `demo_Theme.css`: the tour is shown on the website
+at about 1100 px, where the 1.5x font was too small to read, and
+the 800 px feature GIFs need a 21pt app-wide font to read as
 about 8.75pt after downscaling. Id 10's GIF ships at 360 px, where no font size
 is readable, but a plugin clip that *does* hinge on text needs both the bump and
 a wider encode - see [DEMOS_PLUGINS.md](DEMOS_PLUGINS.md). It is a user plugin, and `Theme` keeps CSS load
