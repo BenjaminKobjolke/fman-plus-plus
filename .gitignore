@@ -54,6 +54,8 @@ media/demos/ftp-overwrite/
 media/demos/transfer-failure/
 # Dialog-after-video stills - recorded on demand for the screenshot check, never committed
 media/demos/dialogs-after-video/
+# Listing stills - recorded on demand for the screenshot check, never committed
+media/demos/listing/
 tmp
 tickets/
 # Written by tools\release_create.bat (release-tool create) - transient local state
