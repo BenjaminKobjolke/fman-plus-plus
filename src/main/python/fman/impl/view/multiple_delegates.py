@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QStyledItemDelegate, QStyle
 from PyQt5.QtGui import QFont
 from fman.impl.model.shading import ShadeRole, SHADE_BOLD
 from fman.impl.view.file_shading import paint_shaded
+from fman.impl.view.file_coloring import paint_colored
 
 class MultipleDelegates:
 	""" Let an item view have multiple ItemDelegates. """
@@ -43,7 +44,12 @@ class CompositeItemDelegate(QStyledItemDelegate):
 			# The single-row delegate adds State_HasFocus after file styling.
 			option.font = font
 	def paint(self, painter, option, index):
-		paint_shaded(super().paint, painter, option, index)
+		paint_shaded(
+			lambda p, o, i: paint_colored(
+				self, super(CompositeItemDelegate, self).paint, p, o, i
+			),
+			painter, option, index
+		)
 	def eventFilter(self, editor, event):
 		for item in self._items:
 			# eventFilter(...) is protected. We can only call it if we

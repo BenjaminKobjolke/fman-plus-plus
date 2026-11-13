@@ -1,5 +1,6 @@
 from fman.impl.theme import Theme
 from fman.impl.themes import DEFAULT_TOKENS, build_tokens
+from PyQt5.QtGui import QColor
 from os.path import join
 from tempfile import TemporaryDirectory
 from unittest import TestCase
@@ -41,6 +42,16 @@ class StubApp:
 		self.stylesheet = stylesheet
 
 class ThemeTest(TestCase):
+	def test_resolve_color_accepts_theme_token_and_hex_value(self):
+		theme = self._make_theme(tokens=self._tokens(pane_bg='#654321'))
+		self.assertEqual(
+			QColor('#654321'), theme.resolve_color('pane_bg')
+		)
+		self.assertEqual(QColor('#123456'), theme.resolve_color('#123456'))
+
+	def test_resolve_color_rejects_unknown_token(self):
+		self.assertIsNone(self._make_theme().resolve_color('missing_token'))
+
 	def test_base_qss_is_substituted(self):
 		theme = self._make_theme()
 		theme.enable_updates()
@@ -195,8 +206,10 @@ class ThemeTest(TestCase):
 		if font is not None:
 			result = build_tokens(result, font)
 		return result
-	def _make_theme(self):
-		return Theme(self._app, [self._write('styles.qss', _BASE_QSS)])
+	def _make_theme(self, tokens=None):
+		return Theme(
+			self._app, [self._write('styles.qss', _BASE_QSS)], tokens=tokens
+		)
 	def _write(self, name, contents):
 		result = join(self._tmp_dir.name, name)
 		with open(result, 'w', encoding='utf-8') as f:

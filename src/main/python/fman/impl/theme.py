@@ -1,6 +1,7 @@
 from collections import OrderedDict
-from fman.impl.themes import DEFAULT_TOKENS, substitute
+from fman.impl.themes import DEFAULT_TOKENS, is_valid_color, substitute
 from fman.impl.util.css import parse_css, CSSEngine
+from PyQt5.QtGui import QColor
 from tinycss.parsing import ParseError
 
 class Theme:
@@ -63,6 +64,14 @@ class Theme:
 		self._update_app()
 	def get_quicksearch_item_css(self):
 		return self._quicksearch_item_css
+	def resolve_color(self, value):
+		if not isinstance(value, str):
+			return None
+		if value in self._tokens:
+			return QColor(self._tokens[value])
+		if is_valid_color(value):
+			return QColor(value)
+		return None
 	def set_font_offset(self, offset_pts):
 		"""
 		Adds `offset_pts` to the command palette and window chrome (path bar,

@@ -278,6 +278,24 @@ def age_in_years(url):
 pane.set_file_shading(age_in_years)
 ```
 
+### File coloring
+
+`pane.set_file_coloring(colorer)` sets the text color for each file URL. Return a
+hex color or a color name from the active theme, or `None` to leave the file
+unchanged. Pass `None` to clear the colorer. Selected files and the row under
+the cursor keep their normal colors; hidden-file fading and file-age shading
+still apply on top. Colorers run while the file list is drawn, so keep them
+fast. For example:
+
+```python
+def color_images(url):
+	if url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.svg')):
+		return '#e6db74'
+	return None
+
+pane.set_file_coloring(color_images)
+```
+
 ### Incognito mode
 
 `fman.is_incognito()` returns whether incognito mode is currently enabled. The

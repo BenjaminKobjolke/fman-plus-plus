@@ -1,5 +1,6 @@
 from collections import namedtuple
 from fman.impl.model.diff import ComputeDiff
+from fman.impl.model.coloring import ColorRole, safe_color
 from fman.impl.model.shading import ShadeRole, safe_shade
 from fman.impl.util import Event
 from fman.impl.util.qt import DisplayRole, EditRole, DecorationRole, \
@@ -24,6 +25,7 @@ class TableModel:
 		self._rows = Rows()
 		self._dimmer = None
 		self._shader = None
+		self._colorer = None
 		self._shade_style = None
 		self._transaction_level = 0
 		self._transaction_made_changes = False
@@ -53,6 +55,10 @@ class TableModel:
 					self._shader, self._shade_style,
 					self._rows[index.row()].key
 				)
+			elif role == ColorRole:
+				return safe_color(
+					self._colorer, self._rows[index.row()].key
+				)
 			elif role in (DisplayRole, EditRole):
 				return self._rows[index.row()].cells[index.column()].str
 			elif role == DecorationRole and index.column() == 0:
@@ -67,6 +73,9 @@ class TableModel:
 		self._shader = shader
 		self._shade_style = style
 		self._emit_role_changed(ShadeRole)
+	def set_colorer(self, colorer):
+		self._colorer = colorer
+		self._emit_role_changed(ColorRole)
 	def _emit_role_changed(self, role):
 		if self.rowCount():
 			self.dataChanged.emit(

@@ -30,6 +30,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		self._filters = []
 		self._dimmer = None
 		self._shader = None
+		self._colorer = None
 		self._shade_style = None
 		self._mix_dirs = False
 		self._already_visited = set()
@@ -132,6 +133,7 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		)
 		new_model.set_dimmer(self._dimmer)
 		new_model.set_shader(self._shader, self._shade_style)
+		new_model.set_colorer(self._colorer)
 		self.setSourceModel(new_model)
 		self._connect_signals(new_model)
 		self._already_visited.add(url)
@@ -178,6 +180,10 @@ class SortedFileSystemModel(QSortFilterProxyModel):
 		self._shade_style = style
 		if self.sourceModel():
 			self.sourceModel().set_shader(shader, style)
+	def set_colorer(self, colorer):
+		self._colorer = colorer
+		if self.sourceModel():
+			self.sourceModel().set_colorer(colorer)
 	def set_mix_dirs(self, value):
 		self._mix_dirs = value
 		if self.sourceModel():

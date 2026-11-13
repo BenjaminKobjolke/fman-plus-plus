@@ -172,6 +172,22 @@ class DirectoryPane:
 		if style not in SHADE_STYLES:
 			raise ValueError('Unsupported file shading style: %s' % style)
 		self._set_file_shading(shader, style)
+	def set_file_coloring(
+		self, colorer: Optional[Callable[[str], Optional[str]]]
+	) -> None:
+		"""Set a per-file color function.
+
+		The colorer receives each file URL and returns a hex color or theme
+		color name, or None to leave the file unchanged. Selected and cursor
+		rows keep their usual colors. Pass None to clear the colorer.
+		"""
+		if colorer is None:
+			self._widget.set_file_coloring(None)
+		else:
+			theme = _get_app_ctxt().theme
+			self._widget.set_file_coloring(
+				lambda url: theme.resolve_color(colorer(url))
+			)
 	def move_cursor_down(self, toggle_selection=False):
 		self._widget.move_cursor_down(toggle_selection)
 	def move_cursor_up(self, toggle_selection=False):
