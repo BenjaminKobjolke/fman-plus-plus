@@ -2,8 +2,8 @@ from core.folder_tree_view import (
 	FolderTreeActions, FolderTreeModel, FolderTreeView, URL_ROLE,
 )
 from fman.impl.util.qt import CopyAction, MoveAction, get_urls, set_urls
-from PyQt5.QtCore import QEvent, QMimeData, Qt
-from PyQt5.QtGui import QIcon, QKeyEvent
+from PyQt5.QtCore import QEvent, QMimeData, QPersistentModelIndex, Qt
+from PyQt5.QtGui import QIcon, QKeyEvent, QPixmap
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 from unittest.mock import Mock, call, patch
@@ -137,14 +137,89 @@ class FolderTreeModelTest(TestCase):
 			[parent.child(row).data(URL_ROLE)
 			 for row in range(parent.rowCount())]
 		)
-	def test_add_folder_uses_injected_icon_provider(self):
+	def test_add_folder_does_not_ask_the_icon_provider(self):
 		icons = Mock()
-		icons.get_icon.return_value = QIcon()
 		model = FolderTreeModel(True, Mock(), icons)
 
-		model.add_folder(model.invisibleRootItem(), 'file:///p')
+		item = model.add_folder(model.invisibleRootItem(), 'file:///p')
 
-		icons.get_icon.assert_called_once_with('file:///p')
+		icons.get_icon.assert_not_called()
+		self.assertFalse(item.icon().isNull())
+	def test_add_folder_uses_the_given_icon(self):
+		model = FolderTreeModel(True, Mock(), _icon_provider())
+		pixmap = QPixmap(1, 1)
+		pixmap.fill(Qt.red)
+		icon = QIcon(pixmap)
+
+		item = model.add_folder(
+			model.invisibleRootItem(), 'file:///p', icon=icon
+		)
+
+		self.assertEqual(icon.cacheKey(), item.icon().cacheKey())
+	def test_load_fetches_icons_on_the_worker_thread(self):
+		worker_state = {'running': False}
+		icons = Mock()
+		icon_by_url = {}
+		for url, color in zip(
+				['file:///p', 'file:///p/a', 'file:///p/b'],
+				[Qt.red, Qt.green, Qt.blue]):
+			pixmap = QPixmap(1, 1)
+			pixmap.fill(color)
+			icon_by_url[url] = QIcon(pixmap)
+		calls = []
+		def get_icon(url):
+			calls.append((url, worker_state['running']))
+			return icon_by_url[url]
+		icons.get_icon.side_effect = get_icon
+		class WorkerThread:
+			def __init__(self, target, daemon):
+				self._target = target
+			def start(self):
+				worker_state['running'] = True
+				try:
+					self._target()
+				finally:
+					worker_state['running'] = False
+		model = FolderTreeModel(True, Mock(), icons)
+		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
+
+		with patch('core.folder_tree_model.Thread', WorkerThread), \
+				patch(
+					'core.folder_tree_model.list_subfolders',
+					return_value=['file:///p/a', 'file:///p/b']
+				):
+			model.load(parent)
+
+		self.assertEqual([
+			('file:///p', True),
+			('file:///p/a', True),
+			('file:///p/b', True),
+		], calls)
+		self.assertEqual(
+			[icon_by_url[url].cacheKey() for url in
+			 ['file:///p/a', 'file:///p/b']],
+			[parent.child(row).icon().cacheKey() for row in range(2)]
+		)
+		self.assertEqual(
+			icon_by_url['file:///p'].cacheKey(), parent.icon().cacheKey()
+		)
+	def test_load_updates_the_icon_of_a_kept_row(self):
+		icons = Mock()
+		pixmap = QPixmap(1, 1)
+		pixmap.fill(Qt.green)
+		loaded_icon = QIcon(pixmap)
+		icons.get_icon.side_effect = OSError()
+		model = FolderTreeModel(True, Mock(), icons)
+		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		child = model.add_folder(parent, 'file:///p/a')
+		icons.get_icon.side_effect = lambda url: loaded_icon
+		persistent = QPersistentModelIndex(child.index())
+
+		self.load_children(model, parent, ['file:///p/a'])
+
+		self.assertTrue(persistent.isValid())
+		self.assertEqual(child.index(), persistent)
+		self.assertEqual(loaded_icon.cacheKey(), child.icon().cacheKey())
 
 	def test_drag_urls_and_drop_to_folder(self):
 		drop = Mock()

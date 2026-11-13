@@ -29,10 +29,8 @@ class FolderTreeModel(QStandardItemModel):
 			QFileIconProvider.Folder
 		)
 		self.setColumnCount(1)
-	def add_folder(self, parent, url, row=None):
-		try:
-			icon = self._icon_provider.get_icon(url)
-		except OSError:
+	def add_folder(self, parent, url, row=None, icon=None):
+		if icon is None:
 			icon = self._fallback_icon
 		item = QStandardItem(
 			icon,
@@ -46,6 +44,11 @@ class FolderTreeModel(QStandardItemModel):
 		else:
 			parent.insertRow(row, item)
 		return item
+	def _icon_for(self, url):
+		try:
+			return self._icon_provider.get_icon(url)
+		except OSError:
+			return self._fallback_icon
 	def load(self, item):
 		url = item.data(URL_ROLE)
 		if url in self._loading or url in self._loaded:
@@ -57,6 +60,10 @@ class FolderTreeModel(QStandardItemModel):
 				children = list_subfolders(url, self._show_hidden)
 			except Exception:
 				children = []
+			# Shell icon lookup blocks the GUI thread for seconds across a few
+			# hundred folders.
+			own_icon = self._icon_for(url)
+			icons = {child: self._icon_for(child) for child in children}
 			@run_in_main_thread
 			def apply():
 				self._loading.discard(url)
@@ -67,6 +74,7 @@ class FolderTreeModel(QStandardItemModel):
 				parent_item = self.itemFromIndex(QModelIndex(persistent))
 				if parent_item is None:
 					return
+				parent_item.setIcon(own_icon)
 				child_urls = set(children)
 				for row in reversed(range(parent_item.rowCount())):
 					child = parent_item.child(row)
@@ -77,10 +85,13 @@ class FolderTreeModel(QStandardItemModel):
 				for row, child in enumerate(children):
 					if row < parent_item.rowCount() and \
 							parent_item.child(row).data(URL_ROLE) == child:
+						parent_item.child(row).setIcon(icons[child])
 						continue
 					# shortcut: Existing rows are sorted already; an out-of-order one
 					# stays put.
-					self.add_folder(parent_item, child, row)
+					self.add_folder(
+						parent_item, child, row, icon=icons[child]
+					)
 				self.children_loaded.emit(url)
 				if url in self._pending_refresh:
 					self._pending_refresh.discard(url)
