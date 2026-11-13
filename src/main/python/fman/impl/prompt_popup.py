@@ -118,6 +118,8 @@ class Prompt(Quicksearch):
 		self._query.setText(text)
 	def textValue(self):
 		return self._query.text()
+	def is_password(self):
+		return self._query.echoMode() == QLineEdit.Password
 	def labelText(self):
 		return self._message
 	def setVisible(self, visible):

@@ -254,6 +254,29 @@ when `launch` creates it; the `attrib` line shows how to reset it if a check
 toggled it. Run `close` even when the check fails so the process and temporary
 session are removed.
 
+Input prompts such as Copy, Move, Rename and New folder report
+`type: "Prompt"`, the full message in `text`, and the current entry text in
+`value`. For a single item, a Copy or Move message includes the source name and
+a second line with the destination folder. Password prompts report `value` as
+`null` so typed passwords are never exposed. This follows validation task
+#2206:
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat state
+tools\fman_ui.bat click --file folder --pane 0
+tools\fman_ui.bat keys F5
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat keys F6
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat close
+```
+
+Compare each prompt's destination line with the right pane's folder in the
+`state` result.
+
 ## Example: narrow a column
 
 This follows validation task #2072. Sort by Size, capture the header, then drag

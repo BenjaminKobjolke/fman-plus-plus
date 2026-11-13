@@ -5,12 +5,14 @@ from unittest.mock import patch
 from types import SimpleNamespace
 
 from PyQt5.QtCore import QEvent, QPoint
-from PyQt5.QtGui import QImage, QStandardItemModel
+from PyQt5.QtGui import QColor, QImage, QStandardItemModel
 from PyQt5.QtWidgets import (
-	QApplication, QDialog, QHeaderView, QMessageBox, QProgressDialog,
+	QApplication, QDialog, QDialogButtonBox, QHeaderView, QMessageBox,
+	QProgressDialog,
 	QTableView, QWidget,
 )
 
+from fman.impl.prompt_popup import Prompt
 from fman.impl.scripting.automation import (
 	AutomationActions, UnknownFile, UnsafeDrag,
 )
@@ -68,6 +70,35 @@ class ScriptingAutomationTest(TestCase):
 				'text': '',
 				'buttons': [],
 			}, actions.get_dialog())
+
+	def test_get_dialog_returns_prompt_message_value_and_buttons(self):
+		parent = QWidget()
+		self.addCleanup(parent.close)
+		prompt = _make_prompt(parent, 'Copy "folder" to\nC:/target', 'folder')
+		self.addCleanup(prompt.close)
+		buttons = prompt.findChild(QDialogButtonBox, 'buttons')
+		actions = AutomationActions(_WindowWithDialog(prompt), None)
+		with patch('fman.impl.scripting.automation.QApplication.activeModalWidget',
+				return_value=None):
+			self.assertEqual({
+				'type': 'Prompt',
+				'title': prompt.windowTitle(),
+				'text': 'Copy "folder" to\nC:/target',
+				'value': 'folder',
+				'buttons': [button.text() for button in buttons.buttons()],
+			}, actions.get_dialog())
+
+	def test_get_dialog_does_not_expose_password_prompt_value(self):
+		parent = QWidget()
+		self.addCleanup(parent.close)
+		prompt = _make_prompt(parent, 'Password', 'secret', password=True)
+		self.addCleanup(prompt.close)
+		actions = AutomationActions(_WindowWithDialog(prompt), None)
+		with patch('fman.impl.scripting.automation.QApplication.activeModalWidget',
+				return_value=None):
+			result = actions.get_dialog()
+		self.assertIsNone(result['value'])
+		self.assertNotIn('secret', str(result))
 
 	def test_get_dialog_returns_message_box_details(self):
 		parent = QWidget()
@@ -327,6 +358,23 @@ class _WindowWithDialog(_Window):
 		self._dialog = dialog
 	def get_open_dialog(self):
 		return self._dialog
+
+
+def _make_prompt(parent, message, default='', password=False):
+	css = {
+		'border-top-width_px': 0, 'border-bottom-width_px': 1,
+		'padding-top_px': 5, 'padding-left_px': 7, 'padding-right_px': 7,
+		'title': {'font-size_pts': 11, 'color': QColor('#fff'),
+			'highlight': {'color': QColor('#f00')}},
+		'hint': {'font-size_pts': 9, 'color': QColor('#aaa')},
+		'description': {'font-size_pts': 9, 'color': QColor('#aaa')},
+	}
+	return Prompt(parent, _StubApp(), css, message, default, password=password)
+
+
+class _StubApp:
+	def exit(self, _code):
+		pass
 
 
 class _MouseCapture(QWidget):

@@ -5,9 +5,11 @@ from dataclasses import asdict, is_dataclass
 from PyQt5.QtCore import QBuffer, QIODevice, QPoint, QPointF, Qt, QEvent
 from PyQt5.QtGui import QContextMenuEvent, QMouseEvent
 from PyQt5.QtWidgets import (
-	QAbstractItemView, QApplication, QHeaderView, QMessageBox, QProgressDialog,
+	QAbstractItemView, QApplication, QDialogButtonBox, QHeaderView,
+	QMessageBox, QProgressDialog,
 )
 
+from fman.impl.prompt_popup import Prompt
 from fman.impl.scripting.actions import get_pane
 from fman.impl.util.qt.key_events import post_chord, post_text
 from fman.impl.util.qt.thread import run_in_main_thread
@@ -133,6 +135,16 @@ class AutomationActions:
 					'value': dialog.value(),
 					'maximum': dialog.maximum(),
 				},
+			}
+		if isinstance(dialog, Prompt):
+			return {
+				'type': type(dialog).__name__,
+				'title': dialog.windowTitle(),
+				'text': dialog.labelText(),
+				'value': None if dialog.is_password() else dialog.textValue(),
+				'buttons': [button.text() for button in dialog.findChild(
+					QDialogButtonBox, 'buttons'
+				).buttons()],
 			}
 		if not isinstance(dialog, QMessageBox):
 			return {
