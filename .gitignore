@@ -83,3 +83,6 @@ vendor/*.part
 /PLAN.md
 /HANDOFF.md
 /tickets/
+# Stray redirect artifact from the Demo 22 recording run: a status sentence that
+# became a filename, with only the report path as content
+/Demo 22 now captures the folder rename editor, cancel, and committed name. The focused test and recording passed, and all three rename screenshots show the expected states
