@@ -33,7 +33,9 @@ native video surface changes how in-window dialogs are shown (#15803).
 
 Demo 22 holds a folder tree still with the current folder expanded, then takes
 stills of Delete, Copy and Move from the palette with the tree cursor on
-`projects` while the file list cursor stays on `archive`.
+`projects` while the file list cursor stays on `archive`. It then shows the
+inline rename editor, the unchanged row after Escape, and the renamed row after
+Enter.
 """
 
 from automated_screenshot_connector import (
@@ -287,6 +289,14 @@ DIALOG_CLIPS = {
 			Command('move'), Pause(1.8),
 			Screenshot('folder-tree-move-prompt'),
 			PressKey('Escape'), Pause(1.2),
+			PressKey('F2'), Pause(1.2),
+			Screenshot('folder-tree-rename-editing'),
+			PressKey('Escape'), Pause(1.0),
+			Screenshot('folder-tree-rename-cancelled'),
+			PressKey('F2'), Pause(1.2),
+			TypeText('clients'), Pause(0.8),
+			PressKey('Return'), Pause(2.0),
+			Screenshot('folder-tree-renamed'),
 			Pause(1.0),
 		),
 	),
