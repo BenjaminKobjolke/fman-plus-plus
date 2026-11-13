@@ -485,14 +485,14 @@ class FolderTreeViewTest(TestCase):
 
 		navigate.assert_not_called()
 
-	def test_cursor_methods_report_the_current_folder_and_parent_location(self):
+	def test_cursor_methods_report_the_current_folder_as_pane_location(self):
 		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())
 		view = FolderTreeView(True, actions, False, _icon_provider())
 		view.open_to(['file:///', 'file:///parent', 'file:///parent/target'])
 
 		self.assertEqual('file:///parent/target', view.get_file_under_cursor())
 		self.assertEqual([], view.get_selected_files())
-		self.assertEqual('file:///parent', view.get_location())
+		self.assertEqual('file:///parent/target', view.get_location())
 
 	def test_top_level_cursor_location_is_its_own_url(self):
 		actions = FolderTreeActions(Mock(), Mock(), Mock(), Mock(), Mock())

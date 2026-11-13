@@ -135,17 +135,9 @@ class FolderTreeView(DragAndDrop, QTreeView):
 		return []
 	@run_in_main_thread
 	def get_location(self):
+		"""The highlighted folder is the pane's current location."""
 		index = self.currentIndex()
-		if not index.isValid():
-			return None
-		url = index.data(URL_ROLE)
-		if url is None:
-			return None
-		parent_index = index.parent()
-		if not parent_index.isValid():
-			return url
-		parent = self._model.itemFromIndex(parent_index)
-		return parent.data(URL_ROLE) if parent is not None else url
+		return index.data(URL_ROLE) if index.isValid() else None
 	@run_in_main_thread
 	def place_cursor_at(self, url):
 		if url is None:
