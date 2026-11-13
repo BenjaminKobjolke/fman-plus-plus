@@ -2,6 +2,10 @@
 	"colors": {
 		"border": "#ffffff",
 		"bright_fg": "#ffffff",
+		"file_archive_fg": "#ff9900",
+		"file_image_fg": "#00ffff",
+		"file_media_fg": "#ff66ff",
+		"file_program_fg": "#00ff00",
 		"header_bg": "#000000",
 		"input_bg": "#000000",
 		"locationbar_border": "#ffffff",

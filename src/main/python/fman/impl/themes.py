@@ -97,6 +97,14 @@ _DEFAULT_FONTS = {
 }
 DEFAULT_FONT = _DEFAULT_FONTS[platform.name()]
 
+FILE_IMAGE_FG = 'file_image_fg'
+FILE_ARCHIVE_FG = 'file_archive_fg'
+FILE_MEDIA_FG = 'file_media_fg'
+FILE_PROGRAM_FG = 'file_program_fg'
+FILE_COLOR_TOKENS = (
+	FILE_IMAGE_FG, FILE_ARCHIVE_FG, FILE_MEDIA_FG, FILE_PROGRAM_FG
+)
+
 # The keys a theme file uses for the six things in it that are not colors.
 # They sit beside "colors" rather than in it because resolve_colors drops
 # every value that is not a valid QColor - and icon_color is a color that
@@ -113,9 +121,10 @@ _FONT_KEY = 'font'
 _BACKGROUNDS_KEY = 'backgrounds'
 
 # Every color fman draws, with the values it used before themes existed.
-# A token appears here iff it is referenced from styles.qss, Theme.css or
-# one of the build_*palette functions below - test_themes.py enforces both
-# directions, so a hex literal cannot creep back into the stylesheets.
+# A token appears here iff it is referenced from styles.qss, Theme.css, one
+# of the build_*palette functions below, or Core's default file color rules -
+# test_themes.py enforces both directions, so a hex literal cannot creep
+# back into the stylesheets.
 DEFAULT_COLORS = {
 	# File list
 	'pane_bg': '#272822',
@@ -127,6 +136,11 @@ DEFAULT_COLORS = {
 	'pane_new_fg': '#a6e22e',
 	'pane_cursor_bg': '#49483e',
 	'header_bg': '#363731',
+	# File coloring (Core's default file_color_rules)
+	FILE_IMAGE_FG: '#e6db74',
+	FILE_ARCHIVE_FG: '#fd971f',
+	FILE_MEDIA_FG: '#ae81ff',
+	FILE_PROGRAM_FG: '#a6e22e',
 	# Text
 	'muted_fg': '#8f908a',
 	'bright_fg': 'white',

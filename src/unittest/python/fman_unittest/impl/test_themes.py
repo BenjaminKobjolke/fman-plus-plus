@@ -5,7 +5,8 @@ from fman.impl.model.icon_set import list_icon_sets
 from fman_unittest.impl.test_fonts import bundled_font_families
 from fman.impl.themes import DEFAULT_COLORS, DEFAULT_FONT, \
 	DEFAULT_ICON_SIZE_PX, DEFAULT_THEME, DEFAULT_TOKENS, FALLBACKS, \
-	MAX_ICON_SIZE, MIN_ICON_SIZE, MIN_OPACITY, build_main_window_palette, \
+	FILE_COLOR_TOKENS, MAX_ICON_SIZE, MIN_ICON_SIZE, MIN_OPACITY, \
+	build_main_window_palette, \
 	build_palette, build_progress_bar_palette, build_tokens, \
 	is_valid_color, list_themes, load_backgrounds, load_font, \
 	load_icon_color, load_icon_set_name, load_icon_size, load_opacity, \
@@ -127,6 +128,7 @@ class TemplatesTest(TestCase):
 		for path in _TEMPLATES:
 			used.update(_PLACEHOLDER.findall(_read(path)))
 		used.update(_PALETTE_TOKENS)
+		used.update(FILE_COLOR_TOKENS)
 		self.assertEqual(set(), set(DEFAULT_COLORS) - used)
 	def test_substitution_leaves_no_placeholder(self):
 		for path in _TEMPLATES:

@@ -2,6 +2,10 @@
 	"colors": {
 		"border": "#586e75",
 		"bright_fg": "#fdf6e3",
+		"file_archive_fg": "#cb4b16",
+		"file_image_fg": "#b58900",
+		"file_media_fg": "#6c71c4",
+		"file_program_fg": "#859900",
 		"header_bg": "#073642",
 		"input_bg": "#073642",
 		"muted_fg": "#93a1a1",

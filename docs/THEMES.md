@@ -119,9 +119,11 @@ A theme that wants *no* separators at all sets `popup_divider_top` and
 fallback is never the surface, so this has to be said out loud. `Matrix.json`
 does it; its rows are held apart by the green text alone.
 
-**Derived tokens** — override only if the inherited value looks wrong:
+**Derived and optional tokens** — override only if the inherited value
+looks wrong. File-color tokens keep their Monokai value when a theme omits
+them; they only appear when Core's file coloring is enabled:
 
-| Token | Inherits from |
+| Token | Inherits from / when unset |
 |-------|---------------|
 | `base_bg` | `pane_bg` |
 | `readonly_fg` | `muted_fg` |
@@ -141,6 +143,10 @@ does it; its rows are held apart by the green text alone.
 | `palette_mid`, `palette_dark`, `palette_shadow` | `button_bg` |
 | `pane_hidden_fg` | 60% of `pane_fg` unless set |
 | `pane_hidden_fg_dir` | 60% of `pane_fg_dir` unless set |
+| `file_image_fg` | Monokai image color (`#e6db74`); shown only with file coloring on |
+| `file_archive_fg` | Monokai archive color (`#fd971f`); shown only with file coloring on |
+| `file_media_fg` | Monokai audio/video color (`#ae81ff`); shown only with file coloring on |
+| `file_program_fg` | Monokai program color (`#a6e22e`); shown only with file coloring on |
 
 Hidden file text uses `pane_hidden_fg`; hidden directory text uses
 `pane_hidden_fg_dir`. For example, set either token under `colors` to choose

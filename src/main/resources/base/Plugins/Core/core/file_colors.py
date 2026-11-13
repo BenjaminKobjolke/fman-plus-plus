@@ -3,6 +3,9 @@ import fnmatch
 from collections import namedtuple
 
 from core.settings import get_setting, SETTINGS_FILE
+from fman.impl.themes import (
+	FILE_ARCHIVE_FG, FILE_IMAGE_FG, FILE_MEDIA_FG, FILE_PROGRAM_FG
+)
 from fman.url import basename
 
 
@@ -14,19 +17,22 @@ DEFAULT_FILE_COLOR_RULES = [
 		'patterns': [
 			'*.jpg', '*.jpeg', '*.png', '*.gif', '*.bmp', '*.webp', '*.svg'
 		],
-		'color': '#e6db74',
+		'color': FILE_IMAGE_FG,
 	},
 	{
 		'patterns': ['*.zip', '*.7z', '*.rar', '*.tar', '*.gz'],
-		'color': '#fd971f',
+		'color': FILE_ARCHIVE_FG,
 	},
 	{
 		'patterns': [
 			'*.mp3', '*.wav', '*.flac', '*.mp4', '*.mkv', '*.avi', '*.mov'
 		],
-		'color': '#ae81ff',
+		'color': FILE_MEDIA_FG,
 	},
-	{'patterns': ['*.exe', '*.bat', '*.cmd', '*.ps1', '*.msi'], 'color': 'pane_new_fg'},
+	{
+		'patterns': ['*.exe', '*.bat', '*.cmd', '*.ps1', '*.msi'],
+		'color': FILE_PROGRAM_FG,
+	},
 ]
 FileColorOptions = namedtuple('FileColorOptions', ('enabled', 'rules'))
 

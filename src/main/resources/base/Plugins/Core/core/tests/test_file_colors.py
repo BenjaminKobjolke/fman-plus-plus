@@ -1,10 +1,19 @@
 from unittest import TestCase
 from unittest.mock import patch
 
-from core.file_colors import apply, load_options, make_colorer
+from core.file_colors import (
+	DEFAULT_FILE_COLOR_RULES, apply, load_options, make_colorer
+)
+from fman.impl.themes import FILE_COLOR_TOKENS
 
 
 class FileColorsTest(TestCase):
+	def test_default_rules_use_theme_file_color_tokens_in_order(self):
+		self.assertEqual(
+			FILE_COLOR_TOKENS,
+			tuple(rule['color'] for rule in DEFAULT_FILE_COLOR_RULES)
+		)
+
 	@patch('core.file_colors.get_setting', return_value=None)
 	def test_missing_settings_use_defaults(self, get_setting):
 		options = load_options()
