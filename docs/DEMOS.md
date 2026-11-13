@@ -27,6 +27,8 @@ over a socket so the tool can capture the window. The wiring:
   `DemoScript` per recordable demo: the overview demo and the themes builder.
 - `src/main/python/fman/impl/demo_scripts_features.py` — the `feature-*` clips,
   merged into `DEMOS` the same way as the tour chapters below.
+- `src/main/python/fman/impl/demo_scripts_listing.py` — the focused `listing`
+  stills, merged into `DEMOS` by `demo_scripts.py`.
 - `src/main/python/fman/impl/demo_scripts_tour.py` — the `tour-*` chapters,
   merged into `DEMOS` by `demo_scripts.py`. Split out to keep both files
   under the project's 300-line limit.
@@ -297,7 +299,9 @@ composing stale inputs.
   new palette entries. A change that adds a palette command should add a `TypeText`
   query plus a `Screenshot` still here, so its check has something to judge.
 - **15 `listing`** — stills of both panes without and with file age shading on
-  backdated scratch files. Exists so the screenshot check can judge changes to how
+  backdated scratch files. It also takes `listing-file-colors` and
+  `listing-file-colors-with-age` with **Toggle file coloring** on, then turns
+  coloring off again. Exists so the screenshot check can judge changes to how
   the file list looks (shading, colors, columns), instead of the tour chapters that
   record no stills. It also takes stills with the pane location bars hidden and
   shown again; the launcher starts it with them visible whatever the copied

@@ -13,11 +13,6 @@ is cancelled.
 Demo 14 holds one palette search still per palette command that a screenshot
 check needs.
 
-Demo 15 holds pane listing stills for the screenshot check. Add a still here
-when a change affects how the file list looks. It hides and restores the pane
-location bars, then hides them again and takes a still of a second fman started
-on the same profile; run_fman_demo.bat starts it with them visible.
-
 Demo 16 plays the fman account flow against the seeded DemoAccount fake; it
 never reaches the real account or network.
 
@@ -42,8 +37,7 @@ from automated_screenshot_connector import (
 	Command, DemoScript, Pause, PressKey, Screenshot, TypeText,
 )
 from fman.impl.demo import (
-	ExpectChildWindow, LaunchFman, OpenContextMenu, ScreenStill,
-	WaitForOverwriteQuestion,
+	OpenContextMenu, ScreenStill, WaitForOverwriteQuestion,
 )
 
 # Keep this URL's port and account in sync with demo_ftp_server.py's
@@ -126,41 +120,6 @@ DIALOG_CLIPS = {
 			Screenshot('go-to-network-palette'),
 			PressKey('Return'), Pause(20.0),
 			Screenshot('go-to-network-pane'), Pause(1.0),
-		),
-	),
-	15: DemoScript(
-		id=15,
-		name='listing',
-		steps=(
-			Pause(1.5),
-			Screenshot('listing-panes'),
-			PressKey('Ctrl+Shift+P'),
-			Pause(0.6),
-			Command('toggle file age shading'),
-			Pause(1.5),
-			Screenshot('listing-file-age'),
-			PressKey('Ctrl+Shift+P'),
-			Pause(0.6),
-			Command('toggle file age shading'),
-			Pause(2.2),
-			PressKey('Ctrl+Shift+P'), Pause(0.6),
-			TypeText('toggle pane location bars', char_delay_ms=100),
-			Pause(0.5), PressKey('Return'),
-			Pause(1.5),
-			Screenshot('listing-location-bars-hidden'),
-			PressKey('Ctrl+Shift+P'), Pause(0.6),
-			TypeText('toggle pane location bars', char_delay_ms=100),
-			Pause(0.5), PressKey('Return'),
-			Pause(1.5),
-			Screenshot('listing-location-bars-shown'),
-			PressKey('Ctrl+Shift+P'), Pause(0.6),
-			TypeText('toggle pane location bars', char_delay_ms=100),
-			Pause(0.5), PressKey('Return'), Pause(1.5),
-			# This same-profile child stands in for restart; later keys would go to it.
-			LaunchFman(('--new-instance', 'after-restart')),
-			ExpectChildWindow('after-restart'), Pause(2.0),
-			ScreenStill('listing-location-bars-after-restart'),
-			Pause(1.0),
 		),
 	),
 	16: DemoScript(

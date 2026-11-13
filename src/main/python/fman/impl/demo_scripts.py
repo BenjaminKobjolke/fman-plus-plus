@@ -28,6 +28,7 @@ from automated_screenshot_connector import (
 from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
 from fman.impl.demo_scripts_features import FEATURE_CLIPS
 from fman.impl.demo_scripts_launch import LAUNCH_CLIPS
+from fman.impl.demo_scripts_listing import LISTING_CLIPS
 from fman.impl.demo_scripts_tour import TOUR_CHAPTERS
 
 # Every recording starts opaque: a translucent window blends the desktop into
@@ -153,6 +154,9 @@ DEMOS.update(PLUGIN_CLIPS)
 
 # Dialog stills let the automated visual check judge dialog changes.
 DEMOS.update(DIALOG_CLIPS)
+
+# Listing stills let the visual check judge the file list's look.
+DEMOS.update(LISTING_CLIPS)
 
 # The single-instance launch demo needs the primary process to accept forwards.
 DEMOS.update(LAUNCH_CLIPS)

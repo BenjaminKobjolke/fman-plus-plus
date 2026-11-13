@@ -232,9 +232,9 @@ class DemoSetupTest(unittest.TestCase):
 	def test_listing_demo_takes_file_age_and_location_bar_stills(self):
 		from automated_screenshot_connector.steps import CustomStep, flatten
 		from fman.impl.demo import ExpectChildWindow, LaunchFman, ScreenStill
-		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+		from fman.impl.demo_scripts_listing import LISTING_CLIPS
 
-		demo = DIALOG_CLIPS[15]
+		demo = LISTING_CLIPS[15]
 		screenshot_names = [
 			step.name for step in demo.steps
 			if step.__class__.__name__ == 'Screenshot'
@@ -253,11 +253,14 @@ class DemoSetupTest(unittest.TestCase):
 		self.assertEqual(
 			screenshot_names, [
 				'listing-panes', 'listing-file-age',
+				'listing-file-colors', 'listing-file-colors-with-age',
 				'listing-location-bars-hidden', 'listing-location-bars-shown',
 			],
 		)
 		self.assertEqual(command_lines, [
 			'toggle file age shading', 'toggle file age shading',
+			'toggle file coloring', 'toggle file age shading',
+			'toggle file age shading', 'toggle file coloring',
 			'toggle pane location bars', 'toggle pane location bars',
 			'toggle pane location bars',
 		])
