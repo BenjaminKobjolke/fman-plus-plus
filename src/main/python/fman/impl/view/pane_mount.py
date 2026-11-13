@@ -11,8 +11,24 @@ deliberately knows nothing about what is being mounted - a viewer's own
 concerns (an unsaved-edit prompt, say) stay with that viewer.
 """
 from fman.impl.util.qt.thread import run_in_main_thread
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QEvent, QObject, QTimer
 from PyQt5.QtGui import QPalette
+
+
+class _ForwardFocusToMounted(QObject):
+	def __init__(self, pane_widget):
+		super().__init__()
+		self._pane_widget = pane_widget
+
+	def eventFilter(self, watched, event):
+		if event.type() == QEvent.FocusIn:
+			view = self._pane_widget._mounted_widget
+			if view is not None:
+				QTimer.singleShot(
+					0, lambda: view.setFocus()
+					if self._pane_widget._mounted_widget is view else None
+				)
+		return False
 
 def get_colors(pane_widget):
 	"""
@@ -40,6 +56,12 @@ def mount_widget(pane, pane_widget, view, focus=True):
 		pane_widget.layout().count() - 1, view)
 	pane_widget._view_mode.hide()
 	pane_widget._mounted_widget = view
+	# In-window dialogs and the palette restore focus to the hidden file view.
+	pane_widget._focus_forwarder = _ForwardFocusToMounted(pane_widget)
+	pane_widget._focus_forwarder_view = pane_widget._view_mode.visible_view()
+	pane_widget._focus_forwarder_view.installEventFilter(
+		pane_widget._focus_forwarder
+	)
 	# Re-point the pane's focus proxy at the mounted widget. switch_panes()
 	# ends by calling the *other* pane's focus(), which is setFocus() on this
 	# pane's widget - following the proxy. Without this it would land back on
@@ -69,6 +91,11 @@ def unmount_widget(pane_widget):
 	view = pane_widget._mounted_widget
 	if view is None:
 		return
+	pane_widget._focus_forwarder_view.removeEventFilter(
+		pane_widget._focus_forwarder
+	)
+	pane_widget._focus_forwarder = None
+	pane_widget._focus_forwarder_view = None
 	pane_widget.layout().removeWidget(view)
 	view.deleteLater()
 	pane_widget._mounted_widget = None

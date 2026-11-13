@@ -1,6 +1,7 @@
 from fman.impl.view.pane_mount import get_colors, mount_widget, unmount_widget
+from PyQt5.QtCore import QEvent
 from PyQt5.QtGui import QColor, QPalette
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QWidget
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
@@ -76,6 +77,52 @@ class MountWidgetTest(TestCase):
 		with patch('fman.impl.view.pane_mount.QTimer') as timer:
 			mount_widget(self.pane, self.widget, self.view)
 		timer.singleShot.assert_called_once_with(0, self.view.setFocus)
+
+	def test_refocuses_the_mounted_view_when_the_file_view_gets_focus(self):
+		self.widget._file_view = QWidget()
+		self.widget._view_mode.visible_view.return_value = self.widget._file_view
+		with patch('fman.impl.view.pane_mount.QTimer') as timer:
+			mount_widget(self.pane, self.widget, self.view)
+			QApplication.sendEvent(
+				self.widget._file_view, QEvent(QEvent.FocusIn)
+			)
+
+		self.assertEqual(2, timer.singleShot.call_count)
+		delay, callback = timer.singleShot.call_args.args
+		self.assertEqual(0, delay)
+		callback()
+		self.view.setFocus.assert_called_once_with()
+
+	def test_does_not_refocus_the_view_after_it_is_unmounted(self):
+		self.widget._file_view = QWidget()
+		self.widget._view_mode.visible_view.return_value = self.widget._file_view
+		with patch('fman.impl.view.pane_mount.QTimer') as timer:
+			mount_widget(self.pane, self.widget, self.view)
+			unmount_widget(self.widget)
+			QApplication.sendEvent(
+				self.widget._file_view, QEvent(QEvent.FocusIn)
+			)
+
+		self.assertEqual(1, timer.singleShot.call_count)
+
+	def test_unmount_removes_forwarder_from_compact_view_before_remount(self):
+		file_view = QWidget()
+		compact_view = QWidget()
+		self.widget._file_view = file_view
+		self.widget._view_mode.visible_view.return_value = compact_view
+		with patch('fman.impl.view.pane_mount.QTimer') as timer:
+			mount_widget(self.pane, self.widget, self.view)
+			forwarder = self.widget._focus_forwarder
+			unmount_widget(self.widget)
+			self.widget._view_mode.visible_view.return_value = file_view
+			remounted_view = MagicMock()
+			mount_widget(self.pane, self.widget, remounted_view)
+			QApplication.sendEvent(compact_view, QEvent(QEvent.FocusIn))
+
+		self.assertEqual(2, timer.singleShot.call_count)
+		self.assertIs(remounted_view, self.widget._mounted_widget)
+		self.assertIs(file_view, self.widget._focus_forwarder_view)
+		self.assertIsNotNone(forwarder)
 
 	def test_without_focus_refocuses_the_other_pane_instead(self):
 		# Mounting into the *other* pane: keep the caller's pane focused so
