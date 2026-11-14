@@ -3,6 +3,9 @@ from fman.impl import incognito
 from fman.impl.application_context import DevelopmentApplicationContext
 from fman.impl.incognito import OFF_MESSAGE, ON_INCOGNITO_CHANGED, ON_MESSAGE
 from fman.impl.plugins.builtin import BuiltinPlugin
+from fman.impl.util.settings import Settings
+from os.path import join
+from tempfile import TemporaryDirectory
 from unittest import TestCase
 from types import SimpleNamespace
 from unittest.mock import MagicMock, call, patch
@@ -218,6 +221,18 @@ class ToggleIncognitoTest(TestCase):
 
 		context.update_check_timer.start.assert_not_called()
 		context.main_window.show_alert.assert_not_called()
+
+	def test_start_metrics_without_a_saved_choice_does_not_start_metrics(self):
+		with TemporaryDirectory() as tmp_dir:
+			context = SimpleNamespace(
+				local_settings=Settings(join(tmp_dir, 'Settings.json')),
+				metrics=MagicMock(),
+			)
+
+			DevelopmentApplicationContext._start_metrics(context)
+
+		context.metrics.initialize.assert_not_called()
+		context.metrics.track.assert_not_called()
 
 	@staticmethod
 	def _startup_context(first_run, error_reports=None, usage_metrics=None):
