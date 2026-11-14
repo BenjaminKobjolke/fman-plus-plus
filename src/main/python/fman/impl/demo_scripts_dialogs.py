@@ -122,6 +122,21 @@ DIALOG_CLIPS = {
 			Screenshot('go-to-network-pane'), Pause(1.0),
 		),
 	),
+	24: DemoScript(
+		id=24,
+		name='viewer-palette',
+		steps=(
+			Pause(1.5),
+			PressKey('Home'), Pause(0.6),  # changelog.txt
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('view file'), Pause(2.0),
+			# Ctrl+Shift+P inside a viewer opens the viewer's own palette.
+			PressKey('Ctrl+Shift+P'), Pause(1.0),
+			TypeText('nex'), Pause(1.0),
+			Screenshot('viewer-palette-next-file'),
+			PressKey('Escape'), Pause(1.0),
+		),
+	),
 	16: DemoScript(
 		id=16,
 		name='fman-account',

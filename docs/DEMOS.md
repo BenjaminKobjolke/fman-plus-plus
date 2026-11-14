@@ -95,7 +95,7 @@ user name, and the Move, Copy and Pack prompts show the scratch path on camera.
 Set `FMAN_DEMO_SCRATCH` to use another base folder. If the base cannot be
 created, the launcher stops with an error instead of recording empty panes.
 
-Two ids get extra seeding on top of that shared copy, because their feature
+Some ids get extra seeding on top of that shared copy, because their feature
 cannot be shown without it:
 
 | id | extra |
@@ -104,6 +104,7 @@ cannot be shown without it:
 | 9 | `service.log` in the left folder, plus a background PowerShell appender that adds a line every 1.5 s for 60 s, so tail mode has something to follow |
 | 10 | the MatrixRain plugin copied in from `%APPDATA%`, and the example text files in the *right* folder too — see [DEMOS_PLUGINS.md](DEMOS_PLUGINS.md) |
 | 16 | the DemoAccount fake-account plugin in `Plugins\User` |
+| 24 | a `Viewer Key Bindings.json` binding Ctrl+J to `viewer_next_file` in the demo profile's Settings plugin |
 
 Every run sets `FMAN_DATA_DIRECTORY` to that profile and wipes its `Plugins`
 folder. It also sets `PYTHON_KEYRING_BACKEND` to the null keyring, so recordings
@@ -318,6 +319,10 @@ composing stale inputs.
   groups appear. Its stills are gitignored
   (`media/demos/listing-theme-colors/`). A change to theme file colors should
   be judged on these stills, including whether colors follow theme switches.
+- **24 `viewer-palette`** — a still of the viewer's own palette with `nex` typed
+  and the seeded Ctrl+J binding visible next to *Next file*. Its stills are
+  gitignored (`media/demos/viewer-palette/`). A change to the viewer palette
+  should add a `TypeText` query plus a `Screenshot` still here.
 - **17 `ftp-overwrite`** — records an FTP folder upload with an existing file,
   showing the progress window before the overwrite question, hidden while the
   question is open, and back after answering. It needs `FMAN_FTPClient` installed

@@ -92,6 +92,10 @@ if "%1"=="21" set "FONT_CSS=demo_Theme.css"
 mkdir "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoFont" 2>nul
 copy /y "%CD%\tools\create_media\%FONT_CSS%" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoFont\Theme.css" >nul
 
+REM Demo 24 shows a user-bound viewer shortcut in the viewer palette; Core ships none.
+if "%1"=="24" mkdir "%FMAN_DATA_DIRECTORY%\Plugins\User\Settings" 2>nul
+if "%1"=="24" >"%FMAN_DATA_DIRECTORY%\Plugins\User\Settings\Viewer Key Bindings.json" echo [{"keys": ["Ctrl+J"], "command": "viewer_next_file"}]
+
 REM Demo 10 films a THIRD-PARTY plugin, so the one plugin under test has to go
 REM back into the tree the rmdir above just emptied. Only that one: seeding all
 REM of %APPDATA%\fman\Plugins would put the recordist key bindings (which are

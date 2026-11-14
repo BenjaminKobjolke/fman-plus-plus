@@ -229,6 +229,33 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_viewer_palette_demo_takes_next_file_still(self):
+		from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
+
+		demo = DIALOG_CLIPS[24]
+		screenshot_index = next(
+			index for index, step in enumerate(demo.steps)
+			if step.__class__.__name__ == 'Screenshot'
+		)
+
+		self.assertEqual(demo.name, 'viewer-palette')
+		self.assertEqual(
+			[step.name for step in demo.steps
+			 if step.__class__.__name__ == 'Screenshot'],
+			['viewer-palette-next-file'],
+		)
+		self.assertEqual(
+			next(
+				step.text for step in reversed(demo.steps[:screenshot_index])
+				if step.__class__.__name__ == 'TypeText'
+			),
+			'nex',
+		)
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_listing_theme_colors_demo_takes_a_still_per_theme(self):
 		from automated_screenshot_connector.steps import CustomStep, flatten
 		from fman.impl.demo_scripts import build_themes_script
