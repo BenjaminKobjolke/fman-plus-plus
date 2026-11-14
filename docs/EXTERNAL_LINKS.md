@@ -27,13 +27,13 @@ which does URL path manipulation, not web links.
 
 | Constant           | Default                                | Used by                                |
 |--------------------|----------------------------------------|----------------------------------------|
-| `HELP`             | `workflow-tools.com/fman-plus-plus/help` | Help command (F1)                      |
-| `CHANGELOG`        | `fman.io/changelog?s=f`                | Startup "Updated to vX" status message |
-| `ISSUES`           | `fman.io/issues?s=f`                   | File-properties load-failure alert     |
-| `ZEN`              | `fman.io/zen`                          | "Zen of fman" command                  |
-| `TERMINAL_DOCS`    | `fman.io/docs/terminal?s=f`            | Terminal / native-file-manager alerts  |
-| `CUSTOM_SHORTCUTS` | `fman.io/docs/custom-shortcuts?s=f`    | Key-bindings-updated alert             |
-| `MACOS_DOCS`       | `fman.io/docs/macos?s=f`               | First-run macOS setup tour             |
+| `HELP`             | `https://workflow-tools.com/fman-plus-plus/help/` | Help command (F1)                      |
+| `CHANGELOG`        | `https://github.com/BenjaminKobjolke/fman/releases/latest` | Startup "Updated to vX" status message |
+| `ISSUES`           | `https://github.com/BenjaminKobjolke/fman/issues` | File-properties load-failure alert     |
+| `ZEN`              | `https://workflow-tools.com/fman-plus-plus/help/` | "Zen of fman" command                  |
+| `TERMINAL_DOCS`    | `https://workflow-tools.com/fman-plus-plus/help/` | Terminal / native-file-manager alerts  |
+| `CUSTOM_SHORTCUTS` | `https://workflow-tools.com/fman-plus-plus/help/` | Key-bindings-updated alert             |
+| `MACOS_DOCS`       | `https://workflow-tools.com/fman-plus-plus/help/` | First-run macOS setup tour             |
 | `GITHUB_REPO`     | `BenjaminKobjolke/fman`                | GitHub update lookup                   |
 | `RELEASES`        | `github.com/BenjaminKobjolke/fman/releases/latest` | Update download dialog |
 
@@ -42,7 +42,7 @@ which does URL path manipulation, not web links.
 Edit the constant in `src/main/python/fman/links.py`, then rebuild. Example:
 
 ```python
-HELP = 'https://workflow-tools.com/fman-plus-plus/help'
+HELP = 'https://workflow-tools.com/fman-plus-plus/help/'
 ```
 
 ## Out of scope
