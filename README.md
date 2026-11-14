@@ -247,6 +247,7 @@ These are the ones maintained on this account.
 | [FMAN_PLUS_PLUS_VS_FMAN.md](docs/FMAN_PLUS_PLUS_VS_FMAN.md) | Everything fman++ adds or changes compared to the original fman |
 | [ARCHIVES.md](docs/ARCHIVES.md) | `.zip`, `.7z`, `.tar` and read-only `.rar` archives browsed like folders with 7-Zip 26.00 |
 | [APP_ERROR_REPORTING.md](docs/APP_ERROR_REPORTING.md) | What fman sends after an error, privacy limits, consent and controls |
+| [USAGE_METRICS.md](docs/USAGE_METRICS.md) | Usage events, consent, delivery and administrator access |
 | [COPY_AND_MOVE.md](docs/COPY_AND_MOVE.md) | Copy and Move: gathering and transferring at the same time, parallel workers |
 | [COMMAND_PALLETTE.md](docs/COMMAND_PALLETTE.md) | The `Ctrl+Shift+P` palette |
 | [COMMAND_PALETTE_KEYBINDINGS.md](docs/COMMAND_PALETTE_KEYBINDINGS.md) | Rebinding a shortcut from the palette with `Shift+Enter` |
