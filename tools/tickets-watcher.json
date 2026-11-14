@@ -160,5 +160,22 @@
     "tools\\run_automation_tests.bat": "test"
   },
   "project_id": 251,
-  "analysis_test_timeout_seconds": 1040
+  "analysis_test_timeout_seconds": 1040,
+  "visual_non_ui_paths": [
+    "tools/**",
+    "build.py",
+    "src/build/docker/**",
+    "src/build/portable/**",
+    "src/build/pyinstaller_hooks/**",
+    "src/build/python/**",
+    "src/build/settings/arch.json",
+    "src/build/settings/fedora.json",
+    "src/build/settings/linux.json",
+    "src/build/settings/mac.json",
+    "src/build/settings/release.json",
+    "src/build/settings/ubuntu.json",
+    "src/build/settings/windows.json",
+    "src/unittest/**",
+    "src/integrationtest/**"
+  ]
 }
