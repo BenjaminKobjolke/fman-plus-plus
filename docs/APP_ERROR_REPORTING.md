@@ -16,7 +16,7 @@ The intake accepts `unhandled`, `plugin` and `manual` report kinds. An administr
 
 ## Consent and controls
 
-The first-run start shows the tutorial, so it does not also ask the shared consent question. On a later start, fman asks if either the error-report or usage-metrics choice has not been saved. The four choices are **Accept all**, **Only error reports**, **Only usage statistics**, and **No thanks**. The answer sets both `error_reports` and `usage_metrics` in `%APPDATA%/fman/Local/Settings.json`; closing the question disables both. See [Usage metrics](USAGE_METRICS.md) for what usage events contain and how they are delivered.
+The first-run start shows the tutorial, so it does not also ask the shared consent question. On a later start, fman asks if either the error-report or usage-metrics choice has not been saved. The four choices are **Accept all**, **Only error reports**, **Only usage statistics**, and **No thanks**. The answer sets both `error_reports` and `usage_metrics` in `%APPDATA%/fman/Local/Settings.json`; closing the question disables both. fman then confirms the saved choices in the status bar. See [Usage metrics](USAGE_METRICS.md) for what usage events contain and how they are delivered.
 
 Run **Toggle error reports** from the command palette to change the setting while fman is open. When reporting is off, error dialogs include **Send report** to submit that individual report manually. The button does not enable automatic reporting.
 
