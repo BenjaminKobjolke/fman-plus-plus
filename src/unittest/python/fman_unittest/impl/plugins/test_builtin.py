@@ -161,6 +161,13 @@ class ToggleIncognitoTest(TestCase):
 					[call('error_reports', error_reports),
 					 call('usage_metrics', usage_metrics)])
 				context.local_settings.flush.assert_called_once_with()
+				self.assertEqual(
+					context.main_window.show_status_message.call_args,
+					call(
+						'Error reporting {}. Usage statistics {}. Restart fman to '
+						'apply the change.'.format(
+							'on' if error_reports else 'off',
+							'on' if usage_metrics else 'off')))
 
 	def test_closing_consent_disables_both_settings(self):
 		context = self._startup_context(first_run=False)
@@ -172,6 +179,9 @@ class ToggleIncognitoTest(TestCase):
 			context.local_settings.__setitem__.call_args_list,
 			[call('error_reports', False), call('usage_metrics', False)])
 		context.local_settings.flush.assert_called_once_with()
+		context.main_window.show_status_message.assert_called_once_with(
+			'Error reporting off. Usage statistics off. Restart fman to apply '
+			'the change.')
 
 	def test_consent_prompt_uses_four_custom_buttons_and_defaults_to_accept_all(self):
 		context = self._startup_context(first_run=False)
@@ -212,6 +222,7 @@ class ToggleIncognitoTest(TestCase):
 		DevelopmentApplicationContext.on_main_window_shown(context)
 
 		context.main_window.show_alert.assert_not_called()
+		context.main_window.show_status_message.assert_not_called()
 
 	def test_demo_mode_does_not_show_startup_prompts(self):
 		context = self._startup_context(first_run=False)
