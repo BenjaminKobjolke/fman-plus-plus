@@ -51,7 +51,7 @@
       "test": "green"
     },
     "uv run python tools\\test_fman_ui.py": {
-      "test": "failed"
+      "test": "green"
     },
     "tools\\run_automation_tests.bat": {
       "test": "green"
@@ -164,9 +164,6 @@
   "analysis_command_failing_tests": {
     "tools\\run_tests.bat": [
       "(failures=1, errors=1)"
-    ],
-    "uv run python tools\\test_fman_ui.py": [
-      "(failures=1)"
     ]
   }
 }
