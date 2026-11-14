@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Enemmän hallintaa tiedostoihin ja kansioihin",
+  "notes": [
+    "Uutta: Selaa kansioita puunäkymässä, nimeä ne uudelleen suoraan näkymässä ja käytä puun kansiota ruutukomentojen kanssa.",
+    "Parannettu: Mukauta tiedostojen värejä tiedostopäätteen mukaan, piilota ruutujen sijaintipalkit ja siirry poluissa napsauttamalla niiden kansio-osia.",
+    "Korjattu: Tiedostonsiirroissa epäonnistuneita tiedostoja voi yrittää uudelleen siirron lopuksi, valintaikkunoissa on helpompi liikkua näppäimistöllä ja asemat, joihin ei saada yhteyttä, kertovat nyt, mitä tapahtui."
+  ]
+}

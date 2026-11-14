@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Více kontroly nad soubory a složkami",
+  "notes": [
+    "Nové: Procházejte složky ve stromovém zobrazení, přejmenovávejte je přímo na místě a používejte složky ze stromu v příkazech podokna.",
+    "Vylepšení: Přizpůsobte barvy souborů podle přípony, skryjte panely umístění v podoknech a procházejte cesty klikáním na jednotlivé části s názvy složek.",
+    "Opravy: Při přenosu lze neúspěšné soubory zkusit znovu na konci, dialogová okna se snadněji ovládají klávesnicí a u nedostupných jednotek se nyní dozvíte, co se stalo."
+  ]
+}

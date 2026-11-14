@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Mais controle sobre seus arquivos e pastas",
+  "notes": [
+    "Novidade: Navegue pelas pastas em uma árvore, renomeie-as no próprio local e use a pasta da árvore com comandos do painel.",
+    "Melhorias: Personalize as cores dos arquivos por extensão, oculte as barras de localização dos painéis e navegue pelos caminhos clicando nos segmentos das pastas.",
+    "Correções: As transferências de arquivos podem tentar novamente, ao final, os arquivos que falharam; os diálogos estão mais fáceis de navegar com o teclado; e agora as unidades indisponíveis explicam o que aconteceu."
+  ]
+}

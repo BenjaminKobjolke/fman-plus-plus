@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Davantage de contrôle sur vos fichiers et dossiers",
+  "notes": [
+    "Nouveau : Parcourez les dossiers sous forme d’arborescence, renommez-les directement et utilisez le dossier de l’arborescence avec les commandes du volet.",
+    "Améliorations : Personnalisez la couleur des fichiers selon leur extension, masquez les barres d’emplacement des volets et parcourez les chemins en cliquant sur les dossiers qui les composent.",
+    "Corrections : Les transferts de fichiers peuvent réessayer les fichiers ayant échoué à la fin, les boîtes de dialogue sont plus faciles à parcourir au clavier et les lecteurs indisponibles indiquent désormais ce qui s’est passé."
+  ]
+}

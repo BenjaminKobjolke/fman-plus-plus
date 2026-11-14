@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Majte väčšiu kontrolu nad súbormi a priečinkami",
+  "notes": [
+    "Nové: Prehliadajte priečinky v stromovom zobrazení, premenujte ich priamo na mieste a používajte priečinok zo stromu v príkazoch panela.",
+    "Vylepšené: Prispôsobte farby súborov podľa prípony, skryte panely s umiestnením v paneloch a prechádzajte cestami kliknutím na jednotlivé priečinky.",
+    "Opravené: Pri prenose súborov možno neúspešné súbory skúsiť preniesť znova na konci, v dialógových oknách sa dá jednoduchšie pohybovať pomocou klávesnice a pri nedostupných jednotkách sa teraz zobrazí vysvetlenie."
+  ]
+}

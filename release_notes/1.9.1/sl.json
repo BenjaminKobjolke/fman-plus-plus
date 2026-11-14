@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Več nadzora nad datotekami in mapami",
+  "notes": [
+    "Novo: Brskajte po mapah v drevesnem pogledu, jih preimenujte neposredno in uporabljajte mapo iz drevesa z ukazi podokna.",
+    "Izboljšano: Prilagodite barve datotek glede na pripono, skrijte lokacijske vrstice podokna in krmarite po poteh s klikom na njihove dele z mapami.",
+    "Odpravljeno: Pri prenosih datotek lahko ob koncu znova poskusite prenesti neuspele datoteke, po pogovornih oknih je lažje krmariti s tipkovnico, pri nedostopnih pogonih pa je zdaj pojasnjeno, kaj se je zgodilo."
+  ]
+}

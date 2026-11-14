@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Kiểm soát tệp và thư mục tốt hơn",
+  "notes": [
+    "Mới: Duyệt thư mục dưới dạng cây, đổi tên ngay tại chỗ và dùng thư mục trong cây với các lệnh của ngăn.",
+    "Cải tiến: Tùy chỉnh màu tệp theo phần mở rộng, ẩn thanh vị trí của ngăn và điều hướng đường dẫn bằng cách nhấp vào các thư mục trong đường dẫn.",
+    "Đã sửa: Có thể thử chuyển lại các tệp bị lỗi ở cuối quá trình chuyển, hộp thoại dễ thao tác bằng bàn phím hơn và các ổ đĩa không khả dụng giờ sẽ cho biết nguyên nhân."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Dosyalarınız ve klasörleriniz üzerinde daha fazla kontrol",
+  "notes": [
+    "Yeni: Klasörlere ağaç görünümünde göz atın, adlarını yerinde değiştirin ve bölme komutlarıyla ağaç görünümündeki klasörü kullanın.",
+    "İyileştirildi: Dosya renklerini uzantıya göre özelleştirin, bölme konum çubuklarını gizleyin ve klasör bölümlerine tıklayarak yollarda gezinin.",
+    "Düzeltildi: Dosya aktarımlarında başarısız dosyalar işlemin sonunda yeniden denenebilir, iletişim kutularında klavyeyle gezinmek artık daha kolay ve kullanılamayan sürücülerde ne olduğu artık açıklanıyor."
+  ]
+}

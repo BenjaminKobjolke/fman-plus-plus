@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Nagyobb irányítás a fájlok és mappák felett",
+  "notes": [
+    "Újdonság: Böngéssz a mappák között fanézetben, nevezd át őket közvetlenül, és használd a fanézetben kijelölt mappát a panelparancsokkal.",
+    "Továbbfejlesztve: Szabd testre a fájlok színét a kiterjesztésük alapján, rejtsd el a panelek elérésiút-sávjait, és navigálj az útvonalakon a mappaszegmensekre kattintva.",
+    "Javítva: A fájlátvitelek a végén újrapróbálhatják a sikertelen fájlokat, a párbeszédablakokban könnyebb billentyűzettel navigálni, az elérhetetlen meghajtók pedig most már megmagyarázzák, mi történt."
+  ]
+}

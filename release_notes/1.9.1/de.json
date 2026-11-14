@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Mehr Kontrolle über Ihre Dateien und Ordner",
+  "notes": [
+    "Neu: Ordner in einer Baumansicht durchsuchen, direkt umbenennen und den Ordner in der Baumansicht mit Bereichsbefehlen verwenden.",
+    "Verbessert: Dateifarben nach Dateiendung anpassen, Pfadleisten der Bereiche ausblenden und Pfade durch Klicken auf einzelne Ordnersegmente durchlaufen.",
+    "Behoben: Bei Dateiübertragungen können fehlgeschlagene Dateien am Ende erneut versucht werden, Dialoge lassen sich einfacher per Tastatur bedienen und bei nicht verfügbaren Laufwerken wird jetzt erklärt, was passiert ist."
+  ]
+}

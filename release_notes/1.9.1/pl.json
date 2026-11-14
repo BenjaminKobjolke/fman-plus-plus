@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Większa kontrola nad plikami i folderami",
+  "notes": [
+    "Nowość: Przeglądaj foldery w widoku drzewa, zmieniaj ich nazwy bezpośrednio na miejscu i używaj folderu wybranego w drzewie za pomocą poleceń panelu.",
+    "Ulepszenia: Dostosuj kolory plików według rozszerzeń, ukryj paski lokalizacji paneli i przechodź do ścieżek, klikając segmenty folderów.",
+    "Naprawiono: Podczas przesyłania można ponawiać próbę przesłania nieudanych plików na końcu, okna dialogowe są łatwiejsze w obsłudze za pomocą klawiatury, a przy niedostępnych dyskach wyświetlane są teraz informacje o przyczynie."
+  ]
+}

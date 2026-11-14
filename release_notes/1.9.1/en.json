@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "More control over your files and folders",
+  "notes": [
+    "New: Browse folders in a tree, rename them in place, and use the tree's folder with pane commands.",
+    "Improved: Customize file colors by extension, hide pane location bars, and navigate paths by clicking their folder segments.",
+    "Fixed: File transfers can retry failed files at the end, dialogs are easier to navigate with the keyboard, and unavailable drives now explain what happened."
+  ]
+}

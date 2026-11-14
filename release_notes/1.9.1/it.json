@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Più controllo su file e cartelle",
+  "notes": [
+    "Novità: esplora le cartelle in una struttura ad albero, rinominale direttamente e usa le cartelle dell’albero con i comandi del riquadro.",
+    "Miglioramenti: personalizza i colori dei file in base all’estensione, nascondi le barre del percorso del riquadro e naviga nei percorsi facendo clic sui nomi delle cartelle.",
+    "Correzioni: i trasferimenti di file possono riprovare alla fine quelli non riusciti, è più facile spostarsi tra le finestre di dialogo con la tastiera e le unità non disponibili ora spiegano cosa è successo."
+  ]
+}

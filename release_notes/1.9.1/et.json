@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Suurem kontroll oma failide ja kaustade üle",
+  "notes": [
+    "Uus: Sirvi kaustu puuvaates, nimeta neid otse ümber ning kasuta puus valitud kausta paanikäskudega.",
+    "Täiustatud: Kohanda failide värve laiendi järgi, peida paanide asukoharibad ning liigu asukohtades, klõpsates nende kaustaosadel.",
+    "Parandatud: Failiedastuse lõpus saab ebaõnnestunud failide edastamist uuesti proovida, dialoogides on klaviatuuri abil lihtsam navigeerida ning nüüd selgitatakse, miks kettad pole saadaval."
+  ]
+}

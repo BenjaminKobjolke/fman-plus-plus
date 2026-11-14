@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Daugiau failų ir aplankų valdymo galimybių",
+  "notes": [
+    "Nauja: naršykite aplankus medžio rodinyje, pervadinkite juos vietoje ir naudokite medyje pasirinktą aplanką su srities komandomis.",
+    "Patobulinta: tinkinkite failų spalvas pagal plėtinį, slėpkite sričių vietos juostas ir naršykite kelius spustelėdami jų aplankų segmentus.",
+    "Ištaisyta: nepavykusius perkelti failus dabar galima bandyti perkelti dar kartą pabaigoje, dialogus lengviau naršyti klaviatūra, o neprieinami diskai dabar paaiškina, kas nutiko."
+  ]
+}

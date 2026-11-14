@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Mer kontroll över dina filer och mappar",
+  "notes": [
+    "Nytt: Bläddra bland mappar i en trädvy, byt namn på dem direkt och använd mappar från trädet med panelkommandon.",
+    "Förbättrat: Anpassa filfärger efter filändelse, dölj platsfält i paneler och navigera bland sökvägar genom att klicka på mapparna i dem.",
+    "Åtgärdat: Filöverföringar kan försöka överföra misslyckade filer igen i slutet, det är enklare att navigera i dialogrutor med tangentbordet och det förklaras nu vad som hänt när en enhet inte är tillgänglig."
+  ]
+}

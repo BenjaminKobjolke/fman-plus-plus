@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Mere kontrol over dine filer og mapper",
+  "notes": [
+    "Nyt: Gennemse mapper i en trævisning, omdøb dem direkte, og brug trævisningens mapper sammen med rudehandlinger.",
+    "Forbedret: Tilpas filfarver efter filtypenavn, skjul rudernes placeringslinjer, og naviger i stier ved at klikke på deres mappedele.",
+    "Rettet: Filoverførsler kan prøve at overføre mislykkede filer igen til sidst, dialogbokse er nemmere at navigere i med tastaturet, og utilgængelige drev forklarer nu, hvad der er sket."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Mer kontroll over filene og mappene dine",
+  "notes": [
+    "Nytt: Bla gjennom mapper i en trevisning, gi dem nytt navn direkte, og bruk mapper fra trevisningen med panelkommandoer.",
+    "Forbedret: Tilpass filfarger etter filtype, skjul panelenes plasseringfelt, og naviger i baner ved å klikke på mappene i dem.",
+    "Rettet: Filoverføringer kan prøve å overføre mislykkede filer på nytt til slutt, dialogbokser er enklere å navigere med tastaturet, og utilgjengelige stasjoner forklarer nå hva som har skjedd."
+  ]
+}

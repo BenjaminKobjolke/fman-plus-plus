@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Meer controle over je bestanden en mappen",
+  "notes": [
+    "Nieuw: Blader door mappen in een boomstructuur, wijzig hun naam ter plekke en gebruik de geselecteerde map in de boomstructuur met deelvensteropdrachten.",
+    "Verbeterd: Pas bestandskleuren aan op basis van de extensie, verberg de locatiebalken van deelvensters en navigeer door paden door op mapsegmenten te klikken.",
+    "Opgelost: Bij bestandsoverdrachten kunnen mislukte bestanden aan het einde opnieuw worden geprobeerd, dialogen zijn gemakkelijker te bedienen met het toetsenbord en bij niet-beschikbare stations wordt nu uitgelegd wat er is gebeurd."
+  ]
+}

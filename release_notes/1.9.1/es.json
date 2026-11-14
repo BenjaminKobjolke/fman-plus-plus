@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Más control sobre tus archivos y carpetas",
+  "notes": [
+    "Nuevo: Explora las carpetas en un árbol, cámbiales el nombre directamente y usa la carpeta del árbol con los comandos del panel.",
+    "Mejorado: Personaliza los colores de los archivos por extensión, oculta las barras de ubicación del panel y recorre las rutas haciendo clic en los segmentos de sus carpetas.",
+    "Corregido: Las transferencias de archivos pueden volver a intentar al final los archivos que hayan fallado; ahora es más fácil navegar por los diálogos con el teclado y las unidades no disponibles explican qué ha ocurrido."
+  ]
+}

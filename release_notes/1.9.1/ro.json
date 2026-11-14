@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Mai mult control asupra fișierelor și folderelor",
+  "notes": [
+    "Nou: Răsfoiți folderele într-o structură arborescentă, redenumiți-le direct și folosiți folderul selectat din structură cu comenzile panoului.",
+    "Îmbunătățit: Personalizați culorile fișierelor în funcție de extensie, ascundeți barele cu locația panoului și navigați prin căi făcând clic pe segmentele corespunzătoare folderelor.",
+    "Remedieri: Transferurile de fișiere pot reîncerca la final fișierele care au eșuat, dialogurile sunt mai ușor de navigat cu tastatura, iar unitățile indisponibile explică acum ce s-a întâmplat."
+  ]
+}

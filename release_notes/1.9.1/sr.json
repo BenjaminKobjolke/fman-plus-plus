@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Više kontrole nad datotekama i fasciklama",
+  "notes": [
+    "Novo: Pregledajte fascikle u prikazu stabla, preimenujte ih na licu mesta i koristite fasciklu iz stabla pomoću komandi panela.",
+    "Poboljšano: Prilagodite boje datoteka prema ekstenziji, sakrijte trake sa lokacijom u panelima i krećite se kroz putanje klikom na segmente fascikli.",
+    "Ispravljeno: Prenosi datoteka sada mogu ponovo da pokušaju prenos neuspešnih datoteka na kraju, kroz dijaloge se lakše kreće pomoću tastature, a za nedostupne diskove sada se objašnjava šta se dogodilo."
+  ]
+}

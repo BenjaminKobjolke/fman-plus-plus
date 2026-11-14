@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Lielāka kontrole pār failiem un mapēm",
+  "notes": [
+    "Jaunums: Pārlūkojiet mapes koka skatā, pārdēvējiet tās uz vietas un izmantojiet koka skatā atlasīto mapi paneļa komandās.",
+    "Uzlabots: Pielāgojiet failu krāsas pēc paplašinājuma, paslēpiet paneļu atrašanās vietas joslas un pārvietojieties pa ceļiem, noklikšķinot uz mapju nosaukumiem.",
+    "Novērsts: Failu pārsūtīšanas beigās var atkārtoti mēģināt pārsūtīt failus, kuru pārsūtīšana neizdevās; dialoglodziņos ir vieglāk pārvietoties, izmantojot tastatūru, un tagad tiek paskaidrots, kāpēc diskdziņi nav pieejami."
+  ]
+}

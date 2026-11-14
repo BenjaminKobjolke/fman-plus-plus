@@ -1,0 +1,10 @@
+{
+  "version": "1.9.1",
+  "date": "2026-11-14",
+  "title": "Više kontrole nad datotekama i mapama",
+  "notes": [
+    "Novo: Pregledavajte mape u prikazu stabla, preimenujte ih izravno u prikazu i koristite mapu iz stabla s naredbama okna.",
+    "Poboljšano: Prilagodite boje datoteka prema datotečnom nastavku, sakrijte trake lokacije okna i krećite se putanjama klikom na njihove dijelove koji označavaju mape.",
+    "Ispravljeno: Prijenosi datoteka sada na kraju mogu ponoviti prijenos neuspjelih datoteka, dijaloškim se okvirima lakše kretati tipkovnicom, a za nedostupne se pogone sada objašnjava što se dogodilo."
+  ]
+}
