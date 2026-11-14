@@ -243,6 +243,7 @@ class ToggleIncognitoTest(TestCase):
 		}.get(key, default)
 		context = SimpleNamespace(
 			_demo_mode=False,
+			_demo_asks_consent=False,
 			main_window=MagicMock(),
 			update_check_timer=MagicMock(),
 			session_manager=SimpleNamespace(is_first_run=first_run),
