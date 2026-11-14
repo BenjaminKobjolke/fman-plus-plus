@@ -57,7 +57,8 @@ from fman.impl.view import ProxyStyle
 from fman.impl.view.header_sort_arrow import SORT_ARROW_SETTING, SortArrowPosition
 from fman.impl.widgets import MainWindow, Application
 from fman.localization_keys import METRICS_CONSENT, CONSENT_ACCEPT_ALL, \
-	CONSENT_ERROR_REPORTS, CONSENT_USAGE_METRICS, CONSENT_NO_THANKS
+	CONSENT_ERROR_REPORTS, CONSENT_USAGE_METRICS, CONSENT_NO_THANKS, \
+	ERROR_REPORTS_ON, ERROR_REPORTS_OFF, USAGE_METRICS_ON, USAGE_METRICS_OFF
 from os import makedirs, getcwd
 from os.path import dirname, join
 from PyQt5.QtCore import QUrl, QTimer
@@ -285,6 +286,12 @@ class DevelopmentApplicationContext(ApplicationContext):
 		self.local_settings[ERROR_REPORTS_SETTING] = error_reports
 		self.local_settings['usage_metrics'] = usage_metrics
 		self.local_settings.flush()
+		error_reports_message = fman.translate(
+			ERROR_REPORTS_ON if error_reports else ERROR_REPORTS_OFF)
+		usage_metrics_message = fman.translate(
+			USAGE_METRICS_ON if usage_metrics else USAGE_METRICS_OFF)
+		self.main_window.show_status_message(
+			error_reports_message + ' ' + usage_metrics_message)
 	def on_main_window_close(self):
 		listener = self.__dict__.get('_shell_change_listener')
 		if listener is not None:
