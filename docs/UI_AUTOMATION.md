@@ -36,6 +36,25 @@ has exited, is closed by a watchdog started with that session. The next
 `launch` also removes such old sessions. `close` is still required at the end
 of every check.
 
+Before `keys`, `type`, `click`, `drag` or `command`, the driver checks that
+every pane's `state` path is inside this session's temporary folder or one of
+its fixture folders. It refuses the action if any pane is outside those roots;
+`null` paths count as outside. A standalone `keys Escape` is allowed so it can
+close the folder tree and restore the pane. If another key is needed, use
+`close` and `launch` to recover a clean session. Read-only commands and
+`close`, `restart` and `launch` are not fenced.
+
+Before `command`, the driver also checks for an open dialog. It refuses a
+command while a prompt or message box is open and reports its type and text;
+answer it with `keys Return` or `keys Escape` first. Non-modal progress dialogs
+do not block commands. Keys, typing and clicks remain available to answer a
+prompt, subject to the pane-path fence.
+
+The folder tree displays ancestors above the fixture, including folders on the
+drive. Its highlighted folder is the pane location reported by `state`, while
+`files --pane N` lists the underlying file list. Use `--deep` to exercise the
+tree on a disposable nested fixture instead of navigating to a real folder.
+
 All commands except `launch` and `close` read the session information written
 to the platform's temporary `fman-ui/current.json`; the driver never reads the
 user's normal fman profile.
@@ -61,6 +80,42 @@ include `file_age_shading`, `file_age_scale` (`log` or `steps`),
 session to try a different style or scale. The theme changes live with the
 `Select theme` palette command; compact view, hidden files, and shading can be
 changed with their palette commands.
+
+`--deep N` creates a six-level `deep/level_1/.../level_6` folder tree in the
+left fixture, with `N` empty `sibling_0000`-style folders at each level above
+`level_6`. The maximum is 5000 siblings per level. It is opt-in; `launch` adds
+the absolute `level_6` path as `deep` in its JSON result and saved session when
+`N` is greater than zero. Caller-provided `--left` folders are not changed.
+
+This follows validation task #2227. Convert the `deep` path from the first
+command's JSON result to a `file://` URL with forward slashes (for example,
+`D:\\temp\\fman-ui\\session\\left\\deep` becomes
+`file://D:/temp/fman-ui/session/left/deep`) and use it in the
+`open_directory` argument. The tree opens on the deep fixture, so the following
+check exercises its long chain and sibling folders without opening a real
+drive folder:
+
+```bat
+tools\fman_ui.bat launch --deep 300
+tools\fman_ui.bat command open_directory "{\"url\":\"file://D:/.../deep/level_6\"}" --pane 0
+tools\fman_ui.bat command toggle_folder_tree --pane 0
+tools\fman_ui.bat state
+tools\fman_ui.bat screenshot %TEMP%\fman-deep-tree.png
+tools\fman_ui.bat keys F7
+tools\fman_ui.bat dialog
+tools\fman_ui.bat command new_folder --pane 0
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat keys Home
+tools\fman_ui.bat keys F7
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat state
+tools\fman_ui.bat close
+```
+
+Confirm the second command is refused while the F7 prompt is open. After
+`Home`, F7 should be refused if the pane is outside the session fixtures;
+standalone Escape closes the tree and restores the fixture location. Always
+close the session, including if a check fails.
 
 This example follows validation task #2070: compare the age fixtures in both
 panes and try the view options, then scroll through a large folder.
@@ -102,11 +157,11 @@ The tickets watcher's validation agent finds this driver through the
 `desktop_ui_driver` key in `tools/tickets-watcher.json`, which names
 `tools/fman_ui.bat` on Windows; `tools/fman_ui.sh` is the macOS command. Both
 paths must stay real files inside
-the checkout or the watcher ignores the key. Agents may use `--large`,
-`--core-settings` and `restart` to check settings across a restart; `--large`
-and `--core-settings` stay inside the temporary fixture and profile. They
-never use `--left` or `--right`, so checks cannot touch folders outside
-`%TEMP%\fman-ui\`. Agents always run `tools\fman_ui.bat close` at the end,
+the checkout or the watcher ignores the key. Agents may use `--large`, `--deep`,
+`--core-settings` and `restart` to check settings across a restart; these
+options stay inside the temporary fixture and profile. The driver refuses
+input and commands when a pane leaves the session fixtures. Agents always run
+`tools\fman_ui.bat close` at the end,
 including when a check fails. Screenshots an agent wants to attach go under the
 ticket's `attach/validation/` folder.
 
