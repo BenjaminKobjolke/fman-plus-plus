@@ -99,6 +99,35 @@ class FixturesTest(TestCase):
 					fixtures.make_large_folder(root, count, 1_800_000_000)
 		self.assertFalse(root.exists())
 
+	def test_make_deep_folder_creates_siblings_at_each_level(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'fixture'
+			deep = fixtures.make_deep_folder(root, 3)
+			self.assertEqual(root / 'deep' / 'level_1' / 'level_2' /
+				'level_3' / 'level_4' / 'level_5' / 'level_6', deep)
+			for level in range(fixtures.DEEP_LEVELS):
+				parent = root / 'deep'
+				for index in range(1, level + 1):
+					parent /= 'level_%d' % index
+				self.assertEqual(
+					['sibling_0000', 'sibling_0001', 'sibling_0002'],
+					sorted(path.name for path in parent.iterdir()
+						if path.name.startswith('sibling_')),
+				)
+			self.assertEqual([], list((deep).iterdir()))
+
+	def test_make_deep_folder_zero_does_not_create_directory(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'fixture'
+			self.assertIsNone(fixtures.make_deep_folder(root, 0))
+		self.assertFalse(root.exists())
+
+	def test_validate_deep_count_rejects_invalid_counts(self):
+		for count in (-1, fixtures.MAX_DEEP_SIBLINGS + 1):
+			with self.subTest(count=count), self.assertRaisesRegex(
+				ValueError, r'--deep must be between 0 and 5000\.'):
+				fixtures.validate_deep_count(count)
+
 	def test_parse_core_settings_accepts_only_json_objects(self):
 		self.assertIsNone(fixtures.parse_core_settings(None))
 		self.assertEqual({'file_age_style': 'tint'},

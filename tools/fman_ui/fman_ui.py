@@ -18,9 +18,11 @@ from build_info import describe_build
 from parser import parser as _parser
 from restart import restart_session
 from fixtures import (
-	copy_video_fixture, make_fixture, make_large_folder, parse_core_settings,
-	validate_large_count, write_core_settings,
+	copy_video_fixture, make_deep_folder, make_fixture, make_large_folder,
+	parse_core_settings, validate_deep_count, validate_large_count,
+	write_core_settings,
 )
+from guards import guard_input
 from session_reaper import (
 	SESSION_FILE, close_session, fman_process_identity, kill_process,
 	process_start_time, reap_stale,
@@ -131,6 +133,7 @@ def _start_fman(session, session_root):
 
 def _launch(args):
 	validate_large_count(args.large)
+	validate_deep_count(args.deep)
 	core_settings = parse_core_settings(args.core_settings)
 	now = time.time()
 	root = _root()
@@ -148,6 +151,9 @@ def _launch(args):
 		make_fixture(right, now)
 	if not args.left:
 		make_large_folder(left, args.large, now)
+		deep = make_deep_folder(left, args.deep)
+	else:
+		deep = None
 	local = profile / 'Local'
 	local.mkdir(parents=True, exist_ok=True)
 	port = _reserve_port()
@@ -174,6 +180,8 @@ def _launch(args):
 			os.environ.get('FMAN_PYTHON', sys.executable),
 		).to_dict(),
 	}
+	if deep is not None:
+		session['deep'] = str(deep)
 	try:
 		_start_fman(session, session_root)
 	except Exception:
@@ -218,6 +226,7 @@ def _run(args):
 		session_file = Path(profile).parent / SESSION_FILE
 		if session_file.exists():
 			os.utime(session_file, None)
+	state = guard_input(session, args, _api)
 	if args.action in ('state', 'commands'):
 		return _api(session, 'GET', '/v1/' + args.action)
 	if args.action == 'files':
@@ -256,7 +265,6 @@ def _run(args):
 		return result
 	if args.action == 'click':
 		if args.file is not None:
-			state = _api(session, 'GET', '/v1/state')
 			pane_index = args.pane
 			if pane_index < 0 or pane_index >= len(state['panes']):
 				raise RuntimeError('Pane index is out of range.')

@@ -10,6 +10,9 @@ import subprocess
 AGE_FOLDER = 'ages'
 LARGE_FOLDER = 'large'
 MAX_LARGE_COUNT = 50000
+DEEP_FOLDER = 'deep'
+DEEP_LEVELS = 6
+MAX_DEEP_SIBLINGS = 5000
 DAY_SECONDS = 86400
 CORE_SETTINGS_PATH = ('Plugins', 'User', 'Settings', 'Core Settings.json')
 VIDEO_FIXTURE_NAME = 'video.mp4'
@@ -78,6 +81,25 @@ def make_large_folder(path: Path, count: int, now: float) -> None:
 		file_path.write_text('', encoding='utf-8')
 		mtime = now - (index % 400) * DAY_SECONDS
 		os.utime(file_path, (mtime, mtime))
+
+
+def validate_deep_count(count: int) -> None:
+	if count < 0 or count > MAX_DEEP_SIBLINGS:
+		raise ValueError('--deep must be between 0 and 5000.')
+
+
+def make_deep_folder(path: Path, count: int) -> Path | None:
+	validate_deep_count(count)
+	if count == 0:
+		return None
+	current = Path(path) / DEEP_FOLDER
+	current.mkdir(parents=True, exist_ok=True)
+	for level in range(1, DEEP_LEVELS + 1):
+		for index in range(count):
+			(current / ('sibling_%04d' % index)).mkdir(exist_ok=True)
+		current = current / ('level_%d' % level)
+		current.mkdir(exist_ok=True)
+	return current
 
 
 def parse_core_settings(text: str | None) -> dict[str, object] | None:

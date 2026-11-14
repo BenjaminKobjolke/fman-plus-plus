@@ -11,6 +11,9 @@ def parser():
 	launch.add_argument('--right')
 	launch.add_argument('--large', type=int, default=0,
 		help="number of files in the left fixture's large folder")
+	launch.add_argument('--deep', type=int, default=0,
+		help=("number of sibling folders per level in the left fixture's "
+			"deep folder tree"))
 	launch.add_argument('--core-settings', default=None,
 		help=("JSON object written to the profile's Core Settings.json "
 			"before fman starts"))

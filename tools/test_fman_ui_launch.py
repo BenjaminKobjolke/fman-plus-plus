@@ -22,7 +22,7 @@ class FmanUiLaunchTest(TestCase):
 			os.environ.pop('TEMP', None)
 			self.assertEqual(Path('system-temp') / 'fman-ui', fman_ui._root())
 
-	def _launch(self, temp, *, large=0, core_settings=None):
+	def _launch(self, temp, *, large=0, deep=0, core_settings=None, left=None):
 		patches = (
 			patch.dict(os.environ, {'TEMP': temp}),
 			patch.object(fman_ui, '_reserve_port', return_value=45678),
@@ -39,7 +39,7 @@ class FmanUiLaunchTest(TestCase):
 			patches[5], patches[6], patches[7] as popen, patches[8]:
 			popen.return_value.pid = 123
 			session = fman_ui._launch(SimpleNamespace(
-				left=None, right=None, large=large,
+				left=left, right=None, large=large, deep=deep,
 				core_settings=core_settings))
 			self.popen_calls = popen.call_args_list
 			return session
@@ -56,7 +56,7 @@ class FmanUiLaunchTest(TestCase):
 				patch.object(fman_ui.subprocess, 'run'):
 				popen.return_value.pid = 123
 				session = fman_ui._launch(SimpleNamespace(
-					left=None, right=None, large=0, core_settings=None))
+					left=None, right=None, large=0, deep=0, core_settings=None))
 				settings = json.loads(
 					(Path(session['profile']) / 'Local' / 'Settings.json').read_text())
 				self.assertTrue(settings['scripting_api']['automation'])
@@ -110,6 +110,22 @@ class FmanUiLaunchTest(TestCase):
 			self.assertEqual({'file_age_style': 'tint'},
 				json.loads(settings_path.read_text(encoding='utf-8')))
 
+	def test_launch_creates_deep_left_fixture_and_reports_level_six(self):
+		with TemporaryDirectory() as temp:
+			session = self._launch(temp, deep=2)
+			deep = Path(session['left']) / 'deep' / 'level_1' / 'level_2' / \
+				'level_3' / 'level_4' / 'level_5' / 'level_6'
+			self.assertEqual(str(deep), session['deep'])
+			self.assertTrue(deep.is_dir())
+
+	def test_launch_with_caller_left_does_not_create_deep_fixture(self):
+		with TemporaryDirectory() as temp:
+			left = Path(temp) / 'provided-left'
+			left.mkdir()
+			session = self._launch(temp, deep=2, left=str(left))
+			self.assertNotIn('deep', session)
+			self.assertFalse((left / 'deep').exists())
+
 	def test_launch_starts_children_in_new_sessions_only_on_posix(self):
 		for name, expected in (('posix', True), ('nt', False)):
 			with self.subTest(os_name=name), TemporaryDirectory() as temp:
@@ -124,8 +140,14 @@ class FmanUiLaunchTest(TestCase):
 	def test_invalid_launch_options_fail_before_session_directory_is_created(self):
 		with TemporaryDirectory() as temp, patch.dict(os.environ, {'TEMP': temp}):
 			for args in (
-				SimpleNamespace(left=None, right=None, large=-1, core_settings=None),
-				SimpleNamespace(left=None, right=None, large=0, core_settings='[1]'),
+				SimpleNamespace(left=None, right=None, large=-1, deep=0,
+					core_settings=None),
+				SimpleNamespace(left=None, right=None, large=0, deep=0,
+					core_settings='[1]'),
+				SimpleNamespace(left=None, right=None, large=0, deep=-1,
+					core_settings=None),
+				SimpleNamespace(left=None, right=None, large=0, deep=5001,
+					core_settings=None),
 			):
 				with self.subTest(args=args), self.assertRaises(ValueError):
 					fman_ui._launch(args)
@@ -136,4 +158,8 @@ class FmanUiLaunchTest(TestCase):
 			'launch', '--large', '5000', '--core-settings', '{}'])
 		self.assertEqual(5000, args.large)
 		self.assertEqual('{}', args.core_settings)
+
+	def test_parser_accepts_deep(self):
+		args = parser().parse_args(['launch', '--deep', '10'])
+		self.assertEqual(10, args.deep)
 
