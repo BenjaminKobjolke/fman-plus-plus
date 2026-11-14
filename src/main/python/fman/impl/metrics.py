@@ -1,19 +1,31 @@
 from collections import deque
+from datetime import datetime, timezone
 from fbs_runtime.platform import is_linux
-from http.client import HTTPException
+from logging import getLogger
+from math import isfinite
 from os import makedirs
-from os.path import dirname, exists
+from os.path import dirname
 from queue import Queue
-from ssl import CertificateError
-from threading import Thread
-from urllib.parse import urlencode
-from urllib.request import urlopen, Request
+from threading import Event, Thread
+from uuid import uuid4
 
 import json
-import ssl
+import requests
+
+
+logger = getLogger(__name__)
+
+
+def _get_data_for_tracking(install_id, event, properties=None):
+	result = {'uuid': install_id, 'event': event}
+	if properties:
+		result.update(properties)
+	return result
+
 
 class MetricsError(Exception):
 	pass
+
 
 class Metrics:
 	def __init__(self, json_path, backend, os, fman_version):
@@ -31,12 +43,8 @@ class Metrics:
 		except ValueError:
 			self._enabled = False
 		except FileNotFoundError:
-			try:
-				self._user = self._backend.create_user()
-			except MetricsError:
-				self._enabled = False
-			else:
-				self._write_json({'uuid': self._user})
+			self._user = str(uuid4())
+			self._write_json({'uuid': self._user})
 		except NotADirectoryError:
 			# This happens when part of a path isn't a dir. Eg. install.txt/foo.
 			# In this case, we will also not be able to save a generated UUID to
@@ -70,13 +78,8 @@ class Metrics:
 			self._backend.track(self._user, event, data)
 		except MetricsError:
 			pass
-	def update_user(self, **properties):
-		if not self._enabled:
-			return
-		try:
-			self._backend.update_user(self._user, **properties)
-		except MetricsError:
-			pass
+	def flush(self):
+		self._backend.flush()
 	def _read_json(self):
 		with open(self._json_path, 'r') as f:
 			return json.load(f)
@@ -85,68 +88,94 @@ class Metrics:
 		with open(self._json_path, 'w') as f:
 			json.dump(data, f)
 
-class ServerBackend:
-	def __init__(self, users_url, events_url):
-		self._users_url = users_url
+
+class ApiBackend:
+	DEFAULT_BATCH_SIZE = 20
+	MAX_BATCH_SIZE = 100
+	POST_TIMEOUT_SECONDS = 5
+
+	def __init__(self, events_url, platform, app_version,
+			batch_size=DEFAULT_BATCH_SIZE):
 		self._events_url = events_url
-	def create_user(self):
-		return self._post(self._users_url)
-	def track(self, user, event, properties=None):
-		data = self.get_data_for_tracking(user, event, properties)
-		self._post(self._events_url, data)
-	def update_user(self, user, **properties):
-		self._put(self._users_url + '/' + user, properties)
-	def get_data_for_tracking(self, user, event, properties=None):
-		result = {
-			'uuid': user,
-			'event': event
+		self._platform = platform
+		self._app_version = app_version
+		self._batch_size = min(max(1, batch_size), self.MAX_BATCH_SIZE)
+		self._events = []
+		self._install_id = None
+
+	def track(self, install_id, event, properties=None):
+		self._install_id = install_id
+		self._events.append({
+			'event': event,
+			'occurred_at': datetime.now(timezone.utc).isoformat(),
+			'properties': self._scalar_properties(properties),
+		})
+		if len(self._events) >= self._batch_size:
+			self._send_batches(self._batch_size)
+
+	def flush(self):
+		self._send_batches(self.MAX_BATCH_SIZE)
+
+	def get_data_for_tracking(self, install_id, event, properties=None):
+		return _get_data_for_tracking(install_id, event, properties)
+
+	@staticmethod
+	def _scalar_properties(properties):
+		if not properties:
+			return {}
+		return {
+			key: value for key, value in properties.items()
+			if value is None or isinstance(value, (str, int, float, bool))
+			and (not isinstance(value, float) or isfinite(value))
 		}
-		if properties:
-			result.update(properties)
-		return result
-	def _post(self, url, data=None):
-		return self._send(url, 'POST', data)
-	def _put(self, url, data=None):
-		return self._send(url, 'PUT', data)
-	def _send(self, url, method, data):
-		if data:
-			errs = 'surrogatepass'
-			encoded_data = urlencode(data, errors=errs).encode('utf-8', errs)
-		else:
-			encoded_data = None
-		cafile_linux = '/etc/ssl/certs/ca-certificates.crt'
-		cafile = cafile_linux if is_linux() and exists(cafile_linux) else None
-		ssl_context = ssl.create_default_context(cafile=cafile)
-		request = Request(url, encoded_data, method=method)
-		try:
-			with urlopen(request, context=ssl_context) as response:
-				resp_body = response.read()
-		except (OSError, HTTPException, CertificateError) as e:
-			raise MetricsError() from e
-		if response.status // 100 != 2:
-			raise MetricsError('Unexpected HTTP status %d.' % response.status)
-		try:
-			return resp_body.decode('utf-8')
-		except ValueError:
-			raise MetricsError('Unexpected response: %r' % resp_body)
+
+	def _send_batches(self, max_batch_size):
+		while self._events:
+			batch = self._events[:max_batch_size]
+			del self._events[:len(batch)]
+			payload = {
+				'install_id': self._install_id,
+				'platform': self._platform,
+				'app_version': self._app_version,
+				'events': batch,
+			}
+			try:
+				self._post(self._events_url, payload)
+			except Exception:
+				logger.exception('Could not send usage metrics batch')
+
+	@classmethod
+	def _post(cls, url, payload):
+		response = requests.post(url, json=payload, timeout=cls.POST_TIMEOUT_SECONDS)
+		response.raise_for_status()
+
+
+class NullBackend:
+	def track(self, install_id, event, properties=None):
+		pass
+	def flush(self):
+		pass
+	def get_data_for_tracking(self, install_id, event, properties=None):
+		return _get_data_for_tracking(install_id, event, properties)
+
 
 class LoggingBackend:
 	def __init__(self, backend, max_num_logs=1000):
 		self._backend = backend
 		self._logs = deque(maxlen=max_num_logs)
-	def create_user(self):
-		return self._backend.create_user()
-	def track(self, user, event, properties=None):
-		data = self._backend.get_data_for_tracking(user, event, properties)
+	def track(self, install_id, event, properties=None):
+		data = self._backend.get_data_for_tracking(
+			install_id, event, properties)
 		self._logs.append(data)
-		self._backend.track(user, event, properties)
-	def update_user(self, user, **properties):
-		self._backend.update_user(user, **properties)
-	def flush(self, log_file_path):
+		self._backend.track(install_id, event, properties)
+	def flush(self):
+		self._backend.flush()
+	def write_logs(self, log_file_path):
 		with open(log_file_path, 'w') as f:
 			def fmt_log(data):
 				return json.dumps(data, indent=4)
 			f.write('\n\n'.join(map(fmt_log, self._logs)))
+
 
 class AsynchronousMetrics:
 	def __init__(self, metrics):
@@ -154,17 +183,28 @@ class AsynchronousMetrics:
 		self._metrics = metrics
 		self._queue = Queue()
 		self._thread = Thread(target=self._work, daemon=True)
+		self._running = False
 	def initialize(self, callback=lambda: None):
 		self._queue.put(self._metrics.initialize)
 		self._queue.put(callback)
+		self._running = True
 		self._thread.start()
 	def get_user(self):
 		return self._metrics.get_user()
 	def track(self, event, properties=None):
 		self.past_events.append(event)
 		self._queue.put(lambda: self._metrics.track(event, properties))
-	def update_user(self, **properties):
-		self._queue.put(lambda: self._metrics.update_user(**properties))
+	def flush(self, timeout):
+		if not self._running:
+			return
+		finished = Event()
+		def flush_metrics():
+			try:
+				self._metrics.flush()
+			finally:
+				finished.set()
+		self._queue.put(flush_metrics)
+		finished.wait(timeout)
 	def _work(self):
 		while True:
 			self._queue.get()()

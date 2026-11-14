@@ -18,11 +18,15 @@ ERROR_COPY = 'error_copy'
 ERROR_COPIED = 'error_copied'
 ERROR_REPORT_SEND = 'error_report_send'
 ERROR_REPORT_SENT = 'error_report_sent'
-ERROR_REPORTS_CONSENT = 'error_reports_consent'
-ERROR_REPORTS_CONSENT_YES = 'error_reports_consent_yes'
-ERROR_REPORTS_CONSENT_NO = 'error_reports_consent_no'
+METRICS_CONSENT = 'metrics_consent'
+CONSENT_ACCEPT_ALL = 'consent_accept_all'
+CONSENT_ERROR_REPORTS = 'consent_error_reports'
+CONSENT_USAGE_METRICS = 'consent_usage_metrics'
+CONSENT_NO_THANKS = 'consent_no_thanks'
 ERROR_REPORTS_ON = 'error_reports_on'
 ERROR_REPORTS_OFF = 'error_reports_off'
+USAGE_METRICS_ON = 'usage_metrics_on'
+USAGE_METRICS_OFF = 'usage_metrics_off'
 SYSTEM_LANGUAGE = 'language_system'
 LANGUAGE_ENGLISH = 'language_english'
 LANGUAGE_RUSSIAN = 'language_russian'
@@ -72,6 +76,7 @@ COMMAND_TITLES = {
 	'Paste': 'command_paste',
 	'Edit comment': 'command_edit_comment',
 	'Toggle error reports': 'command_toggle_error_reports',
+	'Toggle usage statistics': 'command_toggle_usage_metrics',
 }
 
 ENGLISH_TEXT = {
@@ -93,13 +98,22 @@ ENGLISH_TEXT = {
 	ERROR_COPIED: 'Error copied to clipboard.',
 	ERROR_REPORT_SEND: 'Send report',
 	ERROR_REPORT_SENT: 'Error report sent.',
-	ERROR_REPORTS_CONSENT: (
-		'Would you like to send error reports? They help a lot to improve fman.'
+	METRICS_CONSENT: (
+		'Would you like to help improve fman by sending error reports, '
+		'usage statistics, or both?'
 	),
-	ERROR_REPORTS_CONSENT_YES: 'Yes',
-	ERROR_REPORTS_CONSENT_NO: 'No',
+	CONSENT_ACCEPT_ALL: 'Accept all',
+	CONSENT_ERROR_REPORTS: 'Only error reports',
+	CONSENT_USAGE_METRICS: 'Only usage statistics',
+	CONSENT_NO_THANKS: 'No thanks',
 	ERROR_REPORTS_ON: 'Error reporting on.',
 	ERROR_REPORTS_OFF: 'Error reporting off.',
+	USAGE_METRICS_ON: (
+		'Usage statistics on. Restart fman to apply the change.'
+	),
+	USAGE_METRICS_OFF: (
+		'Usage statistics off. Restart fman to apply the change.'
+	),
 	SYSTEM_LANGUAGE: 'System language',
 	LANGUAGE_ENGLISH: 'English',
 	LANGUAGE_RUSSIAN: 'Russian',

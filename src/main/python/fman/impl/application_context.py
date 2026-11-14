@@ -8,8 +8,8 @@ from fman.impl.controller import Controller
 from fman.impl.console_log import get_console_log, install_stream_capture
 from fman.impl.font_database import FontDatabase
 from fman.impl.hang_log import HangLog
-from fman.impl.metrics import Metrics, ServerBackend, AsynchronousMetrics, \
-	LoggingBackend
+from fman.impl.metrics import Metrics, NullBackend, ApiBackend, \
+	AsynchronousMetrics, LoggingBackend
 from fman.impl.model.icon_provider import GnomeFileIconProvider, \
 	GnomeNotAvailable, IconProvider
 from fman.impl.model.shell_icons import ShellIconProvider
@@ -55,8 +55,8 @@ from fman.impl.quicksearch_width import QuicksearchWidth
 from fman.impl.view import ProxyStyle
 from fman.impl.view.header_sort_arrow import SORT_ARROW_SETTING, SortArrowPosition
 from fman.impl.widgets import MainWindow, Application
-from fman.localization_keys import ERROR_REPORTS_CONSENT, \
-	ERROR_REPORTS_CONSENT_YES, ERROR_REPORTS_CONSENT_NO
+from fman.localization_keys import METRICS_CONSENT, CONSENT_ACCEPT_ALL, \
+	CONSENT_ERROR_REPORTS, CONSENT_USAGE_METRICS, CONSENT_NO_THANKS
 from os import makedirs, getcwd
 from os.path import dirname, join
 from PyQt5.QtCore import QUrl, QTimer
@@ -211,6 +211,8 @@ class DevelopmentApplicationContext(ApplicationContext):
 		install_stream_capture(get_console_log())
 		logging.basicConfig()
 	def _start_metrics(self):
+		if self.local_settings.get('usage_metrics') is not True:
+			return
 		self.metrics.initialize(callback=self._on_metrics_initialised)
 		self.metrics.track('StartedFman')
 	def _on_metrics_initialised(self):
@@ -249,18 +251,32 @@ class DevelopmentApplicationContext(ApplicationContext):
 		else:
 			self._ask_error_report_consent()
 	def _ask_error_report_consent(self):
-		if self.local_settings.get(ERROR_REPORTS_SETTING, None) is not None:
+		if (
+			self.local_settings.get(ERROR_REPORTS_SETTING, None) is not None
+			and self.local_settings.get('usage_metrics', None) is not None
+		):
 			return
 		result = self.main_window.show_alert(
-			fman.translate(ERROR_REPORTS_CONSENT),
-			buttons=QMessageBox.Yes | QMessageBox.No,
-			default_button=QMessageBox.No,
+			fman.translate(METRICS_CONSENT),
+			buttons=(QMessageBox.Yes | QMessageBox.Apply |
+				QMessageBox.Retry | QMessageBox.No),
+			default_button=QMessageBox.Yes,
 			button_texts={
-				QMessageBox.Yes: fman.translate(ERROR_REPORTS_CONSENT_YES),
-				QMessageBox.No: fman.translate(ERROR_REPORTS_CONSENT_NO),
+				QMessageBox.Yes: fman.translate(CONSENT_ACCEPT_ALL),
+				QMessageBox.Apply: fman.translate(CONSENT_ERROR_REPORTS),
+				QMessageBox.Retry: fman.translate(CONSENT_USAGE_METRICS),
+				QMessageBox.No: fman.translate(CONSENT_NO_THANKS),
 			}
 		)
-		self.local_settings[ERROR_REPORTS_SETTING] = result == QMessageBox.Yes
+		choices = {
+			QMessageBox.Yes: (True, True),
+			QMessageBox.Apply: (True, False),
+			QMessageBox.Retry: (False, True),
+			QMessageBox.No: (False, False),
+		}
+		error_reports, usage_metrics = choices.get(result, (False, False))
+		self.local_settings[ERROR_REPORTS_SETTING] = error_reports
+		self.local_settings['usage_metrics'] = usage_metrics
 		self.local_settings.flush()
 	def on_main_window_close(self):
 		listener = self.__dict__.get('_shell_change_listener')
@@ -273,10 +289,13 @@ class DevelopmentApplicationContext(ApplicationContext):
 			hotkey.unregister()
 		self.scripting_control.stop()
 		self.config.on_quit()
+		metrics = self.__dict__.get('metrics')
+		if metrics is not None:
+			metrics.flush(timeout=3)
 		if self.metrics_logging_enabled:
 			log_dir = dirname(self._get_metrics_json_path())
 			log_file_path = join(log_dir, 'Metrics.log')
-			self.metrics_backend.flush(log_file_path)
+			self.metrics_backend.write_logs(log_file_path)
 	@cached_property
 	def app(self):
 		# Locale-dependent application and widget text must be ready before Qt
@@ -596,8 +615,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 				return False
 	@cached_property
 	def metrics_backend(self):
-		metrics_url = PUBLIC_SETTINGS['server_url'] + '/metrics'
-		backend = ServerBackend(metrics_url + '/users', metrics_url + '/events')
+		backend = NullBackend()
 		if self.metrics_logging_enabled:
 			backend = LoggingBackend(backend)
 		return backend
@@ -712,6 +730,15 @@ class DevelopmentApplicationContext(ApplicationContext):
 		return join(DATA_DIRECTORY, 'Local', *rel_path)
 
 class FrozenApplicationContext(DevelopmentApplicationContext):
+	@cached_property
+	def metrics_backend(self):
+		backend = ApiBackend(
+			links.FMAN_API.rstrip('/') + '/api/v1/metrics/events',
+			PLATFORM, self.fman_version
+		)
+		if self.metrics_logging_enabled:
+			backend = LoggingBackend(backend)
+		return backend
 	@cached_property
 	def app_error_reporter(self):
 		return AppErrorReporter(

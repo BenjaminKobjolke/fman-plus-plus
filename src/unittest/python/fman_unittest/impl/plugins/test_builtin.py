@@ -108,6 +108,29 @@ class ToggleIncognitoTest(TestCase):
 			window._widget.show_status_message.call_args_list,
 			[call('Error reporting on.'), call('Error reporting off.')])
 
+	def test_toggle_usage_metrics_defaults_to_off_and_shows_restart_notice(self):
+		settings = MagicMock()
+		settings.get.side_effect = [False, True]
+		_, commands = self._registered_commands(MagicMock(), settings)
+		command_class = commands['ToggleUsageMetrics']
+		self.assertEqual(('Toggle usage statistics',), command_class.aliases)
+		window = MagicMock()
+		command = command_class(window)
+
+		command()
+		command()
+
+		self.assertEqual(
+			settings.__setitem__.call_args_list,
+			[call('usage_metrics', True), call('usage_metrics', False)])
+		self.assertEqual(settings.flush.call_count, 2)
+		self.assertEqual(
+			window._widget.show_status_message.call_args_list,
+			[
+				call('Usage statistics on. Restart fman to apply the change.'),
+				call('Usage statistics off. Restart fman to apply the change.'),
+			])
+
 	def test_error_report_consent_is_deferred_until_after_first_run(self):
 		context = self._startup_context(first_run=True)
 
@@ -116,38 +139,72 @@ class ToggleIncognitoTest(TestCase):
 		context.tour_controller.start.assert_called_once()
 		context.main_window.show_alert.assert_not_called()
 
-	def test_error_report_consent_saves_yes_and_flushes(self):
-		context = self._startup_context(first_run=False)
-		context.main_window.show_alert.return_value = QMessageBox.Yes
+	def test_consent_choices_save_both_settings_and_flush(self):
+		choices = (
+			(QMessageBox.Yes, True, True),
+			(QMessageBox.Apply, True, False),
+			(QMessageBox.Retry, False, True),
+			(QMessageBox.No, False, False),
+		)
+		for button, error_reports, usage_metrics in choices:
+			with self.subTest(button=button):
+				context = self._startup_context(first_run=False)
+				context.main_window.show_alert.return_value = button
 
-		DevelopmentApplicationContext.on_main_window_shown(context)
+				DevelopmentApplicationContext.on_main_window_shown(context)
 
-		context.main_window.show_alert.assert_called_once()
-		self.assertEqual(
-			context.main_window.show_alert.call_args.args[0],
-			'Would you like to send error reports? They help a lot to improve fman.')
-		self.assertEqual(
-			context.main_window.show_alert.call_args.kwargs['default_button'],
-			QMessageBox.No)
-		self.assertEqual(
-			context.main_window.show_alert.call_args.kwargs['button_texts'],
-			{QMessageBox.Yes: 'Yes', QMessageBox.No: 'No'})
-		context.local_settings.__setitem__.assert_called_once_with(
-			'error_reports', True)
-		context.local_settings.flush.assert_called_once_with()
+				self.assertEqual(
+					context.local_settings.__setitem__.call_args_list,
+					[call('error_reports', error_reports),
+					 call('usage_metrics', usage_metrics)])
+				context.local_settings.flush.assert_called_once_with()
 
-	def test_closing_error_report_consent_saves_no_and_flushes(self):
+	def test_closing_consent_disables_both_settings(self):
 		context = self._startup_context(first_run=False)
 		context.main_window.show_alert.return_value = QMessageBox.Cancel
 
 		DevelopmentApplicationContext.on_main_window_shown(context)
 
-		context.local_settings.__setitem__.assert_called_once_with(
-			'error_reports', False)
+		self.assertEqual(
+			context.local_settings.__setitem__.call_args_list,
+			[call('error_reports', False), call('usage_metrics', False)])
 		context.local_settings.flush.assert_called_once_with()
 
-	def test_error_report_consent_is_not_repeated_after_answer(self):
-		context = self._startup_context(first_run=False, error_reports=True)
+	def test_consent_prompt_uses_four_custom_buttons_and_defaults_to_accept_all(self):
+		context = self._startup_context(first_run=False)
+
+		DevelopmentApplicationContext.on_main_window_shown(context)
+
+		kwargs = context.main_window.show_alert.call_args.kwargs
+		self.assertEqual(
+			context.main_window.show_alert.call_args.args[0],
+			'Would you like to help improve fman by sending error reports, '
+			'usage statistics, or both?')
+		self.assertEqual(kwargs['default_button'], QMessageBox.Yes)
+		self.assertEqual(
+			kwargs['buttons'],
+			QMessageBox.Yes | QMessageBox.Apply | QMessageBox.Retry | QMessageBox.No)
+		self.assertEqual(kwargs['button_texts'], {
+			QMessageBox.Yes: 'Accept all',
+			QMessageBox.Apply: 'Only error reports',
+			QMessageBox.Retry: 'Only usage statistics',
+			QMessageBox.No: 'No thanks',
+		})
+
+	def test_consent_is_asked_when_either_setting_is_missing(self):
+		for error_reports, usage_metrics in ((True, None), (None, False)):
+			with self.subTest(error_reports=error_reports, usage_metrics=usage_metrics):
+				context = self._startup_context(
+					first_run=False, error_reports=error_reports,
+					usage_metrics=usage_metrics)
+
+				DevelopmentApplicationContext.on_main_window_shown(context)
+
+				context.main_window.show_alert.assert_called_once()
+
+	def test_consent_is_not_asked_when_both_settings_exist(self):
+		context = self._startup_context(
+			first_run=False, error_reports=True, usage_metrics=False)
 
 		DevelopmentApplicationContext.on_main_window_shown(context)
 
@@ -163,9 +220,12 @@ class ToggleIncognitoTest(TestCase):
 		context.main_window.show_alert.assert_not_called()
 
 	@staticmethod
-	def _startup_context(first_run, error_reports=None):
+	def _startup_context(first_run, error_reports=None, usage_metrics=None):
 		settings = MagicMock()
-		settings.get.return_value = error_reports
+		settings.get.side_effect = lambda key, default=None: {
+			'error_reports': error_reports,
+			'usage_metrics': usage_metrics,
+		}.get(key, default)
 		context = SimpleNamespace(
 			_demo_mode=False,
 			main_window=MagicMock(),

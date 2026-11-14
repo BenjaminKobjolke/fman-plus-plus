@@ -7,7 +7,8 @@ from fman.impl.incognito import OFF_MESSAGE, ON_INCOGNITO_CHANGED, ON_MESSAGE
 from fman.impl.plugins.plugin import Plugin
 from fman.impl.util import filenotfounderror
 from fman.impl.util.qt.thread import run_in_main_thread
-from fman.localization_keys import ERROR_REPORTS_ON, ERROR_REPORTS_OFF
+from fman.localization_keys import ERROR_REPORTS_ON, ERROR_REPORTS_OFF, \
+	USAGE_METRICS_ON, USAGE_METRICS_OFF
 from fbs_runtime.platform import is_mac
 from PyQt5.QtCore import Qt
 
@@ -174,6 +175,16 @@ class BuiltinPlugin(Plugin):
 				self.window._widget.show_status_message(
 					fman.translate(message_key))
 
+		class ToggleUsageMetrics(ApplicationCommand):
+			aliases = ('Toggle usage statistics',)
+			def __call__(self):
+				enabled = not local_settings.get('usage_metrics', False)
+				local_settings['usage_metrics'] = enabled
+				local_settings.flush()
+				message_key = USAGE_METRICS_ON if enabled else USAGE_METRICS_OFF
+				self.window._widget.show_status_message(
+					fman.translate(message_key))
+
 		class TogglePaneStatusLines(ApplicationCommand):
 			aliases = ('Toggle pane status lines',)
 			def __call__(self):
@@ -235,6 +246,7 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(MinimizeToolWindow)
 		self._register_application_command(ToggleScriptingApi)
 		self._register_application_command(ToggleErrorReports)
+		self._register_application_command(ToggleUsageMetrics)
 		self._register_application_command(TogglePaneStatusLines)
 		self._register_application_command(TogglePaneMessagesInStatusBar)
 		self._register_application_command(ToggleFmanInPath)

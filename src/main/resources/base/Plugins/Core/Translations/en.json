@@ -65,11 +65,16 @@
   "command_paste": "Paste",
   "command_edit_comment": "Edit comment",
   "command_toggle_error_reports": "Toggle error reports",
+  "command_toggle_usage_metrics": "Toggle usage statistics",
   "error_report_send": "Send report",
   "error_report_sent": "Error report sent.",
-  "error_reports_consent": "Would you like to send error reports? They help a lot to improve fman.",
-  "error_reports_consent_yes": "Yes",
-  "error_reports_consent_no": "No",
+  "metrics_consent": "Would you like to help improve fman by sending error reports, usage statistics, or both?",
+  "consent_accept_all": "Accept all",
+  "consent_error_reports": "Only error reports",
+  "consent_usage_metrics": "Only usage statistics",
+  "consent_no_thanks": "No thanks",
   "error_reports_on": "Error reporting on.",
-  "error_reports_off": "Error reporting off."
+  "error_reports_off": "Error reporting off.",
+  "usage_metrics_on": "Usage statistics on. Restart fman to apply the change.",
+  "usage_metrics_off": "Usage statistics off. Restart fman to apply the change."
 }
