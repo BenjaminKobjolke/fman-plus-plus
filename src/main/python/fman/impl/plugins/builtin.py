@@ -1,10 +1,13 @@
 from fman import ApplicationCommand, DirectoryPaneCommand, QuicksearchItem
+import fman
 from fman.fs import FileSystem, Column
 from fman.impl import incognito
+from fman.impl.app_error_report import ERROR_REPORTS_SETTING
 from fman.impl.incognito import OFF_MESSAGE, ON_INCOGNITO_CHANGED, ON_MESSAGE
 from fman.impl.plugins.plugin import Plugin
 from fman.impl.util import filenotfounderror
 from fman.impl.util.qt.thread import run_in_main_thread
+from fman.localization_keys import ERROR_REPORTS_ON, ERROR_REPORTS_OFF
 from fbs_runtime.platform import is_mac
 from PyQt5.QtCore import Qt
 
@@ -30,7 +33,8 @@ def toggle_explorer_replacement(settings):
 class BuiltinPlugin(Plugin):
 	def __init__(
 		self, tour_controller, tutorial_factory, cleanupguide_factory,
-		window_chrome, scripting_control, tray, *super_args
+		window_chrome, scripting_control, tray, *super_args,
+		local_settings=None
 	):
 		super().__init__(*super_args)
 
@@ -160,6 +164,16 @@ class BuiltinPlugin(Plugin):
 				self.window._widget.show_status_message(
 					scripting_control.toggle())
 
+		class ToggleErrorReports(ApplicationCommand):
+			aliases = ('Toggle error reports',)
+			def __call__(self):
+				enabled = not local_settings.get(ERROR_REPORTS_SETTING, False)
+				local_settings[ERROR_REPORTS_SETTING] = enabled
+				local_settings.flush()
+				message_key = ERROR_REPORTS_ON if enabled else ERROR_REPORTS_OFF
+				self.window._widget.show_status_message(
+					fman.translate(message_key))
+
 		class TogglePaneStatusLines(ApplicationCommand):
 			aliases = ('Toggle pane status lines',)
 			def __call__(self):
@@ -220,6 +234,7 @@ class BuiltinPlugin(Plugin):
 		self._register_application_command(ResumeToolWindow)
 		self._register_application_command(MinimizeToolWindow)
 		self._register_application_command(ToggleScriptingApi)
+		self._register_application_command(ToggleErrorReports)
 		self._register_application_command(TogglePaneStatusLines)
 		self._register_application_command(TogglePaneMessagesInStatusBar)
 		self._register_application_command(ToggleFmanInPath)

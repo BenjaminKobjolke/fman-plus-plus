@@ -4,7 +4,7 @@ name = "fman"
 version = "0.0.0"
 requires-python = ">=3.14,<3.15"
 dependencies = [
-    "fbs[sentry]==1.2.7",
+	"fbs==1.2.7",
     "PyQt5==5.15.11",
     "PyInstaller==6.19.0",
     "python-mpv==1.0.8",

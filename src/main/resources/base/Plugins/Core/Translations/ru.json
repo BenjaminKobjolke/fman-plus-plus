@@ -63,5 +63,13 @@
   "command_open_with": "Открыть с помощью...",
   "command_copy": "Копировать",
   "command_paste": "Вставить",
-  "command_edit_comment": "Изменить комментарий"
+  "command_edit_comment": "Изменить комментарий",
+  "command_toggle_error_reports": "Включить или отключить отправку отчётов об ошибках",
+  "error_report_send": "Отправить отчёт",
+  "error_report_sent": "Отчёт об ошибке отправлен.",
+  "error_reports_consent": "Разрешить отправку отчётов об ошибках? Они очень помогают улучшать fman.",
+  "error_reports_consent_yes": "Да",
+  "error_reports_consent_no": "Нет",
+  "error_reports_on": "Отправка отчётов об ошибках включена.",
+  "error_reports_off": "Отправка отчётов об ошибках отключена."
 }

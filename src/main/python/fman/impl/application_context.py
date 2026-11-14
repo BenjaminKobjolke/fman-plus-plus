@@ -2,7 +2,6 @@ from fbs_runtime import application_context as fbs_appctxt, PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from fbs_runtime.excepthook import StderrExceptionHandler
-from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from fbs_runtime.platform import is_mac, is_windows
 from fman import APP_NAME, PLATFORM, DATA_DIRECTORY, Window
 from fman.impl.controller import Controller
@@ -24,6 +23,7 @@ from fman.impl.plugins.config import Config
 from fman.impl.plugins.context_menu import ContextMenuProvider
 from fman.impl.plugins.discover import find_plugin_dirs
 from fman.impl.plugins.error import PluginErrorHandler
+from fman.impl.app_error_report import AppErrorReporter, ERROR_REPORTS_SETTING
 from fman.impl.plugins.key_bindings import KeyBindings
 from fman.impl.plugins.mother_fs import MotherFileSystem
 from fman.impl.scroll_margin_setting import load_scroll_margin
@@ -48,7 +48,6 @@ from fman.impl.onboarding.cleanup_guide import CleanupGuide
 from fman.impl.onboarding.tutorial import Tutorial
 from fman.impl.usage_helper import UsageHelper
 from fman.impl.update_check import UpdateCheckTimer
-from fman.impl.util import os_
 from fman.impl.util.path import make_absolute
 from fman.impl.util.qt import connect_once
 from fman.impl.util.settings import Settings
@@ -56,6 +55,8 @@ from fman.impl.quicksearch_width import QuicksearchWidth
 from fman.impl.view import ProxyStyle
 from fman.impl.view.header_sort_arrow import SORT_ARROW_SETTING, SortArrowPosition
 from fman.impl.widgets import MainWindow, Application
+from fman.localization_keys import ERROR_REPORTS_CONSENT, \
+	ERROR_REPORTS_CONSENT_YES, ERROR_REPORTS_CONSENT_NO
 from os import makedirs, getcwd
 from os.path import dirname, join
 from PyQt5.QtCore import QUrl, QTimer
@@ -63,6 +64,7 @@ from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QStyleFactory, QFileIconProvider, QMessageBox
 
 import fman
+from fman import links
 import json
 import logging
 import os
@@ -244,6 +246,22 @@ class DevelopmentApplicationContext(ApplicationContext):
 			pane = self.plugin_support.get_panes()[0]
 			tutorial = self.tutorial_factory(pane)
 			self.tour_controller.start(tutorial)
+		else:
+			self._ask_error_report_consent()
+	def _ask_error_report_consent(self):
+		if self.local_settings.get(ERROR_REPORTS_SETTING, None) is not None:
+			return
+		result = self.main_window.show_alert(
+			fman.translate(ERROR_REPORTS_CONSENT),
+			buttons=QMessageBox.Yes | QMessageBox.No,
+			default_button=QMessageBox.No,
+			button_texts={
+				QMessageBox.Yes: fman.translate(ERROR_REPORTS_CONSENT_YES),
+				QMessageBox.No: fman.translate(ERROR_REPORTS_CONSENT_NO),
+			}
+		)
+		self.local_settings[ERROR_REPORTS_SETTING] = result == QMessageBox.Yes
+		self.local_settings.flush()
 	def on_main_window_close(self):
 		listener = self.__dict__.get('_shell_change_listener')
 		if listener is not None:
@@ -389,7 +407,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 			self.plugin_error_handler,
 			self.application_command_registry, self.pane_command_registry,
 			self.key_bindings, self.mother_fs, self.viewer_registry,
-			self.window
+			self.window, local_settings=self.local_settings
 		)
 	@cached_property
 	def tray(self):
@@ -523,8 +541,11 @@ class DevelopmentApplicationContext(ApplicationContext):
 	def plugin_error_handler(self):
 		return PluginErrorHandler(
 			self.app, get_console_log(), self._open_console_from_error,
-			self._get_local_data_file('Errors.log')
+			self._get_local_data_file('Errors.log'), self.app_error_reporter
 		)
+	@property
+	def app_error_reporter(self):
+		return None
 	def _open_console_from_error(self):
 		if 'show_console' not in self.pane_command_registry.get_commands():
 			log_path = self._get_local_data_file('Errors.log')
@@ -691,9 +712,15 @@ class DevelopmentApplicationContext(ApplicationContext):
 		return join(DATA_DIRECTORY, 'Local', *rel_path)
 
 class FrozenApplicationContext(DevelopmentApplicationContext):
+	@cached_property
+	def app_error_reporter(self):
+		return AppErrorReporter(
+			links.FMAN_API, self.fman_version, self.local_settings
+		)
 	def init_logging(self):
 		install_stream_capture(get_console_log())
 		logging.basicConfig(level=logging.CRITICAL)
+		logging.getLogger(AppErrorReporter.__module__).setLevel(logging.ERROR)
 	def on_main_window_shown(self):
 		if PLATFORM == 'Linux':
 			"""
@@ -749,25 +776,3 @@ class FrozenApplicationContext(DevelopmentApplicationContext):
 				os.environ.get('PATH', ''), sys._MEIPASS
 			)
 		super().on_main_window_shown()
-	@cached_property
-	def exception_handlers(self):
-		result = super().exception_handlers
-		result.append(self.sentry_exception_handler)
-		return result
-	@cached_property
-	def sentry_exception_handler(self):
-		return SentryExceptionHandler(
-			PUBLIC_SETTINGS['sentry_dsn'],
-			self.fman_version,
-			PUBLIC_SETTINGS['environment'],
-			callback=self._on_sentry_init
-		)
-	def _on_sentry_init(self):
-		scope = self.sentry_exception_handler.scope
-		scope.set_extra('os_name', os_.name())
-		scope.set_extra('os_version', os_.version())
-		scope.set_extra('os_distribution', os_.distribution())
-	def _on_metrics_initialised(self):
-		self.sentry_exception_handler.scope.user = {
-			'id': self.metrics.get_user()
-		}

@@ -12,6 +12,14 @@ from fman.impl.console_log import ConsoleLog
 from fman.impl.plugins.error import PluginErrorHandler
 
 
+class FakeAppErrorReporter:
+	def __init__(self, enabled):
+		self.is_enabled = enabled
+		self.send = Mock(return_value=True)
+	def create_report(self, exc, kind='unhandled', plugin=None):
+		return {'kind': kind, 'plugin': plugin, 'message': str(exc)}
+
+
 class PluginErrorHandlerTest(unittest.TestCase):
 	def setUp(self):
 		self.console_log = ConsoleLog()
@@ -159,6 +167,121 @@ class PluginErrorHandlerTest(unittest.TestCase):
 		context._get_local_data_file.assert_called_once_with('Errors.log')
 		from_local_file.assert_called_once_with('local/Errors.log')
 		open_url.assert_called_once_with('file-url')
+
+	def test_plugin_error_is_reported_with_plugin_name_when_enabled(self):
+		reporter = FakeAppErrorReporter(True)
+		handler = PluginErrorHandler(
+			Mock(), self.console_log, self.open_console,
+			app_error_reporter=reporter
+		)
+		handler.on_main_window_shown(self.window)
+		exc = ValueError('details')
+		self.window.show_alert.return_value = QMessageBox.Cancel
+
+		with patch.object(
+			handler, '_get_plugin_causing_error', return_value='/plugins/Example'
+		), patch('fman.impl.plugins.error.is_frozen', return_value=True):
+			self.assertTrue(handler.handle(ValueError, exc, None))
+
+		reporter.send.assert_called_once_with({
+			'kind': 'plugin', 'plugin': 'Example', 'message': 'details'
+		})
+		self.assertEqual(self.window.show_alert.call_count, 1)
+		self.assertFalse(
+			int(self.window.show_alert.call_args.kwargs['buttons']) &
+			int(QMessageBox.Apply)
+		)
+
+	def test_core_error_is_sent_unhandled_when_enabled_without_alert(self):
+		reporter = FakeAppErrorReporter(True)
+		handler = PluginErrorHandler(
+			Mock(), self.console_log, self.open_console,
+			app_error_reporter=reporter
+		)
+		exc = ValueError('details')
+
+		with patch.object(
+			handler, '_get_plugin_causing_error', return_value='/plugins/Core'
+		):
+			self.assertIsNone(handler.handle(ValueError, exc, None))
+
+		reporter.send.assert_called_once_with({
+			'kind': 'unhandled', 'plugin': None, 'message': 'details'
+		})
+		self.window.show_alert.assert_not_called()
+
+	def test_core_error_shows_manual_send_button_when_reporting_disabled(self):
+		reporter = FakeAppErrorReporter(False)
+		handler = PluginErrorHandler(
+			Mock(), self.console_log, self.open_console,
+			app_error_reporter=reporter
+		)
+		handler.on_main_window_shown(self.window)
+		exc = ValueError('details')
+		self.window.show_alert.return_value = QMessageBox.Cancel
+
+		with patch.object(
+			handler, '_get_plugin_causing_error', return_value='/plugins/Core'
+		), patch('fman.impl.plugins.error.is_frozen', return_value=True):
+			self.assertIsNone(handler.handle(ValueError, exc, None))
+
+		self.assertTrue(
+			int(self.window.show_alert.call_args.kwargs['buttons']) &
+			int(QMessageBox.Apply)
+		)
+		self.assertIn(
+			QMessageBox.Apply,
+			self.window.show_alert.call_args.kwargs['button_texts']
+		)
+		self.assertEqual(self.window.show_alert.call_count, 1)
+		reporter.send.assert_not_called()
+
+	def test_manual_send_changes_kind_and_shows_status(self):
+		reporter = FakeAppErrorReporter(False)
+		handler = PluginErrorHandler(
+			Mock(), self.console_log, self.open_console,
+			app_error_reporter=reporter
+		)
+		handler.on_main_window_shown(self.window)
+		self.window.show_alert.return_value = QMessageBox.Apply
+
+		handler.report('Error.', ValueError('details'), {
+			'kind': 'unhandled', 'message': 'details'
+		})
+
+		reporter.send.assert_called_once_with({
+			'kind': 'manual', 'message': 'details'
+		})
+		self.window.show_status_message.assert_called_once_with(
+			'Error report sent.', timeout_secs=3
+		)
+
+	def test_queued_error_keeps_its_report_for_manual_sending(self):
+		reporter = FakeAppErrorReporter(False)
+		handler = PluginErrorHandler(
+			Mock(), self.console_log, self.open_console,
+			app_error_reporter=reporter
+		)
+		saved_report = {'kind': 'unhandled', 'message': 'details'}
+		handler.report('Error.', ValueError('details'), saved_report)
+		self.assertEqual(handler._pending_errors[0][2], saved_report)
+
+		window = Mock()
+		window.show_alert.return_value = QMessageBox.Apply
+		handler.on_main_window_shown(window)
+
+		reporter.send.assert_called_once_with({
+			'kind': 'manual', 'message': 'details'
+		})
+
+	def test_core_errors_remain_silent_without_reporter(self):
+		with patch.object(
+			self.handler, '_get_plugin_causing_error', return_value='/plugins/Core'
+		):
+			self.assertIsNone(
+				self.handler.handle(ValueError, ValueError('details'), None)
+			)
+		self.window.show_alert.assert_not_called()
 
 
 if __name__ == '__main__':

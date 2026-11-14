@@ -63,5 +63,13 @@
   "command_open_with": "Open with...",
   "command_copy": "Copy",
   "command_paste": "Paste",
-  "command_edit_comment": "Edit comment"
+  "command_edit_comment": "Edit comment",
+  "command_toggle_error_reports": "Toggle error reports",
+  "error_report_send": "Send report",
+  "error_report_sent": "Error report sent.",
+  "error_reports_consent": "Would you like to send error reports? They help a lot to improve fman.",
+  "error_reports_consent_yes": "Yes",
+  "error_reports_consent_no": "No",
+  "error_reports_on": "Error reporting on.",
+  "error_reports_off": "Error reporting off."
 }

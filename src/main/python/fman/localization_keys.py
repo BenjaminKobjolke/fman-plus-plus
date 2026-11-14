@@ -16,6 +16,13 @@ TEXT_INPUT_NEW_LINE = 'text_input_new_line'
 ERROR_OPEN_CONSOLE = 'error_open_console'
 ERROR_COPY = 'error_copy'
 ERROR_COPIED = 'error_copied'
+ERROR_REPORT_SEND = 'error_report_send'
+ERROR_REPORT_SENT = 'error_report_sent'
+ERROR_REPORTS_CONSENT = 'error_reports_consent'
+ERROR_REPORTS_CONSENT_YES = 'error_reports_consent_yes'
+ERROR_REPORTS_CONSENT_NO = 'error_reports_consent_no'
+ERROR_REPORTS_ON = 'error_reports_on'
+ERROR_REPORTS_OFF = 'error_reports_off'
 SYSTEM_LANGUAGE = 'language_system'
 LANGUAGE_ENGLISH = 'language_english'
 LANGUAGE_RUSSIAN = 'language_russian'
@@ -64,6 +71,7 @@ COMMAND_TITLES = {
 	'Copy': 'command_copy',
 	'Paste': 'command_paste',
 	'Edit comment': 'command_edit_comment',
+	'Toggle error reports': 'command_toggle_error_reports',
 }
 
 ENGLISH_TEXT = {
@@ -83,6 +91,15 @@ ENGLISH_TEXT = {
 	ERROR_OPEN_CONSOLE: 'Open in console',
 	ERROR_COPY: 'Copy error',
 	ERROR_COPIED: 'Error copied to clipboard.',
+	ERROR_REPORT_SEND: 'Send report',
+	ERROR_REPORT_SENT: 'Error report sent.',
+	ERROR_REPORTS_CONSENT: (
+		'Would you like to send error reports? They help a lot to improve fman.'
+	),
+	ERROR_REPORTS_CONSENT_YES: 'Yes',
+	ERROR_REPORTS_CONSENT_NO: 'No',
+	ERROR_REPORTS_ON: 'Error reporting on.',
+	ERROR_REPORTS_OFF: 'Error reporting off.',
 	SYSTEM_LANGUAGE: 'System language',
 	LANGUAGE_ENGLISH: 'English',
 	LANGUAGE_RUSSIAN: 'Russian',

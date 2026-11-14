@@ -11,7 +11,7 @@ from traceback import StackSummary, extract_tb, TracebackException, \
 
 import fman
 from fman.localization_keys import ERROR_COPIED, ERROR_COPY, ERROR_DISMISS, \
-	ERROR_OPEN_CONSOLE
+	ERROR_OPEN_CONSOLE, ERROR_REPORT_SEND, ERROR_REPORT_SENT
 import sys
 from PyQt5.QtWidgets import QMessageBox
 from fman.impl.console_log import get_console_log
@@ -20,8 +20,12 @@ _LOG_PATHS_INITIALIZED = set()
 _LOG_LOCK = Lock()
 
 class PluginErrorHandler(ExceptionHandler):
-	def __init__(self, app, console_log=None, open_console=None, log_path=None):
+	def __init__(
+		self, app, console_log=None, open_console=None, log_path=None,
+		app_error_reporter=None
+	):
 		self._app = app
+		self._app_error_reporter = app_error_reporter
 		self._console_log = console_log or get_console_log()
 		self._open_console = open_console or (lambda: None)
 		self._log_path = log_path
@@ -34,18 +38,30 @@ class PluginErrorHandler(ExceptionHandler):
 		self._plugin_dirs.remove(plugin_dir)
 	def handle(self, exc_type, exc_value, enriched_tb):
 		causing_plugin = self._get_plugin_causing_error(enriched_tb)
-		if causing_plugin and basename(causing_plugin) != 'Core':
+		plugin = basename(causing_plugin) if causing_plugin else None
+		is_plugin_error = plugin is not None and plugin != 'Core'
+		report = None
+		if self._app_error_reporter:
+			kind = 'plugin' if is_plugin_error else 'unhandled'
+			report = self._app_error_reporter.create_report(
+				exc_value, kind=kind, plugin=plugin if is_plugin_error else None
+			)
+			if self._app_error_reporter.is_enabled:
+				self._app_error_reporter.send(report)
+		if is_plugin_error:
 			self.report(
 				'Plugin %r raised an error.' % basename(causing_plugin),
-				exc_value
+				exc_value, report
 			)
 			return True
+		if self._app_error_reporter and not self._app_error_reporter.is_enabled:
+			self.report('fman raised an error.', exc_value, report)
 	def _get_plugin_causing_error(self, traceback):
 		for frame in extract_tb(traceback):
 			for plugin_dir in self._plugin_dirs:
 				if is_below_dir(frame.filename, plugin_dir):
 					return plugin_dir
-	def report(self, message, exc=None):
+	def report(self, message, exc=None, report=None):
 		if exc is None:
 			exc = sys.exc_info()[1]
 		traceback = ''
@@ -66,9 +82,9 @@ class PluginErrorHandler(ExceptionHandler):
 		if traceback:
 			alert_text += '\n\n' + traceback.rstrip().splitlines()[-1]
 		if self._main_window:
-			self._show_error_alert(alert_text, details)
+			self._show_error_alert(alert_text, details, report)
 		else:
-			self._pending_errors.append((alert_text, details))
+			self._pending_errors.append((alert_text, details, report))
 	def _write_error_log(self, details):
 		if not self._log_path:
 			return
@@ -87,15 +103,20 @@ class PluginErrorHandler(ExceptionHandler):
 				_LOG_PATHS_INITIALIZED.add(self._log_path)
 			except OSError:
 				pass
-	def _show_error_alert(self, headline, details):
+	def _show_error_alert(self, headline, details, report=None):
 		buttons = QMessageBox.Cancel | QMessageBox.Open | QMessageBox.Save
+		button_texts = {
+			QMessageBox.Cancel: fman.translate(ERROR_DISMISS),
+			QMessageBox.Open: fman.translate(ERROR_OPEN_CONSOLE),
+			QMessageBox.Save: fman.translate(ERROR_COPY),
+		}
+		if report is not None and self._app_error_reporter and \
+				not self._app_error_reporter.is_enabled:
+			buttons |= QMessageBox.Apply
+			button_texts[QMessageBox.Apply] = fman.translate(ERROR_REPORT_SEND)
 		result = self._main_window.show_alert(
 			headline, buttons=buttons, default_button=QMessageBox.Cancel,
-			button_texts={
-				QMessageBox.Cancel: fman.translate(ERROR_DISMISS),
-				QMessageBox.Open: fman.translate(ERROR_OPEN_CONSOLE),
-				QMessageBox.Save: fman.translate(ERROR_COPY),
-			}
+			button_texts=button_texts
 		)
 		if result == QMessageBox.Open:
 			self._open_console()
@@ -104,13 +125,20 @@ class PluginErrorHandler(ExceptionHandler):
 			self._main_window.show_status_message(
 				fman.translate(ERROR_COPIED), timeout_secs=3
 			)
+		elif result == QMessageBox.Apply:
+			manual_report = dict(report)
+			manual_report['kind'] = 'manual'
+			if self._app_error_reporter.send(manual_report):
+				self._main_window.show_status_message(
+					fman.translate(ERROR_REPORT_SENT), timeout_secs=3
+				)
 	def handle_system_exit(self, code=0):
 		self._app.exit(code)
 	def on_main_window_shown(self, main_window):
 		self._main_window = main_window
 		if self._pending_errors:
-			alert_text, details = self._pending_errors[0]
-			self._show_error_alert(alert_text, details)
+			alert_text, details, report = self._pending_errors[0]
+			self._show_error_alert(alert_text, details, report)
 	def _get_plugin_traceback(self, exc):
 		if isinstance(exc, ThemeError):
 			return exc.description
