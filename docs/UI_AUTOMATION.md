@@ -19,11 +19,11 @@ The generated left fixture also includes `video.mp4`, copied from the committed
 `--left` and `--right` folders are left untouched. `launch` includes a `build`
 object in its JSON result and saved session with the checkout's `version`,
 short `commit`, `dirty` status, `checkout_path`, and `python` executable.
-After each `launch` and `restart`, the private driver window is resized to at
-least 1280×768. Their JSON results include a `window` object with the actual
-window size and screen usable area. If the display cannot fit the minimum, the
-object includes `window_warning`; launch and restart still succeed so other
-driver commands remain usable. The user's normal fman window is not changed.
+The isolated profile pre-answers fman's error-report question, so it cannot
+swallow the first driver keys. `launch` opens the private window at 1280×800;
+`restart` keeps fman's saved geometry. Initial startup also records its actual
+window size and screen usable area in the JSON result; a small display may add
+`window_warning`. The user's normal fman window is not changed.
 They also include an `ages` folder with `age_0d_fresh.txt` (0.1 days old),
 `age_2d.txt`, `age_10d.txt`, `age_45d.txt`, `age_200d.txt`,
 `age_400d_old.txt`, and the Windows-hidden `age_10d_hidden.txt`.
@@ -185,7 +185,8 @@ more. A second undersized image fails without writing the file, with a message
 such as `Screenshot is 1000x700, below the 1280x768 minimum; the usable screen
 area is 1000x700.` Successful screenshot results include `width` and `height`.
 The private automation API exposes the resize operation as `POST /v1/window`;
-it is unavailable unless automation is enabled for that isolated profile.
+it accepts integer `width` and `height` values from 200 through 10000, and is
+unavailable unless automation is enabled for that isolated profile.
 
 ```bat
 tools\fman_ui.bat launch
@@ -319,19 +320,23 @@ attrib -h "%TEMP%\fman-ui\<session-id>\left\hidden.txt"
 tools\fman_ui.bat close
 ```
 
-The `dialog` command also reports the in-window palette or prompt. A screenshot
-then shows the main window with that dialog over it (separate modal dialogs and
-popups are still captured on their own). The fixture's hidden attribute is set
-when `launch` creates it; the `attrib` line shows how to reset it if a check
-toggled it. Run `close` even when the check fails so the process and temporary
-session are removed.
+The `dialog` command reports the in-window palette and prompts, including their
+visible text and `font_sizes`. Quicksearch readouts use `title`, `value`, and
+`footer`; prompts use `title`, `value`, and `detail`. Missing or hidden labels
+have a `null` font size. A screenshot shows the main window with that dialog
+over it (separate modal dialogs and popups are still captured on their own).
+The fixture's hidden attribute is set when `launch` creates it; the `attrib`
+line shows how to reset it if a check toggled it. Run `close` even when the
+check fails so the process and temporary session are removed.
 
-Input prompts such as Copy, Move, Rename and New folder report
-`type: "Prompt"`, the full message in `text`, and the current entry text in
-`value`. For a single item, a Copy or Move message includes the source name and
-a second line with the destination folder. Password prompts report `value` as
-`null` so typed passwords are never exposed. This follows validation task
-#2206:
+Rename is not a prompt: F2 and Shift+F6 edit the selected name inline. While
+that editor is open, `dialog` reports `type: "RenameEditor"` and the edited
+name in `value`; `command` is refused until Return or Escape closes the editor.
+Copy, Move and New folder are prompts and report `type: "Prompt"`, the full
+message in `text`, and the current entry text in `value`. For a single item, a
+Copy or Move message includes the source name and a second line with the
+destination folder. Password prompts report `value` as `null` so typed
+passwords are never exposed. This follows validation task #2206:
 
 ```bat
 tools\fman_ui.bat launch
@@ -348,6 +353,43 @@ tools\fman_ui.bat close
 
 Compare each prompt's destination line with the right pane's folder in the
 `state` result.
+
+## Example: palette text sizes across themes and zoom (validation task #2273)
+
+The first dialog readout should be `null`. The palette readouts include its
+title, query, and hint sizes; confirm `title > value > footer` in Dark and Light
+themes before and after changing the pane font. New folder is a prompt, while
+Rename is an inline editor:
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Ctrl+Shift+P
+tools\fman_ui.bat dialog
+tools\fman_ui.bat screenshot %TEMP%\fman-palette-dark.png
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat command increase_pane_font_size --pane 0
+tools\fman_ui.bat keys Ctrl+Shift+P
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat keys Ctrl+Shift+P
+tools\fman_ui.bat type Select theme
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat type Light
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat keys Ctrl+Shift+P
+tools\fman_ui.bat dialog
+tools\fman_ui.bat screenshot %TEMP%\fman-palette-light.png
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat click --file visible.txt --pane 0
+tools\fman_ui.bat keys F7
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat keys F2
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat close
+```
 
 ## Example: narrow a column
 
