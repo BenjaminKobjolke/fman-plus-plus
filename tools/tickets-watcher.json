@@ -30,7 +30,7 @@
       "test": "failed"
     },
     "tools\\run_core_tests.bat": {
-      "test": "failed"
+      "test": "green"
     },
     "tools\\run_robocopy_tests.bat": {
       "test": "green"
