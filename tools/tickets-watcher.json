@@ -51,7 +51,7 @@
       "test": "green"
     },
     "uv run python tools\\test_fman_ui.py": {
-      "test": "green"
+      "test": "failed"
     },
     "tools\\run_automation_tests.bat": {
       "test": "green"
@@ -163,6 +163,9 @@
   "analysis_test_timeout_seconds": 1040,
   "analysis_command_failing_tests": {
     "tools\\run_tests.bat": [
+      "(failures=1)"
+    ],
+    "uv run python tools\\test_fman_ui.py": [
       "(failures=1)"
     ]
   }
