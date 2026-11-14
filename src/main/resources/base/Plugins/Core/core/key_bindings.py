@@ -75,15 +75,20 @@ def binds(key_bindings, shortcut, command):
 	"""
 	return (shortcut, command) in parse_bindings(key_bindings)
 
+def builtin_key_active(key_bindings, command, default):
+	"""Whether `default` is unbound or still runs `command`."""
+	return bool(default) and command_for_shortcut(
+		key_bindings, default
+	) in (None, command)
+
 def key_hint(key_bindings, command, default=''):
 	"""
 	The user's shortcuts for a viewer pseudo-command, followed by its built-in
 	key when that key still runs this command or is unbound.
 	"""
 	shortcuts = list(get_shortcuts_for_command(key_bindings, command))
-	if (
-		default and default not in shortcuts
-		and command_for_shortcut(key_bindings, default) in (None, command)
+	if default not in shortcuts and builtin_key_active(
+		key_bindings, command, default
 	):
 		shortcuts.append(default)
 	return format_shortcut_hint(shortcuts)
@@ -102,15 +107,18 @@ def command_for_key_event(key_event, key_bindings, command_names):
 				return command
 	return None
 
-def dispatch_bindable_command(key_event, key_bindings, commands):
+def dispatch_bindable_command(
+	key_event, key_bindings, commands, honor_do_nothing=True
+):
 	"""
 	Looks up key_event against commands (see command_for_key_event) and, if
-	one matches, calls it immediately. Returns whether a command fired, so
-	callers can just `if dispatch_bindable_command(...): return` from
-	keyPressEvent - shared by all three viewers' keyPressEvent to avoid
-	repeating the same lookup-then-call sequence in each.
+	one matches, calls it immediately. By default, a do_nothing match consumes
+	the key; callers can disable that for text-edit mode. Returns whether a
+	command fired or a key was consumed, so callers can return from keyPressEvent.
 	"""
-	if command_for_key_event(key_event, key_bindings, [DO_NOTHING]) is not None:
+	if honor_do_nothing and command_for_key_event(
+		key_event, key_bindings, [DO_NOTHING]
+	) is not None:
 		# Explicitly unbound in the user's file: swallow the keystroke instead
 		# of letting the viewer's hardcoded fallback keys handle it anyway.
 		return True

@@ -116,3 +116,35 @@ class ShortcutsForTest(TestCase):
 			{'keys': ['M'], 'command': 'video_mute'},
 		]
 		self.assertEqual([], self._shortcuts(merged, []))
+
+	def test_appends_an_active_builtin_key_as_default(self):
+		with patch(
+			'core.user_bindings.load_json', return_value=[]
+		), patch(
+			'core.user_bindings.load_user_bindings', return_value=[]
+		):
+			self.assertEqual(
+				[('/', False)], shortcuts_for(_FILE, 'text_find', builtin_key='/')
+			)
+
+	def test_lists_a_user_bound_builtin_key_only_once(self):
+		bindings = [{'keys': ['/'], 'command': 'text_find'}]
+		with patch(
+			'core.user_bindings.load_json', return_value=bindings
+		), patch(
+			'core.user_bindings.load_user_bindings', return_value=bindings
+		):
+			self.assertEqual(
+				[('/', True)], shortcuts_for(_FILE, 'text_find', builtin_key='/')
+			)
+
+	def test_hides_a_builtin_key_shadowed_with_do_nothing(self):
+		bindings = [{'keys': ['/'], 'command': 'do_nothing'}]
+		with patch(
+			'core.user_bindings.load_json', return_value=bindings
+		), patch(
+			'core.user_bindings.load_user_bindings', return_value=bindings
+		):
+			self.assertEqual(
+				[], shortcuts_for(_FILE, 'text_find', builtin_key='/')
+			)

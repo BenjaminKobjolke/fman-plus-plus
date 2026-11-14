@@ -16,7 +16,7 @@ import json
 import os
 from os.path import dirname, join, splitext
 
-from core.key_bindings import get_shortcuts_for_command
+from core.key_bindings import builtin_key_active, get_shortcuts_for_command
 from fman import DATA_DIRECTORY, PLATFORM, load_json, load_plugin, unload_plugin
 
 _SETTINGS_PLUGIN = join(DATA_DIRECTORY, 'Plugins', 'User', 'Settings')
@@ -70,7 +70,7 @@ def _reload_settings_plugin():
 		pass
 	load_plugin(_SETTINGS_PLUGIN)
 
-def shortcuts_for(bindings_file, command_name):
+def shortcuts_for(bindings_file, command_name, builtin_key=''):
 	"""
 	The shortcuts that currently run `command_name`, as (shortcut, is_user)
 	pairs in priority order. is_user says whether the shortcut comes from the
@@ -79,9 +79,16 @@ def shortcuts_for(bindings_file, command_name):
 	user_shortcuts = set(get_shortcuts_for_command(
 		load_user_bindings(bindings_file), command_name
 	))
-	return [
+	merged_bindings = load_json(bindings_file, default=[])
+	shortcuts = [
 		(shortcut, shortcut in user_shortcuts)
 		for shortcut in get_shortcuts_for_command(
-			load_json(bindings_file, default=[]), command_name
+			merged_bindings, command_name
 		)
 	]
+	if (
+		builtin_key not in (shortcut for shortcut, _is_user in shortcuts)
+		and builtin_key_active(merged_bindings, command_name, builtin_key)
+	):
+		shortcuts.append((builtin_key, False))
+	return shortcuts

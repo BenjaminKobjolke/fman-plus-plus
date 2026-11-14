@@ -163,6 +163,30 @@ class ViewerSearchTest(TestCase):
 		)
 		self.assertEqual(3, len(view.selected))
 
+	def test_removed_slash_does_not_open_the_search_prompt(self):
+		with patch(
+			'core.textviewer_search.load_json', return_value=[
+				{'keys': ['/'], 'command': 'do_nothing'}
+			]
+		), patch(
+			'core.textviewer_search.show_input', return_value='two'
+		) as show_input:
+			search = ViewerSearch(_FakeView('one two'))
+			self.assertFalse(search.handle_key(_FakeKeyEvent(Qt.Key_Slash)))
+			show_input.assert_not_called()
+
+	def test_removed_n_does_not_advance_search(self):
+		search = ViewerSearch(_FakeView('one two two'))
+		search.start()
+		search._view.selected.clear()
+		with patch(
+			'core.textviewer_search.load_json', return_value=[
+				{'keys': ['n'], 'command': 'do_nothing'}
+			]
+		):
+			self.assertFalse(search.handle_key(_FakeKeyEvent(Qt.Key_N)))
+		self.assertEqual([], search._view.selected)
+
 	def test_n_is_ignored_until_there_is_a_query(self):
 		search = ViewerSearch(_FakeView('one two'))
 		self.assertFalse(search.handle_key(_FakeKeyEvent(Qt.Key_N)))

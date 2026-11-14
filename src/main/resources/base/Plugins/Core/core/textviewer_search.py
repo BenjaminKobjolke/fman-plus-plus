@@ -11,7 +11,7 @@ selected rather than painted, so Qt scrolls it into view for free and the
 theme's own selection colors apply.
 """
 from core.key_bindings import (
-	key_hint, VIEWER_KEY_BINDINGS_FILE,
+	builtin_key_active, key_hint, VIEWER_KEY_BINDINGS_FILE,
 )
 from fman import (
 	clear_status_message, load_json, show_input, show_status_message,
@@ -141,12 +141,21 @@ class ViewerSearch:
 		with search mode off is not, so it still closes the viewer.
 		"""
 		key = event.key()
-		if key == Qt.Key_Slash:
+		key_bindings = load_json(VIEWER_KEY_BINDINGS_FILE, default=[])
+		defaults = {
+			name: default for name, default, _title in COMMANDS
+		}
+		if key == Qt.Key_Slash and builtin_key_active(
+			key_bindings, 'text_find', defaults['text_find']
+		):
 			self.start()
 			return True
 		if key == Qt.Key_N and self._query:
-			self.find(backward=bool(event.modifiers() & Qt.ShiftModifier))
-			return True
+			backward = bool(event.modifiers() & Qt.ShiftModifier)
+			command = 'text_find_previous' if backward else 'text_find_next'
+			if builtin_key_active(key_bindings, command, defaults[command]):
+				self.find(backward=backward)
+				return True
 		if key == Qt.Key_Escape and self._active:
 			self.exit()
 			return True

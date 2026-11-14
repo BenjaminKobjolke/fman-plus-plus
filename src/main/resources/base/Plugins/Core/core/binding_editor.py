@@ -16,6 +16,7 @@ from core.shortcut_capture import capture_shortcut
 from core.user_bindings import (
 	load_user_bindings, save_user_bindings, shortcuts_for,
 )
+from core.viewer_builtin_keys import builtin_key
 from fman import load_json, show_alert, show_status_message, NO, YES
 
 def edit_key_bindings(command_name, title, bindings_file):
@@ -46,7 +47,8 @@ class BindingList(QuicksearchScreen):
 		self._by_label = {}
 		yield self._ADD
 		for shortcut, is_user in shortcuts_for(
-			self._bindings_file, self._command_name
+			self._bindings_file, self._command_name,
+			builtin_key=builtin_key(self._command_name)
 		):
 			label = '%s  (%s)' % (shortcut, 'yours' if is_user else 'default')
 			self._by_label[label] = (shortcut, is_user)

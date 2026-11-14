@@ -91,7 +91,8 @@ class PaneTextView(QPlainTextEdit):
 		# above - see core.key_bindings.VIEWER_KEY_BINDINGS_FILE.
 		viewer_bindings = load_json(VIEWER_KEY_BINDINGS_FILE, default=[])
 		if dispatch_bindable_command(
-			key_event, viewer_bindings, self._bindable_commands()
+			key_event, viewer_bindings, self._bindable_commands(),
+			honor_do_nothing=not self._editing
 		):
 			return
 		if self._editing:

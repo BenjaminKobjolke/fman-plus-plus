@@ -1,5 +1,5 @@
 from core.binding_editor import edit_key_bindings
-from core.key_bindings import KEY_BINDINGS_FILE
+from core.key_bindings import KEY_BINDINGS_FILE, VIEWER_KEY_BINDINGS_FILE
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -100,6 +100,12 @@ class BindingListTest(TestCase):
 	def test_shortcuts_of_other_commands_are_not_listed(self):
 		screens = _run([None], [_binding('M', 'pack')])
 		self.assertEqual(['Add shortcut...'], screens.shown[0])
+	def test_lists_an_active_viewer_builtin_key(self):
+		screens = _run(
+			[None], [], command='text_find', title='Find…',
+			bindings_file=VIEWER_KEY_BINDINGS_FILE
+		)
+		self.assertEqual(['Add shortcut...', '/  (default)'], screens.shown[0])
 
 class AddShortcutTest(TestCase):
 
@@ -171,6 +177,15 @@ class RemoveShortcutTest(TestCase):
 		# a higher-priority binding that does nothing.
 		screens = _run(['F5  (default)', 'Remove', None], [], [_binding('F5')])
 		self.assertEqual([_binding('F5', 'do_nothing')], screens.user)
+	def test_removing_a_viewer_builtin_key_shadows_it(self):
+		screens = _run(
+			['/  (default)', 'Remove', None], [],
+			command='text_find', title='Find…',
+			bindings_file=VIEWER_KEY_BINDINGS_FILE
+		)
+		self.assertEqual(
+			[{'keys': ['/'], 'command': 'do_nothing'}], screens.user
+		)
 	def test_go_back_keeps_the_shortcut(self):
 		screens = _run(['M  (yours)', 'Go back', None], [_binding('M')])
 		self.assertEqual([_binding('M')], screens.user)

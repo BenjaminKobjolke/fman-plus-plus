@@ -1,5 +1,6 @@
-from core.key_bindings import command_for_key_event, command_for_shortcut, \
-	dispatch_bindable_command, get_shortcuts_for_command, key_hint, DO_NOTHING
+from core.key_bindings import builtin_key_active, command_for_key_event, \
+	command_for_shortcut, dispatch_bindable_command, \
+	get_shortcuts_for_command, key_hint, DO_NOTHING
 from fman.impl.util.qt.key_event import QtKeyEvent
 from PyQt5.QtCore import Qt
 import json
@@ -69,6 +70,32 @@ class DispatchBindableCommandTest(TestCase):
 		]
 		self.assertTrue(dispatch_bindable_command(event, bindings, commands))
 		self.assertEqual([], called)
+
+	def test_do_nothing_is_not_swallowed_when_disabled(self):
+		event = QtKeyEvent(Qt.Key_Space, Qt.NoModifier)
+		bindings = [{'keys': ['Space'], 'command': DO_NOTHING}]
+		self.assertFalse(dispatch_bindable_command(
+			event, bindings, {}, honor_do_nothing=False
+		))
+
+class BuiltinKeyActiveTest(TestCase):
+	def test_unbound_default_is_active(self):
+		self.assertTrue(builtin_key_active([], 'text_find', '/'))
+
+	def test_default_bound_to_command_is_active(self):
+		bindings = [{'keys': ['/'], 'command': 'text_find'}]
+		self.assertTrue(builtin_key_active(bindings, 'text_find', '/'))
+
+	def test_default_bound_to_do_nothing_is_inactive(self):
+		bindings = [{'keys': ['/'], 'command': DO_NOTHING}]
+		self.assertFalse(builtin_key_active(bindings, 'text_find', '/'))
+
+	def test_default_bound_to_another_command_is_inactive(self):
+		bindings = [{'keys': ['/'], 'command': 'other'}]
+		self.assertFalse(builtin_key_active(bindings, 'text_find', '/'))
+
+	def test_empty_default_is_inactive(self):
+		self.assertFalse(builtin_key_active([], 'text_find', ''))
 
 class CommandForShortcutTest(TestCase):
 	_BINDINGS = [
