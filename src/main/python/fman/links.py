@@ -8,13 +8,13 @@ setting in userdata — the URLs are baked into the build.
 Named ``links`` (not ``urls``) to avoid confusion with ``fman.url``, which does
 URL path manipulation, not web links.
 """
-HELP             = 'https://workflow-tools.com/fman-plus-plus/help'
-CHANGELOG        = 'https://fman.io/changelog?s=f'
-ISSUES           = 'https://fman.io/issues?s=f'
-ZEN              = 'https://fman.io/zen'
-TERMINAL_DOCS    = 'https://fman.io/docs/terminal?s=f'
-CUSTOM_SHORTCUTS = 'https://fman.io/docs/custom-shortcuts?s=f'
-MACOS_DOCS       = 'https://fman.io/docs/macos?s=f'
 GITHUB_REPO      = 'BenjaminKobjolke/fman'
 RELEASES         = 'https://github.com/%s/releases/latest' % GITHUB_REPO
+HELP             = 'https://workflow-tools.com/fman-plus-plus/help/'
+CHANGELOG        = RELEASES
+ISSUES           = 'https://github.com/%s/issues' % GITHUB_REPO
+ZEN              = HELP
+TERMINAL_DOCS    = HELP
+CUSTOM_SHORTCUTS = HELP
+MACOS_DOCS       = HELP
 FMAN_API         = 'https://fman.workflow-tools.com/'
