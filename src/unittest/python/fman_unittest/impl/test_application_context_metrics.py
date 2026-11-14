@@ -15,33 +15,50 @@ class ApplicationContextMetricsTest(TestCase):
 	def _context(self, context_type=DevelopmentApplicationContext):
 		return object.__new__(context_type)
 
+	def _settings(self, usage_metrics=None):
+		directory = TemporaryDirectory()
+		self.addCleanup(directory.cleanup)
+		settings = Settings(join(directory.name, 'Settings.json'))
+		if usage_metrics is not None:
+			settings['usage_metrics'] = usage_metrics
+		return settings
+
 	def test_start_metrics_requires_explicit_usage_consent(self):
-		with TemporaryDirectory() as directory:
-			settings = Settings(join(directory, 'Settings.json'))
-			settings['usage_metrics'] = True
-			metrics = MagicMock()
-			context = SimpleNamespace(
-				local_settings=settings, metrics=metrics,
-				_on_metrics_initialised=lambda: None)
+		settings = self._settings(True)
+		metrics = MagicMock()
+		context = SimpleNamespace(
+			local_settings=settings, metrics=metrics,
+			_on_metrics_initialised=lambda: None)
 
-			DevelopmentApplicationContext._start_metrics(context)
+		DevelopmentApplicationContext._start_metrics(context)
 
-			metrics.initialize.assert_called_once_with(
-				callback=context._on_metrics_initialised)
-			metrics.track.assert_called_once_with('StartedFman')
+		metrics.initialize.assert_called_once_with(
+			callback=context._on_metrics_initialised)
+		metrics.track.assert_called_once_with('StartedFman')
 
 	def test_start_metrics_stays_off_without_true_consent(self):
-		with TemporaryDirectory() as directory:
-			settings = Settings(join(directory, 'Settings.json'))
-			metrics = MagicMock()
-			context = SimpleNamespace(
-				local_settings=settings, metrics=metrics,
-				_on_metrics_initialised=lambda: None)
+		settings = self._settings()
+		metrics = MagicMock()
+		context = SimpleNamespace(
+			local_settings=settings, metrics=metrics,
+			_on_metrics_initialised=lambda: None)
 
-			DevelopmentApplicationContext._start_metrics(context)
+		DevelopmentApplicationContext._start_metrics(context)
 
-			metrics.initialize.assert_not_called()
-			metrics.track.assert_not_called()
+		metrics.initialize.assert_not_called()
+		metrics.track.assert_not_called()
+
+	def test_start_metrics_stays_off_when_usage_consent_is_false(self):
+		settings = self._settings(False)
+		metrics = MagicMock()
+		context = SimpleNamespace(
+			local_settings=settings, metrics=metrics,
+			_on_metrics_initialised=lambda: None)
+
+		DevelopmentApplicationContext._start_metrics(context)
+
+		metrics.initialize.assert_not_called()
+		metrics.track.assert_not_called()
 
 	def test_development_uses_null_backend(self):
 		context = self._context()
