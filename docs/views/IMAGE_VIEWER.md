@@ -96,7 +96,7 @@ rebind always wins over the default key listed below.
 | `viewer_close`          | Escape/Enter/Backspace | Close viewer           |
 | `viewer_switch_panes`   | Tab                    | Switch panes           |
 | `viewer_open_palette`   | Ctrl+Shift+P           | Open viewer command palette |
-| `viewer_next_file` / `viewer_previous_file` | *(none — palette only)* | View next / previous file in the directory |
+| `viewer_next_file` / `viewer_previous_file` | Ctrl+J / Ctrl+K | View next / previous file in the directory |
 | `viewer_toggle_same_type_advance` | *(none — palette only)* | Toggle "advance only for same type" |
 | `viewer_delete_file` | *(none — palette only)* | Move the image to the trash |
 | `viewer_rename_file` | *(none — palette only)* | Rename the image, keeping it open |
@@ -105,7 +105,7 @@ rebind always wins over the default key listed below.
 Next/previous and the same-type toggle are **shared** across all three viewers
 — see [File viewers](../viewers/FILE_VIEWERS.md#shared-behaviour) for how they
 behave and [`docs/KEYBINDINGS.md`](../KEYBINDINGS.md#viewer-specific-bindings)
-for suggested keys.
+for their defaults and rebinding.
 
 ## Why it works while the file list is hidden
 

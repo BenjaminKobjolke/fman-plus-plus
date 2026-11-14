@@ -94,7 +94,7 @@ listed in Controls above.
 | `viewer_close`          | Escape/Enter/Backspace | Close viewer       |
 | `viewer_switch_panes`   | Tab        | Switch panes                  |
 | `viewer_open_palette`   | Ctrl+Shift+P | Open viewer command palette |
-| `viewer_next_file` / `viewer_previous_file` | *(none)* | View next / previous file in the directory |
+| `viewer_next_file` / `viewer_previous_file` | Ctrl+J / Ctrl+K | View next / previous file in the directory |
 | `viewer_toggle_same_type_advance` | *(none)* | Toggle "advance only for same type" |
 | `viewer_delete_file` | *(none)* | Move the video to the trash |
 | `viewer_rename_file` | *(none)* | Rename the video, keeping it playing |
@@ -103,7 +103,7 @@ listed in Controls above.
 Next/previous and the same-type toggle are **shared** across all three viewers
 — see [File viewers](../viewers/FILE_VIEWERS.md#shared-behaviour) for how they
 behave and [`docs/KEYBINDINGS.md`](../KEYBINDINGS.md#viewer-specific-bindings)
-for suggested keys.
+for their defaults and rebinding.
 
 ## Playback backend
 

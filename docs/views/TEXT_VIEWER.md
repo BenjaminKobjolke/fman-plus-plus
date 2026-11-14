@@ -223,7 +223,7 @@ mode (see [Editing](#editing)).
 | `viewer_close`                | Escape/Enter/Backspace   | both | Close viewer (edit mode: with unsaved-changes prompt) |
 | `viewer_switch_panes`         | Tab                      | view only | Switch panes — deliberately not bindable in edit mode, where Tab always types |
 | `viewer_open_palette`         | Ctrl+Shift+P             | both | Open viewer command palette |
-| `viewer_next_file` / `viewer_previous_file` | *(none — palette only)* | view, with a backing file | View next / previous file in the directory |
+| `viewer_next_file` / `viewer_previous_file` | Ctrl+J / Ctrl+K | view, with a backing file | View next / previous file in the directory |
 | `viewer_toggle_same_type_advance` | *(none — palette only)* | view, with a backing file | Toggle "advance only for same type" |
 | `viewer_delete_file` | *(none — palette only)* | view, with a backing file | Move the file to the trash |
 | `viewer_rename_file` | *(none — palette only)* | view, with a backing file | Rename the file, keeping it open |
@@ -234,7 +234,7 @@ Next/previous and the same-type toggle are **shared** across all three viewers
 release-notes view) — see
 [File viewers](../viewers/FILE_VIEWERS.md#shared-behaviour) for how they behave
 and [`docs/KEYBINDINGS.md`](../KEYBINDINGS.md#viewer-specific-bindings) for
-suggested keys.
+their defaults and rebinding.
 
 ## Behaviour
 

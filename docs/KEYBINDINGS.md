@@ -317,7 +317,7 @@ file-list commands also work there, as described below.
 | `viewer_close` | all | Escape/Enter/Backspace | Close viewer |
 | `viewer_switch_panes` | all (text: view mode only) | Tab | Switch panes |
 | `viewer_open_palette` | all | Ctrl+Shift+P | Open viewer command palette |
-| `viewer_next_file` / `viewer_previous_file` | all (text: view mode, backed file) | *(none)* | View next / previous file in the directory |
+| `viewer_next_file` / `viewer_previous_file` | all (text: view mode, backed file) | Ctrl+J / Ctrl+K | View next / previous file in the directory |
 | `viewer_toggle_same_type_advance` | all (text: view mode, backed file) | *(none)* | Toggle "advance only for same type" (per viewer) |
 | `viewer_delete_file` | all (text: view mode, backed file) | *(none)* | Move the viewed file to the trash, confirmation and all |
 | `viewer_rename_file` | all (text: view mode, backed file) | *(none)* | Prompt for a new name for the viewed file |
@@ -365,15 +365,18 @@ addition to the Escape/Enter/Backspace defaults above):
  { "keys": ["Ctrl+Up"], "command": "viewer_close" }]
 ```
 
-`viewer_next_file` / `viewer_previous_file` ship without a default key.
-Suggested conflict-free bindings (nothing in any viewer uses them):
-**Ctrl+PageDown** = next, **Ctrl+PageUp** = previous; or the mnemonic
-**N** / **P** (view-mode text is read-only, so letters are free):
+Next file and Previous file default to **Ctrl+J** and **Ctrl+K**, the same
+keys that move the file-list cursor down and up. To use another pair, add
+bindings to your `Viewer Key Bindings (<OS>).json`, for example:
 
 ```json
 [{ "keys": ["Ctrl+PageDown"], "command": "viewer_next_file" },
  { "keys": ["Ctrl+PageUp"], "command": "viewer_previous_file" }]
 ```
+
+To remove a shipped default, use the binding editor: Shift+Enter on the
+viewer palette row and remove the shortcut. fman writes a `do_nothing` shadow
+to your viewer bindings file.
 
 `view_file` (opens the internal viewer on the file under the cursor — see
 [`docs/functions/view-file.md`](functions/view-file.md)) ships with **no

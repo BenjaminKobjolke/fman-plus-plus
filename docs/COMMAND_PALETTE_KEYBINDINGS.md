@@ -65,8 +65,8 @@ action you would ever run.
 
 The [viewer palettes](viewers/FILE_VIEWERS.md) have the same Shift+Enter, and
 this is where it earns its keep: most viewer commands (`video_mute`,
-`viewer_next_file`, `image_actual_size`, …) ship with **no default key at all**,
-so binding them used to mean creating a file by hand.
+`viewer_delete_file`, `image_actual_size`, …) ship with **no default key at
+all**, so binding them used to mean creating a file by hand.
 
 Viewer bindings are written to `Viewer Key Bindings (<OS>).json`, a separate
 file from the global one — see

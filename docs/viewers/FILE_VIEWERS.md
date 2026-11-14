@@ -48,12 +48,14 @@ All three viewers work the same way where it counts:
   keys win; see [key bindings](../KEYBINDINGS.md#file-list-shortcuts-that-also-work-in-a-viewer).
 - **Next / previous file:** **"Next file"** / **"Previous file"** in the viewer
   palette advance to the neighbouring file in the directory (following the
-  pane's own sort order) without closing the viewer. A per-viewer
-  **"Advance only for same type"** toggle (on by default) keeps e.g. the image
+  pane's own sort order) without closing the viewer. The defaults are
+  **Ctrl+J** for Next file and **Ctrl+K** for Previous file; rebind them from
+  the viewer palette or in
+  [`docs/KEYBINDINGS.md`](../KEYBINDINGS.md#viewer-specific-bindings). A
+  per-viewer **"Advance only for same type"** toggle (on by default) keeps e.g.
+  the image
   viewer from stepping into a video; turn it off to walk across every viewable
-  file, switching viewer type as needed. No default keys — bind your own (see
-  [`docs/KEYBINDINGS.md`](../KEYBINDINGS.md#viewer-specific-bindings) for
-  suggestions).
+  file, switching viewer type as needed.
 - **Delete / rename the file you're looking at:** **"Delete file"** moves it to
   the Recycle Bin (Trash on macOS/Linux) after the same confirmation the file
   list's Delete asks, and **"Rename file…"** prompts for a new name with the
