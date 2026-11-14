@@ -1,6 +1,4 @@
-from core.textviewer_search import (
-	find_index, key_hint, search_status, ViewerSearch,
-)
+from core.textviewer_search import find_index, search_status, ViewerSearch
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTextCursor
 from unittest import TestCase
@@ -34,14 +32,6 @@ class FindIndexTest(TestCase):
 
 	def test_empty_query_returns_none(self):
 		self.assertIsNone(find_index(self._TEXT, '', 0))
-
-class KeyHintTest(TestCase):
-	def test_falls_back_to_the_hardcoded_default_when_unbound(self):
-		self.assertEqual('/', key_hint([], 'text_find', '/'))
-
-	def test_follows_a_rebind(self):
-		bindings = [{'keys': ['Ctrl+F'], 'command': 'text_find'}]
-		self.assertEqual('Ctrl+F', key_hint(bindings, 'text_find', '/'))
 
 class SearchStatusTest(TestCase):
 	def test_names_the_query_and_every_key(self):

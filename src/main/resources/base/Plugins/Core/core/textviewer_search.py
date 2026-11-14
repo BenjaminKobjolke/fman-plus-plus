@@ -11,7 +11,7 @@ selected rather than painted, so Qt scrolls it into view for free and the
 theme's own selection colors apply.
 """
 from core.key_bindings import (
-	format_shortcut_hint, get_shortcuts_for_command, VIEWER_KEY_BINDINGS_FILE,
+	key_hint, VIEWER_KEY_BINDINGS_FILE,
 )
 from fman import (
 	clear_status_message, load_json, show_input, show_status_message,
@@ -56,15 +56,6 @@ def find_index(text, query, from_pos, backward=False):
 	if found == -1:
 		return None
 	return found, True
-
-def key_hint(key_bindings, command, default):
-	"""
-	The key the user has bound to a viewer pseudo-command, else the default
-	this viewer hardcodes for it - so the palette hint follows a rebind.
-	"""
-	return format_shortcut_hint(
-		get_shortcuts_for_command(key_bindings, command)
-	) or default
 
 def search_status(query, hints):
 	# The persistent status-bar line that says search mode is on, naming the

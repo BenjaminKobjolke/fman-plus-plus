@@ -20,8 +20,7 @@ they ride along here because this is already the collaborator every viewer holds
 from collections import namedtuple
 from core.command_keywords import get_keywords
 from core.command_titles import apply_custom_title
-from core.key_bindings import VIEWER_KEY_BINDINGS_FILE, format_shortcut_hint, \
-	get_shortcuts_for_command
+from core.key_bindings import VIEWER_KEY_BINDINGS_FILE, key_hint
 from core.keyword_editor import edit_command_keywords
 from core.quicksearch_matchers import bucket_count, contains_chars, \
 	match_titles_or_keywords
@@ -221,11 +220,9 @@ def open_viewer_palette(get_actions):
 		for entry in get_actions():
 			entry = ViewerAction(*entry)
 			if entry.command_name and not entry.hint and not entry.bindings_file:
-				entry = entry._replace(hint=format_shortcut_hint(
-					get_shortcuts_for_command(
-						key_bindings, entry.command_name
-					)
-				))
+				entry = entry._replace(
+					hint=key_hint(key_bindings, entry.command_name)
+				)
 			# A renamed entry is displayed and searched under its new title,
 			# the old one living on as a keyword - see core/command_titles.
 			titles, keywords = apply_custom_title(

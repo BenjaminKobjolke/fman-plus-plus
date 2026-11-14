@@ -75,6 +75,19 @@ def binds(key_bindings, shortcut, command):
 	"""
 	return (shortcut, command) in parse_bindings(key_bindings)
 
+def key_hint(key_bindings, command, default=''):
+	"""
+	The user's shortcuts for a viewer pseudo-command, followed by its built-in
+	key when that key still runs this command or is unbound.
+	"""
+	shortcuts = list(get_shortcuts_for_command(key_bindings, command))
+	if (
+		default and default not in shortcuts
+		and command_for_shortcut(key_bindings, default) in (None, command)
+	):
+		shortcuts.append(default)
+	return format_shortcut_hint(shortcuts)
+
 def command_for_key_event(key_event, key_bindings, command_names):
 	"""
 	First command in command_names whose configured shortcut matches

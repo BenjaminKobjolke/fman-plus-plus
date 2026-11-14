@@ -102,7 +102,7 @@ class ViewerCursorTest(TestCase):
 
 	def test_actions_follow_a_rebind(self):
 		self.bindings = [{'keys': ['Ctrl+Home'], 'command': 'text_go_to_top'}]
-		self.assertEqual('Ctrl+Home', self.cursor_keys.actions()[0][2])
+		self.assertEqual('Ctrl+Home, Home', self.cursor_keys.actions()[0][2])
 
 	def test_commands_bind_each_action_to_its_own_name(self):
 		# Without the default-argument capture in commands(), every entry

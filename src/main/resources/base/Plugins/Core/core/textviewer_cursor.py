@@ -15,9 +15,8 @@ Paging hands a synthesized key event to the base QPlainTextEdit rather than
 moving the cursor itself: QTextCursor has no page-move operation, so Qt's own
 paging is only reachable through that method.
 """
-from core.key_bindings import VIEWER_KEY_BINDINGS_FILE
+from core.key_bindings import VIEWER_KEY_BINDINGS_FILE, key_hint
 from core.textviewer_reload import scroll_to_end
-from core.textviewer_search import key_hint
 from fman import load_json
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QKeyEvent, QTextCursor

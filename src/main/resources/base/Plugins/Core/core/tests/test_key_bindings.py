@@ -1,5 +1,5 @@
 from core.key_bindings import command_for_key_event, command_for_shortcut, \
-	dispatch_bindable_command, get_shortcuts_for_command, DO_NOTHING
+	dispatch_bindable_command, get_shortcuts_for_command, key_hint, DO_NOTHING
 from fman.impl.util.qt.key_event import QtKeyEvent
 from PyQt5.QtCore import Qt
 import json
@@ -111,6 +111,28 @@ class GetShortcutsForCommandTest(TestCase):
 	def _check(self, key_bindings, command, expected_shortcuts):
 		actual = list(get_shortcuts_for_command(key_bindings, command))
 		self.assertEqual(expected_shortcuts, actual)
+
+class KeyHintTest(TestCase):
+	def test_uses_the_default_when_there_is_no_user_binding(self):
+		self.assertEqual('/', key_hint([], 'text_find', '/'))
+
+	def test_shows_the_user_binding_before_the_default(self):
+		bindings = [{'keys': ['Ctrl+F'], 'command': 'text_find'}]
+		self.assertEqual('Ctrl+F, /', key_hint(bindings, 'text_find', '/'))
+
+	def test_does_not_repeat_the_default_when_user_bound_to_command(self):
+		bindings = [{'keys': ['/'], 'command': 'text_find'}]
+		self.assertEqual('/', key_hint(bindings, 'text_find', '/'))
+
+	def test_hides_default_when_user_bound_it_to_another_command(self):
+		bindings = [
+			{'keys': ['Ctrl+F'], 'command': 'text_find'},
+			{'keys': ['/'], 'command': 'other'},
+		]
+		self.assertEqual('Ctrl+F', key_hint(bindings, 'text_find', '/'))
+
+	def test_no_default_and_no_binding_is_empty(self):
+		self.assertEqual('', key_hint([], 'text_find', ''))
 
 class KeypadSelectionBindingsTest(TestCase):
 	def test_base_bindings_register_the_total_commander_keypad_set(self):
