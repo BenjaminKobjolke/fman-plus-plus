@@ -20,6 +20,8 @@ def parser():
 	launch.add_argument('--previous-version',
 		help=("saved fman version written to the profile so startup "
 			"shows the update message"))
+	launch.add_argument('--first-start', action='store_true',
+		help="start with no saved fman settings or session")
 	for name in ('state', 'commands', 'close', 'dialog', 'restart', 'links'):
 		commands.add_parser(name)
 	viewer = commands.add_parser('viewer')

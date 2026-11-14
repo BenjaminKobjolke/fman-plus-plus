@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
 	QTableView, QWidget,
 )
 
+from fman.impl.overlay import Overlay
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.prompt_popup import Prompt
 from fman.impl.scripting.automation import (
@@ -268,6 +269,39 @@ class ScriptingAutomationTest(TestCase):
 			'fman.impl.scripting.automation.QApplication.activeModalWidget',
 			return_value=None,
 		), patch.object(_Window, 'get_open_dialog', return_value=None):
+			self.assertIsNone(actions.get_dialog())
+
+	def test_get_dialog_reports_visible_tutorial_overlay(self):
+		window = QWidget()
+		window.resize(400, 300)
+		window.show()
+		self.addCleanup(window.close)
+		overlay = Overlay(window, '<b>Welcome</b><br>Take a tour', [
+			('&No thanks', lambda: None), ('&Yes', lambda: None),
+		])
+		overlay.show()
+		self.addCleanup(overlay.close)
+		self.app.processEvents()
+		actions = AutomationActions(window, None)
+		with patch(
+			'fman.impl.scripting.automation.QApplication.activeModalWidget',
+			return_value=None,
+		), patch.object(window, 'get_open_dialog', return_value=None, create=True):
+			self.assertEqual({
+				'type': 'Overlay', 'title': '', 'text': 'Welcome\nTake a tour',
+				'buttons': ['No thanks', 'Yes'],
+			}, actions.get_dialog())
+
+	def test_get_dialog_ignores_hidden_tutorial_overlay(self):
+		window = QWidget()
+		self.addCleanup(window.close)
+		overlay = Overlay(window, '<b>Welcome</b>', [('&No', lambda: None)])
+		self.addCleanup(overlay.close)
+		actions = AutomationActions(window, None)
+		with patch(
+			'fman.impl.scripting.automation.QApplication.activeModalWidget',
+			return_value=None,
+		), patch.object(window, 'get_open_dialog', return_value=None, create=True):
 			self.assertIsNone(actions.get_dialog())
 
 	def test_visible_files_follow_the_model_display_order(self):

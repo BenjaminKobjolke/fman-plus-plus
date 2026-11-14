@@ -46,6 +46,7 @@ class GuardsTest(TestCase):
 	def test_check_no_open_dialog_allows_none_and_progress_dialog(self):
 		guards.check_no_open_dialog(None)
 		guards.check_no_open_dialog({'type': 'QProgressDialog', 'text': 'Loading'})
+		guards.check_no_open_dialog({'type': 'Overlay', 'text': 'Welcome'})
 
 	def test_check_no_open_dialog_explains_how_to_answer_prompt(self):
 		with self.assertRaisesRegex(

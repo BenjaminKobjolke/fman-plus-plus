@@ -131,6 +131,9 @@ def _launch(args):
 	validate_deep_count(args.deep)
 	core_settings = parse_core_settings(args.core_settings)
 	previous_version = getattr(args, 'previous_version', None)
+	first_start = getattr(args, 'first_start', False)
+	if first_start and previous_version is not None:
+		raise ValueError('--first-start cannot be used with --previous-version.')
 	if previous_version is not None and not previous_version.strip():
 		raise ValueError('previous version must not be empty.')
 	now = time.time()
@@ -155,21 +158,23 @@ def _launch(args):
 	local = profile / 'Local'
 	local.mkdir(parents=True, exist_ok=True)
 	port = _reserve_port()
-	settings = {'single_instance': False,
-		# Pre-answer both parts of the consent question so it cannot swallow keys.
-		'error_reports': False, 'usage_metrics': False, 'scripting_api': {
+	settings = {'single_instance': False, 'scripting_api': {
 		'enabled': True, 'automation': True, 'port': port,
 		'command_access': 'all', 'allowed_hosts': [],
 	}}
+	if not first_start:
+		# Pre-answer both parts of the consent question so it cannot swallow keys.
+		settings.update({'error_reports': False, 'usage_metrics': False})
 	settings_path = local / 'Settings.json'
 	settings_path.write_text(json.dumps(settings, indent=2), encoding='utf-8')
-	# A non-empty session file suppresses first-run onboarding and starts with
-	# two deterministic panes, one for each supplied or generated fixture.
-	session_settings = {'panes': [{}, {}]}
-	if previous_version is not None:
-		session_settings['fman_version'] = previous_version
-	(local / 'Session.json').write_text(
-		json.dumps(session_settings, indent=2), encoding='utf-8')
+	if not first_start:
+		# A non-empty session file suppresses first-run onboarding and starts with
+		# two deterministic panes, one for each supplied or generated fixture.
+		session_settings = {'panes': [{}, {}]}
+		if previous_version is not None:
+			session_settings['fman_version'] = previous_version
+		(local / 'Session.json').write_text(
+			json.dumps(session_settings, indent=2), encoding='utf-8')
 	token_path = local / 'ScriptingApiToken.txt'
 	token_path.write_text(uuid.uuid4().hex, encoding='utf-8')
 	write_core_settings(profile, core_settings)

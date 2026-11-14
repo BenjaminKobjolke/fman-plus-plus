@@ -20,7 +20,12 @@ The generated left fixture also includes `video.mp4`, copied from the committed
 object in its JSON result and saved session with the checkout's `version`,
 short `commit`, `dirty` status, `checkout_path`, and `python` executable.
 The isolated profile pre-answers fman's combined error-report and
-usage-statistics question, so it cannot swallow the first driver keys.
+usage-statistics question, so it cannot swallow the first driver keys. Add
+`launch --first-start` to leave those answers unset and omit the profile's
+session file: the first start shows the welcome tutorial, `restart` shows the
+consent question, and after choosing “No thanks” a second `restart` shows no
+question. With this option, `dialog` reports tutorial steps as type `Overlay`,
+with the speech bubble's plain text and button labels.
 `launch` opens the private window at 1280×800;
 `restart` keeps fman's saved geometry. Initial startup also records its actual
 window size and screen usable area in the JSON result; a small display may add
@@ -52,8 +57,8 @@ close the folder tree and restore the pane. If another key is needed, use
 
 Before `command`, the driver also checks for an open dialog. It refuses a
 command while a prompt or message box is open and reports its type and text;
-answer it with `keys Return` or `keys Escape` first. Non-modal progress dialogs
-do not block commands. Keys, typing and clicks remain available to answer a
+answer it with keys first. Non-modal progress dialogs and tutorial overlays do
+not block commands. Keys, typing and clicks remain available to answer a
 prompt, subject to the pane-path fence.
 
 The folder tree displays ancestors above the fixture, including folders on the
@@ -265,6 +270,28 @@ dialog label, and `progress` contains its current `value` and `maximum`.
 `loaded`, `paused`, `position` (seconds), and `duration` (seconds); before the
 player starts, the last three values are `null`. Video areas remain black in
 screenshots, so use this readout to check playback.
+
+## Example: first-start tutorial and consent
+
+Use `--first-start` to verify the first-start flow. The welcome overlay's No
+button responds to `Alt+N`; the consent question's “No thanks” button responds
+to three Tabs followed by Return on the Windows driver:
+
+```bat
+tools\fman_ui.bat launch --first-start
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Alt+N
+tools\fman_ui.bat restart
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Tab Tab Tab Return
+tools\fman_ui.bat restart
+tools\fman_ui.bat dialog
+tools\fman_ui.bat close
+```
+
+The first `dialog` result is an `Overlay` with the welcome text and its No and
+Yes buttons. The next `dialog` result is the consent `MessageBox`; after
+choosing “No thanks”, the final result is `null`.
 
 ## Example: first-use video playback
 

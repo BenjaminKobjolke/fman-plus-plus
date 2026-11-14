@@ -3,12 +3,13 @@
 from dataclasses import asdict, dataclass, is_dataclass
 
 from PyQt5.QtCore import QBuffer, QIODevice, QPoint, QPointF, Qt, QEvent
-from PyQt5.QtGui import QContextMenuEvent, QMouseEvent
+from PyQt5.QtGui import QContextMenuEvent, QMouseEvent, QTextDocument
 from PyQt5.QtWidgets import (
 	QAbstractItemView, QApplication, QDialogButtonBox, QHeaderView,
-	QMessageBox, QProgressDialog,
+	QMessageBox, QProgressDialog, QPushButton,
 )
 
+from fman.impl.overlay import Overlay
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.prompt_popup import Prompt
 from fman.impl.scripting.actions import get_pane
@@ -148,6 +149,19 @@ class AutomationActions:
 		if dialog is None:
 			dialog = next((widget for widget in QApplication.topLevelWidgets()
 				if isinstance(widget, QProgressDialog) and widget.isVisible()), None)
+		if dialog is None:
+			dialog = next((widget for widget in
+				self._main_window.findChildren(Overlay) if widget.isVisible()), None)
+			if dialog is not None:
+				document = QTextDocument()
+				document.setHtml(dialog.label.text())
+				return {
+					'type': 'Overlay',
+					'title': '',
+					'text': document.toPlainText(),
+					'buttons': [button.text().replace('&', '') for button in
+						dialog.findChildren(QPushButton)],
+				}
 		if dialog is None:
 			return rename_editor_details(self._main_window)
 		if isinstance(dialog, QProgressDialog):

@@ -8,6 +8,7 @@ from pathlib import Path
 
 FENCED_ACTIONS = frozenset(('keys', 'type', 'click', 'drag', 'command'))
 PROGRESS_DIALOG_TYPE = 'QProgressDialog'
+NON_MODAL_DIALOG_TYPES = frozenset((PROGRESS_DIALOG_TYPE, 'Overlay'))
 _WINDOWS_DRIVE = re.compile(r'^[A-Za-z]:')
 
 
@@ -66,7 +67,7 @@ def check_inside_fixtures(state, roots):
 
 
 def check_no_open_dialog(dialog):
-	if dialog is None or dialog.get('type') == PROGRESS_DIALOG_TYPE:
+	if dialog is None or dialog.get('type') in NON_MODAL_DIALOG_TYPES:
 		return
 	raise RuntimeError(
 		'Cannot run a command while %s is open (%s). Answer it with '

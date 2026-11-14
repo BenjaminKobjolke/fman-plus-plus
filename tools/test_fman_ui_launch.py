@@ -23,7 +23,7 @@ class FmanUiLaunchTest(TestCase):
 			self.assertEqual(Path('system-temp') / 'fman-ui', fman_ui._root())
 
 	def _launch(self, temp, *, large=0, deep=0, core_settings=None, left=None,
-			previous_version=None):
+			previous_version=None, first_start=False):
 		patches = (
 			patch.dict(os.environ, {'TEMP': temp}),
 			patch.object(fman_ui, '_reserve_port', return_value=45678),
@@ -47,7 +47,7 @@ class FmanUiLaunchTest(TestCase):
 			session = fman_ui._launch(SimpleNamespace(
 				left=left, right=None, large=large, deep=deep,
 				core_settings=core_settings,
-				previous_version=previous_version))
+				previous_version=previous_version, first_start=first_start))
 			self.popen_calls = popen.call_args_list
 			self.api_calls = api.call_args_list
 			return session
@@ -126,6 +126,16 @@ class FmanUiLaunchTest(TestCase):
 				self.assertEqual(20, session_data['fman_start_time'])
 				self.assertIn(
 					'session_reaper.py', popen.call_args_list[1].args[0][1])
+
+	def test_first_start_leaves_consent_unanswered_and_session_unseeded(self):
+		with TemporaryDirectory() as temp:
+			session = self._launch(temp, first_start=True)
+			local = Path(session['profile']) / 'Local'
+			settings = json.loads((local / 'Settings.json').read_text())
+			self.assertNotIn('error_reports', settings)
+			self.assertNotIn('usage_metrics', settings)
+			self.assertTrue(settings['scripting_api']['automation'])
+			self.assertFalse((local / 'Session.json').exists())
 
 	def test_launch_creates_large_left_fixture_and_core_settings(self):
 		with TemporaryDirectory() as temp:
@@ -212,6 +222,9 @@ class FmanUiLaunchTest(TestCase):
 					core_settings=None, previous_version=' '),
 				SimpleNamespace(left=None, right=None, large=0, deep=0,
 					core_settings=None, previous_version=''),
+				SimpleNamespace(left=None, right=None, large=0, deep=0,
+					core_settings=None, previous_version='1.0.0',
+					first_start=True),
 			):
 				with self.subTest(args=args), self.assertRaises(ValueError):
 					fman_ui._launch(args)
@@ -231,4 +244,8 @@ class FmanUiLaunchTest(TestCase):
 		args = parser().parse_args([
 			'launch', '--previous-version', '1.0.0'])
 		self.assertEqual('1.0.0', args.previous_version)
+
+	def test_parser_accepts_first_start(self):
+		args = parser().parse_args(['launch', '--first-start'])
+		self.assertTrue(args.first_start)
 
