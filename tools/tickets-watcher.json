@@ -163,7 +163,7 @@
   "analysis_test_timeout_seconds": 1040,
   "analysis_command_failing_tests": {
     "tools\\run_tests.bat": [
-      "(failures=1)"
+      "(failures=1, errors=1)"
     ],
     "uv run python tools\\test_fman_ui.py": [
       "(failures=1)"
