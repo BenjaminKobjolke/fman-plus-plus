@@ -73,6 +73,7 @@ class FmanUiLaunchTest(TestCase):
 				settings = json.loads(
 					(Path(session['profile']) / 'Local' / 'Settings.json').read_text())
 				self.assertFalse(settings['error_reports'])
+				self.assertFalse(settings['usage_metrics'])
 				self.assertTrue(settings['scripting_api']['automation'])
 				self.assertEqual(45678, settings['scripting_api']['port'])
 				self.assertEqual(

@@ -156,8 +156,8 @@ def _launch(args):
 	local.mkdir(parents=True, exist_ok=True)
 	port = _reserve_port()
 	settings = {'single_instance': False,
-		# Pre-answer ERROR_REPORTS_SETTING so its consent box cannot swallow keys.
-		'error_reports': False, 'scripting_api': {
+		# Pre-answer both parts of the consent question so it cannot swallow keys.
+		'error_reports': False, 'usage_metrics': False, 'scripting_api': {
 		'enabled': True, 'automation': True, 'port': port,
 		'command_access': 'all', 'allowed_hosts': [],
 	}}
