@@ -211,7 +211,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 		install_stream_capture(get_console_log())
 		logging.basicConfig()
 	def _start_metrics(self):
-		if self.local_settings.get('usage_metrics') is not True:
+		if self.local_settings.get('usage_metrics', None) is not True:
 			return
 		self.metrics.initialize(callback=self._on_metrics_initialised)
 		self.metrics.track('StartedFman')

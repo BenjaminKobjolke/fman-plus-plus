@@ -1,11 +1,12 @@
 from types import SimpleNamespace
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, create_autospec, patch
 
 from fman.impl.application_context import (
 	DevelopmentApplicationContext, FrozenApplicationContext,
 )
 from fman.impl.metrics import ApiBackend, LoggingBackend, NullBackend
+from fman.impl.util.settings import Settings
 
 
 class ApplicationContextMetricsTest(TestCase):
@@ -13,7 +14,7 @@ class ApplicationContextMetricsTest(TestCase):
 		return object.__new__(context_type)
 
 	def test_start_metrics_requires_explicit_usage_consent(self):
-		settings = MagicMock()
+		settings = create_autospec(Settings, instance=True)
 		settings.get.return_value = True
 		metrics = MagicMock()
 		context = SimpleNamespace(
@@ -22,13 +23,13 @@ class ApplicationContextMetricsTest(TestCase):
 
 		DevelopmentApplicationContext._start_metrics(context)
 
-		settings.get.assert_called_once_with('usage_metrics')
+		settings.get.assert_called_once_with('usage_metrics', None)
 		metrics.initialize.assert_called_once_with(
 			callback=context._on_metrics_initialised)
 		metrics.track.assert_called_once_with('StartedFman')
 
 	def test_start_metrics_stays_off_without_true_consent(self):
-		settings = MagicMock()
+		settings = create_autospec(Settings, instance=True)
 		settings.get.return_value = None
 		metrics = MagicMock()
 		context = SimpleNamespace(
