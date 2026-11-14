@@ -33,6 +33,7 @@ from fman.impl.scripting.actions import ScriptingActions
 from fman.impl.scripting.automation import AutomationActions
 from fman.impl.scripting.config import ScriptingApiConfig
 from fman.impl.scripting.control import ScriptingApiControl
+from fman.impl.scripting.link_capture import LinkCapture
 from fman.impl.scripting.server import ScriptingServer
 from fman.impl.single_instance import SingleInstance, server_name_for, \
 	open_paths_in_running_instance, NEW_INSTANCE_ARG, take_flag
@@ -467,6 +468,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 				config, token,
 				ScriptingActions(self.plugin_support, self.main_window),
 				AutomationActions(self.main_window, self.plugin_support),
+				LinkCapture(self.main_window),
 			),
 		)
 	@cached_property

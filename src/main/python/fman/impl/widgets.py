@@ -31,7 +31,7 @@ from PyQt5.QtWidgets import QWidget, QMainWindow, QSplitter, QStatusBar, \
 	QMessageBox, QLineEdit, QFileDialog, QLabel, QDialog, \
 	QVBoxLayout, QSplitterHandle, QApplication, QFrame, QAction, QSizePolicy, \
 	QDialogButtonBox, QSpacerItem, QScrollArea
-from collections import namedtuple
+from collections import deque, namedtuple
 from time import time
 
 import re
@@ -478,6 +478,7 @@ class MainWindow(QMainWindow):
 		self._pane_idle_status = {}
 		self._focused_pane = None
 		self._status_message_active = False
+		self._status_history = deque(maxlen=20)
 		self._splitter = Splitter(self)
 		self.setCentralWidget(self._splitter)
 		self._status_bar = QStatusBar(self)
@@ -725,6 +726,7 @@ class MainWindow(QMainWindow):
 			self._dialog = None
 	@run_in_main_thread
 	def show_status_message(self, text, timeout_secs=None):
+		self._status_history.append(text)
 		self._status_message_active = True
 		self._status_bar_text.setText(text)
 		self._pane_status_bar_owner = None
@@ -732,6 +734,8 @@ class MainWindow(QMainWindow):
 			self._timer.start(int(timeout_secs * 1000))
 		else:
 			self._timer.stop()
+	def get_status_history(self):
+		return list(self._status_history)
 	@run_in_main_thread
 	def set_incognito_marker_visible(self, visible):
 		self._incognito_marker.setVisible(visible)

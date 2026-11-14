@@ -17,6 +17,7 @@ from fman.impl.scripting.config import (
 	DRAG_PATH,
 	DIALOG_PATH,
 	FILES_PATH,
+	LINKS_PATH,
 	KEYS_PATH,
 	ORIGIN_HEADER,
 	SCREENSHOT_PATH,
@@ -46,16 +47,20 @@ def _pane_index(query):
 
 
 class ScriptingServer:
-	def __init__(self, config, token, actions, automation_actions=None):
+	def __init__(
+		self, config, token, actions, automation_actions=None, link_capture=None,
+	):
 		self._config = config
 		self._token = token
 		self._actions = actions
 		self._automation_actions = automation_actions
+		self._link_capture = link_capture
 		self._server = _ThreadingHTTPServer(
 			(config.bind_address, config.port), self._make_handler()
 		)
 		self._server.daemon_threads = True
 		self._thread = None
+		self._link_capture_installed = False
 
 	@property
 	def port(self):
@@ -64,16 +69,20 @@ class ScriptingServer:
 	def start(self):
 		if self._thread is not None:
 			return
+		if self._link_capture is not None and self._config.automation:
+			self._link_capture.install()
+			self._link_capture_installed = True
 		self._thread = Thread(target=self._server.serve_forever, daemon=True)
 		self._thread.start()
 
 	def stop(self):
-		if self._thread is None:
-			self._server.server_close()
-			return
-		self._server.shutdown()
+		if self._thread is not None:
+			self._server.shutdown()
 		self._server.server_close()
 		self._thread = None
+		if self._link_capture_installed:
+			self._link_capture.uninstall()
+			self._link_capture_installed = False
 
 	def _make_handler(self):
 		server = self
@@ -99,6 +108,13 @@ class ScriptingServer:
 					self._send_json(200, {
 						'dialog': server._automation_actions.get_dialog(),
 					})
+				elif path.path == LINKS_PATH:
+					if not self._automation_enabled():
+						return
+					if server._link_capture is None:
+						self._send_error(503, 'Link capture is unavailable.')
+						return
+					self._send_json(200, server._link_capture.snapshot())
 				elif path.path == FILES_PATH:
 					if not self._automation_enabled():
 						return
