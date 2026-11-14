@@ -134,6 +134,8 @@ After touching `tools/fman_ui/**`, run `uv run python tools/test_fman_ui.py`.
 After touching `src/main/python/fman/impl/scripting/automation.py` or
 `src/main/python/fman/impl/util/qt/key_events.py`, run
 `tools\run_automation_tests.bat`.
+After touching `src/main/python/fman/impl/scripting/link_capture.py`, run
+`tools\run_automation_tests.bat`.
 
 `tools\run_tests.bat` runs all of `fman_unittest` offscreen (~5 s). The `run_*_tests.bat` watcher commands use `tools\unittest_with_timeout.bat`, which drops the watcher's venv, runs the project's `.venv` python (`tools\find_build_python.bat`) and stops a test after 120 s. `python build.py test` is not a usable check because fbs ignores the result and always exits 0.
 

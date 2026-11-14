@@ -67,6 +67,8 @@ The instance runs without user plugins and does not move or click the real
 mouse. fman's own dialogs can be inspected and answered; operating-system
 dialogs and global hotkeys cannot be driven. Screenshots of video viewer areas
 are black.
+With automation enabled, the isolated instance records web links instead of
+opening a browser.
 
 ## Fixtures for file-age shading and large folders
 
@@ -76,6 +78,12 @@ the fixture, including a hidden attribute or profile setting changed during a
 check; use `restart` to keep those changes and the same profile. `--large N` creates `N` empty files in a `large` folder in the left
 fixture only; the maximum is 50000. It is opt-in so ordinary launches remain
 quick.
+
+`--previous-version` writes the supplied version into the isolated profile's
+saved session, so startup shows the update message and its Changelog link.
+`links` reads the recent web addresses opened by fman and the link addresses in
+recent status messages. Status messages remain in this readout after they fade
+from the status bar.
 
 `--core-settings` accepts a JSON object and writes it to the isolated profile's
 Core `Core Settings.json` before fman starts. Supported age-shading settings
@@ -195,6 +203,7 @@ tools\fman_ui.bat restart
 tools\fman_ui.bat state
 tools\fman_ui.bat commands
 tools\fman_ui.bat dialog
+tools\fman_ui.bat links
 tools\fman_ui.bat command reload --pane 0
 tools\fman_ui.bat files --pane 1
 tools\fman_ui.bat viewer --pane 0
@@ -206,6 +215,23 @@ tools\fman_ui.bat drag --x 300 --y 60 --to-x 240 --to-y 60
 tools\fman_ui.bat screenshot %TEMP%\fman.png
 tools\fman_ui.bat close
 ```
+
+### Example: check Help and Changelog links (validation task #2302)
+
+```bat
+tools\fman_ui.bat launch --previous-version 1.0.0
+tools\fman_ui.bat links
+tools\fman_ui.bat command help --pane 0
+tools\fman_ui.bat links
+tools\fman_ui.bat close
+```
+
+The first `links` result shows the `Updated to v…` message and its Changelog
+address in `status_messages[].links`. The message fades from the status bar
+after 5 seconds but remains in the readout. After `help`, `opened_urls` ends
+with the Help address; no browser is opened by the isolated instance.
+If a startup message box prevents `command help`, dismiss it with
+`tools\fman_ui.bat keys Escape` and retry the Help command.
 
 `command` accepts an optional JSON argument object before `--pane`, for example
 `tools\fman_ui.bat command open_directory "{\"url\":\"file:///C:/\"}"`.

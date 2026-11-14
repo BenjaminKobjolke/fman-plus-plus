@@ -54,6 +54,7 @@ or global hotkeys.
 | `GET /v1/dialog` | — | `{"dialog": {"type": "MessageBox", "title": "Confirm", "text": "Continue?", "buttons": ["&Yes", "&No"]}}` or `{"dialog": null}` |
 | `GET /v1/files?pane=0` | Pane index is active-first and defaults to `0` | `{"pane": 0, "files": ["<url>"]}` |
 | `GET /v1/viewer?pane=0` | Pane index is active-first and defaults to `0` | `{"pane": 0, "viewer": {"type": "PaneVideoView", "playback": {"loaded": true, "paused": false, "position": 2.5, "duration": 30.5}}}` or `{"pane": 0, "viewer": null}` |
+| `GET /v1/links` | — | `{"opened_urls": ["https://example.test/help"], "status_messages": [{"text": "Updated to v2. <a href=\"https://example.test/releases\">Changelog</a>", "links": ["https://example.test/releases"]}]}` |
 
 The click `button` may be `left` or `right`; `double` defaults to `false`.
 Coordinates refer to the screenshot of the current window target. An unknown
@@ -70,6 +71,10 @@ object. The Core video viewer reports `loaded`, `paused`, `position` in seconds,
 and `duration` in seconds; before playback loads, the last three values are
 `null`. A pane with no mounted viewer returns `viewer: null`. The route is
 automation-gated like the other desktop automation endpoints.
+
+With automation enabled, fman records `http` and `https` URLs instead of opening
+them in a browser. `GET /v1/links` returns those recent URLs and recent status
+messages, with each message's link addresses listed separately.
 
 Drags that start on a file-list viewport are rejected with 400 to prevent
 starting a file drag-and-drop operation.
