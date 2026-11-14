@@ -1,8 +1,25 @@
-from core.commands.pack import _suggest_archive_name, PackHere, PackWithPassword
+from core.commands.pack import _suggest_archive_name, PackHere, PackWithPassword, _Pack
 from core.fs import archive_password
-from fman import YES
+from fman import Task, YES
 from unittest import TestCase
 from unittest.mock import DEFAULT, MagicMock, patch
+
+
+class PackTaskTest(TestCase):
+
+	def test_notifies_archive_folder_when_done(self):
+		with patch('core.commands.pack.prepare_copy', return_value=[]), \
+			patch('core.commands.pack.notify_file_changed', create=True) as notify:
+			_Pack(['file://C:/src/a.txt'], '7z://C:/dest/b.7z')()
+		notify.assert_called_once_with('file://C:/dest')
+
+	def test_notifies_archive_folder_when_canceled(self):
+		with patch('core.commands.pack.prepare_copy', return_value=[MagicMock()]), \
+			patch('core.commands.pack.notify_file_changed', create=True) as notify, \
+			patch.object(Task, 'check_canceled', side_effect=Task.Canceled):
+			with self.assertRaises(Task.Canceled):
+				_Pack(['file://C:/src/a.txt'], 'zip://C:/dest/a.zip')()
+		notify.assert_called_once_with('file://C:/dest')
 
 class SuggestArchiveNameTest(TestCase):
 

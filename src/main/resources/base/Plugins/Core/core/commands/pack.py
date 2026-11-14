@@ -13,8 +13,8 @@ from core.commands.transfer import _from_human_readable, get_dest_suggestion
 from core.commands.util import chosen_files, get_opposite_pane
 from fman import DirectoryPaneCommand, NO, Task, YES, show_alert, \
 	show_input, submit_task
-from fman.fs import mkdir, prepare_copy
-from fman.url import join, splitscheme
+from fman.fs import mkdir, notify_file_changed, prepare_copy
+from fman.url import as_url, dirname, join, splitscheme
 # os.path.basename, not fman.url's - see core/commands/transfer.py.
 from os.path import basename
 from pathlib import PurePath
@@ -143,7 +143,11 @@ class _Pack(Task):
 		self._files = files
 		self._archive = archive_url
 	def __call__(self):
-		for f in self._files:
-			for task in prepare_copy(f, join(self._archive, basename(f))):
-				self.check_canceled()
-				self.run(task)
+		try:
+			for f in self._files:
+				for task in prepare_copy(f, join(self._archive, basename(f))):
+					self.check_canceled()
+					self.run(task)
+		finally:
+			# Archive filesystems notify their scheme; Windows lacks folder watching.
+			notify_file_changed(dirname(as_url(splitscheme(self._archive)[1])))
