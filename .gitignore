@@ -58,6 +58,8 @@ media/demos/dialogs-after-video/
 media/demos/listing/
 # Folder tree stills - recorded on demand for the screenshot check, never committed
 media/demos/folder-tree/
+# Theme file-color stills - recorded on demand for the screenshot check, never committed
+media/demos/listing-theme-colors/
 tmp
 tickets/
 # Written by tools\release_create.bat (release-tool create) - transient local state
