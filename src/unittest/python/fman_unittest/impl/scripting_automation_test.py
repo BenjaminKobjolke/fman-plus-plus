@@ -52,6 +52,17 @@ class ScriptingAutomationTest(TestCase):
 		self.assertFalse(image.isNull())
 		self.assertEqual(window.grab().size(), image.size())
 
+	def test_resize_window_resizes_and_reports_available_area(self):
+		window = _ResizableWindow()
+		window.resize(320, 240)
+		window.show()
+		self.addCleanup(window.close)
+		result = AutomationActions(window, None).resize_window(640, 480)
+		self.assertEqual((640, 480), (window.width(), window.height()))
+		self.assertEqual((640, 480), (result.width, result.height))
+		self.assertGreater(result.available_width, 0)
+		self.assertGreater(result.available_height, 0)
+
 	def test_get_dialog_returns_none_without_an_active_modal_widget(self):
 		actions = AutomationActions(_Window(), None)
 		with patch('fman.impl.scripting.automation.QApplication.activeModalWidget',
@@ -258,6 +269,11 @@ class ScriptingAutomationTest(TestCase):
 		with self.assertRaises(UnknownFile):
 			actions.click_file(0, 'file:///hidden')
 		self.assertFalse(pane._widget.get_file_view().scrolled)
+
+
+class _ResizableWindow(QWidget):
+	def center_on_screen(self):
+		pass
 
 
 class _KeyCapture(QWidget):

@@ -1,6 +1,6 @@
 """Drive and inspect the fman window through Qt's event loop."""
 
-from dataclasses import asdict, is_dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 
 from PyQt5.QtCore import QBuffer, QIODevice, QPoint, QPointF, Qt, QEvent
 from PyQt5.QtGui import QContextMenuEvent, QMouseEvent
@@ -21,6 +21,14 @@ class UnknownFile(Exception):
 
 class UnsafeDrag(Exception):
 	"""Raised when a drag could start a file operation."""
+
+
+@dataclass(frozen=True)
+class WindowSize:
+	width: int
+	height: int
+	available_width: int
+	available_height: int
 
 
 class AutomationActions:
@@ -115,6 +123,19 @@ class AutomationActions:
 		buffer.open(QIODevice.WriteOnly)
 		self._window_target().grab().save(buffer, 'PNG')
 		return bytes(buffer.data())
+
+	@run_in_main_thread
+	def resize_window(self, width: int, height: int) -> WindowSize:
+		self._main_window.showNormal()
+		self._main_window.resize(width, height)
+		self._main_window.center_on_screen()
+		screen = self._main_window.screen() or QApplication.primaryScreen()
+		available = screen.availableGeometry()
+		size = self._main_window.size()
+		return WindowSize(
+			size.width(), size.height(),
+			available.width(), available.height(),
+		)
 
 	@run_in_main_thread
 	def get_dialog(self):

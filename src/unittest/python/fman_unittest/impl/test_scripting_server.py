@@ -9,7 +9,7 @@ from PyQt5.QtCore import QPoint
 
 from fman.impl.scripting.actions import InvalidPane, ScriptingActions, UnknownCommand
 from fman.impl.scripting.automation import (
-	AutomationActions, UnknownFile, UnsafeDrag,
+	AutomationActions, UnknownFile, UnsafeDrag, WindowSize,
 )
 from fman.impl.scripting.config import ScriptingApiConfig
 from fman.impl.scripting.server import ScriptingServer
@@ -116,6 +116,7 @@ class ScriptingServerTest(TestCase):
 		for method, path, payload in (
 			('GET', '/v1/files', None), ('GET', '/v1/screenshot', None),
 			('GET', '/v1/dialog', None), ('GET', '/v1/viewer', None),
+			('POST', '/v1/window', {'width': 1280, 'height': 768}),
 			('POST', '/v1/keys', {'keys': ['A']}),
 			('POST', '/v1/click', {'x': 1, 'y': 2}),
 			('POST', '/v1/drag', {
@@ -144,6 +145,8 @@ class ScriptingServerTest(TestCase):
 				'position': 12.5, 'duration': 30.0,
 			},
 		}
+		actions.resize_window.return_value = WindowSize(
+			1280, 768, 1920, 1080)
 		server = ScriptingServer(config, self.TOKEN, self.actions, actions)
 		server.start()
 		try:
@@ -163,6 +166,12 @@ class ScriptingServerTest(TestCase):
 					'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4,
 				},
 			))
+			self.assertEqual({
+				'width': 1280, 'height': 768,
+				'available_width': 1920, 'available_height': 1080,
+			}, self._request_at(base_url, 'POST', '/v1/window', {
+				'width': 1280, 'height': 768,
+			}))
 			self.assertEqual((200, 'image/png', b'png-data'), self._binary_at(
 				base_url, '/v1/screenshot'))
 			self.assertEqual({
@@ -177,6 +186,7 @@ class ScriptingServerTest(TestCase):
 			actions.drag_at.assert_called_once_with(QPoint(1, 2), QPoint(3, 4))
 			actions.get_dialog.assert_called_once_with()
 			actions.get_viewer.assert_called_once_with(1)
+			actions.resize_window.assert_called_once_with(1280, 768)
 		finally:
 			server.stop()
 
@@ -199,6 +209,14 @@ class ScriptingServerTest(TestCase):
 				base_url, 'POST', '/v1/drag', {
 					'x': 1, 'y': 2, 'to_x': True, 'to_y': 4,
 				}))
+			for payload in (
+				{}, {'width': -1, 'height': 768},
+				{'width': '1280', 'height': 768},
+				{'width': True, 'height': 768},
+			):
+				with self.subTest(payload=payload):
+					self.assertEqual(400, self._request_error_at(
+						base_url, 'POST', '/v1/window', payload))
 			actions.drag_at.side_effect = UnsafeDrag(
 				'Drags may not start on a file list.')
 			self.assertEqual(400, self._request_error_at(
@@ -213,6 +231,7 @@ class ScriptingServerTest(TestCase):
 				base_url, 'GET', '/v1/viewer?pane=9'))
 			self.assertEqual(401, self._request_error_at(
 				base_url, 'GET', '/v1/files', token=None))
+			actions.resize_window.assert_not_called()
 		finally:
 			server.stop()
 

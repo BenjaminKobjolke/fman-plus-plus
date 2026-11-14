@@ -27,16 +27,20 @@ class FmanUiLaunchTest(TestCase):
 			patch.dict(os.environ, {'TEMP': temp}),
 			patch.object(fman_ui, '_reserve_port', return_value=45678),
 			patch.object(fman_ui, '_root', return_value=Path(temp) / 'fman-ui'),
-			patch.object(fman_ui, '_wait_for_state'),
+			patch.object(fman_ui, '_wait_for_state', return_value={'ok': True}),
 			patch.object(fman_ui, 'process_start_time', return_value=10.5),
 			patch.object(fman_ui, 'fman_process_identity',
 				return_value=(456, 20)),
 			patch.object(fman_ui, 'reap_stale'),
 			patch.object(fman_ui.subprocess, 'Popen'),
 			patch.object(fman_ui.subprocess, 'run'),
+			patch.object(fman_ui, '_api', return_value={
+				'width': 1280, 'height': 768,
+				'available_width': 1920, 'available_height': 1080,
+			}),
 		)
 		with patches[0], patches[1], patches[2], patches[3], patches[4], \
-			patches[5], patches[6], patches[7] as popen, patches[8]:
+			patches[5], patches[6], patches[7] as popen, patches[8], patches[9]:
 			popen.return_value.pid = 123
 			session = fman_ui._launch(SimpleNamespace(
 				left=left, right=None, large=large, deep=deep,
@@ -47,13 +51,17 @@ class FmanUiLaunchTest(TestCase):
 	def test_launch_creates_isolated_profile_and_fixture_layout(self):
 		with TemporaryDirectory() as temp, patch.dict(os.environ, {'TEMP': temp}):
 			with patch.object(fman_ui, '_reserve_port', return_value=45678), \
-				patch.object(fman_ui, '_wait_for_state'), \
+				patch.object(fman_ui, '_wait_for_state', return_value={'ok': True}), \
 				patch.object(fman_ui, 'process_start_time', return_value=10.5), \
 				patch.object(fman_ui, 'fman_process_identity',
 					return_value=(456, 20)), \
 				patch.object(fman_ui, 'reap_stale') as reap_stale, \
 				patch.object(fman_ui.subprocess, 'Popen') as popen, \
-				patch.object(fman_ui.subprocess, 'run'):
+				patch.object(fman_ui.subprocess, 'run'), \
+				patch.object(fman_ui, '_api', return_value={
+					'width': 1280, 'height': 768,
+					'available_width': 1920, 'available_height': 1080,
+				}):
 				popen.return_value.pid = 123
 				session = fman_ui._launch(SimpleNamespace(
 					left=None, right=None, large=0, deep=0, core_settings=None))
@@ -132,6 +140,31 @@ class FmanUiLaunchTest(TestCase):
 				wraps=fman_ui.detached_popen) as detached:
 			self._launch(temp)
 		self.assertEqual(2, detached.call_count)
+
+	def test_start_fman_resizes_after_state_is_reachable(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'session'
+			root.mkdir()
+			session = {
+				'profile': str(root / 'profile'), 'left': str(root / 'left'),
+				'right': str(root / 'right'), 'port': 123,
+			}
+			state = {'ok': True}
+			with patch.object(fman_ui.subprocess, 'Popen') as popen, \
+				patch.object(fman_ui, 'process_start_time', return_value=3.0), \
+				patch.object(fman_ui, 'fman_process_identity', return_value=None), \
+				patch.object(fman_ui, '_wait_for_state', return_value=state), \
+				patch.object(fman_ui, '_api', return_value={
+					'width': 1280, 'height': 768,
+					'available_width': 1920, 'available_height': 1080,
+				}) as api:
+				popen.return_value.pid = 21
+				result = fman_ui._start_fman(session, root)
+		self.assertEqual((1280, 768), (
+			result['window']['width'], result['window']['height']))
+		api.assert_called_once_with(session, 'POST', '/v1/window', {
+			'width': 1280, 'height': 768,
+		})
 
 	def test_invalid_launch_options_fail_before_session_directory_is_created(self):
 		with TemporaryDirectory() as temp, patch.dict(os.environ, {'TEMP': temp}):

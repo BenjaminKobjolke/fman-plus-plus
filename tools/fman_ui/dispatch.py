@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 
 from guards import guard_input
 from session_reaper import SESSION_FILE
+from window_size import capture_screenshot, png_size
 
 
 def dispatch(args, session, api, settle):
@@ -82,7 +83,11 @@ def dispatch(args, session, api, settle):
 		settle(args.settle)
 		return result
 	if args.action == 'screenshot':
-		data = api(session, 'GET', '/v1/screenshot')
+		data = capture_screenshot(session, api)
 		Path(args.png_path).write_bytes(data)
-		return {'path': str(Path(args.png_path).resolve())}
+		width, height = png_size(data)
+		return {
+			'path': str(Path(args.png_path).resolve()),
+			'width': width, 'height': height,
+		}
 	raise RuntimeError('Unknown command.')

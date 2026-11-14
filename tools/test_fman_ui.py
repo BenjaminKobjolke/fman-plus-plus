@@ -9,6 +9,7 @@ import test_fman_ui_launch
 import test_fman_ui_restart
 import test_fman_ui_build_info
 import test_fman_ui_guards
+import test_fman_ui_window_size
 import test_fman_ui_process_launch
 import test_fman_ui_recycle_cleanup
 import test_fman_ui_driver
@@ -34,6 +35,8 @@ def load_tests(loader, tests, pattern):
 		test_fman_ui_guards.GuardsTest))
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_process_launch.ProcessLaunchTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_window_size.WindowSizeTest))
 	return tests
 
 

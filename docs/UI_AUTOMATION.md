@@ -19,6 +19,11 @@ The generated left fixture also includes `video.mp4`, copied from the committed
 `--left` and `--right` folders are left untouched. `launch` includes a `build`
 object in its JSON result and saved session with the checkout's `version`,
 short `commit`, `dirty` status, `checkout_path`, and `python` executable.
+After each `launch` and `restart`, the private driver window is resized to at
+least 1280×768. Their JSON results include a `window` object with the actual
+window size and screen usable area. If the display cannot fit the minimum, the
+object includes `window_warning`; launch and restart still succeed so other
+driver commands remain usable. The user's normal fman window is not changed.
 They also include an `ages` folder with `age_0d_fresh.txt` (0.1 days old),
 `age_2d.txt`, `age_10d.txt`, `age_45d.txt`, `age_200d.txt`,
 `age_400d_old.txt`, and the Windows-hidden `age_10d_hidden.txt`.
@@ -173,6 +178,14 @@ reports whether fman exited, along with the session id and the tail of its log.
 
 Every command prints one JSON result. API failures print `{"error": "…"}` and
 exit with a nonzero code.
+
+Before saving a screenshot, the driver reads the PNG's actual dimensions. If
+either dimension is below 1280×768, it resizes the window and captures once
+more. A second undersized image fails without writing the file, with a message
+such as `Screenshot is 1000x700, below the 1280x768 minimum; the usable screen
+area is 1000x700.` Successful screenshot results include `width` and `height`.
+The private automation API exposes the resize operation as `POST /v1/window`;
+it is unavailable unless automation is enabled for that isolated profile.
 
 ```bat
 tools\fman_ui.bat launch

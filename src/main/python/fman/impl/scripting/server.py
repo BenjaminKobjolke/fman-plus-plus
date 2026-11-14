@@ -1,6 +1,7 @@
 """Serve the authenticated local HTTP interface for scripting fman."""
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from dataclasses import asdict
 import hmac
 import json
 import logging
@@ -22,6 +23,7 @@ from fman.impl.scripting.config import (
 	SCREENSHOT_PATH,
 	STATE_PATH,
 	VIEWER_PATH,
+	WINDOW_PATH,
 )
 from fman.impl.scripting.actions import InvalidPane, UnknownCommand
 from fman.impl.scripting.automation import UnknownFile, UnsafeDrag
@@ -128,7 +130,7 @@ class ScriptingServer:
 				if body is None:
 					return
 				if urlsplit(self.path).path not in (
-					COMMAND_PATH, KEYS_PATH, CLICK_PATH, DRAG_PATH,
+					COMMAND_PATH, KEYS_PATH, CLICK_PATH, DRAG_PATH, WINDOW_PATH,
 				):
 					self._send_error(404, 'Unknown path.')
 					return
@@ -141,6 +143,19 @@ class ScriptingServer:
 					self._send_error(400, 'Request body must be a JSON object.')
 					return
 				path = urlsplit(self.path).path
+				if path == WINDOW_PATH:
+					if not self._automation_enabled():
+						return
+					width, height = payload.get('width'), payload.get('height')
+					if any(not isinstance(value, int) or isinstance(value, bool)
+						for value in (width, height)) or width <= 0 or height <= 0:
+						self._send_error(
+							400, 'width and height must be positive integers.')
+						return
+					window_size = server._automation_actions.resize_window(
+						width, height)
+					self._send_json(200, asdict(window_size))
+					return
 				if path in (KEYS_PATH, CLICK_PATH, DRAG_PATH):
 					if not self._automation_enabled():
 						return

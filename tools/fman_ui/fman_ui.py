@@ -27,6 +27,7 @@ from session_reaper import (
 	SESSION_FILE, close_session, fman_process_identity, kill_process,
 	process_start_time, reap_stale,
 )
+from window_size import ensure_window_size
 
 
 def _root():
@@ -116,7 +117,13 @@ def _start_fman(session, session_root):
 		session['fman_pid'], session['fman_start_time'] = identity
 	(Path(session_root) / SESSION_FILE).write_text(
 		json.dumps(session, indent=2), encoding='utf-8')
-	return _wait_for_state(session, process, log_path)
+	state = _wait_for_state(session, process, log_path)
+	window = ensure_window_size(session, _api)
+	state['window'] = window
+	session['window'] = window
+	Path(session_root).joinpath(SESSION_FILE).write_text(
+		json.dumps(session, indent=2), encoding='utf-8')
+	return state
 
 
 def _launch(args):
