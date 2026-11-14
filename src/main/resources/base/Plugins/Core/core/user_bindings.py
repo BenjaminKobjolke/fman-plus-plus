@@ -7,7 +7,8 @@ save_json writes it differentially (fman/impl/plugins/config.py), which can only
 append to the front of the user's file - everything after it must still match
 the shipped files verbatim. Removing a binding is impossible that way. Writing
 the user file directly handles add, change and remove with one mechanism, and is
-the same code for the viewer bindings, which have no shipped file at all.
+the same code for the viewer bindings (Core now ships a small viewer bindings
+file).
 
 Reading stays on fman.load_json, so what the editor shows is the merged,
 effective view (shipped + platform + user) fman itself dispatches from.

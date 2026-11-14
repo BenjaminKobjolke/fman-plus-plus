@@ -141,8 +141,8 @@ class ViewerNavigator:
 
 	def actions(self):
 		# The ViewerAction tuples shared by all three viewers'
-		# _get_actions(). Hints are blank because these ship no default key;
-		# the palette fills them from the user's viewer bindings file.
+		# _get_actions(). Hints are blank so the palette fills them from the
+		# merged viewer bindings; Core ships Ctrl+J/Ctrl+K for next/previous.
 		actions = [
 			('Next file', self.next_file, '', 'viewer_next_file'),
 			(

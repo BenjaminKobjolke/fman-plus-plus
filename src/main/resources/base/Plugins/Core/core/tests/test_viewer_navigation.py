@@ -3,6 +3,9 @@ from core.viewer_navigation import (
 	accepts, advance, get_same_type_only, open_viewer_palette, toggle_same_type_only,
 	ViewerAction, ViewerNavigator,
 )
+from core.key_bindings import key_hint
+import json
+import os
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -14,6 +17,19 @@ def _fake_category(url):
 	if url.endswith('.txt'):
 		return 'text'
 	return None
+
+class ShippedViewerKeyBindingsTest(TestCase):
+	def test_base_bindings_include_navigation_shortcuts(self):
+		path = os.path.join(
+			os.path.dirname(__file__), '..', '..', 'Viewer Key Bindings.json'
+		)
+		with open(os.path.normpath(path), encoding='utf-8') as bindings_file:
+			bindings = json.load(bindings_file)
+		with patch('core.key_bindings.PLATFORM', 'Windows'):
+			self.assertEqual('Ctrl+J', key_hint(bindings, 'viewer_next_file'))
+			self.assertEqual(
+				'Ctrl+K', key_hint(bindings, 'viewer_previous_file')
+			)
 
 class AdvanceTest(TestCase):
 	def setUp(self):

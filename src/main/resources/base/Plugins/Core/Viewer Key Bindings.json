@@ -1,0 +1,4 @@
+[
+	{ "keys": ["Ctrl+J"], "command": "viewer_next_file" },
+	{ "keys": ["Ctrl+K"], "command": "viewer_previous_file" }
+]
