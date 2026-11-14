@@ -24,6 +24,8 @@ def dispatch(args, session, api, settle):
 		return api(session, 'GET', '/v1/files?pane=%d' % args.pane)
 	if args.action == 'dialog':
 		return api(session, 'GET', '/v1/dialog')
+	if args.action == 'links':
+		return api(session, 'GET', '/v1/links')
 	if args.action == 'viewer':
 		return api(session, 'GET', '/v1/viewer?pane=%d' % args.pane)
 	if args.action == 'command':

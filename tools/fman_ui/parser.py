@@ -17,7 +17,10 @@ def parser():
 	launch.add_argument('--core-settings', default=None,
 		help=("JSON object written to the profile's Core Settings.json "
 			"before fman starts"))
-	for name in ('state', 'commands', 'close', 'dialog', 'restart'):
+	launch.add_argument('--previous-version',
+		help=("saved fman version written to the profile so startup "
+			"shows the update message"))
+	for name in ('state', 'commands', 'close', 'dialog', 'restart', 'links'):
 		commands.add_parser(name)
 	viewer = commands.add_parser('viewer')
 	viewer.add_argument('--pane', type=int, default=0)

@@ -130,6 +130,9 @@ def _launch(args):
 	validate_large_count(args.large)
 	validate_deep_count(args.deep)
 	core_settings = parse_core_settings(args.core_settings)
+	previous_version = getattr(args, 'previous_version', None)
+	if previous_version is not None and not previous_version.strip():
+		raise ValueError('previous version must not be empty.')
 	now = time.time()
 	root = _root()
 	root.mkdir(parents=True, exist_ok=True)
@@ -162,9 +165,11 @@ def _launch(args):
 	settings_path.write_text(json.dumps(settings, indent=2), encoding='utf-8')
 	# A non-empty session file suppresses first-run onboarding and starts with
 	# two deterministic panes, one for each supplied or generated fixture.
-	(local / 'Session.json').write_text(json.dumps({
-		'panes': [{}, {}],
-	}, indent=2), encoding='utf-8')
+	session_settings = {'panes': [{}, {}]}
+	if previous_version is not None:
+		session_settings['fman_version'] = previous_version
+	(local / 'Session.json').write_text(
+		json.dumps(session_settings, indent=2), encoding='utf-8')
 	token_path = local / 'ScriptingApiToken.txt'
 	token_path.write_text(uuid.uuid4().hex, encoding='utf-8')
 	write_core_settings(profile, core_settings)
@@ -180,7 +185,7 @@ def _launch(args):
 	if deep is not None:
 		session['deep'] = str(deep)
 	try:
-		state = _start_fman(session, session_root)
+		_start_fman(session, session_root)
 		(session_root / SESSION_FILE).write_text(
 			json.dumps(session, indent=2), encoding='utf-8')
 	except Exception:
