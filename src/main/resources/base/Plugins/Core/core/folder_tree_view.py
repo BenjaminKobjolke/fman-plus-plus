@@ -171,6 +171,7 @@ class FolderTreeView(DragAndDrop, QTreeView):
 			lambda editor: set_selection(editor, start, end)
 			)
 		self.setCurrentIndex(item.index())
+		self.scrollTo(item.index())
 		self.edit(item.index())
 	def _reveal_current(self):
 		if self._reveal_url and \

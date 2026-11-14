@@ -269,6 +269,32 @@ class FolderTreeViewTest(TestCase):
 		self.assertEqual('fol', QApplication.focusWidget().selectedText())
 		view.close()
 
+	def test_edit_name_scrolls_the_row_into_view(self):
+		view = FolderTreeView(
+			True, FolderTreeActions(
+				Mock(), Mock(), Mock(), Mock(), Mock(), renamed=Mock()
+			), False, _icon_provider()
+		)
+		root = view._model.invisibleRootItem()
+		for i in range(200):
+			view._model.add_folder(root, 'file:///f%d' % i)
+		view.resize(200, 100)
+		view.show()
+		QApplication.processEvents()
+
+		item = view._find_item('file:///f199')
+		view.setCurrentIndex(item.index())
+		view.scrollTo(root.child(0).index())
+		QApplication.processEvents()
+		view.edit_name('file:///f199')
+		QApplication.processEvents()
+
+		self.assertTrue(
+			view.viewport().rect().intersects(view.visualRect(item.index()))
+		)
+		self.assertEqual(view.EditingState, view.state())
+		view.close()
+
 	def test_edit_name_commit_reports_only_changed_nonempty_names(self):
 		renamed = Mock()
 		view = FolderTreeView(
