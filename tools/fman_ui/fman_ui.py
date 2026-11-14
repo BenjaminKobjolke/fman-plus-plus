@@ -27,7 +27,7 @@ from session_reaper import (
 	SESSION_FILE, close_session, fman_process_identity, kill_process,
 	process_start_time, reap_stale,
 )
-from window_size import ensure_window_size
+WINDOW_SIZE = {'width': 1280, 'height': 800}
 
 
 def _root():
@@ -118,7 +118,7 @@ def _start_fman(session, session_root):
 	(Path(session_root) / SESSION_FILE).write_text(
 		json.dumps(session, indent=2), encoding='utf-8')
 	state = _wait_for_state(session, process, log_path)
-	window = ensure_window_size(session, _api)
+	window = _api(session, 'POST', '/v1/window', WINDOW_SIZE)
 	state['window'] = window
 	session['window'] = window
 	Path(session_root).joinpath(SESSION_FILE).write_text(
@@ -152,7 +152,9 @@ def _launch(args):
 	local = profile / 'Local'
 	local.mkdir(parents=True, exist_ok=True)
 	port = _reserve_port()
-	settings = {'single_instance': False, 'scripting_api': {
+	settings = {'single_instance': False,
+		# Pre-answer ERROR_REPORTS_SETTING so its consent box cannot swallow keys.
+		'error_reports': False, 'scripting_api': {
 		'enabled': True, 'automation': True, 'port': port,
 		'command_access': 'all', 'allowed_hosts': [],
 	}}
@@ -178,7 +180,9 @@ def _launch(args):
 	if deep is not None:
 		session['deep'] = str(deep)
 	try:
-		_start_fman(session, session_root)
+		state = _start_fman(session, session_root)
+		(session_root / SESSION_FILE).write_text(
+			json.dumps(session, indent=2), encoding='utf-8')
 	except Exception:
 		shutil.rmtree(session_root, ignore_errors=True)
 		raise

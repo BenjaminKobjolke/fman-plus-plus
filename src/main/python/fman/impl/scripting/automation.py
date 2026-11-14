@@ -9,8 +9,12 @@ from PyQt5.QtWidgets import (
 	QMessageBox, QProgressDialog,
 )
 
+from fman.impl.quicksearch import Quicksearch
 from fman.impl.prompt_popup import Prompt
 from fman.impl.scripting.actions import get_pane
+from fman.impl.scripting.dialog_details import (
+	prompt_font_sizes, quicksearch_details, rename_editor_details,
+)
 from fman.impl.util.qt.key_events import post_chord, post_text
 from fman.impl.util.qt.thread import run_in_main_thread
 
@@ -145,7 +149,7 @@ class AutomationActions:
 			dialog = next((widget for widget in QApplication.topLevelWidgets()
 				if isinstance(widget, QProgressDialog) and widget.isVisible()), None)
 		if dialog is None:
-			return None
+			return rename_editor_details(self._main_window)
 		if isinstance(dialog, QProgressDialog):
 			return {
 				'type': type(dialog).__name__,
@@ -166,7 +170,10 @@ class AutomationActions:
 				'buttons': [button.text() for button in dialog.findChild(
 					QDialogButtonBox, 'buttons'
 				).buttons()],
+				'font_sizes': prompt_font_sizes(dialog),
 			}
+		if isinstance(dialog, Quicksearch):
+			return quicksearch_details(dialog)
 		if not isinstance(dialog, QMessageBox):
 			return {
 				'type': type(dialog).__name__,

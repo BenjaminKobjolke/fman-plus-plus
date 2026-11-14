@@ -5,13 +5,14 @@ from unittest.mock import patch
 from types import SimpleNamespace
 
 from PyQt5.QtCore import QEvent, QPoint
-from PyQt5.QtGui import QColor, QImage, QStandardItemModel
+from PyQt5.QtGui import QColor, QImage, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (
-	QApplication, QDialog, QDialogButtonBox, QHeaderView, QMessageBox,
-	QProgressDialog,
+	QApplication, QDialog, QDialogButtonBox, QHeaderView, QLabel, QLineEdit,
+	QMessageBox, QProgressDialog,
 	QTableView, QWidget,
 )
 
+from fman.impl.quicksearch import Quicksearch
 from fman.impl.prompt_popup import Prompt
 from fman.impl.scripting.automation import (
 	AutomationActions, UnknownFile, UnsafeDrag,
@@ -63,6 +64,13 @@ class ScriptingAutomationTest(TestCase):
 		self.assertGreater(result.available_width, 0)
 		self.assertGreater(result.available_height, 0)
 
+	def test_resize_window_resizes_to_requested_size(self):
+		window = _ResizableWindow()
+		window.show()
+		self.addCleanup(window.close)
+		AutomationActions(window, None).resize_window(300, 200)
+		self.assertEqual((300, 200), (window.width(), window.height()))
+
 	def test_get_dialog_returns_none_without_an_active_modal_widget(self):
 		actions = AutomationActions(_Window(), None)
 		with patch('fman.impl.scripting.automation.QApplication.activeModalWidget',
@@ -82,22 +90,124 @@ class ScriptingAutomationTest(TestCase):
 				'buttons': [],
 			}, actions.get_dialog())
 
+	def test_get_dialog_reports_quicksearch_text_and_font_sizes(self):
+		parent = QWidget()
+		parent.resize(900, 700)
+		self.addCleanup(parent.close)
+		previous_style_sheet = self.app.styleSheet()
+		self.addCleanup(self.app.setStyleSheet, previous_style_sheet)
+		self.app.setStyleSheet(
+			'* { font-size: 20pt; } Quicksearch QLineEdit { font-size: 16pt; }')
+		dialog = Quicksearch(
+			parent, _StubApp(), {}, lambda _query: [], query='search text',
+			title='Command Palette', alt_accept=True)
+		self.addCleanup(dialog.close)
+		dialog.show()
+		self.app.processEvents()
+		footer = dialog.findChild(QLabel, 'footer')
+		actions = AutomationActions(_WindowWithDialog(dialog), None)
+		with patch(
+			'fman.impl.scripting.automation.QApplication.activeModalWidget',
+			return_value=None,
+		):
+			result = actions.get_dialog()
+		self.assertEqual('Quicksearch', result['type'])
+		self.assertEqual('Command Palette', result['title'])
+		self.assertEqual('search text', result['value'])
+		self.assertEqual(footer.text(), result['text'])
+		self.assertEqual(
+			{'title': 18.0, 'value': 16.0, 'footer': 14.0},
+			result['font_sizes'])
+
+	def test_get_dialog_reports_no_font_size_for_hidden_quicksearch_header(self):
+		parent = QWidget()
+		self.addCleanup(parent.close)
+		dialog = Quicksearch(
+			parent, _StubApp(), {}, lambda _query: [], query='search text',
+			title='')
+		self.addCleanup(dialog.close)
+		dialog.show()
+		self.app.processEvents()
+		actions = AutomationActions(_WindowWithDialog(dialog), None)
+		with patch(
+			'fman.impl.scripting.automation.QApplication.activeModalWidget',
+			return_value=None,
+		):
+			result = actions.get_dialog()
+		self.assertIsNone(result['font_sizes']['title'])
+
 	def test_get_dialog_returns_prompt_message_value_and_buttons(self):
 		parent = QWidget()
 		self.addCleanup(parent.close)
 		prompt = _make_prompt(parent, 'Copy "folder" to\nC:/target', 'folder')
 		self.addCleanup(prompt.close)
 		buttons = prompt.findChild(QDialogButtonBox, 'buttons')
+		header = prompt.findChild(QLabel, 'header')
+		value = prompt.focusProxy()
+		detail = prompt.findChild(QLabel, 'detail')
+		for widget in (header, value, detail):
+			widget.ensurePolished()
 		actions = AutomationActions(_WindowWithDialog(prompt), None)
 		with patch('fman.impl.scripting.automation.QApplication.activeModalWidget',
 				return_value=None):
 			self.assertEqual({
 				'type': 'Prompt',
-				'title': prompt.windowTitle(),
+			'title': 'Quicksearch',
 				'text': 'Copy "folder" to\nC:/target',
 				'value': 'folder',
 				'buttons': [button.text() for button in buttons.buttons()],
+				'font_sizes': {
+					'title': header.font().pointSizeF(),
+					'value': value.font().pointSizeF(),
+					'detail': detail.font().pointSizeF(),
+				},
 			}, actions.get_dialog())
+
+	def test_get_dialog_reports_inline_rename_editor(self):
+		window = QWidget()
+		view = QTableView(window)
+		model = QStandardItemModel(1, 1, view)
+		model.setItem(0, 0, QStandardItem('original.txt'))
+		view.setModel(model)
+		window.show()
+		view.show()
+		self.addCleanup(window.close)
+		index = model.index(0, 0)
+		view.setCurrentIndex(index)
+		view.edit(index)
+		self.app.processEvents()
+		editors = [editor for editor in view.viewport().findChildren(QLineEdit)
+			if editor.isVisible()]
+		self.assertTrue(editors)
+		editors[0].setText('renamed')
+		actions = AutomationActions(window, None)
+		with patch(
+			'fman.impl.scripting.automation.QApplication.activeModalWidget',
+			return_value=None,
+		), patch.object(
+			window, 'get_open_dialog', return_value=None, create=True,
+		):
+			result = actions.get_dialog()
+		self.assertEqual({
+			'type': 'RenameEditor', 'title': '', 'text': 'original.txt',
+			'value': 'renamed', 'buttons': [],
+			'font_sizes': {'value': editors[0].font().pointSizeF()},
+		}, result)
+
+	def test_get_dialog_returns_none_without_inline_rename_editor(self):
+		window = QWidget()
+		view = QTableView(window)
+		view.setModel(QStandardItemModel(1, 1, view))
+		window.show()
+		self.addCleanup(window.close)
+		actions = AutomationActions(window, None)
+		with patch(
+			'fman.impl.scripting.automation.QApplication.activeModalWidget',
+			return_value=None,
+		), patch.object(
+			window, 'get_open_dialog', return_value=None, create=True,
+		):
+			self.assertIsNone(actions.get_dialog())
 
 	def test_get_dialog_does_not_expose_password_prompt_value(self):
 		parent = QWidget()
@@ -109,6 +219,7 @@ class ScriptingAutomationTest(TestCase):
 				return_value=None):
 			result = actions.get_dialog()
 		self.assertIsNone(result['value'])
+		self.assertIsNone(result['font_sizes']['detail'])
 		self.assertNotIn('secret', str(result))
 
 	def test_get_dialog_returns_message_box_details(self):
@@ -367,6 +478,9 @@ class _Window:
 	@staticmethod
 	def get_open_dialog():
 		return None
+	@staticmethod
+	def findChildren(_widget_type):
+		return []
 
 
 class _WindowWithDialog(_Window):

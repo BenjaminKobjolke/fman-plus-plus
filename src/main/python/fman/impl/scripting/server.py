@@ -1,7 +1,6 @@
 """Serve the authenticated local HTTP interface for scripting fman."""
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from dataclasses import asdict
 import hmac
 import json
 import logging
@@ -32,6 +31,8 @@ from fman.impl.util.qt.key_events import parse_chord
 
 _LOG = logging.getLogger(__name__)
 _MAX_BODY_SIZE = 1024 * 1024
+_MIN_WINDOW_DIMENSION = 200
+_MAX_WINDOW_DIMENSION = 10000
 
 
 def _pane_index(query):
@@ -147,14 +148,17 @@ class ScriptingServer:
 					if not self._automation_enabled():
 						return
 					width, height = payload.get('width'), payload.get('height')
-					if any(not isinstance(value, int) or isinstance(value, bool)
-						for value in (width, height)) or width <= 0 or height <= 0:
+					if any(
+						not isinstance(value, int) or isinstance(value, bool)
+						or not _MIN_WINDOW_DIMENSION <= value <= _MAX_WINDOW_DIMENSION
+						for value in (width, height)
+					):
 						self._send_error(
-							400, 'width and height must be positive integers.')
+							400,
+							'width and height must be integers from 200 to 10000.')
 						return
-					window_size = server._automation_actions.resize_window(
-						width, height)
-					self._send_json(200, asdict(window_size))
+					server._automation_actions.resize_window(width, height)
+					self._send_json(200, {'ok': True})
 					return
 				if path in (KEYS_PATH, CLICK_PATH, DRAG_PATH):
 					if not self._automation_enabled():

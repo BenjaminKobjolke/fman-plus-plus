@@ -166,12 +166,10 @@ class ScriptingServerTest(TestCase):
 					'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4,
 				},
 			))
-			self.assertEqual({
-				'width': 1280, 'height': 768,
-				'available_width': 1920, 'available_height': 1080,
-			}, self._request_at(base_url, 'POST', '/v1/window', {
-				'width': 1280, 'height': 768,
-			}))
+			self.assertEqual({'ok': True}, self._request_at(
+				base_url, 'POST', '/v1/window', {
+					'width': 1280, 'height': 800,
+				}))
 			self.assertEqual((200, 'image/png', b'png-data'), self._binary_at(
 				base_url, '/v1/screenshot'))
 			self.assertEqual({
@@ -186,7 +184,7 @@ class ScriptingServerTest(TestCase):
 			actions.drag_at.assert_called_once_with(QPoint(1, 2), QPoint(3, 4))
 			actions.get_dialog.assert_called_once_with()
 			actions.get_viewer.assert_called_once_with(1)
-			actions.resize_window.assert_called_once_with(1280, 768)
+			actions.resize_window.assert_called_once_with(1280, 800)
 		finally:
 			server.stop()
 
@@ -210,9 +208,9 @@ class ScriptingServerTest(TestCase):
 					'x': 1, 'y': 2, 'to_x': True, 'to_y': 4,
 				}))
 			for payload in (
-				{}, {'width': -1, 'height': 768},
-				{'width': '1280', 'height': 768},
-				{'width': True, 'height': 768},
+				{}, {'width': 199, 'height': 768}, {'width': 10001, 'height': 768},
+				{'width': 1280, 'height': 199}, {'width': 1280, 'height': 10001},
+				{'width': '1280', 'height': 768}, {'width': True, 'height': 768},
 			):
 				with self.subTest(payload=payload):
 					self.assertEqual(400, self._request_error_at(

@@ -8,7 +8,7 @@ import tempfile
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'fman_ui'))
 import fman_ui
@@ -35,17 +35,19 @@ class FmanUiLaunchTest(TestCase):
 			patch.object(fman_ui.subprocess, 'Popen'),
 			patch.object(fman_ui.subprocess, 'run'),
 			patch.object(fman_ui, '_api', return_value={
-				'width': 1280, 'height': 768,
+				'width': 1280, 'height': 800,
 				'available_width': 1920, 'available_height': 1080,
 			}),
 		)
 		with patches[0], patches[1], patches[2], patches[3], patches[4], \
-			patches[5], patches[6], patches[7] as popen, patches[8], patches[9]:
+			patches[5], patches[6], patches[7] as popen, patches[8], \
+			patches[9] as api:
 			popen.return_value.pid = 123
 			session = fman_ui._launch(SimpleNamespace(
 				left=left, right=None, large=large, deep=deep,
 				core_settings=core_settings))
 			self.popen_calls = popen.call_args_list
+			self.api_calls = api.call_args_list
 			return session
 
 	def test_launch_creates_isolated_profile_and_fixture_layout(self):
@@ -59,16 +61,20 @@ class FmanUiLaunchTest(TestCase):
 				patch.object(fman_ui.subprocess, 'Popen') as popen, \
 				patch.object(fman_ui.subprocess, 'run'), \
 				patch.object(fman_ui, '_api', return_value={
-					'width': 1280, 'height': 768,
+					'width': 1280, 'height': 800,
 					'available_width': 1920, 'available_height': 1080,
-				}):
+				}) as api:
 				popen.return_value.pid = 123
 				session = fman_ui._launch(SimpleNamespace(
 					left=None, right=None, large=0, deep=0, core_settings=None))
 				settings = json.loads(
 					(Path(session['profile']) / 'Local' / 'Settings.json').read_text())
+				self.assertFalse(settings['error_reports'])
 				self.assertTrue(settings['scripting_api']['automation'])
 				self.assertEqual(45678, settings['scripting_api']['port'])
+				self.assertEqual(
+					{'width': 1280, 'height': 800},
+					{key: session['window'][key] for key in ('width', 'height')})
 				session_settings = json.loads(
 					(Path(session['profile']) / 'Local' / 'Session.json').read_text())
 				self.assertEqual([{}, {}], session_settings['panes'])
@@ -106,6 +112,10 @@ class FmanUiLaunchTest(TestCase):
 					'session.json').read_text())
 				self.assertEqual(session['build'], session_data['build'])
 				self.assertEqual(123, session_data['pid'])
+				self.assertEqual([
+					call(session, 'POST', '/v1/window', {
+						'width': 1280, 'height': 800,
+					})], api.call_args_list)
 				self.assertEqual(10.5, session_data['start_time'])
 				self.assertEqual(456, session_data['fman_pid'])
 				self.assertEqual(20, session_data['fman_start_time'])
@@ -116,6 +126,10 @@ class FmanUiLaunchTest(TestCase):
 		with TemporaryDirectory() as temp:
 			session = self._launch(
 				temp, large=3, core_settings='{"file_age_style": "tint"}')
+			self.assertIn(
+				call(session, 'POST', '/v1/window', {'width': 1280, 'height': 800}),
+				self.api_calls)
+			self.assertEqual(1, len(self.api_calls))
 			self.assertEqual(3, len(list((Path(session['left']) / 'large').iterdir())))
 			self.assertFalse((Path(session['right']) / 'large').exists())
 			settings_path = (Path(session['profile']) / 'Plugins' / 'User' /
@@ -168,7 +182,7 @@ class FmanUiLaunchTest(TestCase):
 		self.assertEqual((1280, 768), (
 			result['window']['width'], result['window']['height']))
 		api.assert_called_once_with(session, 'POST', '/v1/window', {
-			'width': 1280, 'height': 768,
+			'width': 1280, 'height': 800,
 		})
 
 	def test_invalid_launch_options_fail_before_session_directory_is_created(self):

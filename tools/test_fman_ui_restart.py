@@ -108,21 +108,21 @@ class FmanUiRestartTest(TestCase):
 					fman_ui, 'fman_process_identity', return_value=(22, 4.0)), \
 				patch.object(fman_ui, '_wait_for_state', return_value={'ok': True}), \
 				patch.object(fman_ui, '_api', return_value={
-					'width': 1280, 'height': 768,
+					'width': 1280, 'height': 800,
 					'available_width': 1920, 'available_height': 1080,
 				}) as api:
 				popen.return_value.pid = 21
 				state = fman_ui._start_fman(session, root)
 				api.assert_called_once_with(session, 'POST', '/v1/window', {
-					'width': 1280, 'height': 768,
+					'width': 1280, 'height': 800,
 				})
-			self.assertEqual((1280, 768), (
+			self.assertEqual((1280, 800), (
 				state['window']['width'], state['window']['height']))
 			written = json.loads((root / session_reaper.SESSION_FILE).read_text())
 			self.assertEqual(
 				(21, 3.0, 22, 4.0), (written['pid'], written['start_time'],
 				written['fman_pid'], written['fman_start_time']))
-			self.assertEqual((1280, 768), (
+			self.assertEqual((1280, 800), (
 				written['window']['width'], written['window']['height']))
 			self.assertEqual(
 				[session['left'], session['right']], popen.call_args.args[0][-2:])
