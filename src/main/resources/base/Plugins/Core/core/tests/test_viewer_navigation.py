@@ -261,6 +261,22 @@ class ViewerPaletteSuggestionsTest(TestCase):
 			keywords={'video_restart': ('volume',)}
 		)
 		self.assertEqual([], items)
+	def test_empty_hint_uses_the_viewer_binding(self):
+		items = self._suggest(
+			[('Next file', lambda: None, '', 'viewer_next_file')], 'next',
+			bindings=[{
+				'keys': ['Ctrl+J'], 'command': 'viewer_next_file'
+			}]
+		)
+		self.assertEqual('Ctrl+J', items[0].hint)
+	def test_existing_hint_is_preserved_over_the_viewer_binding(self):
+		items = self._suggest(
+			[('Next file', lambda: None, 'Alt+N', 'viewer_next_file')], 'next',
+			bindings=[{
+				'keys': ['Ctrl+J'], 'command': 'viewer_next_file'
+			}]
+		)
+		self.assertEqual('Alt+N', items[0].hint)
 
 	def test_a_renamed_entry_shows_its_new_name(self):
 		items = self._suggest(
@@ -275,7 +291,7 @@ class ViewerPaletteSuggestionsTest(TestCase):
 		)
 		self.assertEqual(['Silence'], [item.title for item in items])
 
-	def _suggest(self, actions, query, keywords=None, titles=None):
+	def _suggest(self, actions, query, keywords=None, titles=None, bindings=[]):
 		# open_viewer_palette hands its per-keystroke callback to
 		# show_quicksearch; grab it and call it directly.
 		captured = []
@@ -289,6 +305,9 @@ class ViewerPaletteSuggestionsTest(TestCase):
 		), patch(
 			'core.command_titles.get_setting',
 			side_effect=lambda _json, key, default: titles.get(key, default)
+		), patch(
+			'core.viewer_navigation.load_json', return_value=bindings,
+			create=True
 		):
 			open_viewer_palette(lambda: actions)
 			# Inside the with-block: suggest() looks keywords up when called.

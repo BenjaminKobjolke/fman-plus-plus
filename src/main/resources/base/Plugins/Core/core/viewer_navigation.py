@@ -20,7 +20,8 @@ they ride along here because this is already the collaborator every viewer holds
 from collections import namedtuple
 from core.command_keywords import get_keywords
 from core.command_titles import apply_custom_title
-from core.key_bindings import VIEWER_KEY_BINDINGS_FILE
+from core.key_bindings import VIEWER_KEY_BINDINGS_FILE, format_shortcut_hint, \
+	get_shortcuts_for_command
 from core.keyword_editor import edit_command_keywords
 from core.quicksearch_matchers import bucket_count, contains_chars, \
 	match_titles_or_keywords
@@ -30,7 +31,7 @@ from core.viewer_file_ops import after_delete_label, delete_current, \
 from core.viewer_pane_commands import pane_command_actions, pane_command_for, \
 	run_pane_command
 from core.viewer_status import viewer_status
-from fman import show_quicksearch, QuicksearchItem
+from fman import load_json, show_quicksearch, QuicksearchItem
 from fman.url import basename
 
 def _same_type_key(category):
@@ -141,8 +142,8 @@ class ViewerNavigator:
 
 	def actions(self):
 		# The ViewerAction tuples shared by all three viewers'
-		# _get_actions(). Hints are blank: these ship no default key - least
-		# of all the destructive one.
+		# _get_actions(). Hints are blank because these ship no default key;
+		# the palette fills them from the user's viewer bindings file.
 		actions = [
 			('Next file', self.next_file, '', 'viewer_next_file'),
 			(
@@ -216,8 +217,15 @@ def open_viewer_palette(get_actions):
 		# One list per rank the matcher helper can return, concatenated -
 		# same ranking as the global palette.
 		buckets = [[] for _ in range(bucket_count(_MATCHERS))]
+		key_bindings = load_json(VIEWER_KEY_BINDINGS_FILE, default=[])
 		for entry in get_actions():
 			entry = ViewerAction(*entry)
+			if entry.command_name and not entry.hint and not entry.bindings_file:
+				entry = entry._replace(hint=format_shortcut_hint(
+					get_shortcuts_for_command(
+						key_bindings, entry.command_name
+					)
+				))
 			# A renamed entry is displayed and searched under its new title,
 			# the old one living on as a keyword - see core/command_titles.
 			titles, keywords = apply_custom_title(
