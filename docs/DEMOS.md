@@ -311,6 +311,13 @@ composing stale inputs.
   check can judge settings that must survive a restart. Its stills are gitignored
   (`media/demos/listing/`). A change to the file list's look should add a
   `Screenshot` here.
+- **23 `listing-theme-colors`** — stills of a populated file list with file
+  coloring enabled in the starting theme, then Light, Solarized Light,
+  Windows 11 Light, High Contrast and Matrix. The launcher seeds `backup.zip`
+  and `setup.exe` alongside the example images and video so all four file-color
+  groups appear. Its stills are gitignored
+  (`media/demos/listing-theme-colors/`). A change to theme file colors should
+  be judged on these stills, including whether colors follow theme switches.
 - **17 `ftp-overwrite`** — records an FTP folder upload with an existing file,
   showing the progress window before the overwrite question, hidden while the
   question is open, and back after answering. It needs `FMAN_FTPClient` installed

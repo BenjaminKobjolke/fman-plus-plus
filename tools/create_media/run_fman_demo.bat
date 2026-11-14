@@ -61,6 +61,10 @@ if "%1"=="15" (
 	REM A copied pane_location_bars_visible=false would make the first toggle show them.
 	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; if (Test-Path -LiteralPath $p) { $s=Get-Content -Raw -LiteralPath $p | ConvertFrom-Json; $null=$s.PSObject.Properties.Remove('pane_location_bars_visible'); [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false)) }"
 )
+if "%1"=="23" (
+	REM Reset chrome defaults; demo 23 hides the bars to fit every file row.
+	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; if (Test-Path -LiteralPath $p) { $s=Get-Content -Raw -LiteralPath $p | ConvertFrom-Json; $null=$s.PSObject.Properties.Remove('status_bar_visible'); $null=$s.PSObject.Properties.Remove('pane_location_bars_visible'); [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false)) }"
+)
 if defined IS_TOUR (
 	REM The path line above each pane would put the scratch path on camera.
 	REM $false, not false: a bare false is stored as the STRING "false", and
@@ -219,6 +223,10 @@ if "%1"=="15" powershell -NoProfile -Command "$ages=@(0,2,10,45,200,900); $i=0; 
 if "%1"=="15" xcopy /q /y "%LEFT%\*" "%RIGHT%\" >nul
 REM The restart still's child window is found by this folder in its title.
 if "%1"=="15" mkdir "%LEFT%\after-restart" 2>nul
+
+REM Demo 23 needs one archive and one program to show every file-color group.
+if "%1"=="23" type nul > "%LEFT%\backup.zip"
+if "%1"=="23" type nul > "%LEFT%\setup.exe"
 
 REM The desktop is cleared by the recording tool itself, before it starts this
 REM launcher ("minimize_all" in its config, on by default): it enumerates the

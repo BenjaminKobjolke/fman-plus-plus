@@ -28,7 +28,7 @@ from automated_screenshot_connector import (
 from fman.impl.demo_scripts_dialogs import DIALOG_CLIPS
 from fman.impl.demo_scripts_features import FEATURE_CLIPS
 from fman.impl.demo_scripts_launch import LAUNCH_CLIPS
-from fman.impl.demo_scripts_listing import LISTING_CLIPS
+from fman.impl.demo_scripts_listing import LISTING_CLIPS, select_theme_steps
 from fman.impl.demo_scripts_tour import TOUR_CHAPTERS
 
 # Every recording starts opaque: a translucent window blends the desktop into
@@ -194,9 +194,7 @@ def build_themes_script(names):
 	]
 	for name in names:
 		steps += [
-			PressKey('Ctrl+Shift+P'), Pause(0.6),
-			Command('select theme'), Pause(1.2),
-			Command(name), Pause(THEME_HOLD_S),
+			*select_theme_steps(name, THEME_HOLD_S),
 			Screenshot(name),
 			# The tool saves a still from the next frame it *captures*, so
 			# the palette has to stay closed for a moment afterwards.

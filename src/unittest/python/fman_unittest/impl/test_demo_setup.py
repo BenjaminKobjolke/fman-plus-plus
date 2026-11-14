@@ -229,6 +229,79 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_listing_theme_colors_demo_takes_a_still_per_theme(self):
+		from automated_screenshot_connector.steps import CustomStep, flatten
+		from fman.impl.demo_scripts import build_themes_script
+		from fman.impl.demo_scripts_listing import FILE_COLOR_THEMES, LISTING_CLIPS
+
+		demo = LISTING_CLIPS[23]
+		actions = [
+			action.step if isinstance(action, CustomStep) else action
+			for _, action in flatten(demo.steps)
+		]
+		screenshot_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+		first_theme_still = next(
+			index for index, step in enumerate(demo.steps)
+			if step.__class__.__name__ == 'Screenshot'
+			and step.name.startswith('theme-colors-')
+			and step.name != 'theme-colors-start'
+		)
+		toggle_file_coloring = next(
+			index for index, step in enumerate(demo.steps)
+			if step.__class__.__name__ == 'Command'
+			and step.line == 'toggle file coloring'
+		)
+		toggle_status_bar = next(
+			index for index, step in enumerate(demo.steps)
+			if step.__class__.__name__ == 'Command'
+			and step.line == 'toggle status bar'
+		)
+		toggle_location_bars = next(
+			index for index, step in enumerate(demo.steps)
+			if step.__class__.__name__ == 'Command'
+			and step.line == 'toggle pane location bars'
+		)
+		themes_screenshots = [
+			step.name for step in build_themes_script(['A']).steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+
+		self.assertEqual(demo.name, 'listing-theme-colors')
+		self.assertEqual(
+			screenshot_names,
+			['theme-colors-start']
+			+ ['theme-colors-' + name for name in FILE_COLOR_THEMES],
+		)
+		self.assertLess(toggle_file_coloring, first_theme_still)
+		self.assertLess(toggle_status_bar, first_theme_still)
+		self.assertLess(toggle_location_bars, first_theme_still)
+		move_off_archive = next(
+			index for index, action in enumerate(actions)
+			if action.__class__.__name__ == 'SendKey' and action.chord == 'Down'
+		)
+		start_still = next(
+			index for index, action in enumerate(actions)
+			if action.__class__.__name__ == 'Screenshot'
+			and action.name == 'theme-colors-start'
+		)
+		self.assertLess(move_off_archive, start_still)
+		self.assertEqual(
+			sum(
+				action.__class__.__name__ == 'SendKey'
+				and action.chord in ('Up', 'Down')
+				for action in actions
+			),
+			1,
+		)
+		self.assertEqual(themes_screenshots, ['A'])
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_listing_demo_takes_file_age_and_location_bar_stills(self):
 		from automated_screenshot_connector.steps import CustomStep, flatten
 		from fman.impl.demo import ExpectChildWindow, LaunchFman, ScreenStill
