@@ -5,7 +5,10 @@ system Python. The Tickets Watcher needs a hung test to fail inside its command
 limit.
 """
 
+import atexit
 import faulthandler
+import os
+import sys
 import threading
 import time
 import unittest
@@ -56,7 +59,37 @@ class TimeoutTestRunner(unittest.TextTestRunner):
 
 
 def main(argv=None):
-	return unittest.main(module=None, argv=argv, testRunner=TimeoutTestRunner)
+	faulthandler.enable()
+	# Registered first so this runs after every other exit handler.
+	atexit.register(_skip_interpreter_teardown)
+	try:
+		return unittest.main(module=None, argv=argv, testRunner=TimeoutTestRunner)
+	except SystemExit as exit_request:
+		code = exit_request.code
+		if code is None:
+			_skip_interpreter_teardown.exit_code = 0
+		elif isinstance(code, int):
+			_skip_interpreter_teardown.exit_code = code
+		else:
+			_skip_interpreter_teardown.exit_code = 1
+		raise
+
+
+def _skip_interpreter_teardown():
+	# Destroying PyQt objects during interpreter teardown can crash in sip
+	# (see fman/main.py).
+	try:
+		for stream in (sys.stdout, sys.stderr):
+			if stream is not None:
+				try:
+					stream.flush()
+				except (OSError, ValueError):
+					pass
+	finally:
+		os._exit(_skip_interpreter_teardown.exit_code)
+
+
+_skip_interpreter_teardown.exit_code = 1
 
 
 if __name__ == "__main__":

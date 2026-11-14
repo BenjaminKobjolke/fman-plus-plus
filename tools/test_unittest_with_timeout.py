@@ -64,6 +64,26 @@ def check_unittest_with_timeout():
 		)
 		assert elapsed < 30, f"The sleeping test ran for {elapsed:.1f} seconds"
 
+	with tempfile.TemporaryDirectory(prefix="unittest-teardown-") as temporary:
+		tests_directory = Path(temporary)
+		(tests_directory / "test_teardown_sample.py").write_text(
+			"import os\n"
+			"import unittest\n\n"
+			"class TeardownCrash:\n"
+			"    def __del__(self, exit_process=os._exit):\n"
+			"        exit_process(3)\n\n"
+			"teardown_crash = TeardownCrash()\n\n"
+			"class TeardownTest(unittest.TestCase):\n"
+			"    def test_passes(self):\n"
+			"        self.assertTrue(True)\n",
+			encoding="utf-8",
+		)
+
+		result, _ = run_runner(tools_directory, tests_directory, "test_passes")
+		# Exit 3 means interpreter teardown ran.
+		assert result.returncode == 0, result.stdout + result.stderr
+		assert "OK" in result.stdout + result.stderr, result.stdout + result.stderr
+
 
 if __name__ == "__main__":
 	check_unittest_with_timeout()
