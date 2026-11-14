@@ -81,6 +81,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 		super().__init__()
 		self._main_window = None
 		self._demo_mode = False
+		self._demo_asks_consent = False
 	def run(self):
 		self.init_logging()
 		self._start_hidden = False
@@ -146,7 +147,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 			from fman.impl.demo import DemoPlayer
 			from fman.impl.demo_scripts import DEMO_OPACITY, demo_ids, \
 				get_script
-			from fman.impl.demo_scripts_launch import LISTENING_DEMO_IDS
+			from fman.impl.demo_scripts_launch import (
+				CONSENT_DEMO_IDS, LISTENING_DEMO_IDS,
+			)
 		except ImportError:
 			log.error(
 				'Demo mode needs the automated-screenshot-connector. Install '
@@ -167,6 +170,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 		# --automation-demo* flags and leave only the folder arguments.
 		sys.argv[1:] = leftover
 		self._demo_mode = True
+		self._demo_asks_consent = options.demo in CONSENT_DEMO_IDS
 		self._load_plugins()
 		if options.demo in LISTENING_DEMO_IDS:
 			# Demo 18 films forwarded launches into this process.
@@ -242,7 +246,9 @@ class DevelopmentApplicationContext(ApplicationContext):
 			from fman.impl.virtual_file_drop import install_drop_hook
 			install_drop_hook(int(self.main_window.winId()))
 		if self._demo_mode:
-			# No tutorial during a recording.
+			# Only the usage-consent demo films this question.
+			if self._demo_asks_consent:
+				self._ask_error_report_consent()
 			return
 		self.update_check_timer.start()
 		if self.session_manager.is_first_run:

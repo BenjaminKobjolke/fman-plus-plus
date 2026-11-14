@@ -462,6 +462,50 @@ class DemoSetupTest(unittest.TestCase):
 		)
 		self.assertIn(18, LISTENING_DEMO_IDS)
 
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
+	def test_usage_consent_demo_takes_question_and_toggle_stills(self):
+		from automated_screenshot_connector.steps import (
+			CustomStep, SendKey, SendScreenshot, flatten,
+		)
+		from fman.impl.demo_scripts_launch import (
+			CONSENT_DEMO_IDS, LAUNCH_CLIPS,
+		)
+
+		demo = LAUNCH_CLIPS[25]
+		actions = [
+			action.step if isinstance(action, CustomStep) else action
+			for _, action in flatten(demo.steps)
+		]
+		screenshot_names = [
+			action.name for action in actions
+			if isinstance(action, SendScreenshot)
+		]
+		question_index = next(
+			index for index, action in enumerate(actions)
+			if isinstance(action, SendScreenshot)
+			and action.name == 'usage-consent-question'
+		)
+		first_key_after_question = next(
+			action for action in actions[question_index + 1:]
+			if isinstance(action, SendKey)
+		)
+
+		self.assertEqual(CONSENT_DEMO_IDS, frozenset({25}))
+		self.assertEqual(demo.name, 'usage-consent')
+		self.assertEqual(
+			screenshot_names,
+			[
+				'usage-consent-question',
+				'usage-consent-answered',
+				'usage-statistics-palette',
+				'usage-statistics-toggled',
+			],
+		)
+		self.assertEqual(first_key_after_question.chord, 'Escape')
+
 
 if __name__ == '__main__':
 	unittest.main()

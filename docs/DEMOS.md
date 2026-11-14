@@ -323,6 +323,11 @@ composing stale inputs.
   and the seeded Ctrl+J binding visible next to *Next file*. Its stills are
   gitignored (`media/demos/viewer-palette/`). A change to the viewer palette
   should add a `TypeText` query plus a `Screenshot` still here.
+- **25 `usage-consent`** — clears the copied consent answer in the demo profile,
+  then captures the four-choice startup question, the panes after Escape answers
+  No, the palette searching *Toggle usage statistics*, and its status message.
+  It exists so the screenshot check can judge startup consent and usage-statistics
+  changes. Its stills are gitignored (`media/demos/usage-consent/`).
 - **17 `ftp-overwrite`** — records an FTP folder upload with an existing file,
   showing the progress window before the overwrite question, hidden while the
   question is open, and back after answering. It needs `FMAN_FTPClient` installed

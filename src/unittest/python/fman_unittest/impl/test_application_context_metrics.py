@@ -15,6 +15,40 @@ class ApplicationContextMetricsTest(TestCase):
 	def _context(self, context_type=DevelopmentApplicationContext):
 		return object.__new__(context_type)
 
+	def test_usage_consent_demo_asks_for_consent(self):
+		consent_mock = MagicMock(
+			spec=DevelopmentApplicationContext,
+		)._ask_error_report_consent
+		context = SimpleNamespace(
+			_demo_mode=True,
+			_demo_asks_consent=True,
+			_ask_error_report_consent=consent_mock,
+		)
+
+		with patch(
+			'fman.impl.application_context.is_windows', return_value=False
+		):
+			DevelopmentApplicationContext.on_main_window_shown(context)
+
+		context._ask_error_report_consent.assert_called_once_with()
+
+	def test_other_demo_skips_consent(self):
+		consent_mock = MagicMock(
+			spec=DevelopmentApplicationContext,
+		)._ask_error_report_consent
+		context = SimpleNamespace(
+			_demo_mode=True,
+			_demo_asks_consent=False,
+			_ask_error_report_consent=consent_mock,
+		)
+
+		with patch(
+			'fman.impl.application_context.is_windows', return_value=False
+		):
+			DevelopmentApplicationContext.on_main_window_shown(context)
+
+		context._ask_error_report_consent.assert_not_called()
+
 	def _settings(self, usage_metrics=None):
 		directory = TemporaryDirectory()
 		self.addCleanup(directory.cleanup)

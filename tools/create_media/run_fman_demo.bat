@@ -65,6 +65,10 @@ if "%1"=="23" (
 	REM Reset chrome defaults; demo 23 hides the bars to fit every file row.
 	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; if (Test-Path -LiteralPath $p) { $s=Get-Content -Raw -LiteralPath $p | ConvertFrom-Json; $null=$s.PSObject.Properties.Remove('status_bar_visible'); $null=$s.PSObject.Properties.Remove('pane_location_bars_visible'); [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false)) }"
 )
+if "%1"=="25" (
+	REM The copied settings hold the developer's consent answer, which would skip the question demo 25 films.
+	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; if (Test-Path -LiteralPath $p) { $s=Get-Content -Raw -LiteralPath $p | ConvertFrom-Json; $null=$s.PSObject.Properties.Remove('usage_metrics'); $null=$s.PSObject.Properties.Remove('error_reports'); [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false)) }"
+)
 if defined IS_TOUR (
 	REM The path line above each pane would put the scratch path on camera.
 	REM $false, not false: a bare false is stored as the STRING "false", and

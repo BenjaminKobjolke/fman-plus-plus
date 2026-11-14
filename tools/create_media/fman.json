@@ -73,6 +73,8 @@
     {"id": 23, "name": "listing-theme-colors", "fps": 2, "formats": [],
      "width": 1920, "height": 1080},
     {"id": 24, "name": "viewer-palette", "fps": 2, "formats": [],
+     "width": 1920, "height": 1080},
+    {"id": 25, "name": "usage-consent", "fps": 2, "formats": [],
      "width": 1920, "height": 1080}
   ],
   "compose": [
