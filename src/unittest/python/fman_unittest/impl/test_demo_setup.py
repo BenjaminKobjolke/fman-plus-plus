@@ -311,7 +311,7 @@ class DemoSetupTest(unittest.TestCase):
 		)
 		start_still = next(
 			index for index, action in enumerate(actions)
-			if action.__class__.__name__ == 'Screenshot'
+			if action.__class__.__name__ == 'SendScreenshot'
 			and action.name == 'theme-colors-start'
 		)
 		self.assertLess(move_off_archive, start_still)

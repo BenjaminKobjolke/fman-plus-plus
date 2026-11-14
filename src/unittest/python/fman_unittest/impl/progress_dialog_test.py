@@ -335,11 +335,16 @@ class WorkersLabelTest(TestCase):
 		dialog.set_cancel_text(None)
 		self.assertEqual('Canceling...', dialog._text)
 	def _dialog(self, parent=None, options=None, tool_windows=None):
-		return ProgressDialog(
+		result = ProgressDialog(
 			parent, 'Copying', 100, QPalette(),
 			options or ToolWindowOptions(False, False, None),
 			tool_windows or ToolWindows(QStatusBar())
 		)
+		# Keep the parent alive through hide; leaked dialogs can be collected mid-paint.
+		if parent is not None:
+			self.addCleanup(lambda: parent)
+		self.addCleanup(result.hide)
+		return result
 	def _label(self, *workers):
 		result = WorkersLabel(_FakeWorkers(*workers))
 		result.refresh('')

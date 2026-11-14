@@ -1,5 +1,6 @@
 from fman import DirectoryPane
 from fman.impl.controller import Controller
+from fman.impl.widgets import DirectoryPaneWidget
 from threading import Event
 from unittest import TestCase
 from unittest.mock import MagicMock
@@ -16,8 +17,11 @@ class ControllerEditNameTest(TestCase):
 			self._error_handler
 		)
 		self._pane_widget = MagicMock()
+		widget = MagicMock(spec=DirectoryPaneWidget)
+		# No folder tree mounted: edit_name goes to the file view.
+		widget._mounted_widget = None
 		self._pane = DirectoryPane(
-			window=MagicMock(), widget=MagicMock(),
+			window=MagicMock(), widget=widget,
 			command_registry=MagicMock()
 		)
 		self._controller.register_pane(self._pane_widget, self._pane)
