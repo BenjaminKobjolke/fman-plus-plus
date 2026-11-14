@@ -1,6 +1,8 @@
+from os.path import join
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest import TestCase
-from unittest.mock import MagicMock, create_autospec, patch
+from unittest.mock import MagicMock, patch
 
 from fman.impl.application_context import (
 	DevelopmentApplicationContext, FrozenApplicationContext,
@@ -14,32 +16,32 @@ class ApplicationContextMetricsTest(TestCase):
 		return object.__new__(context_type)
 
 	def test_start_metrics_requires_explicit_usage_consent(self):
-		settings = create_autospec(Settings, instance=True)
-		settings.get.return_value = True
-		metrics = MagicMock()
-		context = SimpleNamespace(
-			local_settings=settings, metrics=metrics,
-			_on_metrics_initialised=lambda: None)
+		with TemporaryDirectory() as directory:
+			settings = Settings(join(directory, 'Settings.json'))
+			settings['usage_metrics'] = True
+			metrics = MagicMock()
+			context = SimpleNamespace(
+				local_settings=settings, metrics=metrics,
+				_on_metrics_initialised=lambda: None)
 
-		DevelopmentApplicationContext._start_metrics(context)
+			DevelopmentApplicationContext._start_metrics(context)
 
-		settings.get.assert_called_once_with('usage_metrics', None)
-		metrics.initialize.assert_called_once_with(
-			callback=context._on_metrics_initialised)
-		metrics.track.assert_called_once_with('StartedFman')
+			metrics.initialize.assert_called_once_with(
+				callback=context._on_metrics_initialised)
+			metrics.track.assert_called_once_with('StartedFman')
 
 	def test_start_metrics_stays_off_without_true_consent(self):
-		settings = create_autospec(Settings, instance=True)
-		settings.get.return_value = None
-		metrics = MagicMock()
-		context = SimpleNamespace(
-			local_settings=settings, metrics=metrics,
-			_on_metrics_initialised=lambda: None)
+		with TemporaryDirectory() as directory:
+			settings = Settings(join(directory, 'Settings.json'))
+			metrics = MagicMock()
+			context = SimpleNamespace(
+				local_settings=settings, metrics=metrics,
+				_on_metrics_initialised=lambda: None)
 
-		DevelopmentApplicationContext._start_metrics(context)
+			DevelopmentApplicationContext._start_metrics(context)
 
-		metrics.initialize.assert_not_called()
-		metrics.track.assert_not_called()
+			metrics.initialize.assert_not_called()
+			metrics.track.assert_not_called()
 
 	def test_development_uses_null_backend(self):
 		context = self._context()
