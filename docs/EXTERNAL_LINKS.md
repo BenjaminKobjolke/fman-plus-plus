@@ -52,5 +52,5 @@ it — they are build/infra config, not links a fork rebrands via the UI:
 
 - Build/release config (`src/build/settings/*.json`, `release.json`)
 - Error reporting: see [APP_ERROR_REPORTING.md](APP_ERROR_REPORTING.md). Metrics (`server_url`, `/metrics`) remain separate.
-- Package/repo infra (`FBS_URL` in `tools/fbs_pro.py`, `src/repo/`, Dockerfiles)
+- Package/repo infra (`FBS_URL` in `tools/fbs_pro.py`, Dockerfiles)
 - The QSettings organization domain `fman.io` (storage path, not a link)

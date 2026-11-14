@@ -30,8 +30,6 @@ def load_mac_module():
     fbs_platform.is_windows = lambda: False
     fbs_platform.is_mac = lambda: False
     fbs_platform.is_linux = lambda: False
-    aws = types.ModuleType("build_impl.aws")
-    aws.upload_to_s3 = lambda *_: None
     sys.modules.update({
         "fbs": fbs,
         "fbs.cmdline": fbs_cmdline,
@@ -39,10 +37,8 @@ def load_mac_module():
         "fbs.freeze.mac": fbs_freeze_mac,
         "fbs_runtime": fbs_runtime,
         "fbs_runtime.platform": fbs_platform,
-        "build_impl.aws": aws,
     })
     import build_impl
-    build_impl.SETTINGS = {}
     return importlib.import_module("build_impl.mac"), build_impl
 
 

@@ -39,10 +39,6 @@ RUN dnf install -y gpg rpm-sign && \
 
 ADD .rpmmacros /root
 
-RUN dnf install -y createrepo_c
-
-# The `release` build command calls git to check for uncommitted changes. So we
-# need git:
 RUN dnf install -y git
 
 ENTRYPOINT ["/bin/bash"]

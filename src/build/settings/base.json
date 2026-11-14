@@ -5,7 +5,7 @@
 	"author": "Benjamin Kobjolke",
 	"author_email": "",
 	"description": "A modern file manager for power users. Beautiful, fast and extensible",
-	"url": "https://fman.io",
+	"url": "https://workflow-tools.com/fman-plus-plus/help/",
 	"main_module": "src/main/python/fman/main.py",
 	"freeze_dir": "target/${app_name}",
 	"test_dirs": [
@@ -13,53 +13,61 @@
 	],
 	"release": false,
 	"environment": "local",
-	"server_url": "http://127.0.0.1:8000",
-	"record_release_url": "${server_url}/api/record-release/",
-	"server_api_secret": "k92XhhhmOf8rD7QJ",
-	"local_media_dir": "../fman.io/media",
-	"server_media_dir": "/home/fman/src/media",
-	"server_user": "fman@fman.io",
-	"ssh_key": "conf/ssh/id_rsa",
 	"files_to_filter": [
 		"src/build/docker/arch/Dockerfile",
 		"src/build/docker/ubuntu/Dockerfile",
 		"src/build/docker/fedora/Dockerfile",
 		"src/build/docker/fedora/.rpmmacros"
 	],
-	"public_settings": ["environment"],
+	"public_settings": [
+		"environment"
+	],
 	"gpg_key": "45BCC825BC281C06D2A7F912B015FE599CFAF7EB",
 	"gpg_name": "Michael Herrmann",
 	"gpg_pass": "fenst4r",
-	"aws_access_key_id": "AKIAIWTB3R6KKMMTWXEA",
-	"aws_secret_access_key": "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",
-	"aws_bucket": "fman",
-	"aws_distribution_id": "E36JGR8Q7NMYHR",
-	"core_plugin_github_url": "git@github.com:fman-users/Core.git",
-	"core_plugin_ssh_key": "conf/ssh/id_rsa-Core",
 	"core_plugin_in_freeze_dir": "${freeze_dir}/Plugins/Core",
 	"docker_images": {
 		"arch": {
 			"build_files": [
-				"src/sign/linux/", "conf/ssh/", "requirements/"
+				"src/sign/linux/",
+				"conf/ssh/",
+				"requirements/"
 			]
 		},
 		"ubuntu": {
 			"build_files": [
-				"src/sign/linux/", "conf/ssh/", "requirements/"
+				"src/sign/linux/",
+				"conf/ssh/",
+				"requirements/"
 			]
 		},
 		"fedora": {
 			"build_files": [
-				"src/sign/linux/", "requirements/"
+				"src/sign/linux/",
+				"requirements/"
 			]
 		}
 	},
-	"hidden_imports": ["requests", "mpv", "PyQt5.QtSvg", "pygments", "xml.dom", "xml.dom.minidom", "psutil", "fman.impl.update_countdown"],
+	"hidden_imports": [
+		"requests",
+		"mpv",
+		"PyQt5.QtSvg",
+		"pygments",
+		"xml.dom",
+		"xml.dom.minidom",
+		"psutil",
+		"fman.impl.update_countdown"
+	],
 	"extra_pyinstaller_args": [
-		"--additional-hooks-dir", "${project_dir}/src/build/pyinstaller_hooks",
-		"--exclude-module", "boto3",
-		"--exclude-module", "botocore",
-		"--exclude-module", "s3transfer",
-		"--exclude-module", "automated_screenshot_connector"
+		"--additional-hooks-dir",
+		"${project_dir}/src/build/pyinstaller_hooks",
+		"--exclude-module",
+		"boto3",
+		"--exclude-module",
+		"botocore",
+		"--exclude-module",
+		"s3transfer",
+		"--exclude-module",
+		"automated_screenshot_connector"
 	]
 }

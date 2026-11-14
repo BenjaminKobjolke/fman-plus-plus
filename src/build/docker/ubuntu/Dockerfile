@@ -48,12 +48,9 @@ RUN chmod 600 /root/.ssh/id_rsa
 ADD id_rsa.pub /root/.ssh/id_rsa.pub
 RUN apt-get install openssh-client -y && \
     ssh-keyscan -H github.com >> ~/.ssh/known_hosts && \
-    ssh-keyscan -H fman.io >> ~/.ssh/known_hosts && \
     chmod 600 ~/.ssh/known_hosts
 
-RUN apt-get install git -y && \
-    git config --global user.email "michael@herrmann.io" && \
-    git config --global user.name "Michael Herrmann"
+RUN apt-get install git -y
 
 RUN apt-get install locales -y && \
     locale-gen en_US.UTF-8

@@ -141,19 +141,17 @@ ones) for that release.
 
 `tools\release_create.bat` does this step for you through `tools\build_release.bat`
 (`python build.py release_build`), which builds on the dirty tree the script leaves
-behind — do **not** also increment or run `python build.py release` then. What
+behind — do **not** increment the version again. What
 follows is the manual path.
 
 `freeze()` (via PyInstaller) deletes and recreates `target/fman/` — a running copy
 from that folder locks its files. `tools\build_windows.bat` and
 `tools\build_release.bat` (also used by `tools\release_create.bat`) ask that copy
 to close and stop with a message naming any process that still holds a file from
-the folder. Only `python build.py release` requires you to close it by hand first.
+the folder.
 
-The one-command release flow bumps the version in base.json automatically and
-restores it from HEAD if the build fails. For the manual `python build.py release`
-path, apply the version bump with the helper before starting the build; the fbs command
-may require a clean tree, so commit the version bump first:
+For a manual release, apply the version bump with the helper before starting the
+build and commit it first:
 
 ```bat
 tools\build_increment.bat
@@ -169,31 +167,15 @@ tools\build_windows_installer.bat:: python build.py installer -> target\fmanSetu
 tools\build_windows_portable.bat :: freeze + python build.py portable_zip -> target\fmanPortable.zip (unsigned, for testing)
 ```
 
-`build.py` also exposes the full fbs pipeline for an actual public release:
+`tools\build_release.bat` runs `python build.py release_build` for an already
+prepared release version with its notes authored:
 
 ```bat
-python build.py release
+tools\build_release.bat
 ```
 
-`release()` branches on whether `src/build/settings/base.json`'s `version` ends
-in `-SNAPSHOT`:
-
-- **`-SNAPSHOT` version** (fbs's original upstream workflow): bumps the settings
-  file to the release version, runs `publish()`, tags the commit `v<version>` in
-  git, bumps the settings file again for the next `-SNAPSHOT` dev cycle, and
-  pushes — fully automatic.
-- **Plain version, e.g. `1.8.0`** (this fork's actual convention — the helper bumps it
-  and it never carries a `-SNAPSHOT` suffix): `release()`
-  just calls `publish()` directly. **No tag, no push happens automatically.**
-  After a successful build you must do it yourself before step 4.5 — the tag is
-  the plain version:
-  ```bat
-  git tag <version>
-  git push origin main
-  git push origin <version>
-  ```
-  `python build.py release` does not write `target\release_version.txt` (only
-  `tools\build_release.bat` does), so pass the version to step 4.5 explicitly.
+The build does not bump the version, create a tag or push it. Complete those
+release steps as described below.
 
 `publish()` on Windows runs `freeze` → `sign` → `installer` → `sign_installer` →
 `portable_zip` → `upload`. The portable archive contains the signed app under
@@ -239,15 +221,13 @@ Order matters and is preserved from fbs's original `publish()`: the app exe
 
 `tools\build_windows.bat` / `tools\build_windows_installer.bat` (freeze/installer
 only, no signing) remain unsigned local test builds — only `python build.py
-publish`/`release` produces a signed, shippable build.
+publish` or `tools\build_release.bat` produces a signed, shippable build.
 
-**Housekeeping not yet done:** the dead cert (`src/sign/windows/certificate.pfx`)
-and its password (`windows_sign_pass` in `src/build/settings/windows.json`) are
-still committed and tracked in git history, along with other secrets in
-`src/build/settings/base.json` (AWS keys, GPG passphrase, server API secret).
-Nothing in this repo calls `fbs`'s signing path anymore, so these are now inert,
-but they remain exposed in history. Rotate anything still live and consider
-purging history if this repo is or was ever public.
+**Housekeeping:** the dead Windows signing settings and upstream release
+credentials have been removed from the current configuration. Their historical
+values remain in git history. The certificate file
+(`src/sign/windows/certificate.pfx`) is still tracked; it is not used by this
+fork's signing flow.
 
 ## 4.5. Publish to GitHub Releases
 

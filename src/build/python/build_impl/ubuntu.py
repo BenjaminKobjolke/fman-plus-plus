@@ -1,12 +1,8 @@
-from build_impl import check_output_decode, remove_if_exists, SETTINGS, \
-	upload_installer_to_aws, upload_file, get_path_on_server
+from build_impl import check_output_decode, remove_if_exists
 from build_impl.linux import postprocess_exe
 from fbs import path
 from fbs.cmdline import command
 from fbs.freeze.ubuntu import freeze_ubuntu
-from fbs.repo.ubuntu import create_repo_ubuntu
-from os import listdir
-from os.path import join
 
 import re
 
@@ -47,9 +43,5 @@ def _remove_gtk_dependencies():
 
 @command
 def upload():
-	create_repo_ubuntu()
-	updates_dir = get_path_on_server('updates/ubuntu')
-	for f in listdir(path('target/repo')):
-		upload_file(join(path('target/repo'), f), updates_dir)
-	if SETTINGS['release']:
-		upload_installer_to_aws('fman.deb')
+	# This fork does not publish to the original project's servers.
+	pass
