@@ -10,19 +10,19 @@ import sys
 import tempfile
 import time
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 import uuid
 
 from build_info import describe_build
 from parser import parser as _parser
+from process_launch import detached_popen, describe_refused, log_tail
 from restart import restart_session
 from fixtures import (
 	copy_video_fixture, make_deep_folder, make_fixture, make_large_folder,
 	parse_core_settings, validate_deep_count, validate_large_count,
 	write_core_settings,
 )
-from guards import guard_input
+from dispatch import dispatch
 from session_reaper import (
 	SESSION_FILE, close_session, fman_process_identity, kill_process,
 	process_start_time, reap_stale,
@@ -67,13 +67,6 @@ def _reserve_port():
 		return listener.getsockname()[1]
 
 
-def _detached_flags():
-	return (
-		getattr(subprocess, 'CREATE_NEW_PROCESS_GROUP', 0)
-		| getattr(subprocess, 'DETACHED_PROCESS', 0)
-	)
-
-
 def _wait_for_state(session, process, log_path):
 	deadline = time.monotonic() + 60
 	while time.monotonic() < deadline:
@@ -92,11 +85,8 @@ def _wait_for_state(session, process, log_path):
 	if process.poll() is None:
 		kill_process(session.get('fman_pid', process.pid),
 			session.get('fman_start_time', session['start_time']))
-	try:
-		tail = log_path.read_text(encoding='utf-8', errors='replace').splitlines()[-40:]
-	except OSError:
-		tail = []
-	raise RuntimeError('fman did not start; log tail: ' + '\n'.join(tail))
+	raise RuntimeError(
+		'fman did not start; log tail: ' + '\n'.join(log_tail(log_path)))
 
 
 def _start_fman(session, session_root):
@@ -109,15 +99,13 @@ def _start_fman(session, session_root):
 	main = Path(environment['PYTHONPATH']) / 'fman' / 'main.py'
 	log_path = Path(session_root) / 'fman.log'
 	with log_path.open('ab') as log:
-		process = subprocess.Popen(
+		process = detached_popen(
 			[
 				os.environ.get('FMAN_PYTHON', sys.executable), str(main),
 				session['left'], session['right'],
 			],
 			cwd=str(Path(__file__).resolve().parents[2]), env=environment,
 			stdout=log, stderr=subprocess.STDOUT,
-			creationflags=_detached_flags(),
-			start_new_session=os.name != 'nt',
 		)
 	session.pop('fman_pid', None)
 	session.pop('fman_start_time', None)
@@ -187,15 +175,14 @@ def _launch(args):
 	except Exception:
 		shutil.rmtree(session_root, ignore_errors=True)
 		raise
-	subprocess.Popen(
+	detached_popen(
 		[
 			sys.executable,
 			str(Path(__file__).with_name('session_reaper.py')),
 			str(session_root),
-		], creationflags=_detached_flags(), stdin=subprocess.DEVNULL,
+	], stdin=subprocess.DEVNULL,
 		stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
 		cwd=str(Path(__file__).resolve().parents[2]),
-		start_new_session=os.name != 'nt',
 	)
 	_current_path().write_text(json.dumps(session, indent=2), encoding='utf-8')
 	return session
@@ -221,81 +208,12 @@ def _run(args):
 		return {'ok': True, 'recycle_bin_entries_removed': removed_entries}
 	if args.action == 'restart':
 		return restart_session(session, _api, _start_fman, _current_path())
-	profile = session.get('profile')
-	if profile is not None:
-		session_file = Path(profile).parent / SESSION_FILE
-		if session_file.exists():
-			os.utime(session_file, None)
-	state = guard_input(session, args, _api)
-	if args.action in ('state', 'commands'):
-		return _api(session, 'GET', '/v1/' + args.action)
-	if args.action == 'files':
-		return _api(session, 'GET', '/v1/files?pane=%d' % args.pane)
-	if args.action == 'dialog':
-		return _api(session, 'GET', '/v1/dialog')
-	if args.action == 'viewer':
-		return _api(session, 'GET', '/v1/viewer?pane=%d' % args.pane)
-	if args.action == 'command':
-		payload = {
-			'name': args.name, 'args': json.loads(args.args_json),
-			'pane': args.pane,
-		}
-		try:
-			result = _api(session, 'POST', '/v1/command', payload)
-		except (TimeoutError, URLError) as error:
-			if isinstance(error, URLError) and not isinstance(
-					error.reason, TimeoutError):
-				raise
-			try:
-				dialog = _api(session, 'GET', '/v1/dialog').get('dialog')
-			except (OSError, RuntimeError, URLError):
-				raise error
-			if dialog is None:
-				raise error
-			return {'running': True, 'dialog': dialog}
-		_settle(args.settle)
-		return result
-	if args.action == 'keys':
-		result = _api(session, 'POST', '/v1/keys', {'keys': args.chords})
-		_settle(args.settle)
-		return result
-	if args.action == 'type':
-		result = _api(session, 'POST', '/v1/keys', {'text': args.text})
-		_settle(args.settle)
-		return result
-	if args.action == 'click':
-		if args.file is not None:
-			pane_index = args.pane
-			if pane_index < 0 or pane_index >= len(state['panes']):
-				raise RuntimeError('Pane index is out of range.')
-			if not urlsplit(args.file).scheme:
-				base = state['panes'][pane_index]['path'].rstrip('/') + '/'
-				file_url = base + args.file
-			else:
-				file_url = args.file
-			payload = {'pane': pane_index, 'file': file_url}
-		else:
-			if args.y is None:
-				raise RuntimeError('Both --x and --y are required.')
-			payload = {'x': args.x, 'y': args.y}
-		payload.update({
-			'button': 'right' if args.right else 'left', 'double': args.double,
-		})
-		result = _api(session, 'POST', '/v1/click', payload)
-		_settle(args.settle)
-		return result
-	if args.action == 'drag':
-		payload = {
-			'x': args.x, 'y': args.y, 'to_x': args.to_x, 'to_y': args.to_y,
-		}
-		result = _api(session, 'POST', '/v1/drag', payload)
-		_settle(args.settle)
-		return result
-	if args.action == 'screenshot':
-		data = _api(session, 'GET', '/v1/screenshot')
-		Path(args.png_path).write_bytes(data)
-		return {'path': str(Path(args.png_path).resolve())}
-	raise RuntimeError('Unknown command.')
+	try:
+		return dispatch(args, session, _api, _settle)
+	except URLError as error:
+		if isinstance(error.reason, ConnectionRefusedError):
+			raise RuntimeError(describe_refused(session)) from error
+		raise
 
 
 def main(argv=None):

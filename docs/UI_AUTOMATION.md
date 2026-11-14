@@ -165,6 +165,10 @@ input and commands when a pane leaves the session fixtures. Agents always run
 including when a check fails. Screenshots an agent wants to attach go under the
 ticket's `attach/validation/` folder.
 
+The driver starts fman outside the calling shell's job, so sandboxed agents can
+run each command in its own shell call. When a connection is refused, the error
+reports whether fman exited, along with the session id and the tail of its log.
+
 ## Commands
 
 Every command prints one JSON result. API failures print `{"error": "…"}` and

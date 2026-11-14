@@ -126,16 +126,12 @@ class FmanUiLaunchTest(TestCase):
 			self.assertNotIn('deep', session)
 			self.assertFalse((left / 'deep').exists())
 
-	def test_launch_starts_children_in_new_sessions_only_on_posix(self):
-		for name, expected in (('posix', True), ('nt', False)):
-			with self.subTest(os_name=name), TemporaryDirectory() as temp:
-				with patch.object(fman_ui, 'os', SimpleNamespace(
-					name=name, environ=os.environ)):
-					self._launch(temp)
-				self.assertEqual(2, len(self.popen_calls))
-				self.assertEqual(
-					[expected, expected],
-					[call.kwargs['start_new_session'] for call in self.popen_calls])
+	def test_launch_starts_children_with_detached_launcher(self):
+		with TemporaryDirectory() as temp, \
+			patch.object(fman_ui, 'detached_popen',
+				wraps=fman_ui.detached_popen) as detached:
+			self._launch(temp)
+		self.assertEqual(2, detached.call_count)
 
 	def test_invalid_launch_options_fail_before_session_directory_is_created(self):
 		with TemporaryDirectory() as temp, patch.dict(os.environ, {'TEMP': temp}):
