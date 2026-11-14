@@ -8,6 +8,7 @@ from fman.impl.quicksearch_exit_keys import QuicksearchExit, find_exit_key
 from fman.impl.quicksearch_more_actions import (
 	MORE_GLYPH, footer_text, is_more_click, more_button_rect,
 )
+from fman.impl.quicksearch_text_sizes import apply_text_sizes
 from fman.impl.util.qt import Key_Tab, Key_Down, Key_Up, Key_PageDown, \
 	Key_Home, Key_End, Key_PageUp, Key_Return, Key_Enter, ShiftModifier, \
 	UserRole, AlignRight, AlignVCenter, NoFocus, FramelessWindowHint, \
@@ -113,6 +114,9 @@ class Quicksearch(QDialog):
 			widgets.append(self._footer)
 			self._items.setMouseTracking(True)
 		self._layout_vertically(self, *widgets)
+		apply_text_sizes(
+			self._query, self._header, getattr(self, '_footer', None)
+		)
 		self.layout().setContentsMargins(*self._outer_margins())
 		self.layout().setSizeConstraint(QLayout.SetNoConstraint)
 		self._items.ensurePolished()

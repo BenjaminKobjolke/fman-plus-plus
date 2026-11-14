@@ -440,6 +440,10 @@ bar, column headers and status bar get zoom rules appended *after* everything
 else in the app stylesheet, so they follow the zoom even when the theme sets
 their base sizes. The sizes you author stay the baseline.
 
+The palette's title and key-hint footer are sized from the query line, at 2pt
+above and 2pt below, so they follow the query size, the theme and the zoom
+without rules of their own.
+
 Your `Theme.css` may contain `$` freely — substitution leaves unknown names
 alone. To use a theme's color in it, write the token: `color: $pane_fg;`.
 

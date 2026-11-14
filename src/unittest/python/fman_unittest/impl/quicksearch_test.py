@@ -66,6 +66,45 @@ class QuicksearchTest(TestCase):
 		self.addCleanup(dialog.close)
 		return dialog
 
+	def _apply_palette_font_sizes(self):
+		previous_style_sheet = self.app.styleSheet()
+		self.addCleanup(self.app.setStyleSheet, previous_style_sheet)
+		self.app.setStyleSheet(
+			'* { font-size: 20pt; } '
+			'Quicksearch QLineEdit { font-size: 16pt; }'
+		)
+
+	def test_title_query_and_footer_follow_font_size_hierarchy(self):
+		self._apply_palette_font_sizes()
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [],
+			title='Command Palette', alt_accept=True
+		)
+		self.addCleanup(dialog.close)
+
+		self.assertEqual(16, dialog._query.font().pointSizeF())
+		self.assertEqual(18, dialog._header.font().pointSizeF())
+		self.assertEqual(14, dialog._footer.font().pointSizeF())
+		self.assertGreater(
+			dialog._header.font().pointSizeF(),
+			dialog._query.font().pointSizeF()
+		)
+		self.assertGreater(
+			dialog._query.font().pointSizeF(),
+			dialog._footer.font().pointSizeF()
+		)
+
+	def test_title_is_sized_without_alternate_accept_footer(self):
+		self._apply_palette_font_sizes()
+		dialog = Quicksearch(
+			self.parent, _StubApp(), _CSS, lambda _query: [],
+			title='Command Palette'
+		)
+		self.addCleanup(dialog.close)
+
+		self.assertEqual(18, dialog._header.font().pointSizeF())
+		self.assertFalse(hasattr(dialog, '_footer'))
+
 	def _dialog_with_large_items(self, count, scale):
 		css = {
 			**_CSS,

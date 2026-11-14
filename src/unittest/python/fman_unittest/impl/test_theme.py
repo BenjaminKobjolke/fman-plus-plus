@@ -137,14 +137,15 @@ class ThemeTest(TestCase):
 			stylesheet.index('font-size: 10pt'),
 			stylesheet.index('font-size: 13pt')
 		)
-	def test_font_offset_zooms_window_chrome_and_palette_header(self):
+	def test_font_offset_zooms_window_chrome_and_palette_list(self):
 		theme = self._make_theme()
 		theme.load(self._write('Theme.css', _CORE_LIKE_ZOOM_CSS))
 		theme.enable_updates()
 		theme.set_font_offset(3)
 		stylesheet = self._app.stylesheet
+		self.assertNotIn('Quicksearch #header', theme._get_font_zoom_qss())
 		for selector, size in (
-			('Quicksearch #header, Quicksearch #footer, Quicksearch QListView', 12),
+			('Quicksearch QListView', 12),
 			('LocationBar:read-only', 12),
 			('QTableView QHeaderView::section', 11),
 			('QStatusBar, QStatusBar QLabel, PaneStatusLine', 11),
@@ -168,7 +169,7 @@ class ThemeTest(TestCase):
 		stylesheet = self._app.stylesheet
 		self.assertNotIn('QTableView QHeaderView::section {', stylesheet)
 		for selector, size in (
-			('Quicksearch #header, Quicksearch #footer, Quicksearch QListView', 12),
+			('Quicksearch QListView', 12),
 			('LocationBar:read-only', 12),
 			('QStatusBar, QStatusBar QLabel, PaneStatusLine', 11),
 			('Quicksearch QLineEdit', 15),

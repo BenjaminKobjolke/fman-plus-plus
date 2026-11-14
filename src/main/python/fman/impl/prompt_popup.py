@@ -5,6 +5,7 @@ from fman.impl.prompt_completion import PromptTabCompletion
 from fman.impl.prompt_suggestions import PromptSuggestions
 from fman.impl.frameless_dialog import make_frameless, text_width_floor
 from fman.impl.quicksearch import Quicksearch
+from fman.impl.quicksearch_text_sizes import TEXT_STEP_PTS
 from fman.impl.util.qt import Key_Down, Key_Up, NoFocus
 from fman.localization import translate
 from fman.localization_keys import PROMPT_CANCEL, PROMPT_OK
@@ -14,7 +15,6 @@ from PyQt5.QtWidgets import (
 
 
 # The title sits one step above the input and the path one step below.
-_TITLE_STEP_PTS = 2
 # Qt's fixed QLineEditPrivate::horizontalMargin.
 _LINE_EDIT_HORIZONTAL_MARGIN = 2
 
@@ -111,9 +111,9 @@ class Prompt(Quicksearch):
 			label.setContentsMargins(
 				text_left - label.geometry().x(), contents.top(), right, bottom
 			)
-		style_label(self._header, pts + _TITLE_STEP_PTS)
+		style_label(self._header, pts + TEXT_STEP_PTS)
 		if self._detail is not None:
-			style_label(self._detail, max(1, pts - _TITLE_STEP_PTS))
+			style_label(self._detail, max(1, pts - TEXT_STEP_PTS))
 	def setTextValue(self, text):
 		self._query.setText(text)
 	def textValue(self):

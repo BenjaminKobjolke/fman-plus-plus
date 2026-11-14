@@ -167,7 +167,6 @@ class Theme:
 		zoomed_selectors = (
 			(
 				'*',
-				'Quicksearch #header, Quicksearch #footer, '
 				'Quicksearch QListView',
 				None,
 			),
