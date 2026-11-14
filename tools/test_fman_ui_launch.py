@@ -85,7 +85,12 @@ class FmanUiLaunchTest(TestCase):
 						'examples' / 'left_pane' / 'dummy.mp4').stat().st_size,
 					video.stat().st_size)
 				self.assertFalse((Path(session['right']) / 'video.mp4').exists())
-				self.assertEqual('1.9.0', session['build']['version'])
+				version_path = (Path(fman_ui.__file__).resolve().parents[2] /
+					'src' / 'build' / 'settings' / 'base.json')
+				build_settings = json.loads(
+					version_path.read_text(encoding='utf-8'))
+				self.assertEqual(
+					build_settings['version'], session['build']['version'])
 				self.assertIn('commit', session['build'])
 				self.assertIn('dirty', session['build'])
 				self.assertIn('checkout_path', session['build'])
