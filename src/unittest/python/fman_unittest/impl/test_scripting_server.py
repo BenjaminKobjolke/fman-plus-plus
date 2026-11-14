@@ -12,6 +12,7 @@ from fman.impl.scripting.automation import (
 	AutomationActions, UnknownFile, UnsafeDrag, WindowSize,
 )
 from fman.impl.scripting.config import ScriptingApiConfig
+from fman.impl.scripting.link_capture import LinkCapture
 from fman.impl.scripting.server import ScriptingServer
 
 
@@ -116,6 +117,7 @@ class ScriptingServerTest(TestCase):
 		for method, path, payload in (
 			('GET', '/v1/files', None), ('GET', '/v1/screenshot', None),
 			('GET', '/v1/dialog', None), ('GET', '/v1/viewer', None),
+			('GET', '/v1/links', None),
 			('POST', '/v1/window', {'width': 1280, 'height': 768}),
 			('POST', '/v1/keys', {'keys': ['A']}),
 			('POST', '/v1/click', {'x': 1, 'y': 2}),
@@ -125,6 +127,21 @@ class ScriptingServerTest(TestCase):
 		):
 			with self.subTest(path=path):
 				self.assertEqual(403, self._request_error(method, path, payload))
+
+	def test_links_route_is_unavailable_without_link_capture(self):
+		config = replace(
+			ScriptingApiConfig.from_settings(_Settings({})), port=0,
+			automation=True,
+		)
+		actions = MagicMock(spec=AutomationActions)
+		server = ScriptingServer(config, self.TOKEN, self.actions, actions)
+		server.start()
+		try:
+			base_url = 'http://127.0.0.1:%s' % server.port
+			self.assertEqual(503, self._request_error_at(
+				base_url, 'GET', '/v1/links'))
+		finally:
+			server.stop()
 
 	def test_enabled_automation_routes_dispatch_and_return_binary_screenshot(self):
 		config = replace(
@@ -147,10 +164,19 @@ class ScriptingServerTest(TestCase):
 		}
 		actions.resize_window.return_value = WindowSize(
 			1280, 768, 1920, 1080)
-		server = ScriptingServer(config, self.TOKEN, self.actions, actions)
+		link_capture = MagicMock(spec=LinkCapture)
+		link_capture.snapshot.return_value = {
+			'opened_urls': ['https://example.test/help'],
+			'status_messages': [],
+		}
+		server = ScriptingServer(
+			config, self.TOKEN, self.actions, actions, link_capture)
 		server.start()
+		link_capture.install.assert_called_once_with()
 		try:
 			base_url = 'http://127.0.0.1:%s' % server.port
+			self.assertEqual(link_capture.snapshot.return_value,
+				self._request_at(base_url, 'GET', '/v1/links'))
 			self.assertEqual(
 				{'pane': 0, 'files': ['file:///a.txt']},
 				self._request_at(base_url, 'GET', '/v1/files?pane=0'),
@@ -187,6 +213,23 @@ class ScriptingServerTest(TestCase):
 			actions.resize_window.assert_called_once_with(1280, 800)
 		finally:
 			server.stop()
+		link_capture.uninstall.assert_called_once_with()
+
+	def test_link_capture_is_not_installed_when_automation_is_disabled(self):
+		link_capture = MagicMock(spec=LinkCapture)
+		server = ScriptingServer(
+			self.server._config, self.TOKEN, self.actions,
+			link_capture=link_capture)
+		server.start()
+		link_capture.install.assert_not_called()
+		server.stop()
+		link_capture.uninstall.assert_not_called()
+		unstarted_capture = MagicMock(spec=LinkCapture)
+		unstarted_server = ScriptingServer(
+			self.server._config, self.TOKEN, self.actions,
+			link_capture=unstarted_capture)
+		unstarted_server.stop()
+		unstarted_capture.uninstall.assert_not_called()
 
 	def test_automation_rejects_bad_bodies_unknown_files_and_bad_panes(self):
 		config = replace(
