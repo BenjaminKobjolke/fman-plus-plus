@@ -19,8 +19,9 @@ The generated left fixture also includes `video.mp4`, copied from the committed
 `--left` and `--right` folders are left untouched. `launch` includes a `build`
 object in its JSON result and saved session with the checkout's `version`,
 short `commit`, `dirty` status, `checkout_path`, and `python` executable.
-The isolated profile pre-answers fman's error-report question, so it cannot
-swallow the first driver keys. `launch` opens the private window at 1280×800;
+The isolated profile pre-answers fman's combined error-report and
+usage-statistics question, so it cannot swallow the first driver keys.
+`launch` opens the private window at 1280×800;
 `restart` keeps fman's saved geometry. Initial startup also records its actual
 window size and screen usable area in the JSON result; a small display may add
 `window_warning`. The user's normal fman window is not changed.
@@ -282,6 +283,9 @@ timeout /t 2 /nobreak >nul
 tools\fman_ui.bat viewer --pane 0
 tools\fman_ui.bat close
 ```
+
+From Git Bash, a lone `/` argument becomes a path. Send it with `type /` or
+prefix the command with `MSYS_NO_PATHCONV=1`.
 
 The download dialog may already be gone by the time `dialog` is run if the
 download completed quickly. When the libmpv archive is unavailable, `dialog`

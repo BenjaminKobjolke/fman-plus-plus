@@ -342,6 +342,10 @@ file-list commands also work there, as described below.
 | `text_go_to_top` / `text_go_to_bottom` | text (both modes) | `Home` / `End` (view mode) | Jump to the top / bottom of the file |
 | `text_page_up` / `text_page_down` | text (both modes) | `PgUp` / `PgDown` (view mode) | Page up / down |
 
+The text viewer's built-in keys (`/`, `n`, `N`, `Home`, `End`, `PgUp`, and
+`PgDown`) appear as **default** rows in the shortcut list and can be removed
+there. `Esc` cannot be removed because it also closes the viewer.
+
 See each viewer's own docs
 ([video](views/VIDEO_VIEWER.md#bindable-commands),
 [image](views/IMAGE_VIEWER.md#bindable-commands),
