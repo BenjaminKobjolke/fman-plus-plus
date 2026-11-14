@@ -216,6 +216,14 @@ class FmanUiTest(TestCase):
 			self.assertEqual({'viewer': None}, fman_ui._run(args))
 		api.assert_called_once_with({}, 'GET', '/v1/viewer?pane=1')
 
+	def test_links_subcommand_reads_captured_urls_without_a_pane_fence(self):
+		args = fman_ui._parser().parse_args(['links'])
+		result = {'opened_urls': [], 'status_messages': []}
+		with patch.object(fman_ui, '_read_current', return_value={}), \
+			patch.object(fman_ui, '_api', return_value=result) as api:
+			self.assertEqual(result, fman_ui._run(args))
+		api.assert_called_once_with({}, 'GET', '/v1/links')
+
 	def test_bare_file_name_is_resolved_against_selected_pane(self):
 		with TemporaryDirectory() as temp:
 			self._write_session(temp)

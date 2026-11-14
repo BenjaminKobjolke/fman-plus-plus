@@ -22,7 +22,8 @@ class FmanUiLaunchTest(TestCase):
 			os.environ.pop('TEMP', None)
 			self.assertEqual(Path('system-temp') / 'fman-ui', fman_ui._root())
 
-	def _launch(self, temp, *, large=0, deep=0, core_settings=None, left=None):
+	def _launch(self, temp, *, large=0, deep=0, core_settings=None, left=None,
+			previous_version=None):
 		patches = (
 			patch.dict(os.environ, {'TEMP': temp}),
 			patch.object(fman_ui, '_reserve_port', return_value=45678),
@@ -45,7 +46,8 @@ class FmanUiLaunchTest(TestCase):
 			popen.return_value.pid = 123
 			session = fman_ui._launch(SimpleNamespace(
 				left=left, right=None, large=large, deep=deep,
-				core_settings=core_settings))
+				core_settings=core_settings,
+				previous_version=previous_version))
 			self.popen_calls = popen.call_args_list
 			self.api_calls = api.call_args_list
 			return session
@@ -66,7 +68,8 @@ class FmanUiLaunchTest(TestCase):
 				}) as api:
 				popen.return_value.pid = 123
 				session = fman_ui._launch(SimpleNamespace(
-					left=None, right=None, large=0, deep=0, core_settings=None))
+					left=None, right=None, large=0, deep=0, core_settings=None,
+					previous_version=None))
 				settings = json.loads(
 					(Path(session['profile']) / 'Local' / 'Settings.json').read_text())
 				self.assertFalse(settings['error_reports'])
@@ -78,6 +81,7 @@ class FmanUiLaunchTest(TestCase):
 				session_settings = json.loads(
 					(Path(session['profile']) / 'Local' / 'Session.json').read_text())
 				self.assertEqual([{}, {}], session_settings['panes'])
+				self.assertNotIn('fman_version', session_settings)
 				self.assertTrue((Path(session['left']) / 'visible.txt').exists())
 				self.assertTrue((Path(session['left']) / 'hidden.txt').exists())
 				self.assertTrue((Path(session['left']) / 'folder').is_dir())
@@ -153,6 +157,13 @@ class FmanUiLaunchTest(TestCase):
 			self.assertNotIn('deep', session)
 			self.assertFalse((left / 'deep').exists())
 
+	def test_launch_seeds_the_previous_version_in_session_settings(self):
+		with TemporaryDirectory() as temp:
+			session = self._launch(temp, previous_version='1.0.0')
+			settings = json.loads((Path(session['profile']) / 'Local' /
+				'Session.json').read_text(encoding='utf-8'))
+		self.assertEqual('1.0.0', settings['fman_version'])
+
 	def test_launch_starts_children_with_detached_launcher(self):
 		with TemporaryDirectory() as temp, \
 			patch.object(fman_ui, 'detached_popen',
@@ -193,9 +204,13 @@ class FmanUiLaunchTest(TestCase):
 				SimpleNamespace(left=None, right=None, large=0, deep=0,
 					core_settings='[1]'),
 				SimpleNamespace(left=None, right=None, large=0, deep=-1,
-					core_settings=None),
+					core_settings=None, previous_version=None),
 				SimpleNamespace(left=None, right=None, large=0, deep=5001,
-					core_settings=None),
+					core_settings=None, previous_version=None),
+				SimpleNamespace(left=None, right=None, large=0, deep=0,
+					core_settings=None, previous_version=' '),
+				SimpleNamespace(left=None, right=None, large=0, deep=0,
+					core_settings=None, previous_version=''),
 			):
 				with self.subTest(args=args), self.assertRaises(ValueError):
 					fman_ui._launch(args)
@@ -210,4 +225,9 @@ class FmanUiLaunchTest(TestCase):
 	def test_parser_accepts_deep(self):
 		args = parser().parse_args(['launch', '--deep', '10'])
 		self.assertEqual(10, args.deep)
+
+	def test_parser_accepts_previous_version(self):
+		args = parser().parse_args([
+			'launch', '--previous-version', '1.0.0'])
+		self.assertEqual('1.0.0', args.previous_version)
 
