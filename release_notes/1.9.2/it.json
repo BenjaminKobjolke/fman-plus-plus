@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Scelte sulla privacy più chiare e navigazione più fluida",
+  "notes": [
+    "Novità: scegli separatamente se consentire a fman di inviare statistiche di utilizzo e segnalazioni di errori; le tue scelte vengono confermate nella barra di stato.",
+    "Miglioramenti: la navigazione nel visualizzatore include ora scorciatoie predefinite ed è possibile rimuovere le scorciatoie personalizzate dall’elenco.",
+    "Correzioni: gli archivi compressi aggiornano automaticamente il pannello, mentre gli alberi delle cartelle e i visualizzatori restano sincronizzati quando cambia l’elenco dei file sottostante."
+  ]
+}

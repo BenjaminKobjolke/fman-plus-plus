@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Selgemad privaatsusvalikud ja sujuvam navigeerimine",
+  "notes": [
+    "Uus: Vali eraldi, kas fman saadab kasutusstatistikat ja veateateid. Sinu valikud kinnitatakse olekuribal.",
+    "Täiustatud: Vaaturis navigeerimiseks on nüüd ka vaikeotseteed ning kohandatud otseteed saab otseteede loendist eemaldada.",
+    "Parandatud: Pakitud arhiivide paan värskendatakse automaatselt ning kaustapuud ja vaaturid püsivad sünkroonis, kui aluseks olev faililoend muutub."
+  ]
+}

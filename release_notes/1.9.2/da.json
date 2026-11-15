@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Tydeligere privatlivsvalg og mere problemfri navigation",
+  "notes": [
+    "Nyt: Vælg separat, om fman må sende brugsstatistikker og fejlrapporter. Dine valg bekræftes på statuslinjen.",
+    "Forbedret: Navigation i fremviseren omfatter nu standardgenveje, og brugerdefinerede genveje kan fjernes fra genvejslisten.",
+    "Rettet: Komprimerede arkiver opdaterer automatisk deres panel, mens mappetræer og fremvisere holdes synkroniseret, når den underliggende filliste ændres."
+  ]
+}

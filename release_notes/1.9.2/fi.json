@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Selkeämmät tietosuoja-asetukset ja sujuvampi navigointi",
+  "notes": [
+    "Uutta: Voit valita erikseen, lähettääkö fman käyttötilastoja ja virheraportteja. Valintasi vahvistetaan tilarivillä.",
+    "Parannettu: Katselimen navigointi sisältää nyt oletuspikanäppäimet, ja mukautettuja pikanäppäimiä voi poistaa pikanäppäinluettelosta.",
+    "Korjattu: Pakatut arkistot päivittävät oman ruutunsa automaattisesti. Kansiorakenteet ja katselimet pysyvät myös ajan tasalla, kun taustalla oleva tiedostoluettelo muuttuu."
+  ]
+}

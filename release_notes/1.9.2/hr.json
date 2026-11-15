@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Jasnije mogućnosti zaštite privatnosti i jednostavnija navigacija",
+  "notes": [
+    "Novo: Zasebno odaberite hoće li fman slati statistiku korištenja i izvješća o pogreškama; vaš će odabir biti potvrđen u statusnoj traci.",
+    "Poboljšano: Navigacija preglednikom sada uključuje zadane prečace, a prilagođene prečace možete ukloniti s popisa.",
+    "Ispravljeno: Okno komprimiranih arhiva automatski se osvježava, a stabla mapa i preglednici ostaju sinkronizirani kada se promijeni popis datoteka u pozadini."
+  ]
+}

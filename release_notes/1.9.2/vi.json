@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Tùy chọn quyền riêng tư rõ ràng hơn, điều hướng mượt mà hơn",
+  "notes": [
+    "Mới: Chọn riêng việc fman gửi thống kê sử dụng và báo cáo lỗi hay không; lựa chọn của bạn sẽ được xác nhận trên thanh trạng thái.",
+    "Cải tiến: Giờ đây, trình xem có các phím tắt mặc định và bạn có thể xóa phím tắt tùy chỉnh khỏi danh sách.",
+    "Đã sửa: Các kho lưu trữ nén tự động làm mới ngăn hiển thị; cây thư mục và trình xem luôn đồng bộ khi danh sách tệp bên dưới thay đổi."
+  ]
+}

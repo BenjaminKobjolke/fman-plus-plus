@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Aiškesni privatumo pasirinkimai ir sklandesnis naršymas",
+  "notes": [
+    "Nauja: Atskirai pasirinkite, ar „fman“ siunčia naudojimo statistiką ir klaidų ataskaitas. Jūsų pasirinkimai patvirtinami būsenos juostoje.",
+    "Patobulinta: Peržiūros programoje dabar yra numatytieji spartieji klavišai, o pasirinktinius sparčiuosius klavišus galima pašalinti iš sąrašo.",
+    "Ištaisyta: Suglaudintų archyvų sritis dabar atnaujinama automatiškai, o aplankų medžiai ir peržiūros programos išlieka sinchronizuoti pasikeitus pagrindiniam failų sąrašui."
+  ]
+}

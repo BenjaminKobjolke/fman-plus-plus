@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Jasniji izbori privatnosti i lakša navigacija",
+  "notes": [
+    "Novo: Izaberite zasebno da li fman šalje statistiku korišćenja i izveštaje o greškama, a vaši izbori biće potvrđeni na statusnoj traci.",
+    "Poboljšano: Navigacija u pregledaču sada uključuje podrazumevane prečice, a prilagođene prečice mogu da se uklone sa liste prečica.",
+    "Ispravljeno: Prikaz panela sa arhivama automatski se osvežava, dok stabla fascikli i pregledači ostaju sinhronizovani kada se promeni osnovna lista datoteka."
+  ]
+}

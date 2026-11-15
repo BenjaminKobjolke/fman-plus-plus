@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Clearer privacy choices and smoother navigation",
+  "notes": [
+    "New: Choose separately whether fman sends usage statistics and error reports, with your choices confirmed in the status bar.",
+    "Improved: Viewer navigation now includes default shortcuts, and custom shortcuts can be removed from the shortcut list.",
+    "Fixed: Packed archives refresh their pane automatically, while folder trees and viewers stay in sync when the underlying file list changes."
+  ]
+}

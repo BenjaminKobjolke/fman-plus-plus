@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Jasnejše izbire glede zasebnosti in bolj tekoče krmarjenje",
+  "notes": [
+    "Novo: Ločeno izberite, ali naj fman pošilja statistiko uporabe in poročila o napakah; vaša izbira bo potrjena v vrstici stanja.",
+    "Izboljšano: Krmarjenje po pregledovalniku zdaj vključuje privzete bližnjice, bližnjice po meri pa je mogoče odstraniti s seznama bližnjic.",
+    "Popravljeno: Podokno s stisnjenimi arhivi se samodejno osveži, drevesa map in pregledovalniki pa ostanejo usklajeni, ko se spremeni seznam datotek."
+  ]
+}

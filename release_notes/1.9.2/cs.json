@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Srozumitelnější nastavení soukromí a plynulejší navigace",
+  "notes": [
+    "Novinka: Můžete samostatně zvolit, zda má fman odesílat statistiky používání a hlášení chyb. Vaše volby se potvrzují ve stavovém řádku.",
+    "Vylepšení: Navigace v prohlížeči nyní zahrnuje výchozí klávesové zkratky a vlastní zkratky lze ze seznamu odebrat.",
+    "Oprava: Panel s archivem se automaticky obnovuje. Stromové zobrazení složek i prohlížeče zůstávají synchronizované, když se změní seznam souborů na disku."
+  ]
+}

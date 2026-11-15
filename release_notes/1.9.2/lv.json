@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Skaidrākas privātuma izvēles un ērtāka navigācija",
+  "notes": [
+    "Jaunums: Atsevišķi izvēlieties, vai fman sūtīt lietojuma statistiku un kļūdu ziņojumus. Jūsu izvēles tiks apstiprinātas statusa joslā.",
+    "Uzlabots: Skatītāja navigācijai tagad ir noklusējuma īsinājumtaustiņi, un pielāgotos īsinājumtaustiņus var noņemt no saraksta.",
+    "Labots: Saspiesto arhīvu rūts tiek automātiski atsvaidzināta, savukārt mapju koki un skatītāji paliek sinhronizēti, kad mainās pamatā esošais failu saraksts."
+  ]
+}

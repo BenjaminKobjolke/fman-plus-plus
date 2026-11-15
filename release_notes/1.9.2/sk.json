@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Prehľadnejšie nastavenia súkromia a plynulejšia navigácia",
+  "notes": [
+    "Novinka: Samostatne si môžete vybrať, či má fman odosielať štatistiky používania a hlásenia o chybách. Vaše voľby sa potvrdia v stavovom riadku.",
+    "Vylepšenie: Navigácia v prehliadači teraz obsahuje predvolené klávesové skratky a vlastné skratky možno zo zoznamu odstrániť.",
+    "Oprava: Panel zabalených archívov sa teraz obnovuje automaticky a stromové zobrazenia priečinkov aj prehliadače zostávajú synchronizované pri zmene podkladového zoznamu súborov."
+  ]
+}

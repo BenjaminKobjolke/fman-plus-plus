@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Átláthatóbb adatvédelmi beállítások és gördülékenyebb navigáció",
+  "notes": [
+    "Újdonság: Külön-külön dönthetsz arról, hogy az fman küldjön-e használati statisztikákat és hibajelentéseket. A választásodat az állapotsorban is megerősítheted.",
+    "Fejlesztés: A megjelenítőben való navigáció mostantól alapértelmezett billentyűparancsokat is tartalmaz, az egyéni billentyűparancsok pedig eltávolíthatók a billentyűparancs-listáról.",
+    "Javítva: A tömörített archívumok panelje automatikusan frissül, a mappafák és a megjelenítők pedig szinkronban maradnak, amikor megváltozik a mögöttes fájllista."
+  ]
+}

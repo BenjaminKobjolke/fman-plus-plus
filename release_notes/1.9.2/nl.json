@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Duidelijkere privacykeuzes en soepelere navigatie",
+  "notes": [
+    "Nieuw: Kies afzonderlijk of fman gebruiksstatistieken en foutrapporten verstuurt. Je keuzes worden bevestigd in de statusbalk.",
+    "Verbeterd: De navigatie in de viewer bevat nu standaardsneltoetsen en aangepaste sneltoetsen kunnen uit de lijst worden verwijderd.",
+    "Opgelost: Deelvensters met gecomprimeerde archieven worden automatisch vernieuwd. Mapstructuren en viewers blijven bovendien synchroon wanneer de onderliggende bestandslijst verandert."
+  ]
+}

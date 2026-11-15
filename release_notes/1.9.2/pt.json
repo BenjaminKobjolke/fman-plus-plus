@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Opções de privacidade mais claras e navegação mais fluida",
+  "notes": [
+    "Novo: Escolha separadamente se o fman envia estatísticas de utilização e relatórios de erros. As suas opções são confirmadas na barra de estado.",
+    "Melhorado: A navegação no visualizador inclui agora atalhos predefinidos, e é possível remover atalhos personalizados da lista.",
+    "Corrigido: Os arquivos comprimidos atualizam automaticamente o respetivo painel, enquanto as árvores de pastas e os visualizadores se mantêm sincronizados quando a lista de ficheiros subjacente é alterada."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Opțiuni de confidențialitate mai clare și navigare mai fluidă",
+  "notes": [
+    "Nou: Alege separat dacă fman trimite statistici de utilizare și rapoarte de eroare; opțiunile alese sunt confirmate în bara de stare.",
+    "Îmbunătățit: Navigarea în vizualizator include acum comenzi rapide implicite, iar comenzile rapide personalizate pot fi eliminate din listă.",
+    "Remediat: Panoul arhivelor se actualizează automat, iar arborii de directoare și vizualizatoarele rămân sincronizate atunci când se modifică lista de fișiere subiacentă."
+  ]
+}

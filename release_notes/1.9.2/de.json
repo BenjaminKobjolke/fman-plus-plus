@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Übersichtlichere Datenschutzeinstellungen und flüssigere Navigation",
+  "notes": [
+    "Neu: Legen Sie getrennt fest, ob fman Nutzungsstatistiken und Fehlerberichte sendet. Ihre Auswahl wird in der Statusleiste bestätigt.",
+    "Verbessert: Für die Navigation im Betrachter sind jetzt Standard-Tastenkürzel verfügbar. Eigene Tastenkürzel lassen sich aus der Tastenkürzelliste entfernen.",
+    "Behoben: Komprimierte Archive aktualisieren ihren Bereich automatisch. Ordnerbäume und Betrachter bleiben außerdem synchron, wenn sich die zugrunde liegende Dateiliste ändert."
+  ]
+}

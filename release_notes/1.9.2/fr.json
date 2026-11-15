@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Des choix de confidentialité plus clairs et une navigation plus fluide",
+  "notes": [
+    "Nouveau : choisissez séparément si fman peut envoyer des statistiques d’utilisation et des rapports d’erreur. Vos choix sont confirmés dans la barre d’état.",
+    "Amélioration : la navigation dans la visionneuse inclut désormais des raccourcis par défaut, et vous pouvez supprimer les raccourcis personnalisés de la liste.",
+    "Correction : les archives compressées actualisent automatiquement leur volet, tandis que les arborescences de dossiers et les visionneuses restent synchronisées lorsque la liste de fichiers sous-jacente change."
+  ]
+}

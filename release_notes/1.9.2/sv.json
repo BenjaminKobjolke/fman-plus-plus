@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Tydligare sekretessval och smidigare navigering",
+  "notes": [
+    "Nytt: Välj separat om fman ska skicka användningsstatistik och felrapporter. Dina val bekräftas i statusfältet.",
+    "Förbättrat: Navigeringen i visaren har nu standardgenvägar, och anpassade genvägar kan tas bort från genvägslistan.",
+    "Åtgärdat: Komprimerade arkiv uppdaterar automatiskt sin panel, samtidigt som mappträd och visare hålls synkroniserade när den underliggande fillistan ändras."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Tydeligere personvernvalg og enklere navigering",
+  "notes": [
+    "Nytt: Velg separat om fman skal sende bruksstatistikk og feilrapporter. Valgene dine bekreftes på statuslinjen.",
+    "Forbedret: Navigering i visningsprogrammet omfatter nå standardtaster, og egendefinerte hurtigtaster kan fjernes fra listen.",
+    "Rettet: Komprimerte arkiver oppdaterer ruten automatisk, mens mappetrær og visningsprogrammer holdes synkronisert når den underliggende fillisten endres."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Opciones de privacidad más claras y navegación más fluida",
+  "notes": [
+    "Nuevo: Elige por separado si fman envía estadísticas de uso e informes de errores; tus elecciones se confirmarán en la barra de estado.",
+    "Mejorado: La navegación del visor ahora incluye atajos predeterminados, y puedes eliminar los atajos personalizados de la lista.",
+    "Corregido: Los archivos comprimidos actualizan su panel automáticamente, mientras que los árboles de carpetas y los visores se mantienen sincronizados cuando cambia la lista de archivos subyacente."
+  ]
+}

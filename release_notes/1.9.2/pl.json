@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Czytelniejsze ustawienia prywatności i płynniejsza nawigacja",
+  "notes": [
+    "Nowość: Możesz osobno wybrać, czy fman ma wysyłać statystyki użycia i raporty o błędach. Dokonane wybory są potwierdzane na pasku stanu.",
+    "Ulepszenie: Nawigacja w przeglądarce zawiera teraz domyślne skróty, a własne skróty można usuwać z listy.",
+    "Poprawka: Widok spakowanych archiwów odświeża się automatycznie, a drzewa folderów i przeglądarki pozostają zsynchronizowane po zmianie listy plików."
+  ]
+}

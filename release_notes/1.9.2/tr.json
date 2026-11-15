@@ -1,0 +1,10 @@
+{
+  "version": "1.9.2",
+  "date": "2026-11-15",
+  "title": "Daha anlaşılır gizlilik seçenekleri ve daha akıcı gezinme",
+  "notes": [
+    "Yeni: fman'ın kullanım istatistiklerini ve hata raporlarını gönderip göndermeyeceğini ayrı ayrı seçin; seçimleriniz durum çubuğunda onaylanır.",
+    "İyileştirildi: Görüntüleyicide gezinme artık varsayılan kısayolları içeriyor ve özel kısayollar kısayol listesinden kaldırılabiliyor.",
+    "Düzeltildi: Sıkıştırılmış arşivler bölmelerini otomatik olarak yeniliyor; klasör ağaçları ve görüntüleyiciler de temel dosya listesi değiştiğinde eşitlenmiş kalıyor."
+  ]
+}
