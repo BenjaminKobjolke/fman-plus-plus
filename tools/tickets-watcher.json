@@ -177,6 +177,10 @@
     "src/build/settings/windows.json",
     "src/unittest/**",
     "src/integrationtest/**",
-    "src/main/python/fman/impl/scripting/**"
+    "src/main/python/fman/impl/scripting/**",
+    "bin/**",
+    "src/installer/**",
+    "src/repo/**",
+    "src/sign/**"
   ]
 }
