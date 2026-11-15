@@ -365,8 +365,12 @@ composing stale inputs.
   pane commands act on the tree's folder. After the Move prompt the demo presses
   F2 on `projects`, takes stills of the inline editor and of the kept name after
   Escape, then renames it to `clients` with Enter and takes a still of the
-  renamed row, so the check can judge in-place rename in the tree. A change to
-  which item tree commands act on should add a still here.
+  renamed row, so the check can judge in-place rename in the tree. It then runs
+  Go up, Select all and Show volumes with the tree open and takes a still after
+  each, so the screenshot check can judge that navigation and unsupported
+  commands close the tree (#16569). The Show volumes still shows the recording
+  machine's drives. A change to which item tree commands act on should add a
+  still here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.

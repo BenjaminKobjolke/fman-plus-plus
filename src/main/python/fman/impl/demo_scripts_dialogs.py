@@ -30,7 +30,8 @@ Demo 22 holds a folder tree still with the current folder expanded, then takes
 stills of Delete, Copy and Move from the palette with the tree cursor on
 `projects` while the file list cursor stays on `archive`. It then shows the
 inline rename editor, the unchanged row after Escape, and the renamed row after
-Enter.
+Enter. It then takes stills after Go up, Select all and Show volumes close the
+tree.
 """
 
 from automated_screenshot_connector import (
@@ -271,6 +272,20 @@ DIALOG_CLIPS = {
 			TypeText('clients'), Pause(0.8),
 			PressKey('Return'), Pause(2.0),
 			Screenshot('folder-tree-renamed'),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('go up'), Pause(2.0),
+			Screenshot('folder-tree-closed-by-go-up'),
+			PressKey('Return'), Pause(2.0),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('toggle folder tree'), Pause(4.0),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('select all'), Pause(1.5),
+			Screenshot('folder-tree-closed-by-select-all'),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('toggle folder tree'), Pause(4.0),
+			PressKey('Ctrl+Shift+P'), Pause(0.6),
+			Command('show volumes'), Pause(2.5),
+			Screenshot('folder-tree-closed-by-show-volumes'),
 			Pause(1.0),
 		),
 	),
