@@ -24,6 +24,7 @@ import inspect
 EXPECTED = frozenset({
 	'About', 'AddPane', 'ArchiveOpenListener', 'CenterWindow', 'ChangeLanguage',
 	'CheckForUpdates', 'SetAutomaticUpdateInterval', 'PluginSyncOnStartup',
+	'CloseMountedViewOnLeave',
 	'ClearHiddenAttribute',
 	'ClearLastVisitedHistory',
 	'CommandPalette', 'CompareDirectories', 'Copy', 'CopyFileName', 'CopyFilePath',
