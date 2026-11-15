@@ -2,7 +2,7 @@ from fbs_runtime.platform import is_mac
 from fman import translate
 from fman.localization_keys import QUICKSEARCH_TITLE
 from fman.impl.edge_grip import EdgeGrip, place_grips
-from fman.impl.quicksearch_elide import elide_title_left, shift_highlight
+from fman.impl.quicksearch_elide import elide_title
 from fman.impl.quicksearch_height import fit_list_min_height
 from fman.impl.quicksearch_exit_keys import QuicksearchExit, find_exit_key
 from fman.impl.quicksearch_more_actions import (
@@ -417,11 +417,10 @@ class QuicksearchItemRenderer:
 			available_width -= QFontMetrics(hint_font).horizontalAdvance(
 				self._hint
 			) + self._padding_right
-		shown_title, removed_chars = elide_title_left(
-			self._title, font, available_width
+		shown_title, highlight = elide_title(
+			self._title, self._highlight, font, available_width
 		)
 		layout = self._layout_text(shown_title, font)[0]
-		highlight = shift_highlight(self._highlight, removed_chars)
 		highlight_formats = self._get_highlight_formats(highlight)
 		painter.setPen(self._css['title']['color'])
 		pos = self._option.rect.topLeft() \

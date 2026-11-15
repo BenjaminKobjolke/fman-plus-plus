@@ -5,6 +5,7 @@ from PyQt5.QtCore import QEvent, QPoint, QPointF, Qt
 from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
+from unittest.mock import patch
 
 
 class LocationBarTest(TestCase):
@@ -60,6 +61,103 @@ class LocationBarTest(TestCase):
 		self._move_to_text('current')
 
 		self.assertEqual(Qt.ArrowCursor, self.bar.cursor().shape())
+
+	def test_shortens_deep_paths_and_keeps_the_head_and_current_folder(self):
+		self._use_deep_path()
+
+		self.assertIn('…', self.bar.text())
+		self.assertTrue(self.bar.text().startswith(r'C:\Users'))
+		self.assertTrue(self.bar.text().endswith(r'\fman\src'))
+
+	def test_tooltip_always_contains_the_full_human_readable_path(self):
+		path = 'zip://root/parent/current'
+		self.bar.set_location(path)
+
+		self.assertEqual(path, self.bar.toolTip())
+
+	def test_clicking_a_visible_parent_after_ellipsis_opens_it(self):
+		self._use_deep_path()
+		self._click_text('fman')
+
+		self.assertEqual(
+			['file://C:/Users/bob/Documents/Projects/fman'],
+			self.segment_clicks,
+		)
+		self.assertEqual([], self.go_to_clicks)
+
+	def test_clicking_ellipsis_shows_hidden_parent_menu_in_order(self):
+		self._use_deep_path()
+		shown_segments = []
+
+		def show_menu(segments, _pos):
+			shown_segments.extend(segments)
+			self.bar.segment_clicked.emit(segments[-1].url)
+
+		with patch.object(self.bar, '_show_hidden_menu', side_effect=show_menu):
+			self._click_text('…')
+
+		self.assertEqual(
+			[
+				'file://C:/Users/bob',
+				'file://C:/Users/bob/Documents',
+				'file://C:/Users/bob/Documents/Projects',
+			],
+			[segment.url for segment in shown_segments],
+		)
+		self.assertEqual(
+			['file://C:/Users/bob/Documents/Projects'], self.segment_clicks
+		)
+		self.assertEqual([], self.go_to_clicks)
+
+	def test_hidden_menu_emits_the_selected_folder(self):
+		self._use_deep_path()
+		segments = self.bar._hidden_segments(self.bar._shortened.hidden[0])
+		menu_labels = []
+
+		def choose_last_action(menu, *_args):
+			menu_labels.extend(action.text() for action in menu.actions())
+			return menu.actions()[-1]
+
+		with patch(
+			'fman.impl.view.location_bar.QMenu.exec_',
+			new=choose_last_action,
+		):
+			self.bar._show_hidden_menu(segments, QPoint(0, self.bar.height()))
+
+		self.assertEqual(['bob', 'Documents', 'Projects'], menu_labels)
+		self.assertEqual(
+			['file://C:/Users/bob/Documents/Projects'], self.segment_clicks
+		)
+
+	def test_resizing_recomputes_shortening_and_restores_full_path(self):
+		self._use_deep_path()
+		self.assertIn('…', self.bar.text())
+
+		self.bar.resize(1000, 30)
+		self.app.processEvents()
+
+		self.assertEqual(self.bar.toolTip(), self.bar.text())
+
+	def test_disabled_clickable_path_uses_go_to_for_ellipsis(self):
+		self._use_deep_path()
+		self.bar.set_clickable(False)
+		self._click_text('…')
+
+		self.assertEqual([], self.segment_clicks)
+		self.assertEqual([True], self.go_to_clicks)
+
+	def test_hovering_ellipsis_shows_pointing_hand(self):
+		self._use_deep_path()
+		self._move_to_text('…')
+
+		self.assertEqual(Qt.PointingHandCursor, self.bar.cursor().shape())
+
+	def _use_deep_path(self):
+		self.bar.setMinimumWidth(0)
+		self.bar.set_location(
+			'file://C:/Users/bob/Documents/Projects/fman/src'
+		)
+		self.bar.resize(120, 30)
 
 	def _click_text(self, text):
 		self._click(self._text_position(text))

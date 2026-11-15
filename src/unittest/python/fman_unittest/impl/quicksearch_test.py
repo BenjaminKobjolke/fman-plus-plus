@@ -8,7 +8,9 @@ from PyQt5.QtWidgets import QApplication, QStyleOptionViewItem, QWidget
 
 from fman import QuicksearchItem, QuicksearchExit
 from fman.impl.quicksearch import Quicksearch, QuicksearchItemRenderer
-from fman.impl.quicksearch_elide import elide_title_left, shift_highlight
+from fman.impl.quicksearch_elide import (
+	elide_title, elide_title_left, shift_highlight,
+)
 from fman.impl.quicksearch_more_actions import (
 	footer_text, is_more_click, more_button_rect,
 )
@@ -419,17 +421,47 @@ class QuicksearchTest(TestCase):
 
 	def test_elide_title_left_keeps_the_end_of_an_overlong_title(self):
 		font = QFont()
-		shown, removed = elide_title_left('a very long folder name', font, 130)
+		shown, removed = elide_title_left('a very long folder name', font, 100)
 		self.assertTrue(shown.startswith('…'))
 		self.assertTrue(shown.endswith('name'))
 		self.assertGreater(removed, 0)
 
 	def test_elide_title_left_accepts_a_fractional_width(self):
 		font = QFont()
-		shown, removed = elide_title_left('a very long folder name', font, 130.5)
+		shown, removed = elide_title_left('a very long folder name', font, 100.5)
 		self.assertTrue(shown.startswith('…'))
 		self.assertTrue(shown.endswith('name'))
 		self.assertGreater(removed, 0)
+
+	def test_path_title_preserves_a_fitting_title_and_highlight(self):
+		title = r'C:\a\b\c'
+		shown, highlight = elide_title(title, [3], QFont(), 1000)
+
+		self.assertEqual((title, [3]), (shown, highlight))
+
+	def test_path_title_shortens_a_long_path_keeping_both_ends(self):
+		title = r'C:\Users\bob\Documents\Projects\fman\src'
+		shown, _highlight = elide_title(title, [], QFont(), 180)
+
+		self.assertIn('…', shown)
+		self.assertTrue(shown.startswith(r'C:\Users'))
+		self.assertTrue(shown.endswith(r'\src'))
+
+	def test_path_title_keeps_and_remaps_a_highlighted_folder(self):
+		title = r'C:\Users\bob\Documents\Projects\fman\src'
+		highlight = title.index('Projects') + 2
+		shown, mapped = elide_title(title, [highlight], QFont(), 180)
+
+		self.assertIn('Projects', shown)
+		self.assertEqual(title[highlight], shown[mapped[0]])
+
+	def test_path_title_left_elides_non_path_titles(self):
+		shown, _highlight = elide_title(
+			'a very long folder name', [], QFont(), 100
+		)
+
+		self.assertTrue(shown.startswith('…'))
+		self.assertTrue(shown.endswith('name'))
 
 	def test_resize_to_widens_and_keeps_the_dialog_centered(self):
 		default_width = self.dialog.width()
