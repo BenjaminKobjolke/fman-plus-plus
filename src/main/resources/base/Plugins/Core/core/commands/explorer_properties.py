@@ -1,6 +1,7 @@
 from fman import DirectoryPaneCommand, show_alert
 from fman.fs import resolve
 from fman.url import splitscheme, as_human_readable, basename, dirname
+from .properties_placement import PropertiesPlacer
 
 import ctypes.wintypes
 import os
@@ -34,14 +35,14 @@ class ShowExplorerProperties(DirectoryPaneCommand):
 				# Either we're in an empty folder, or the user
 				# right-clicked inside a directory.
 				if self._is_drive(path):
-					return lambda: _show_drive_properties(path)
+					return lambda: _show_drive_properties(self.pane, path)
 				else:
 					dir_ = as_human_readable(dirname(location))
 					filenames = [basename(location)]
 			else:
 				dir_ = as_human_readable(location)
 				filenames = [basename(f) for f in chosen_files]
-			return lambda: _show_file_properties(dir_, filenames)
+			return lambda: _show_file_properties(self.pane, dir_, filenames)
 		elif scheme == 'drives://':
 			if file_under_cursor is None:
 				# This usually happens when the user right-clicked in the drive
@@ -49,7 +50,7 @@ class ShowExplorerProperties(DirectoryPaneCommand):
 				return None
 			drive = splitscheme(file_under_cursor)[1]
 			if self._is_drive(drive):
-				return lambda: _show_drive_properties(drive)
+				return lambda: _show_drive_properties(self.pane, drive)
 		elif scheme == 'network://':
 			# We check `path` because when it's empty, we're at the
 			# overview of network locations. Servers don't have a Properties
@@ -68,21 +69,25 @@ class ShowExplorerProperties(DirectoryPaneCommand):
 				else:
 					return
 				filenames = [basename(f) for f in chosen_files]
-				return lambda: _show_file_properties(dir_, filenames)
+				return lambda: _show_file_properties(self.pane, dir_, filenames)
 	def is_visible(self):
 		return bool(self._get_action())
 	def _is_drive(self, path):
 		return re.match('^[A-Z]:$', path)
 
-def _show_file_properties(dir_, filenames):
+def _show_file_properties(pane, dir_, filenames):
+	placer = PropertiesPlacer(pane, expected=len(filenames))
 	# ShellExecuteEx opens one dialog per file, so multi-select shows a dialog
 	# per selected file. Combining them into a single dialog would need
 	# SHMultiFileProperties, which isn't available in this pywin32 build.
 	for filename in filenames:
 		_show_properties_via_shellexecute(os.path.join(dir_, filename))
+	placer.watch()
 
-def _show_drive_properties(drive_nobackslash):
+def _show_drive_properties(pane, drive_nobackslash):
+	placer = PropertiesPlacer(pane, expected=1)
 	_show_properties_via_shellexecute(drive_nobackslash + '\\')
+	placer.watch()
 
 def _show_properties_via_shellexecute(path):
 	# Invoke the shell "properties" verb through ShellExecuteEx. We deliberately
