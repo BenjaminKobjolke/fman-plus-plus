@@ -506,6 +506,50 @@ class DemoSetupTest(unittest.TestCase):
 		)
 		self.assertEqual(first_key_after_question.chord, 'Escape')
 
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
+	def test_properties_demo_takes_native_dialog_stills_and_closes_between_them(self):
+		from automated_screenshot_connector.steps import (
+			CustomStep, SendKey, SendScreenshot, flatten,
+		)
+		from fman.impl.demo import CloseNativeDialogs, ScreenStill
+		from fman.impl.demo_scripts import DEMOS
+
+		demo = DEMOS[26]
+		actions = [
+			action.step if isinstance(action, CustomStep) else action
+			for _, action in flatten(demo.steps)
+		]
+		still_names = [
+			action.name for action in actions
+			if isinstance(action, ScreenStill)
+		]
+
+		self.assertEqual(demo.name, 'properties')
+		self.assertEqual(
+			still_names,
+			[
+				'properties-file',
+				'properties-cascade',
+				'properties-bottom-edge',
+			],
+		)
+		self.assertFalse(any(
+			isinstance(action, SendScreenshot) for action in actions
+		))
+		for index, action in enumerate(actions):
+			if not isinstance(action, ScreenStill):
+				continue
+			previous_key = next(
+				candidate for candidate in reversed(actions[:index])
+				if isinstance(candidate, SendKey)
+			)
+			self.assertEqual(previous_key.chord, 'Alt+Enter')
+			if index < len(actions) - 1:
+				self.assertIsInstance(actions[index + 1], CloseNativeDialogs)
+
 
 if __name__ == '__main__':
 	unittest.main()

@@ -37,10 +37,19 @@ from automated_screenshot_connector.steps import (
 	CustomStep, InsertChar, PressReturn, SendKey, SendScreenshot, flatten,
 )
 
+try:
+	import win32api
+	import win32gui
+	import win32process
+except ImportError:
+	win32api = win32gui = win32process = None
+
 # Let the window finish its first paint before the demo starts typing.
 START_DELAY_MS = 500
 # Hold the final state briefly so the recording doesn't end abruptly.
 END_HOLD_MS = 1000
+_DIALOG_CLASS = '#32770'
+_WM_CLOSE = 0x0010
 
 
 @dataclass(frozen=True)
@@ -55,6 +64,11 @@ class ScreenStill:
 	Separate windows such as the progress window are included in the capture.
 	"""
 	name: str
+
+
+@dataclass(frozen=True)
+class CloseNativeDialogs:
+	"""Close this process's native shell dialogs and return focus to the file list."""
 
 
 @dataclass(frozen=True)
@@ -152,6 +166,9 @@ class DemoPlayer(QObject):
 			elif isinstance(action.step, WaitForOverwriteQuestion):
 				self._wait_for_overwrite_question(action.step)
 				return
+			elif isinstance(action.step, CloseNativeDialogs):
+				self._close_native_dialogs()
+				return
 			elif isinstance(action.step, LaunchFman):
 				self._launch_fman(action.step)
 			elif isinstance(action.step, ExpectChildWindow):
@@ -162,6 +179,33 @@ class DemoPlayer(QObject):
 				return
 			# Other custom steps remain ignored; a Wait's delay already elapsed.
 		self._advance()
+
+	def _close_native_dialogs(self):
+		if win32gui is None or win32api is None or win32process is None:
+			logging.getLogger(__name__).warning(
+				'Cannot close native demo dialogs because pywin32 is unavailable.'
+			)
+		else:
+			process_id = os.getpid()
+
+			def close_own_dialog(hwnd, _):
+				if not win32gui.IsWindowVisible(hwnd):
+					return
+				if win32gui.GetClassName(hwnd) != _DIALOG_CLASS:
+					return
+				_, window_process_id = win32process.GetWindowThreadProcessId(hwnd)
+				if window_process_id == process_id:
+					win32api.PostMessage(hwnd, _WM_CLOSE, 0, 0)
+
+			win32gui.EnumWindows(close_own_dialog, None)
+
+		def restore_focus():
+			self._window.activateWindow()
+			pane = self._plugin_support.get_active_pane()
+			pane._widget._view_mode.visible_view().setFocus()
+			self._advance()
+
+		QTimer.singleShot(500, restore_focus)
 
 	def _wait_for_overwrite_question(self, step):
 		from fman.impl.overwrite_dialog import OverwriteDialog

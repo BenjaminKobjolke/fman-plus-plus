@@ -29,6 +29,8 @@ over a socket so the tool can capture the window. The wiring:
   merged into `DEMOS` the same way as the tour chapters below.
 - `src/main/python/fman/impl/demo_scripts_listing.py` — the focused `listing`
   stills, merged into `DEMOS` by `demo_scripts.py`.
+- `src/main/python/fman/impl/demo_scripts_properties.py` — the focused native
+  Windows Properties stills, merged into `DEMOS` by `demo_scripts.py`.
 - `src/main/python/fman/impl/demo_scripts_tour.py` — the `tour-*` chapters,
   merged into `DEMOS` by `demo_scripts.py`. Split out to keep both files
   under the project's 300-line limit.
@@ -329,6 +331,15 @@ composing stale inputs.
   *Toggle usage statistics*, and its status message.
   It exists so the screenshot check can judge startup consent and usage-statistics
   changes. Its stills are gitignored (`media/demos/usage-consent/`).
+- **26 `properties`** — opens Windows Properties for one file, a three-file
+  selection and the last row near the bottom of the list. The stills
+  `properties-file`, `properties-cascade` and `properties-bottom-edge` use
+  `ScreenStill`, because the native Properties windows are not part of a Qt
+  window grab; recording them needs an unlocked desktop. `CloseNativeDialogs`
+  closes fman's shell dialogs and restores the file-list focus between scenes.
+  Its stills are gitignored (`media/demos/properties/`). The two-monitor case
+  (mouse on one screen and fman on another) stays a by-hand check. A change to
+  Properties placement should add a still here.
 - **17 `ftp-overwrite`** — records an FTP folder upload with an existing file,
   showing the progress window before the overwrite question, hidden while the
   question is open, and back after answering. It needs `FMAN_FTPClient` installed

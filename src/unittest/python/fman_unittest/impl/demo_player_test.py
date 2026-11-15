@@ -21,7 +21,8 @@ if CONNECTOR_AVAILABLE:
 		SendScreenshot,
 	)
 	from fman.impl.demo import (
-		DemoPlayer, ExpectChildWindow, ExpectForwarded, LaunchFman,
+		CloseNativeDialogs, DemoPlayer, ExpectChildWindow, ExpectForwarded,
+		LaunchFman,
 		OpenContextMenu, ScreenStill,
 		WaitForOverwriteQuestion,
 	)
@@ -256,6 +257,52 @@ class DemoPlayerTest(TestCase):
 			player._execute(CustomStep(ScreenStill('new-window')))
 
 		client.send_screenshot.assert_called_once_with('new-window', hwnd=456)
+
+	def test_close_native_dialogs_closes_only_own_visible_shell_dialogs(self):
+		client = MagicMock(spec=DemoClient)
+		plugin_support = MagicMock()
+		pane = plugin_support.get_active_pane.return_value
+		view = pane._widget._view_mode.visible_view.return_value
+		player = DemoPlayer(
+			self.window, client,
+			DemoScript(
+				id=99, name='test',
+				steps=(CustomStep(CloseNativeDialogs()),),
+			),
+			1, MagicMock(), plugin_support=plugin_support,
+		)
+		windows = (101, 102, 103, 104)
+		visible = {101: True, 102: False, 103: True, 104: True}
+		classes = {101: '#32770', 102: '#32770', 103: '#32770', 104: 'Other'}
+		process_ids = {
+			101: os.getpid(), 102: os.getpid(), 103: 999, 104: os.getpid(),
+		}
+		win32gui = MagicMock()
+		win32gui.EnumWindows.side_effect = lambda callback, _: [
+			callback(hwnd, None) for hwnd in windows
+		]
+		win32gui.IsWindowVisible.side_effect = visible.__getitem__
+		win32gui.GetClassName.side_effect = classes.__getitem__
+		win32process = MagicMock()
+		win32process.GetWindowThreadProcessId.side_effect = lambda hwnd: (
+			0, process_ids[hwnd],
+		)
+		win32api = MagicMock()
+
+		with patch('fman.impl.demo.win32gui', win32gui):
+			with patch('fman.impl.demo.win32process', win32process):
+				with patch('fman.impl.demo.win32api', win32api):
+					with patch('fman.impl.demo.QTimer.singleShot') as single_shot:
+						with patch.object(self.window, 'activateWindow') as activate:
+							with patch.object(player, '_advance') as advance:
+								player._execute(CustomStep(CloseNativeDialogs()))
+								callback = single_shot.call_args.args[1]
+								callback()
+
+		win32api.PostMessage.assert_called_once_with(101, 0x0010, 0, 0)
+		activate.assert_called_once_with()
+		view.setFocus.assert_called_once_with()
+		advance.assert_called_once_with()
 
 	def test_overwrite_wait_captures_only_after_the_question_is_open(self):
 		from fman.impl.overwrite_dialog import OverwriteDialog
