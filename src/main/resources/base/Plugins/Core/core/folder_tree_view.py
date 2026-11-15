@@ -72,6 +72,8 @@ class FolderTreeView(DragAndDrop, QTreeView):
 			show_hidden, actions.drop, icon_provider, self
 		)
 		self._model.children_loaded.connect(self._on_children_loaded)
+		# Unmounting deletes the view, so closed-tree loads must not keep running.
+		self.destroyed.connect(self._model.stop)
 		self.setModel(self._model)
 		self.setItemDelegate(_FolderTreeItemDelegate(actions, self))
 		self.setHeaderHidden(True)
