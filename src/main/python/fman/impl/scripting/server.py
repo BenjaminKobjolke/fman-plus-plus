@@ -26,7 +26,9 @@ from fman.impl.scripting.config import (
 	WINDOW_PATH,
 )
 from fman.impl.scripting.actions import InvalidPane, UnknownCommand
-from fman.impl.scripting.automation import UnknownFile, UnsafeDrag
+from fman.impl.scripting.automation import (
+	FileListHidden, UnknownFile, UnsafeDrag,
+)
 from fman.impl.util.qt.key_events import parse_chord
 
 
@@ -290,6 +292,10 @@ class ScriptingServer:
 							pane, file_url, button, double)
 					except InvalidPane as error:
 						self._send_error(400, str(error))
+						return
+					except FileListHidden:
+						self._send_error(
+							409, 'The file list is hidden behind a mounted view.')
 						return
 					except UnknownFile:
 						self._send_error(404, 'Unknown file.')

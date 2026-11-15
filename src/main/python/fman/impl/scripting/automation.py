@@ -24,6 +24,11 @@ class UnknownFile(Exception):
 	"""Raised when a requested URL is not displayed in a pane."""
 
 
+class FileListHidden(Exception):
+	"""Raised when a mounted view (folder tree or viewer) covers the pane's
+	file list."""
+
+
 class UnsafeDrag(Exception):
 	"""Raised when a drag could start a file operation."""
 
@@ -74,6 +79,8 @@ class AutomationActions:
 	@run_in_main_thread
 	def click_file(self, pane_index, file_url, button='left', double=False):
 		pane = get_pane(self._plugin_support, self._main_window, pane_index)
+		if pane.get_mounted_widget() is not None:
+			raise FileListHidden(file_url)
 		view = pane._widget.get_file_view()
 		model = view.model()
 		try:
