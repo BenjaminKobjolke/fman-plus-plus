@@ -19,6 +19,16 @@ The generated left fixture also includes `video.mp4`, copied from the committed
 `--left` and `--right` folders are left untouched. `launch` includes a `build`
 object in its JSON result and saved session with the checkout's `version`,
 short `commit`, `dirty` status, `checkout_path`, and `python` executable.
+Every `launch` and `restart` result also includes `startup_prompts` with
+`demo_mode`, `update_check_scheduled`, and the current `dialog` value. The
+`--demo <id>` option starts fman in automation demo mode and leaves consent
+unanswered. Demo scripts send their own keys, which bypass the driver's pane
+guards; use demo `1` (overview, which stays in the fixture panes) for the quiet
+check and demo `25` (the usage-consent demo) as the positive control where
+`dialog` reports the consent `MessageBox`. Demo mode needs the demos dependency:
+run `uv sync --group demos`. The script plays its keys and fman quits about a
+second after it ends, so later commands report that fman exited; still run
+`close` to remove the isolated session.
 The isolated profile pre-answers fman's combined error-report and
 usage-statistics question, so it cannot swallow the first driver keys. Add
 `launch --first-start` to leave those answers unset and omit the profile's
@@ -182,7 +192,22 @@ options stay inside the temporary fixture and profile. The driver refuses
 input and commands when a pane leaves the session fixtures. Agents always run
 `tools\fman_ui.bat close` at the end,
 including when a check fails. Screenshots an agent wants to attach go under the
-ticket's `attach/validation/` folder.
+ticket's `attach/validation/` folder. Agents may also use `--demo` to inspect
+startup prompts.
+
+## Example: demo-mode startup prompts (validation task #2319)
+
+Demo `1` should report `demo_mode: true`, `update_check_scheduled: false`, and
+`dialog: null`. A plain launch is the comparison and should report
+`update_check_scheduled: true`. Demo `25` is the positive control: its
+`startup_prompts.dialog` should contain the consent `MessageBox`.
+
+```bat
+tools\fman_ui.bat launch --demo 1
+tools\fman_ui.bat close
+tools\fman_ui.bat launch
+tools\fman_ui.bat close
+```
 
 The driver starts fman outside the calling shell's job, so sandboxed agents can
 run each command in its own shell call. When a connection is refused, the error

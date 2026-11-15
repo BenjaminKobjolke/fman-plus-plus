@@ -22,6 +22,9 @@ def parser():
 			"shows the update message"))
 	launch.add_argument('--first-start', action='store_true',
 		help="start with no saved fman settings or session")
+	launch.add_argument('--demo', type=int, metavar='ID',
+		help=("start fman in automation demo mode with this demo id; "
+			"consent stays unanswered"))
 	for name in ('state', 'commands', 'close', 'dialog', 'restart', 'links'):
 		commands.add_parser(name)
 	viewer = commands.add_parser('viewer')

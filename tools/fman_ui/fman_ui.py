@@ -27,6 +27,7 @@ from session_reaper import (
 	SESSION_FILE, close_session, fman_process_identity, kill_process,
 	process_start_time, reap_stale,
 )
+from startup_prompts import read_startup_prompts
 WINDOW_SIZE = {'width': 1280, 'height': 800}
 
 
@@ -100,11 +101,14 @@ def _start_fman(session, session_root):
 	main = Path(environment['PYTHONPATH']) / 'fman' / 'main.py'
 	log_path = Path(session_root) / 'fman.log'
 	with log_path.open('ab') as log:
+		command = [
+			os.environ.get('FMAN_PYTHON', sys.executable), str(main),
+			session['left'], session['right'],
+		]
+		if 'demo' in session:
+			command.extend(['--automation-demo', str(session['demo'])])
 		process = detached_popen(
-			[
-				os.environ.get('FMAN_PYTHON', sys.executable), str(main),
-				session['left'], session['right'],
-			],
+			command,
 			cwd=str(Path(__file__).resolve().parents[2]), env=environment,
 			stdout=log, stderr=subprocess.STDOUT,
 		)
@@ -118,6 +122,9 @@ def _start_fman(session, session_root):
 	(Path(session_root) / SESSION_FILE).write_text(
 		json.dumps(session, indent=2), encoding='utf-8')
 	state = _wait_for_state(session, process, log_path)
+	prompts = read_startup_prompts(session, _api)
+	state['startup_prompts'] = prompts
+	session['startup_prompts'] = prompts
 	window = _api(session, 'POST', '/v1/window', WINDOW_SIZE)
 	state['window'] = window
 	session['window'] = window
@@ -132,6 +139,7 @@ def _launch(args):
 	core_settings = parse_core_settings(args.core_settings)
 	previous_version = getattr(args, 'previous_version', None)
 	first_start = getattr(args, 'first_start', False)
+	demo = getattr(args, 'demo', None)
 	if first_start and previous_version is not None:
 		raise ValueError('--first-start cannot be used with --previous-version.')
 	if previous_version is not None and not previous_version.strip():
@@ -162,8 +170,8 @@ def _launch(args):
 		'enabled': True, 'automation': True, 'port': port,
 		'command_access': 'all', 'allowed_hosts': [],
 	}}
-	if not first_start:
-		# Pre-answer both parts of the consent question so it cannot swallow keys.
+	if not first_start and demo is None:
+		# A demo check needs the consent question to remain unanswered.
 		settings.update({'error_reports': False, 'usage_metrics': False})
 	settings_path = local / 'Settings.json'
 	settings_path.write_text(json.dumps(settings, indent=2), encoding='utf-8')
@@ -189,6 +197,8 @@ def _launch(args):
 	}
 	if deep is not None:
 		session['deep'] = str(deep)
+	if demo is not None:
+		session['demo'] = demo
 	try:
 		_start_fman(session, session_root)
 		(session_root / SESSION_FILE).write_text(
