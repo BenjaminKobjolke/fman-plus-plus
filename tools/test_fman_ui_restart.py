@@ -73,6 +73,8 @@ class FmanUiRestartTest(TestCase):
 				root.mkdir()
 				session, _ = self._session(root)
 				with patch.object(fman_ui, '_read_current', return_value=session), \
+					patch.object(fman_ui, '_current_path',
+						return_value=Path(temp) / 'current.json'), \
 					patch.object(fman_ui, '_api', side_effect=error), \
 					patch.object(restart, '_wait_for_exit'), \
 					patch.object(fman_ui, '_start_fman', return_value={'ok': True}):
@@ -107,13 +109,21 @@ class FmanUiRestartTest(TestCase):
 				patch.object(
 					fman_ui, 'fman_process_identity', return_value=(22, 4.0)), \
 				patch.object(fman_ui, '_wait_for_state', return_value={'ok': True}), \
-				patch.object(fman_ui, '_api', return_value={
-					'width': 1280, 'height': 800,
-					'available_width': 1920, 'available_height': 1080,
-				}) as api:
+				patch.object(fman_ui, '_api', side_effect=[
+					{'startup': {
+						'window_shown': True,
+						'demo_mode': False,
+						'update_check_scheduled': True,
+					}},
+					{'dialog': None},
+					{
+						'width': 1280, 'height': 800,
+						'available_width': 1920, 'available_height': 1080,
+					},
+				]) as api:
 				popen.return_value.pid = 21
 				state = fman_ui._start_fman(session, root)
-				api.assert_called_once_with(session, 'POST', '/v1/window', {
+				api.assert_called_with(session, 'POST', '/v1/window', {
 					'width': 1280, 'height': 800,
 				})
 			self.assertEqual((1280, 800), (

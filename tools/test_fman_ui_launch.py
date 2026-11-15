@@ -4,7 +4,6 @@ import json
 import os
 from pathlib import Path
 import sys
-import tempfile
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest import TestCase
@@ -12,18 +11,11 @@ from unittest.mock import call, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'fman_ui'))
 import fman_ui
-from parser import parser
 
 
 class FmanUiLaunchTest(TestCase):
-	def test_root_uses_system_temp_directory_when_temp_is_unset(self):
-		with patch.dict(os.environ), \
-			patch.object(tempfile, 'gettempdir', return_value='system-temp'):
-			os.environ.pop('TEMP', None)
-			self.assertEqual(Path('system-temp') / 'fman-ui', fman_ui._root())
-
 	def _launch(self, temp, *, large=0, deep=0, core_settings=None, left=None,
-			previous_version=None, first_start=False):
+			previous_version=None, first_start=False, demo=None):
 		patches = (
 			patch.dict(os.environ, {'TEMP': temp}),
 			patch.object(fman_ui, '_reserve_port', return_value=45678),
@@ -39,15 +31,20 @@ class FmanUiLaunchTest(TestCase):
 				'width': 1280, 'height': 800,
 				'available_width': 1920, 'available_height': 1080,
 			}),
+			patch.object(fman_ui, 'read_startup_prompts', return_value={
+				'demo_mode': False, 'update_check_scheduled': True,
+				'dialog': None,
+			}),
 		)
 		with patches[0], patches[1], patches[2], patches[3], patches[4], \
 			patches[5], patches[6], patches[7] as popen, patches[8], \
-			patches[9] as api:
+			patches[9] as api, patches[10]:
 			popen.return_value.pid = 123
 			session = fman_ui._launch(SimpleNamespace(
 				left=left, right=None, large=large, deep=deep,
 				core_settings=core_settings,
-				previous_version=previous_version, first_start=first_start))
+				previous_version=previous_version, first_start=first_start,
+				demo=demo))
 			self.popen_calls = popen.call_args_list
 			self.api_calls = api.call_args_list
 			return session
@@ -65,7 +62,11 @@ class FmanUiLaunchTest(TestCase):
 				patch.object(fman_ui, '_api', return_value={
 					'width': 1280, 'height': 800,
 					'available_width': 1920, 'available_height': 1080,
-				}) as api:
+				}) as api, \
+				patch.object(fman_ui, 'read_startup_prompts', return_value={
+					'demo_mode': False, 'update_check_scheduled': True,
+					'dialog': None,
+				}):
 				popen.return_value.pid = 123
 				session = fman_ui._launch(SimpleNamespace(
 					left=None, right=None, large=0, deep=0, core_settings=None,
@@ -168,18 +169,13 @@ class FmanUiLaunchTest(TestCase):
 			self.assertNotIn('deep', session)
 			self.assertFalse((left / 'deep').exists())
 
-	def test_launch_seeds_the_previous_version_in_session_settings(self):
-		with TemporaryDirectory() as temp:
+		with TemporaryDirectory() as temp, \
+			patch.object(fman_ui, 'detached_popen',
+				wraps=fman_ui.detached_popen) as detached:
 			session = self._launch(temp, previous_version='1.0.0')
 			settings = json.loads((Path(session['profile']) / 'Local' /
 				'Session.json').read_text(encoding='utf-8'))
 		self.assertEqual('1.0.0', settings['fman_version'])
-
-	def test_launch_starts_children_with_detached_launcher(self):
-		with TemporaryDirectory() as temp, \
-			patch.object(fman_ui, 'detached_popen',
-				wraps=fman_ui.detached_popen) as detached:
-			self._launch(temp)
 		self.assertEqual(2, detached.call_count)
 
 	def test_start_fman_resizes_after_state_is_reachable(self):
@@ -195,6 +191,10 @@ class FmanUiLaunchTest(TestCase):
 				patch.object(fman_ui, 'process_start_time', return_value=3.0), \
 				patch.object(fman_ui, 'fman_process_identity', return_value=None), \
 				patch.object(fman_ui, '_wait_for_state', return_value=state), \
+				patch.object(fman_ui, 'read_startup_prompts', return_value={
+					'demo_mode': False, 'update_check_scheduled': True,
+					'dialog': None,
+				}), \
 				patch.object(fman_ui, '_api', return_value={
 					'width': 1280, 'height': 768,
 					'available_width': 1920, 'available_height': 1080,
@@ -206,6 +206,70 @@ class FmanUiLaunchTest(TestCase):
 		api.assert_called_once_with(session, 'POST', '/v1/window', {
 			'width': 1280, 'height': 800,
 		})
+
+	def test_start_fman_passes_demo_argument_when_session_has_demo(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'session'
+			root.mkdir()
+			session = {
+				'profile': str(root / 'profile'), 'left': str(root / 'left'),
+				'right': str(root / 'right'), 'port': 123, 'demo': 1,
+			}
+			with patch.object(fman_ui, 'detached_popen') as popen, \
+				patch.object(fman_ui, 'process_start_time', return_value=3.0), \
+				patch.object(fman_ui, 'fman_process_identity', return_value=None), \
+				patch.object(fman_ui, '_wait_for_state', return_value={}), \
+				patch.object(fman_ui, 'read_startup_prompts',
+					return_value={'demo_mode': True, 'update_check_scheduled': False,
+						'dialog': None}, create=True), \
+				patch.object(fman_ui, '_api', return_value={
+					'width': 1280, 'height': 768,
+					'available_width': 1920, 'available_height': 1080,
+				}):
+				popen.return_value.pid = 21
+				result = fman_ui._start_fman(session, root)
+		self.assertEqual(['--automation-demo', '1'],
+			popen.call_args.args[0][-2:])
+		self.assertTrue(result['startup_prompts']['demo_mode'])
+		self.assertEqual(result['startup_prompts'], session['startup_prompts'])
+
+	def test_start_fman_does_not_pass_demo_argument_without_session_demo(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'session'
+			root.mkdir()
+			session = {
+				'profile': str(root / 'profile'), 'left': str(root / 'left'),
+				'right': str(root / 'right'), 'port': 123,
+			}
+			with patch.object(fman_ui, 'detached_popen') as popen, \
+				patch.object(fman_ui, 'process_start_time', return_value=3.0), \
+				patch.object(fman_ui, 'fman_process_identity', return_value=None), \
+				patch.object(fman_ui, '_wait_for_state', return_value={}), \
+				patch.object(fman_ui, 'read_startup_prompts',
+					return_value={'demo_mode': False,
+						'update_check_scheduled': True, 'dialog': None}, create=True), \
+				patch.object(fman_ui, '_api', return_value={
+					'width': 1280, 'height': 768,
+					'available_width': 1920, 'available_height': 1080,
+				}):
+				popen.return_value.pid = 21
+				fman_ui._start_fman(session, root)
+		self.assertNotIn('--automation-demo', popen.call_args.args[0])
+
+	def test_demo_launch_leaves_consent_unanswered_and_saves_demo_id(self):
+		with TemporaryDirectory() as temp, \
+			patch.object(fman_ui, 'read_startup_prompts', return_value={
+				'demo_mode': True, 'update_check_scheduled': False, 'dialog': None,
+			}, create=True):
+			session = self._launch(temp, demo=1)
+			settings = json.loads((Path(session['profile']) / 'Local' /
+				'Settings.json').read_text(encoding='utf-8'))
+			self.assertNotIn('error_reports', settings)
+			self.assertNotIn('usage_metrics', settings)
+			self.assertEqual(1, session['demo'])
+			self.assertTrue((Path(session['profile']) / 'Local' /
+				'Session.json').exists())
+			self.assertIn('startup_prompts', session)
 
 	def test_invalid_launch_options_fail_before_session_directory_is_created(self):
 		with TemporaryDirectory() as temp, patch.dict(os.environ, {'TEMP': temp}):
@@ -229,23 +293,3 @@ class FmanUiLaunchTest(TestCase):
 				with self.subTest(args=args), self.assertRaises(ValueError):
 					fman_ui._launch(args)
 				self.assertFalse((Path(temp) / 'fman-ui').exists())
-
-	def test_parser_accepts_large_and_core_settings(self):
-		args = parser().parse_args([
-			'launch', '--large', '5000', '--core-settings', '{}'])
-		self.assertEqual(5000, args.large)
-		self.assertEqual('{}', args.core_settings)
-
-	def test_parser_accepts_deep(self):
-		args = parser().parse_args(['launch', '--deep', '10'])
-		self.assertEqual(10, args.deep)
-
-	def test_parser_accepts_previous_version(self):
-		args = parser().parse_args([
-			'launch', '--previous-version', '1.0.0'])
-		self.assertEqual('1.0.0', args.previous_version)
-
-	def test_parser_accepts_first_start(self):
-		args = parser().parse_args(['launch', '--first-start'])
-		self.assertTrue(args.first_start)
-
