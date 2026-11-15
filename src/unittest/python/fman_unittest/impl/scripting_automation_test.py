@@ -16,7 +16,7 @@ from fman.impl.overlay import Overlay
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.prompt_popup import Prompt
 from fman.impl.scripting.automation import (
-	AutomationActions, UnknownFile, UnsafeDrag,
+	AutomationActions, FileListHidden, UnknownFile, UnsafeDrag,
 )
 from fman.impl.scripting.actions import InvalidPane
 from fman.impl.util.qt.key_events import parse_chord, post_chord, post_text
@@ -415,6 +415,16 @@ class ScriptingAutomationTest(TestCase):
 			actions.click_file(0, 'file:///hidden')
 		self.assertFalse(pane._widget.get_file_view().scrolled)
 
+	def test_click_file_refuses_while_a_view_hides_the_file_list(self):
+		pane = _Pane(_FindModel(_InvalidIndex()))
+		pane.mounted = object()
+		actions = AutomationActions(_Window(), _PluginSupport(pane))
+
+		with self.assertRaises(FileListHidden):
+			actions.click_file(0, 'file:///hidden')
+
+		self.assertFalse(pane._widget.get_file_view().scrolled)
+
 
 class _ResizableWindow(QWidget):
 	def center_on_screen(self):
@@ -492,6 +502,10 @@ class _MountedWidget:
 class _Pane:
 	def __init__(self, model):
 		self._widget = _Widget(model)
+		self.mounted = None
+
+	def get_mounted_widget(self):
+		return self.mounted
 
 
 class _PluginSupport:
