@@ -267,8 +267,10 @@ If a startup message box prevents `command help`, dismiss it with
 `command` accepts an optional JSON argument object before `--pane`, for example
 `tools\fman_ui.bat command open_directory "{\"url\":\"file:///C:/\"}"`.
 `click --file` accepts either a full fman URL or a bare file name; names resolve
-against the selected pane's current folder. Input commands accept `--settle`
-milliseconds (default 500) to wait for the UI after acting.
+against the selected pane's current folder. While the folder tree or a viewer is
+mounted on that pane, `click --file` answers 409 because the file list is hidden;
+pane commands then act on the tree's highlighted folder. Input commands accept
+`--settle` milliseconds (default 500) to wait for the UI after acting.
 
 `drag` uses the same window coordinates as `click --x` and `click --y`. Find a
 column header's right edge in a screenshot and start the drag there. Drags that
