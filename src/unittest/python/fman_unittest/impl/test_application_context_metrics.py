@@ -8,6 +8,7 @@ from fman.impl.application_context import (
 	DevelopmentApplicationContext, FrozenApplicationContext,
 )
 from fman.impl.metrics import ApiBackend, LoggingBackend, NullBackend
+from fman.impl.startup_status import StartupStatus
 from fman.impl.util.settings import Settings
 
 
@@ -23,6 +24,7 @@ class ApplicationContextMetricsTest(TestCase):
 			_demo_mode=True,
 			_demo_asks_consent=True,
 			_ask_error_report_consent=consent_mock,
+			startup_status=StartupStatus(),
 		)
 
 		with patch(
@@ -40,6 +42,7 @@ class ApplicationContextMetricsTest(TestCase):
 			_demo_mode=True,
 			_demo_asks_consent=False,
 			_ask_error_report_consent=consent_mock,
+			startup_status=StartupStatus(),
 		)
 
 		with patch(

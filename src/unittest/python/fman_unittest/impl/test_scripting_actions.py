@@ -1,6 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 from PyQt5.QtWidgets import QApplication
+from fman.impl.startup_status import StartupStatus
 
 from fman.impl.scripting.actions import InvalidPane, ScriptingActions, UnknownCommand
 
@@ -16,7 +17,10 @@ class ScriptingActionsTest(TestCase):
 		self.other_pane = MagicMock()
 		self.plugin_support.get_panes.return_value = [self.pane, self.other_pane]
 		self.plugin_support.get_active_pane.return_value = self.other_pane
-		self.actions = ScriptingActions(self.plugin_support, self.main_window)
+		self.startup_status = StartupStatus(
+			window_shown=True, demo_mode=True, update_check_scheduled=False)
+		self.actions = ScriptingActions(
+			self.plugin_support, self.main_window, self.startup_status)
 
 	def test_get_state_lists_active_pane_first(self):
 		self.other_pane.get_path.return_value = 'file:///right'
@@ -28,6 +32,11 @@ class ScriptingActionsTest(TestCase):
 
 		self.assertEqual({
 			'active_pane': 0,
+			'startup': {
+				'window_shown': True,
+				'demo_mode': True,
+				'update_check_scheduled': False,
+			},
 			'panes': [
 				{'path': 'file:///right', 'cursor': None, 'selection': []},
 				{

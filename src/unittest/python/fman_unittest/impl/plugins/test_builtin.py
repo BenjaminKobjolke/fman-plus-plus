@@ -3,6 +3,7 @@ from fman.impl import incognito
 from fman.impl.application_context import DevelopmentApplicationContext
 from fman.impl.incognito import OFF_MESSAGE, ON_INCOGNITO_CHANGED, ON_MESSAGE
 from fman.impl.plugins.builtin import BuiltinPlugin
+from fman.impl.startup_status import StartupStatus
 from fman.impl.util.settings import Settings
 from os.path import join
 from tempfile import TemporaryDirectory
@@ -232,6 +233,27 @@ class ToggleIncognitoTest(TestCase):
 
 		context.update_check_timer.start.assert_not_called()
 		context.main_window.show_alert.assert_not_called()
+		self.assertEqual(context.startup_status, StartupStatus(
+			window_shown=True, demo_mode=True, update_check_scheduled=False))
+
+	def test_normal_start_records_scheduled_update_check_and_visible_window(self):
+		context = self._startup_context(first_run=True)
+
+		DevelopmentApplicationContext.on_main_window_shown(context)
+
+		self.assertEqual(context.startup_status, StartupStatus(
+			window_shown=True, demo_mode=False, update_check_scheduled=True))
+
+	def test_window_is_marked_shown_before_consent_alert(self):
+		for demo_mode, asks_consent in ((False, False), (True, True)):
+			with self.subTest(demo_mode=demo_mode):
+				context = self._startup_context(first_run=False)
+				context._demo_mode = demo_mode
+				context._demo_asks_consent = asks_consent
+				context.main_window.show_alert.side_effect = lambda *args, **kwargs: \
+					self.assertTrue(context.startup_status.window_shown)
+
+				DevelopmentApplicationContext.on_main_window_shown(context)
 
 	def test_start_metrics_without_a_saved_choice_does_not_start_metrics(self):
 		with TemporaryDirectory() as tmp_dir:
@@ -255,6 +277,7 @@ class ToggleIncognitoTest(TestCase):
 		context = SimpleNamespace(
 			_demo_mode=False,
 			_demo_asks_consent=False,
+			startup_status=StartupStatus(),
 			main_window=MagicMock(),
 			update_check_timer=MagicMock(),
 			session_manager=SimpleNamespace(is_first_run=first_run),
