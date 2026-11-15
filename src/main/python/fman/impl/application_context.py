@@ -774,6 +774,7 @@ class FrozenApplicationContext(DevelopmentApplicationContext):
 	def init_logging(self):
 		install_stream_capture(get_console_log())
 		logging.basicConfig(level=logging.CRITICAL)
+		logging.getLogger('fman.impl.demo_native_dialogs').setLevel(logging.INFO)
 		logging.getLogger(AppErrorReporter.__module__).setLevel(logging.ERROR)
 	def on_main_window_shown(self):
 		if PLATFORM == 'Linux':
