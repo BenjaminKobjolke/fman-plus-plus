@@ -7,6 +7,8 @@ from PyQt5.QtGui import QIcon, QKeyEvent, QPixmap
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 from unittest.mock import Mock, call, patch
+from concurrent.futures import Future
+import sip
 
 
 _app = QApplication.instance() or QApplication([])
@@ -34,9 +36,35 @@ class DeferredThread:
 		pass
 
 
+class DeferredExecutor:
+	def __init__(self):
+		self.tasks = []
+	def submit(self, fn, *args):
+		future = Future()
+		self.tasks.append((future, fn, args))
+		return future
+	def run_next(self):
+		future, fn, args = self.tasks.pop(0)
+		if future.set_running_or_notify_cancel():
+			future.set_result(fn(*args))
+	def cancel(self, future):
+		future.cancel()
+
+
+class SynchronousExecutor:
+	def submit(self, fn, *args):
+		future = Future()
+		if future.set_running_or_notify_cancel():
+			future.set_result(fn(*args))
+		return future
+	def cancel(self, future):
+		future.cancel()
+
+
 class FolderTreeModelTest(TestCase):
 	def load_children(self, model, parent, children):
 		with patch('core.folder_tree_model.Thread', SynchronousThread), \
+				patch('core.folder_tree_model._ICON_EXECUTOR', SynchronousExecutor()), \
 				patch('core.folder_tree_model.list_subfolders', return_value=children):
 			model.load(parent)
 
@@ -75,6 +103,7 @@ class FolderTreeModelTest(TestCase):
 		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
 
 		with patch('core.folder_tree_model.Thread', SynchronousThread), \
+				patch('core.folder_tree_model._ICON_EXECUTOR', SynchronousExecutor()), \
 			patch('core.folder_tree_model.list_subfolders', side_effect=RuntimeError):
 			model.load(parent)
 
@@ -89,6 +118,7 @@ class FolderTreeModelTest(TestCase):
 		model._loaded.add('file:///p')
 
 		with patch('core.folder_tree_model.Thread', SynchronousThread), \
+				patch('core.folder_tree_model._ICON_EXECUTOR', SynchronousExecutor()), \
 				patch(
 					'core.folder_tree_model.list_subfolders',
 					return_value=['file:///p/added', 'file:///p/retained']
@@ -119,6 +149,9 @@ class FolderTreeModelTest(TestCase):
 		DeferredThread.threads = []
 		with patch('core.folder_tree_model.Thread', DeferredThread), \
 				patch(
+					'core.folder_tree_model._ICON_EXECUTOR', DeferredExecutor()
+				) as executor, \
+				patch(
 					'core.folder_tree_model.list_subfolders',
 					side_effect=[['file:///p/stale'], ['file:///p/fresh']]
 				) as list_subfolders:
@@ -126,10 +159,12 @@ class FolderTreeModelTest(TestCase):
 			model.refresh('file:///p')
 
 			DeferredThread.threads[0]._target()
+			executor.run_next()
 
 			self.assertEqual(2, len(DeferredThread.threads))
 			self.assertIn('file:///p', model._loading)
 			DeferredThread.threads[1]._target()
+			executor.run_next()
 
 		self.assertEqual(2, list_subfolders.call_count)
 		self.assertEqual(
@@ -156,6 +191,87 @@ class FolderTreeModelTest(TestCase):
 		)
 
 		self.assertEqual(icon.cacheKey(), item.icon().cacheKey())
+	def test_stop_before_the_listing_returns_skips_icons_and_rows(self):
+		icons = _icon_provider()
+		model = FolderTreeModel(True, Mock(), icons)
+		item = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		DeferredThread.threads = []
+
+		with patch('core.folder_tree_model.Thread', DeferredThread), \
+				patch(
+					'core.folder_tree_model.list_subfolders',
+					return_value=['file:///p/a']
+				):
+			model.load(item)
+			model.stop()
+			DeferredThread.threads[0]._target()
+
+		icons.get_icon.assert_not_called()
+		self.assertEqual(1, item.rowCount())
+	def test_rows_are_inserted_before_shell_icon_lookups(self):
+		icons = _icon_provider()
+		model = FolderTreeModel(True, Mock(), icons)
+		item = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		executor = DeferredExecutor()
+
+		with patch('core.folder_tree_model.Thread', SynchronousThread), \
+				patch('core.folder_tree_model._ICON_EXECUTOR', executor, create=True), \
+				patch(
+					'core.folder_tree_model.list_subfolders',
+					return_value=['file:///p/a', 'file:///p/b']
+				):
+			model.load(item)
+
+		self.assertEqual(2, item.rowCount())
+		self.assertEqual(
+			['file:///p/a', 'file:///p/b'],
+			[item.child(row).data(URL_ROLE) for row in range(item.rowCount())]
+		)
+		icons.get_icon.assert_not_called()
+		self.assertEqual(1, len(executor.tasks))
+
+		executor.run_next()
+
+		icons.get_icon.assert_has_calls([
+			call('file:///p/a'), call('file:///p/b'), call('file:///p')
+		])
+	def test_stop_cancels_queued_icon_work(self):
+		icons = _icon_provider()
+		model = FolderTreeModel(True, Mock(), icons)
+		item = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		executor = DeferredExecutor()
+
+		with patch('core.folder_tree_model.Thread', SynchronousThread), \
+				patch('core.folder_tree_model._ICON_EXECUTOR', executor, create=True), \
+				patch(
+					'core.folder_tree_model.list_subfolders',
+					return_value=['file:///p/a']
+				):
+			model.load(item)
+			model.stop()
+
+		self.assertTrue(executor.tasks[0][0].cancelled())
+		executor.run_next()
+		icons.get_icon.assert_not_called()
+		self.assertEqual('file:///p/a', item.child(0).data(URL_ROLE))
+	def test_stop_during_icon_lookup_stops_the_remaining_work(self):
+		icons = _icon_provider()
+		model = FolderTreeModel(True, Mock(), icons)
+		item = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		executor = DeferredExecutor()
+		icons.get_icon.side_effect = lambda _url: model.stop()
+
+		with patch('core.folder_tree_model.Thread', SynchronousThread), \
+				patch('core.folder_tree_model._ICON_EXECUTOR', executor, create=True), \
+				patch(
+					'core.folder_tree_model.list_subfolders',
+					return_value=['file:///p/a', 'file:///p/b']
+				):
+			model.load(item)
+			executor.run_next()
+
+		icons.get_icon.assert_called_once_with('file:///p/a')
+		self.assertEqual(2, item.rowCount())
 	def test_load_fetches_icons_on_the_worker_thread(self):
 		worker_state = {'running': False}
 		icons = Mock()
@@ -182,18 +298,23 @@ class FolderTreeModelTest(TestCase):
 					worker_state['running'] = False
 		model = FolderTreeModel(True, Mock(), icons)
 		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		executor = DeferredExecutor()
 
 		with patch('core.folder_tree_model.Thread', WorkerThread), \
+				patch('core.folder_tree_model._ICON_EXECUTOR', executor), \
 				patch(
 					'core.folder_tree_model.list_subfolders',
 					return_value=['file:///p/a', 'file:///p/b']
 				):
 			model.load(parent)
+		worker_state['running'] = True
+		executor.run_next()
+		worker_state['running'] = False
 
 		self.assertEqual([
-			('file:///p', True),
 			('file:///p/a', True),
 			('file:///p/b', True),
+			('file:///p', True),
 		], calls)
 		self.assertEqual(
 			[icon_by_url[url].cacheKey() for url in
@@ -203,6 +324,10 @@ class FolderTreeModelTest(TestCase):
 		self.assertEqual(
 			icon_by_url['file:///p'].cacheKey(), parent.icon().cacheKey()
 		)
+	def test_icon_executor_has_a_fixed_worker_limit(self):
+		from core.folder_tree_model import _ICON_WORKERS
+
+		self.assertEqual(2, _ICON_WORKERS)
 	def test_load_updates_the_icon_of_a_kept_row(self):
 		icons = Mock()
 		pixmap = QPixmap(1, 1)
@@ -250,6 +375,18 @@ class FolderTreeModelTest(TestCase):
 
 
 class FolderTreeViewTest(TestCase):
+	def test_destroying_the_view_stops_its_model(self):
+		view = FolderTreeView(
+			True, FolderTreeActions(
+				Mock(), Mock(), Mock(), Mock(), Mock()
+			), False, _icon_provider()
+		)
+		stopped = view._model._stopped
+
+		sip.delete(view)
+
+		self.assertTrue(stopped.is_set())
+
 	def test_edit_name_opens_editor_for_the_matching_row(self):
 		view = FolderTreeView(
 			True, FolderTreeActions(
