@@ -514,7 +514,9 @@ class DemoSetupTest(unittest.TestCase):
 		from automated_screenshot_connector.steps import (
 			CustomStep, SendKey, SendScreenshot, flatten,
 		)
-		from fman.impl.demo import CloseNativeDialogs, ScreenStill
+		from fman.impl.demo import (
+			CloseNativeDialogs, RaiseNativeDialogs, ScreenStill,
+		)
 		from fman.impl.demo_scripts import DEMOS
 
 		demo = DEMOS[26]
@@ -547,6 +549,7 @@ class DemoSetupTest(unittest.TestCase):
 				if isinstance(candidate, SendKey)
 			)
 			self.assertEqual(previous_key.chord, 'Alt+Enter')
+			self.assertIsInstance(actions[index - 1], RaiseNativeDialogs)
 			if index < len(actions) - 1:
 				self.assertIsInstance(actions[index + 1], CloseNativeDialogs)
 

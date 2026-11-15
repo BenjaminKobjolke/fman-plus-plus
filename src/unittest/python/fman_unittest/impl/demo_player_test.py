@@ -23,7 +23,7 @@ if CONNECTOR_AVAILABLE:
 	from fman.impl.demo import (
 		CloseNativeDialogs, DemoPlayer, ExpectChildWindow, ExpectForwarded,
 		LaunchFman,
-		OpenContextMenu, ScreenStill,
+		OpenContextMenu, RaiseNativeDialogs, ScreenStill,
 		WaitForOverwriteQuestion,
 	)
 
@@ -289,9 +289,9 @@ class DemoPlayerTest(TestCase):
 		)
 		win32api = MagicMock()
 
-		with patch('fman.impl.demo.win32gui', win32gui):
-			with patch('fman.impl.demo.win32process', win32process):
-				with patch('fman.impl.demo.win32api', win32api):
+		with patch('fman.impl.demo_native_dialogs.win32gui', win32gui):
+			with patch('fman.impl.demo_native_dialogs.win32process', win32process):
+				with patch('fman.impl.demo_native_dialogs.win32api', win32api):
 					with patch('fman.impl.demo.QTimer.singleShot') as single_shot:
 						with patch.object(self.window, 'activateWindow') as activate:
 							with patch.object(player, '_advance') as advance:
@@ -302,6 +302,50 @@ class DemoPlayerTest(TestCase):
 		win32api.PostMessage.assert_called_once_with(101, 0x0010, 0, 0)
 		activate.assert_called_once_with()
 		view.setFocus.assert_called_once_with()
+		advance.assert_called_once_with()
+
+	def test_raise_native_dialogs_lifts_only_own_visible_shell_dialogs(self):
+		client = MagicMock(spec=DemoClient)
+		player = DemoPlayer(
+			self.window, client,
+			DemoScript(
+				id=99, name='test',
+				steps=(CustomStep(RaiseNativeDialogs()),),
+			),
+			1, MagicMock(), plugin_support=MagicMock(),
+		)
+		windows = (101, 102, 103, 104)
+		visible = {101: True, 102: False, 103: True, 104: True}
+		classes = {101: '#32770', 102: '#32770', 103: '#32770', 104: 'Other'}
+		process_ids = {
+			101: os.getpid(), 102: os.getpid(), 103: 999, 104: os.getpid(),
+		}
+		win32gui = MagicMock()
+		win32gui.EnumWindows.side_effect = lambda callback, _: [
+			callback(hwnd, None) for hwnd in windows
+		]
+		win32gui.IsWindowVisible.side_effect = visible.__getitem__
+		win32gui.GetClassName.side_effect = classes.__getitem__
+		win32process = MagicMock()
+		win32process.GetWindowThreadProcessId.side_effect = lambda hwnd: (
+			0, process_ids[hwnd],
+		)
+		win32con = MagicMock(
+			HWND_TOPMOST=-1,
+			SWP_NOMOVE=0x0002,
+			SWP_NOSIZE=0x0001,
+			SWP_NOACTIVATE=0x0010,
+		)
+
+		with patch('fman.impl.demo_native_dialogs.win32gui', win32gui):
+			with patch('fman.impl.demo_native_dialogs.win32process', win32process):
+				with patch('fman.impl.demo_native_dialogs.win32con', win32con):
+					with patch.object(player, '_advance') as advance:
+						player._execute(CustomStep(RaiseNativeDialogs()))
+
+		win32gui.SetWindowPos.assert_called_once_with(
+			101, -1, 0, 0, 0, 0, 0x0002 | 0x0001 | 0x0010,
+		)
 		advance.assert_called_once_with()
 
 	def test_overwrite_wait_captures_only_after_the_question_is_open(self):

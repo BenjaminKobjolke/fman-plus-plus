@@ -37,21 +37,14 @@ from automated_screenshot_connector.steps import (
 	CustomStep, InsertChar, PressReturn, SendKey, SendScreenshot, flatten,
 )
 
-try:
-	import win32api
-	import win32gui
-	import win32process
-except ImportError:
-	win32api = win32gui = win32process = None
+from fman.impl.demo_native_dialogs import (
+	close_native_dialogs, raise_native_dialogs,
+)
 
 # Let the window finish its first paint before the demo starts typing.
 START_DELAY_MS = 500
 # Hold the final state briefly so the recording doesn't end abruptly.
 END_HOLD_MS = 1000
-_DIALOG_CLASS = '#32770'
-_WM_CLOSE = 0x0010
-
-
 @dataclass(frozen=True)
 class OpenContextMenu:
 	"""Open the file context menu for the cursor's row, like the Menu key."""
@@ -69,6 +62,11 @@ class ScreenStill:
 @dataclass(frozen=True)
 class CloseNativeDialogs:
 	"""Close this process's native shell dialogs and return focus to the file list."""
+
+
+@dataclass(frozen=True)
+class RaiseNativeDialogs:
+	"""Lift this process's shell dialogs above the topmost demo window so the recorder captures them."""
 
 
 @dataclass(frozen=True)
@@ -169,6 +167,8 @@ class DemoPlayer(QObject):
 			elif isinstance(action.step, CloseNativeDialogs):
 				self._close_native_dialogs()
 				return
+			elif isinstance(action.step, RaiseNativeDialogs):
+				raise_native_dialogs()
 			elif isinstance(action.step, LaunchFman):
 				self._launch_fman(action.step)
 			elif isinstance(action.step, ExpectChildWindow):
@@ -181,23 +181,7 @@ class DemoPlayer(QObject):
 		self._advance()
 
 	def _close_native_dialogs(self):
-		if win32gui is None or win32api is None or win32process is None:
-			logging.getLogger(__name__).warning(
-				'Cannot close native demo dialogs because pywin32 is unavailable.'
-			)
-		else:
-			process_id = os.getpid()
-
-			def close_own_dialog(hwnd, _):
-				if not win32gui.IsWindowVisible(hwnd):
-					return
-				if win32gui.GetClassName(hwnd) != _DIALOG_CLASS:
-					return
-				_, window_process_id = win32process.GetWindowThreadProcessId(hwnd)
-				if window_process_id == process_id:
-					win32api.PostMessage(hwnd, _WM_CLOSE, 0, 0)
-
-			win32gui.EnumWindows(close_own_dialog, None)
+		close_native_dialogs()
 
 		def restore_focus():
 			self._window.activateWindow()
