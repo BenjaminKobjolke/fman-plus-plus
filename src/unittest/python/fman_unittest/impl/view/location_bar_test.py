@@ -15,8 +15,12 @@ class LocationBarTest(TestCase):
 
 	def setUp(self):
 		self.bar = LocationBar()
-		self.bar.resize(360, 30)
-		self.bar.set_location('zip://root/parent/current')
+		path = 'zip://root/parent/current'
+		# Default Qt fonts vary by machine; size the fixture from the active font.
+		self.bar.resize(
+			self.bar.fontMetrics().horizontalAdvance(path) + 20, 30
+		)
+		self.bar.set_location(path)
 		self.bar.show()
 		self.app.processEvents()
 		self.segment_clicks = []
@@ -154,10 +158,13 @@ class LocationBarTest(TestCase):
 
 	def _use_deep_path(self):
 		self.bar.setMinimumWidth(0)
-		self.bar.set_location(
-			'file://C:/Users/bob/Documents/Projects/fman/src'
+		path = 'file://C:/Users/bob/Documents/Projects/fman/src'
+		self.bar.set_location(path)
+		shortened_path = r'C:\Users\…\fman\src'
+		self.bar.resize(
+			self.bar.fontMetrics().horizontalAdvance(shortened_path) + 20,
+			30,
 		)
-		self.bar.resize(120, 30)
 
 	def _click_text(self, text):
 		self._click(self._text_position(text))
