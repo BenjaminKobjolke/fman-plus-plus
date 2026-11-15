@@ -1,7 +1,11 @@
 """Expose fman state and command dispatch to the scripting API."""
 
+from dataclasses import asdict
+from typing import Any, Dict, Optional
+
 from fman.impl.single_instance import panes_active_first
 from fman.impl.util.qt.thread import run_in_main_thread
+from fman.impl.startup_status import StartupStatus
 
 
 class UnknownCommand(Exception):
@@ -13,15 +17,18 @@ class InvalidPane(Exception):
 
 
 class ScriptingActions:
-	def __init__(self, plugin_support, main_window):
+	def __init__(self, plugin_support: Any, main_window: Any,
+			startup_status: StartupStatus) -> None:
 		self._plugin_support = plugin_support
 		self._main_window = main_window
+		self._startup_status = startup_status
 
 	@run_in_main_thread
-	def get_state(self):
+	def get_state(self) -> Dict[str, Any]:
 		panes = panes_active_first(self._plugin_support, self._main_window)
 		return {
 			'active_pane': 0,
+			'startup': asdict(self._startup_status),
 			'panes': [
 				{
 					'path': pane.get_path(),
@@ -32,7 +39,7 @@ class ScriptingActions:
 			],
 		}
 
-	def get_commands(self, config):
+	def get_commands(self, config: Any) -> Dict[str, Any]:
 		panes = self._plugin_support.get_panes()
 		pane_commands = set()
 		for pane in panes:
@@ -44,7 +51,8 @@ class ScriptingActions:
 			'allowed': allowed,
 		}
 
-	def run_command(self, name, args, pane_index):
+	def run_command(self, name: str, args: Dict[str, Any],
+			pane_index: Optional[int]) -> None:
 		if name in self._plugin_support.get_application_commands():
 			self._plugin_support.run_application_command(name, args)
 		else:
@@ -55,7 +63,7 @@ class ScriptingActions:
 				raise UnknownCommand(name)
 
 	@run_in_main_thread
-	def _get_pane(self, pane_index):
+	def _get_pane(self, pane_index: Optional[int]) -> Any:
 		return get_pane(self._plugin_support, self._main_window, pane_index)
 
 

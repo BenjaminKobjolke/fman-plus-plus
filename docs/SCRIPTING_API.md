@@ -22,13 +22,17 @@ object with an `error` message.
 
 | Method and path | Request | Successful response |
 | --- | --- | --- |
-| `GET /v1/state` | — | `{"active_pane": 0, "panes": [{"path": "<url>", "cursor": null, "selection": ["<url>"]}]}` |
+| `GET /v1/state` | — | `{"active_pane": 0, "panes": [{"path": "<url>", "cursor": null, "selection": ["<url>"]}], "startup": {"window_shown": true, "demo_mode": false, "update_check_scheduled": true}}` |
 | `GET /v1/commands` | — | `{"pane": [<names>], "application": [<names>], "allowed": [<names>] or `null`}` |
 | `POST /v1/command` | `{"name": "open_directory", "args": {"url": "file://C:/temp"}, "pane": 1}` | `{"ok": true}` |
 
 The panes are listed active-first, so the active pane has index `0` and
 `active_pane` is always `0`. A pane's `path`, `cursor` and `selection` values
 are fman URLs; `cursor` is `null` when there is no file under the cursor.
+The `startup` object records whether the main window has completed startup,
+whether fman is in automation demo mode, and whether the update check was
+scheduled. It is intended for automation checks; `window_shown` remains false
+until startup handling has run.
 For command requests, `args` defaults to `{}` and `pane` defaults to the
 active pane. The `pane` field is ignored for application commands. Names are
 looked up among pane commands first, then application commands.

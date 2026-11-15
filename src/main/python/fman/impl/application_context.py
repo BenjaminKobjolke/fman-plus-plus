@@ -30,6 +30,7 @@ from fman.impl.scroll_margin_setting import load_scroll_margin
 from fman.impl.viewers import ViewerRegistry
 from fman.impl.session import SessionManager, SINGLE_PANE_ARG
 from fman.impl.scripting.actions import ScriptingActions
+from fman.impl.startup_status import StartupStatus
 from fman.impl.scripting.automation import AutomationActions
 from fman.impl.scripting.config import ScriptingApiConfig
 from fman.impl.scripting.control import ScriptingApiControl
@@ -119,12 +120,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 			self.single_instance.start_listening()
 		self._start_metrics()
 		self._load_plugins()
-		if ScriptingApiConfig.from_settings(self.local_settings).enabled:
-			try:
-				self.scripting_control.start()
-			except OSError:
-				# The control logged the bind failure; fman remains usable.
-				pass
+		self._start_scripting_api()
 		self.session_manager.show_main_window(
 			self.window, hidden=self._start_hidden,
 			single_pane=self._single_pane)
@@ -134,6 +130,13 @@ class DevelopmentApplicationContext(ApplicationContext):
 		_ = self.global_hotkey
 		self.hang_log.start()
 		return self.app.exec_()
+	def _start_scripting_api(self):
+		if ScriptingApiConfig.from_settings(self.local_settings).enabled:
+			try:
+				self.scripting_control.start()
+			except OSError:
+				# The control logged the bind failure; fman remains usable.
+				pass
 	@cached_property
 	def hang_log(self):
 		return HangLog(self._get_local_data_file('Hangs.log'))
@@ -173,6 +176,7 @@ class DevelopmentApplicationContext(ApplicationContext):
 		self._demo_mode = True
 		self._demo_asks_consent = options.demo in CONSENT_DEMO_IDS
 		self._load_plugins()
+		self._start_scripting_api()
 		if options.demo in LISTENING_DEMO_IDS:
 			# Demo 18 films forwarded launches into this process.
 			self.single_instance.start_listening()
@@ -243,15 +247,19 @@ class DevelopmentApplicationContext(ApplicationContext):
 	def fman_version(self):
 		return PUBLIC_SETTINGS['version']
 	def on_main_window_shown(self):
+		self.startup_status.demo_mode = self._demo_mode
 		if is_windows():
 			from fman.impl.virtual_file_drop import install_drop_hook
 			install_drop_hook(int(self.main_window.winId()))
 		if self._demo_mode:
+			self.startup_status.window_shown = True
 			# Only the usage-consent demo films this question.
 			if self._demo_asks_consent:
 				self._ask_error_report_consent()
 			return
 		self.update_check_timer.start()
+		self.startup_status.update_check_scheduled = True
+		self.startup_status.window_shown = True
 		if self.session_manager.is_first_run:
 			pane = self.plugin_support.get_panes()[0]
 			tutorial = self.tutorial_factory(pane)
@@ -479,11 +487,15 @@ class DevelopmentApplicationContext(ApplicationContext):
 			self._get_local_data_file('ScriptingApiToken.txt'),
 			lambda config, token: ScriptingServer(
 				config, token,
-				ScriptingActions(self.plugin_support, self.main_window),
+				ScriptingActions(
+					self.plugin_support, self.main_window, self.startup_status),
 				AutomationActions(self.main_window, self.plugin_support),
 				LinkCapture(self.main_window),
 			),
 		)
+	@cached_property
+	def startup_status(self):
+		return StartupStatus()
 	@cached_property
 	def mother_fs(self):
 		# Resolve the cyclic dependency MotherFileSystem <-> IconProvider:
