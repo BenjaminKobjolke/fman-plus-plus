@@ -32,11 +32,18 @@ class FolderTreeDemoTest(unittest.TestCase):
 				'folder-tree-rename-editing',
 				'folder-tree-rename-cancelled',
 				'folder-tree-renamed',
+				'folder-tree-closed-by-go-up',
+				'folder-tree-closed-by-select-all',
+				'folder-tree-closed-by-show-volumes',
 			],
 		)
 		self.assertEqual(
 			[step.line for step in demo.steps if step.__class__.__name__ == 'Command'],
-			['toggle folder tree', 'delete', 'copy', 'move'],
+			[
+				'toggle folder tree', 'delete', 'copy', 'move', 'go up',
+				'toggle folder tree', 'select all', 'toggle folder tree',
+				'show volumes',
+			],
 		)
 		self.assertEqual(
 			sum(
@@ -50,7 +57,7 @@ class FolderTreeDemoTest(unittest.TestCase):
 			if isinstance(step, PressKey)
 			and step.chord.casefold() in ('return', 'enter')
 		]
-		self.assertEqual(len(return_steps), 1)
+		self.assertEqual(len(return_steps), 2)
 		rename_editing_index = next(
 			index for index, step in enumerate(demo.steps)
 			if step.__class__.__name__ == 'Screenshot'
