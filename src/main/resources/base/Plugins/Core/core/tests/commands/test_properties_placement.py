@@ -1,5 +1,6 @@
 """Tests for placing the Windows shell Properties dialogs near the pane."""
 
+import gc
 import threading
 import time
 from unittest import TestCase, skipUnless
@@ -102,6 +103,39 @@ class PropertiesPlacementTest(TestCase):
 
 		win32gui.SetWindowPos.assert_not_called()
 		self.assertFalse(placer._timer.isActive())
+
+	def test_watch_keeps_placer_alive_until_new_dialog_is_positioned(self):
+		pane = MagicMock()
+		pane._widget = QWidget()
+		self.addCleanup(pane._widget.deleteLater)
+		win32gui = MagicMock(spec=placement.win32gui)
+		win32gui.GetWindowRect.return_value = (0, 0, 100, 80)
+		dialogs = [set(), {123}]
+
+		def start_and_release_placer():
+			placer = placement.PropertiesPlacer(pane, expected=1)
+			placer.watch()
+			return placer._timer
+
+		with patch.object(
+			placement,
+			'_pane_placement',
+			return_value=(QPoint(600, 400), QRect(0, 0, 1200, 900)),
+		), patch.object(
+			placement, 'own_dialog_windows',
+			side_effect=lambda: dialogs[-1] if len(dialogs) == 1
+				else dialogs.pop(0),
+		), patch.object(placement, 'win32gui', win32gui):
+			timer = start_and_release_placer()
+			gc.collect()
+			self.addCleanup(timer.stop)
+			deadline = time.monotonic() + 2
+			while win32gui.SetWindowPos.call_count == 0 and time.monotonic() < deadline:
+				QApplication.processEvents()
+				time.sleep(0.01)
+
+		self.assertEqual(win32gui.SetWindowPos.call_count, 1)
+		self.assertEqual(win32gui.SetWindowPos.call_args.args[2:4], (600, 400))
 
 	def test_placer_built_on_worker_thread_runs_its_timer_on_main_thread(self):
 		pane = MagicMock()

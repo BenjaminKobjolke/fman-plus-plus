@@ -45,6 +45,9 @@ def _pane_placement(pane):
 
 # Pane commands run on a worker thread, but the timer needs the GUI thread's event loop.
 class PropertiesPlacer:
+	# Keep the Python receiver alive after the command's local reference is released.
+	_active_placers = set()
+
 	@run_in_main_thread
 	def __init__(self, pane, expected):
 		self._expected = expected
@@ -64,7 +67,12 @@ class PropertiesPlacer:
 		if self._target is None or self._expected <= 0:
 			return
 		self._started_at = time.monotonic()
+		self._active_placers.add(self)
 		self._timer.start(_POLL_MS)
+
+	def _stop(self):
+		self._timer.stop()
+		self._active_placers.discard(self)
 
 	def _poll(self):
 		for hwnd in sorted(own_dialog_windows() - self._before - self._moved):
@@ -82,7 +90,7 @@ class PropertiesPlacer:
 			)
 			self._moved.add(hwnd)
 			if len(self._moved) >= self._expected:
-				self._timer.stop()
+				self._stop()
 				return
 		if (time.monotonic() - self._started_at) * 1000 >= _TIMEOUT_MS:
-			self._timer.stop()
+			self._stop()
