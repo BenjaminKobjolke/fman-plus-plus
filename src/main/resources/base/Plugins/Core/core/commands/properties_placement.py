@@ -1,20 +1,18 @@
 """Move new Windows shell Properties dialogs beside the active pane selection."""
 
-import os
 import time
 
 import win32con
 import win32gui
-import win32process
 from PyQt5.QtCore import QPoint, QRect, QTimer
 from PyQt5.QtWidgets import QApplication
 from fman.impl.util.qt.thread import run_in_main_thread
+from fman.impl.native_windows import own_dialog_windows, pane_cursor_rects
 
 
 _POLL_MS = 50
 _TIMEOUT_MS = 3000
 _CASCADE_PX = 30
-_DIALOG_CLASS = '#32770'
 
 
 def target_point(row_rect, pane_rect):
@@ -35,38 +33,10 @@ def clamp_to_screen(rect, available):
 	)
 
 
-def own_dialog_windows():
-	windows = set()
-	process_id = os.getpid()
-
-	def collect(hwnd, _):
-		if not win32gui.IsWindowVisible(hwnd):
-			return
-		if win32gui.GetClassName(hwnd) != _DIALOG_CLASS:
-			return
-		_, window_process_id = win32process.GetWindowThreadProcessId(hwnd)
-		if window_process_id == process_id:
-			windows.add(hwnd)
-
-	win32gui.EnumWindows(collect, None)
-	return windows
-
-
 def _pane_placement(pane):
 	try:
 		widget = pane._widget
-		widget_rect = widget.rect()
-		pane_rect = QRect(widget.mapToGlobal(widget_rect.topLeft()), widget_rect.size())
-		row_rect = None
-		view = widget._view_mode.visible_view()
-		if view is not None:
-			index = view.currentIndex()
-			viewport = view.viewport()
-			candidate = view.visualRect(index)
-			if index.isValid() and candidate.intersects(viewport.rect()):
-				row_rect = QRect(
-					viewport.mapToGlobal(candidate.topLeft()), candidate.size()
-				)
+		pane_rect, row_rect = pane_cursor_rects(widget)
 		point = target_point(row_rect, pane_rect)
 		screen = QApplication.screenAt(point) or widget.screen()
 		return point, screen.availableGeometry()
