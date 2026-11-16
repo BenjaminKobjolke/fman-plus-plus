@@ -8,7 +8,8 @@ from PyQt5.QtCore import QBuffer, QIODevice, QRect
 from PyQt5.QtWidgets import QApplication
 
 from fman.impl.native_windows import (
-	own_dialog_windows, pane_cursor_rects, screen_index_at,
+	own_dialog_windows, own_windows_top_to_bottom, pane_cursor_rects,
+	screen_index_at,
 )
 from fman.impl.util.qt.thread import run_in_main_thread
 
@@ -128,9 +129,30 @@ class NativeReadout:
 		screen = self._main_window.screen() or QApplication.primaryScreen()
 		if screen is None:
 			return b''
+		background = screen.grabWindow(0)
+		if os.name == 'nt':
+			import win32gui
+			from fman.impl.scripting.window_paint import (
+				compose_screen, print_window_image,
+			)
+
+			screen_rect = screen.geometry()
+			layers = []
+			for handle in reversed(own_windows_top_to_bottom(
+					int(self._main_window.winId()))):
+				edges = win32gui.GetWindowRect(handle)
+				rect = QRect(
+					edges[0], edges[1], edges[2] - edges[0], edges[3] - edges[1],
+				)
+				if not rect.intersects(screen_rect):
+					continue
+				image = print_window_image(handle)
+				if image is not None:
+					layers.append((rect, image))
+			background = compose_screen(background, screen_rect, layers)
 		buffer = QBuffer()
 		buffer.open(QIODevice.WriteOnly)
-		screen.grabWindow(0).save(buffer, 'PNG')
+		background.save(buffer, 'PNG')
 		return bytes(buffer.data())
 
 

@@ -17,16 +17,37 @@ def own_dialog_windows() -> set[int]:
 	process_id = os.getpid()
 
 	def collect(hwnd, _):
-		if not win32gui.IsWindowVisible(hwnd):
-			return
-		if win32gui.GetClassName(hwnd) != _DIALOG_CLASS:
-			return
-		_, window_process_id = win32process.GetWindowThreadProcessId(hwnd)
-		if window_process_id == process_id:
-			windows.add(hwnd)
+		if _is_own_window(hwnd, process_id, win32gui, win32process):
+			if win32gui.GetClassName(hwnd) == _DIALOG_CLASS:
+				windows.add(hwnd)
 
 	win32gui.EnumWindows(collect, None)
 	return windows
+
+
+def own_windows_top_to_bottom(main_hwnd: int) -> list[int]:
+	"""Return visible fman windows in the order Windows stacks them."""
+	import win32gui
+	import win32process
+
+	windows = []
+	process_id = os.getpid()
+
+	def collect(hwnd, _):
+		if not _is_own_window(hwnd, process_id, win32gui, win32process):
+			return
+		if hwnd == main_hwnd or win32gui.GetClassName(hwnd) == _DIALOG_CLASS:
+			windows.append(hwnd)
+
+	win32gui.EnumWindows(collect, None)
+	return windows
+
+
+def _is_own_window(hwnd, process_id, win32gui, win32process):
+	if not win32gui.IsWindowVisible(hwnd):
+		return False
+	_, window_process_id = win32process.GetWindowThreadProcessId(hwnd)
+	return window_process_id == process_id
 
 
 def pane_cursor_rects(widget: Any) -> tuple[QRect, QRect | None]:
