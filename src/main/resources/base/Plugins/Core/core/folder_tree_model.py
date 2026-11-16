@@ -3,13 +3,14 @@ from core.folder_tree import can_drop, list_subfolders
 from fman.impl.util.qt import (
 	FMAN_URLS_MIME, MoveAction, CopyAction, IgnoreAction, get_urls, set_urls,
 )
-from fman.impl.util.qt.thread import run_in_main_thread
+from fman.impl.util.qt.thread import Executor, run_in_main_thread
 from PyQt5.QtCore import QMimeData, QPersistentModelIndex, QModelIndex, Qt, pyqtSignal
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import QFileIconProvider
 from concurrent.futures import Future
 from threading import Condition, Event, Lock, Thread
 from typing import Optional
+import atexit
 import sip
 
 URL_ROLE = Qt.UserRole + 1
@@ -22,17 +23,31 @@ class _IconExecutor:
 	def __init__(self, max_workers):
 		self._condition = Condition()
 		self._pending = []
+		self._stopped = False
+		self._threads = []
 		for index in range(max_workers):
-			Thread(
+			thread = Thread(
 				target=self._work, name='folder-tree-icons-%d' % index,
 				daemon=True
-			).start()
+			)
+			self._threads.append(thread)
+			thread.start()
 	def submit(self, fn, *args):
 		future = Future()
 		with self._condition:
+			if self._stopped:
+				future.set_exception(RuntimeError('Icon executor is stopped.'))
+				return future
 			self._pending.append((future, fn, args))
 			self._condition.notify()
 		return future
+	def shutdown(self):
+		with self._condition:
+			self._stopped = True
+			for future, _, _ in self._pending:
+				future.cancel()
+			self._pending.clear()
+			self._condition.notify_all()
 	def cancel(self, future):
 		with self._condition:
 			for task in self._pending:
@@ -44,8 +59,10 @@ class _IconExecutor:
 	def _work(self):
 		while True:
 			with self._condition:
-				while not self._pending:
+				while not self._pending and not self._stopped:
 					self._condition.wait()
+				if self._stopped:
+					return
 				future, fn, args = self._pending.pop(0)
 			if not future.set_running_or_notify_cancel():
 				continue
@@ -58,6 +75,18 @@ class _IconExecutor:
 
 
 _ICON_EXECUTOR = _IconExecutor(_ICON_WORKERS)
+
+
+def _shutdown_icon_executor():
+	qt_executor = Executor._INSTANCE
+	if qt_executor is not None:
+		qt_executor._about_to_quit()
+	_ICON_EXECUTOR.shutdown()
+	for thread in _ICON_EXECUTOR._threads:
+		thread.join(timeout=1)
+
+
+atexit.register(_shutdown_icon_executor)
 
 
 class FolderTreeModel(QStandardItemModel):
@@ -164,25 +193,32 @@ class FolderTreeModel(QStandardItemModel):
 			self._icon_futures.discard(future)
 	def _load_icons(self, url, children, persistent, stopped):
 		icons = {}
-		for child in children:
+		loaded = False
+		error = None
+		try:
+			for child in children:
+				if stopped.is_set():
+					return
+				icons[child] = self._icon_for(child)
+				if len(icons) == 32:
+					self._apply_icons(persistent, icons)
+					icons = {}
 			if stopped.is_set():
 				return
-			icons[child] = self._icon_for(child)
-			if len(icons) == 32:
+			own_icon = self._icon_for(url)
+			if icons or own_icon is not None:
+				icons[url] = own_icon
 				self._apply_icons(persistent, icons)
-				icons = {}
-		if stopped.is_set():
-			return
-		own_icon = self._icon_for(url)
-		if icons or own_icon is not None:
-			icons[url] = own_icon
-			self._apply_icons(persistent, icons)
-		if stopped.is_set():
-			return
+			if stopped.is_set():
+				return
+			loaded = True
+		except BaseException as exception:
+			error = exception
 		@run_in_main_thread
 		def finish():
 			self._loading.discard(url)
-			self._loaded.add(url)
+			if loaded:
+				self._loaded.add(url)
 			if not persistent.isValid():
 				self._pending_refresh.discard(url)
 				return
@@ -194,6 +230,8 @@ class FolderTreeModel(QStandardItemModel):
 				self._loaded.discard(url)
 				self.load(parent_item)
 		finish()
+		if error is not None:
+			raise error
 	def _apply_icons(self, persistent, icons):
 		@run_in_main_thread
 		def apply():

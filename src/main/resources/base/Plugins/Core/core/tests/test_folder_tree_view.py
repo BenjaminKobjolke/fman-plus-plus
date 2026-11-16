@@ -7,6 +7,7 @@ from PyQt5.QtGui import QIcon, QKeyEvent, QPixmap
 from PyQt5.QtWidgets import QApplication
 from unittest import TestCase
 from unittest.mock import Mock, call, patch
+from threading import Event
 from concurrent.futures import Future
 import sip
 
@@ -62,6 +63,26 @@ class SynchronousExecutor:
 
 
 class FolderTreeModelTest(TestCase):
+	def test_icon_executor_shutdown_cancels_queued_work(self):
+		from core.folder_tree_model import _IconExecutor
+		started = Event()
+		release = Event()
+		executor = _IconExecutor(1)
+		try:
+			active = executor.submit(lambda: (started.set(), release.wait()))
+			self.assertTrue(started.wait(1))
+			queued = executor.submit(lambda: None)
+
+			executor.shutdown()
+
+			self.assertTrue(queued.cancelled())
+		finally:
+			release.set()
+			for thread in executor._threads:
+				thread.join(1)
+		self.assertTrue(active.done())
+		self.assertTrue(all(not thread.is_alive() for thread in executor._threads))
+
 	def load_children(self, model, parent, children):
 		with patch('core.folder_tree_model.Thread', SynchronousThread), \
 				patch('core.folder_tree_model._ICON_EXECUTOR', SynchronousExecutor()), \
@@ -172,6 +193,32 @@ class FolderTreeModelTest(TestCase):
 			[parent.child(row).data(URL_ROLE)
 			 for row in range(parent.rowCount())]
 		)
+	def test_icon_failure_clears_loading_and_processes_pending_refresh(self):
+		icons = _icon_provider()
+		icons.get_icon.side_effect = [RuntimeError('icon lookup failed'),
+			QIcon(), QIcon()]
+		model = FolderTreeModel(True, Mock(), icons)
+		parent = model.add_folder(model.invisibleRootItem(), 'file:///p')
+		executor = DeferredExecutor()
+
+		with patch('core.folder_tree_model.Thread', SynchronousThread), \
+				patch('core.folder_tree_model._ICON_EXECUTOR', executor), \
+				patch(
+					'core.folder_tree_model.list_subfolders',
+					return_value=['file:///p/a']
+				):
+			model.load(parent)
+			model.refresh('file:///p')
+
+			with self.assertRaisesRegex(RuntimeError, 'icon lookup failed'):
+				executor.run_next()
+
+			self.assertEqual(1, len(executor.tasks))
+			executor.run_next()
+
+		self.assertNotIn('file:///p', model._loading)
+		self.assertIn('file:///p', model._loaded)
+		self.assertNotIn('file:///p', model._pending_refresh)
 	def test_add_folder_does_not_ask_the_icon_provider(self):
 		icons = Mock()
 		model = FolderTreeModel(True, Mock(), icons)
