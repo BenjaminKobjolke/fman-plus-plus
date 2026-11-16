@@ -65,6 +65,13 @@ close the folder tree and restore the pane. If another key is needed, use
 `close` and `launch` to recover a clean session. Read-only commands and
 `close`, `restart` and `launch` are not fenced.
 
+The exact drive overview path `drives://` has a limited input allowlist:
+`command move_cursor_up`, `move_cursor_down`, `move_cursor_home`,
+`move_cursor_end`, `show_explorer_properties` and `go_back`, plus `keys` using
+only `Up`, `Down`, `Home` or `End`. Other actions are refused. Drive paths such
+as `drives://C:` remain outside the fixtures and are always refused. Opening
+the overview with `command show_volumes` from a fixture is allowed.
+
 Before `command`, the driver also checks for an open dialog. It refuses a
 command while a prompt or message box is open and reports its type and text;
 answer it with keys first. Non-modal progress dialogs and tutorial overlays do
@@ -80,7 +87,9 @@ All commands except `launch` and `close` read the session information written
 to the platform's temporary `fman-ui/current.json`; the driver never reads the
 user's normal fman profile.
 The instance runs without user plugins and does not move or click the real
-mouse. fman's own dialogs can be inspected and answered; operating-system
+mouse. fman's own dialogs can be inspected and answered. Native Windows
+Properties windows can be listed, captured with a whole-screen screenshot and
+closed, but cannot be clicked or otherwise driven. Other operating-system
 dialogs and global hotkeys cannot be driven. Screenshots of video viewer areas
 are black.
 With automation enabled, the isolated instance records web links instead of
@@ -213,6 +222,74 @@ The driver starts fman outside the calling shell's job, so sandboxed agents can
 run each command in its own shell call. When a connection is refused, the error
 reports whether fman exited, along with the session id and the tail of its log.
 
+## Example: check Properties window placement (validation task #2360)
+
+The native Properties readout reports each window's rectangle and screen index,
+the fman window and pane rectangles, and each selected cursor row. Compare the
+Properties window top with the cursor-row bottom, confirm successive windows
+are offset by 30 pixels, and check that each rectangle stays inside the screen's
+available area and has the same screen index as fman. `screenshot --screen`
+captures the whole screen, including native windows. Close each Properties
+window with `close-native-windows` after capturing it.
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat command show_explorer_properties --pane 0
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat screenshot --screen %TEMP%\fman-properties-single.png
+tools\fman_ui.bat close-native-windows
+tools\fman_ui.bat command toggle_selection --pane 0
+tools\fman_ui.bat command move_cursor_down --pane 0
+tools\fman_ui.bat command toggle_selection --pane 0
+tools\fman_ui.bat command move_cursor_down --pane 0
+tools\fman_ui.bat command toggle_selection --pane 0
+tools\fman_ui.bat command show_explorer_properties --pane 0
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat screenshot --screen %TEMP%\fman-properties-three.png
+tools\fman_ui.bat close-native-windows
+tools\fman_ui.bat command open_directory "{\"url\":\"file://.../folder\"}" --pane 0
+tools\fman_ui.bat command show_explorer_properties --pane 0
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat screenshot --screen %TEMP%\fman-properties-empty.png
+tools\fman_ui.bat close-native-windows
+tools\fman_ui.bat command show_volumes --pane 0
+tools\fman_ui.bat command move_cursor_down --pane 0
+tools\fman_ui.bat command show_explorer_properties --pane 0
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat screenshot --screen %TEMP%\fman-properties-drive.png
+tools\fman_ui.bat close-native-windows
+tools\fman_ui.bat command go_back --pane 0
+tools\fman_ui.bat command show_explorer_properties --pane 0
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat window --y <available-y-plus-height-minus-window-height>
+tools\fman_ui.bat command move_cursor_end --pane 0
+tools\fman_ui.bat screenshot --screen %TEMP%\fman-properties-bottom.png
+tools\fman_ui.bat close-native-windows
+tools\fman_ui.bat click --file visible.txt --pane 0
+tools\fman_ui.bat command view_file --pane 0
+tools\fman_ui.bat command show_explorer_properties --pane 0
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat screenshot --screen %TEMP%\fman-properties-viewer.png
+tools\fman_ui.bat close-native-windows
+tools\fman_ui.bat window --screen 1
+tools\fman_ui.bat command show_explorer_properties --pane 0
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat screenshot --screen %TEMP%\fman-properties-screen-2.png
+tools\fman_ui.bat close-native-windows
+tools\fman_ui.bat close
+```
+
+For the three-file case, toggle the current file, move down and toggle twice;
+the readout should show three
+Properties windows. For the bottom-edge case, use the screen's
+`available_geometry` from `native-windows` to calculate the `--y` value so the
+fman window bottom meets the available bottom using its actual height from the
+readout, then move the cursor to the end.
+`window --screen 1` returns an error saying how many screens are available; on
+a one-screen machine mark this case not checkable. To check it, add a second
+physical or virtual display in Windows Display settings. The driver never
+installs a virtual display.
+
 ## Commands
 
 Every command prints one JSON result. API failures print `{"error": "…"}` and
@@ -221,7 +298,8 @@ exit with a nonzero code.
 Before saving a screenshot, the driver reads the PNG's actual dimensions. If
 either dimension is below the current minimum, it resizes the window and
 captures once more. The minimum is 1280×768 unless a smaller window size was
-requested with `window`. A second undersized image fails without writing the file, with a message
+requested with `window`. `screenshot --screen` captures the entire display and
+skips the resize retry. A second undersized window image fails without writing the file, with a message
 such as `Screenshot is 1000x700, below the 1280x768 minimum; the usable screen
 area is 1000x700.` Successful screenshot results include `width` and `height`.
 The `window` command accepts integer `width` and `height` values from 200
@@ -240,6 +318,8 @@ tools\fman_ui.bat state
 tools\fman_ui.bat commands
 tools\fman_ui.bat dialog
 tools\fman_ui.bat links
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat close-native-windows
 tools\fman_ui.bat command reload --pane 0
 tools\fman_ui.bat files --pane 1
 tools\fman_ui.bat viewer --pane 0
@@ -250,7 +330,10 @@ tools\fman_ui.bat click --x 250 --y 140 --right
 tools\fman_ui.bat drag --x 300 --y 60 --to-x 240 --to-y 60
 tools\fman_ui.bat hover --x 400 --y 60
 tools\fman_ui.bat window --width 800 --height 600
+tools\fman_ui.bat window --y 200
+tools\fman_ui.bat window --screen 1
 tools\fman_ui.bat screenshot %TEMP%\fman.png
+tools\fman_ui.bat screenshot --screen %TEMP%\fman-screen.png
 tools\fman_ui.bat close
 ```
 
