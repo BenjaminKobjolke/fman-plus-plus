@@ -12,13 +12,13 @@ from fman.impl.native_windows import own_dialog_windows, pane_cursor_rects
 
 _POLL_MS = 50
 _TIMEOUT_MS = 3000
-_CASCADE_PX = 100
+_CASCADE_PX = 30
 
 
 def target_point(row_rect, pane_rect):
 	if row_rect is None:
 		return pane_rect.topLeft() + QPoint(40, 40)
-	return row_rect.bottomLeft()
+	return row_rect.bottomLeft() + QPoint(40, 0)
 
 
 def clamp_to_screen(rect, available):
@@ -85,8 +85,8 @@ class PropertiesPlacer:
 			)
 			point = clamp_to_screen(rect, self._screen)
 			win32gui.SetWindowPos(
-				hwnd, 0, point.x(), point.y(), 0, 0,
-				win32con.SWP_NOSIZE | win32con.SWP_NOZORDER | win32con.SWP_NOACTIVATE,
+				hwnd, win32con.HWND_TOP, point.x(), point.y(), 0, 0,
+				win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE,
 			)
 			self._moved.add(hwnd)
 			if len(self._moved) >= self._expected:

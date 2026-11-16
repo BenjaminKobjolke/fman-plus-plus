@@ -22,7 +22,7 @@ class PropertiesPlacementTest(TestCase):
 	def test_target_point_uses_row_bottom_left(self):
 		self.assertEqual(
 			placement.target_point(QRect(20, 30, 100, 40), QRect(0, 0, 500, 400)),
-			QPoint(20, 69),
+			QPoint(60, 69),
 		)
 
 	def test_target_point_falls_back_to_pane_inset(self):
@@ -47,7 +47,7 @@ class PropertiesPlacementTest(TestCase):
 		self.assertEqual(area, pane_rect)
 		self.assertEqual(
 			placement.clamp_to_screen(QRect(point.x(), point.y(), 419, 516), area),
-			QPoint(1000, 1080),
+			QPoint(1040, 1080),
 		)
 
 	def test_clamp_to_screen_keeps_rect_inside(self):
@@ -97,8 +97,16 @@ class PropertiesPlacementTest(TestCase):
 
 		self.assertEqual(win32gui.SetWindowPos.call_count, 3)
 		self.assertEqual(win32gui.SetWindowPos.call_args_list[0].args[2:4], (100, 200))
-		self.assertEqual(win32gui.SetWindowPos.call_args_list[1].args[2:4], (200, 300))
-		self.assertEqual(win32gui.SetWindowPos.call_args_list[2].args[2:4], (300, 400))
+		self.assertEqual(win32gui.SetWindowPos.call_args_list[1].args[2:4], (130, 230))
+		self.assertEqual(win32gui.SetWindowPos.call_args_list[2].args[2:4], (160, 260))
+		self.assertTrue(all(
+			call.args[1] == placement.win32con.HWND_TOP
+			for call in win32gui.SetWindowPos.call_args_list
+		))
+		self.assertTrue(all(
+			not call.args[6] & placement.win32con.SWP_NOZORDER
+			for call in win32gui.SetWindowPos.call_args_list
+		))
 		self.assertFalse(placer._timer.isActive())
 
 	def test_watch_stops_after_timeout_without_moving_dialogs(self):
