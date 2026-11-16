@@ -512,7 +512,7 @@ class DemoSetupTest(unittest.TestCase):
 	)
 	def test_properties_demo_takes_native_dialog_stills_and_closes_between_them(self):
 		from automated_screenshot_connector.steps import (
-			CustomStep, SendKey, SendScreenshot, flatten,
+			CustomStep, SendKey, SendScreenshot, Wait, flatten,
 		)
 		from fman.impl.demo import (
 			CloseNativeDialogs, RaiseNativeDialogs, ScreenStill,
@@ -521,11 +521,11 @@ class DemoSetupTest(unittest.TestCase):
 
 		demo = DEMOS[26]
 		actions = [
-			action.step if isinstance(action, CustomStep) else action
-			for _, action in flatten(demo.steps)
+			(delay, action.step if isinstance(action, CustomStep) else action)
+			for delay, action in flatten(demo.steps)
 		]
 		still_names = [
-			action.name for action in actions
+			action.name for _, action in actions
 			if isinstance(action, ScreenStill)
 		]
 
@@ -539,19 +539,21 @@ class DemoSetupTest(unittest.TestCase):
 			],
 		)
 		self.assertFalse(any(
-			isinstance(action, SendScreenshot) for action in actions
+			isinstance(action, SendScreenshot) for _, action in actions
 		))
-		for index, action in enumerate(actions):
+		for index, (_, action) in enumerate(actions):
 			if not isinstance(action, ScreenStill):
 				continue
 			previous_key = next(
-				candidate for candidate in reversed(actions[:index])
+				candidate for _, candidate in reversed(actions[:index])
 				if isinstance(candidate, SendKey)
 			)
 			self.assertEqual(previous_key.chord, 'Alt+Enter')
-			self.assertIsInstance(actions[index - 1], RaiseNativeDialogs)
+			self.assertIsInstance(actions[index - 1][1], RaiseNativeDialogs)
 			if index < len(actions) - 1:
-				self.assertIsInstance(actions[index + 1], CloseNativeDialogs)
+				self.assertIsInstance(actions[index + 1][1], Wait)
+				self.assertGreaterEqual(actions[index + 1][0], 1000)
+				self.assertIsInstance(actions[index + 2][1], CloseNativeDialogs)
 
 
 if __name__ == '__main__':

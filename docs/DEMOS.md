@@ -343,7 +343,10 @@ composing stale inputs.
   until it places the expected dialogs or times out. `RaiseNativeDialogs`
   lifts them above fman before each still, and
   `CloseNativeDialogs` closes them and restores the file-list focus between
-  scenes. If a still lacks the dialog, check the lifted-count log line first.
+  scenes. The recorder captures a `ScreenStill` on its next frame, so the
+  script pauses for 1 s before `CloseNativeDialogs`. The bottom-edge still shows
+  only the top of the dialog because placement clamps to the monitor, not to
+  fman's window.
   Its stills are gitignored (`media/demos/properties/`). The two-monitor case
   (mouse on one screen and fman on another) stays a by-hand check. A change to
   Properties placement should add a still here.
