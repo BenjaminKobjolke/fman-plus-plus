@@ -12,7 +12,7 @@ from fman.impl.native_windows import own_dialog_windows, pane_cursor_rects
 
 _POLL_MS = 50
 _TIMEOUT_MS = 3000
-_CASCADE_PX = 30
+_CASCADE_PX = 100
 
 
 def target_point(row_rect, pane_rect):

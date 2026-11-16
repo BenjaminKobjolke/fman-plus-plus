@@ -66,19 +66,20 @@ class PropertiesPlacementTest(TestCase):
 			'_pane_placement',
 			return_value=(QPoint(100, 200), QRect(0, 0, 1000, 800)),
 		), patch.object(placement, 'own_dialog_windows', return_value={10}):
-			placer = placement.PropertiesPlacer(pane, expected=2)
+			placer = placement.PropertiesPlacer(pane, expected=3)
 		placer.watch()
 		win32gui = MagicMock(spec=placement.win32gui)
 		win32gui.GetWindowRect.side_effect = lambda hwnd: (0, 0, 100, 80)
 		with patch.object(
-			placement, 'own_dialog_windows', return_value={10, 11, 12}
+			placement, 'own_dialog_windows', return_value={10, 11, 12, 13}
 		), \
 				patch.object(placement, 'win32gui', win32gui):
 			placer._poll()
 
-		self.assertEqual(win32gui.SetWindowPos.call_count, 2)
+		self.assertEqual(win32gui.SetWindowPos.call_count, 3)
 		self.assertEqual(win32gui.SetWindowPos.call_args_list[0].args[2:4], (100, 200))
-		self.assertEqual(win32gui.SetWindowPos.call_args_list[1].args[2:4], (130, 230))
+		self.assertEqual(win32gui.SetWindowPos.call_args_list[1].args[2:4], (200, 300))
+		self.assertEqual(win32gui.SetWindowPos.call_args_list[2].args[2:4], (300, 400))
 		self.assertFalse(placer._timer.isActive())
 
 	def test_watch_stops_after_timeout_without_moving_dialogs(self):
@@ -143,6 +144,9 @@ class PropertiesPlacementTest(TestCase):
 		self.addCleanup(pane._widget.deleteLater)
 		placers = []
 		errors = []
+		win32gui = MagicMock(spec=placement.win32gui)
+		win32gui.GetWindowRect.return_value = (0, 0, 100, 80)
+		dialogs = [set(), {123}]
 
 		def build_placer():
 			try:
@@ -156,13 +160,25 @@ class PropertiesPlacementTest(TestCase):
 			placement,
 			'_pane_placement',
 			return_value=(QPoint(100, 200), QRect(0, 0, 1000, 800)),
-		), patch.object(placement, 'own_dialog_windows', return_value=set()):
+		), patch.object(
+			placement, 'own_dialog_windows',
+			side_effect=lambda: dialogs.pop(0) if dialogs else {123},
+		), patch.object(placement, 'win32gui', win32gui):
 			worker = threading.Thread(target=build_placer, daemon=True)
 			worker.start()
 			deadline = time.monotonic() + 5
 			while worker.is_alive() and time.monotonic() < deadline:
 				QApplication.processEvents()
 				worker.join(0.01)
+			if not worker.is_alive():
+				self.assertTrue(placers[0]._timer.isActive())
+				deadline = time.monotonic() + 2
+				while (
+					not win32gui.SetWindowPos.call_count
+					and time.monotonic() < deadline
+				):
+					QApplication.processEvents()
+					time.sleep(0.01)
 
 		self.assertFalse(worker.is_alive(), 'worker did not finish')
 		if errors:
@@ -171,4 +187,5 @@ class PropertiesPlacementTest(TestCase):
 		placer = placers[0]
 		self.addCleanup(placer._timer.stop)
 		self.assertIs(placer._timer.thread(), QApplication.instance().thread())
-		self.assertTrue(placer._timer.isActive())
+		self.assertEqual(win32gui.SetWindowPos.call_count, 1)
+		self.assertEqual(win32gui.SetWindowPos.call_args.args[2:4], (100, 200))
