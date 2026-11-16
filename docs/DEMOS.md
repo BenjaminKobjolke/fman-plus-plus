@@ -336,13 +336,15 @@ composing stale inputs.
   `properties-file`, `properties-cascade` and `properties-bottom-edge` use
   `ScreenStill`, because the native Properties windows are not part of a Qt
   window grab; recording them needs an unlocked desktop. The recorder pins fman
-  topmost, so a Properties dialog that is not moved beside the selection falls
-  outside the stills cropped to fman's window. Pane commands run on a worker
+  topmost. The Shell opens Properties without an owner, so those dialogs sort
+  below fman and the recorder leaves them out of the capture. `RaiseNativeDialogs`
+  lifts them above fman before each still. If a still lacks a dialog, check the
+  `Raised N native demo dialog(s)` log line first; a count of 0 means no matching
+  visible dialog was found in fman's process. Pane commands run on a worker
   thread, so `PropertiesPlacer` must be created and started on the main thread
   for its timer to use the GUI event loop. It stays alive until it places the
-  expected dialogs or times out. `RaiseNativeDialogs`
-  lifts them above fman before each still, and
-  `CloseNativeDialogs` closes them and restores the file-list focus between
+  expected dialogs or times out. `CloseNativeDialogs` closes them and restores
+  the file-list focus between
   scenes. The dialogs cascade 100 px apart so all three title bars remain
   visible. The recorder captures a `ScreenStill` on its next frame, so the
   script pauses for 1 s before `CloseNativeDialogs`. The bottom-edge still shows
