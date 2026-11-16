@@ -39,7 +39,7 @@ def _pane_placement(pane):
 		pane_rect, row_rect = pane_cursor_rects(widget)
 		point = target_point(row_rect, pane_rect)
 		screen = QApplication.screenAt(point) or widget.screen()
-		return point, screen.availableGeometry()
+		return point, pane_rect.intersected(screen.availableGeometry())
 	except AttributeError:
 		return None, None
 

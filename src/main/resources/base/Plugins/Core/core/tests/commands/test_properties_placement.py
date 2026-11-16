@@ -31,6 +31,25 @@ class PropertiesPlacementTest(TestCase):
 			QPoint(140, 240),
 		)
 
+	def test_pane_placement_clamps_to_visible_pane_area(self):
+		pane = MagicMock()
+		pane._widget = MagicMock()
+		pane_rect = QRect(960, 516, 960, 1080)
+		row_rect = QRect(1000, 1500, 200, 30)
+		screen = MagicMock()
+		screen.availableGeometry.return_value = QRect(0, 0, 3840, 2112)
+		with patch.object(
+			placement, 'pane_cursor_rects', return_value=(pane_rect, row_rect)
+		), patch.object(placement.QApplication, 'screenAt', return_value=screen):
+			point, area = placement._pane_placement(pane)
+
+		self.assertEqual(point, placement.target_point(row_rect, pane_rect))
+		self.assertEqual(area, pane_rect)
+		self.assertEqual(
+			placement.clamp_to_screen(QRect(point.x(), point.y(), 419, 516), area),
+			QPoint(1000, 1080),
+		)
+
 	def test_clamp_to_screen_keeps_rect_inside(self):
 		rect = QRect(120, 130, 100, 80)
 		self.assertEqual(
