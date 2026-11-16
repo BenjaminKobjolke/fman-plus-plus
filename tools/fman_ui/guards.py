@@ -10,6 +10,11 @@ FENCED_ACTIONS = frozenset(('keys', 'type', 'click', 'drag', 'command'))
 PROGRESS_DIALOG_TYPE = 'QProgressDialog'
 NON_MODAL_DIALOG_TYPES = frozenset((PROGRESS_DIALOG_TYPE, 'Overlay'))
 _WINDOWS_DRIVE = re.compile(r'^[A-Za-z]:')
+DRIVE_OVERVIEW_COMMANDS = frozenset((
+	'move_cursor_up', 'move_cursor_down', 'move_cursor_home',
+	'move_cursor_end', 'show_explorer_properties', 'go_back',
+))
+DRIVE_OVERVIEW_KEYS = frozenset(('Up', 'Down', 'Home', 'End'))
 
 
 def fence_roots(session):
@@ -53,7 +58,7 @@ def is_inside(url, roots):
 	return False
 
 
-def check_inside_fixtures(state, roots):
+def check_inside_fixtures(state, roots, args=None):
 	panes = state.get('panes') if isinstance(state, dict) else None
 	if not isinstance(panes, list) or not panes:
 		raise RuntimeError('State response contains no panes.')
@@ -61,9 +66,25 @@ def check_inside_fixtures(state, roots):
 		if not isinstance(pane, dict):
 			raise RuntimeError('State response contains malformed pane %d.' % index)
 		path = pane.get('path')
+		if path == 'drives://' and args is not None and _overview_action_allowed(args):
+			continue
 		if not is_inside(path, roots):
+			if path == 'drives://' and args is not None:
+				raise RuntimeError(
+					'Drive overview allows only command %s or keys %s.' % (
+						', '.join(sorted(DRIVE_OVERVIEW_COMMANDS)),
+						', '.join(sorted(DRIVE_OVERVIEW_KEYS))))
 			raise RuntimeError(
 				'Pane %d path %r is outside the session fixtures.' % (index, path))
+
+
+def _overview_action_allowed(args):
+	if args.action == 'command':
+		return getattr(args, 'name', None) in DRIVE_OVERVIEW_COMMANDS
+	if args.action == 'keys':
+		chords = getattr(args, 'chords', None)
+		return bool(chords) and all(key in DRIVE_OVERVIEW_KEYS for key in chords)
+	return False
 
 
 def check_no_open_dialog(dialog):
@@ -81,7 +102,7 @@ def guard_input(session, args, api):
 	if args.action == 'keys' and getattr(args, 'chords', None) == ['Escape']:
 		return None
 	state = api(session, 'GET', '/v1/state')
-	check_inside_fixtures(state, fence_roots(session))
+	check_inside_fixtures(state, fence_roots(session), args)
 	if args.action == 'command':
 		dialog = api(session, 'GET', '/v1/dialog').get('dialog')
 		check_no_open_dialog(dialog)

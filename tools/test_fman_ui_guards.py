@@ -37,6 +37,30 @@ class GuardsTest(TestCase):
 					{'path': 'drives://'}],
 			}, [r'D:\s'])
 
+	def test_show_volumes_from_fixture_and_safe_overview_actions_are_allowed(self):
+		state = {'panes': [{'path': 'file://D:/s/left'}]}
+		guards.check_inside_fixtures(state, [r'D:\s'],
+			SimpleNamespace(action='command', name='show_volumes'))
+		for args in (
+			SimpleNamespace(action='command', name='move_cursor_down'),
+			SimpleNamespace(action='command', name='show_explorer_properties'),
+			SimpleNamespace(action='command', name='go_back'),
+			SimpleNamespace(action='keys', chords=['Up', 'End']),
+		):
+			with self.subTest(args=args):
+				guards.check_inside_fixtures(
+					{'panes': [{'path': 'drives://'}]}, [], args)
+
+	def test_drive_overview_rejects_return_and_subpaths(self):
+		with self.assertRaisesRegex(RuntimeError, 'Drive overview allows only'):
+			guards.check_inside_fixtures(
+				{'panes': [{'path': 'drives://'}]}, [],
+				SimpleNamespace(action='keys', chords=['Return']))
+		with self.assertRaisesRegex(RuntimeError, 'outside'):
+			guards.check_inside_fixtures(
+				{'panes': [{'path': 'drives://C:'}]}, [],
+				SimpleNamespace(action='command', name='move_cursor_down'))
+
 	def test_check_inside_fixtures_rejects_missing_empty_and_malformed_panes(self):
 		for state in ({}, {'panes': []}, {'panes': None},
 				{'panes': [{}]}, {'panes': [None]}):
@@ -104,7 +128,7 @@ class GuardsTest(TestCase):
 		with TemporaryDirectory() as temp:
 			session = self._session(temp)
 			api = Mock(return_value={'panes': [{'path': 'drives://'}]})
-			with self.assertRaisesRegex(RuntimeError, 'outside'):
+			with self.assertRaisesRegex(RuntimeError, 'Drive overview allows only'):
 				guards.guard_input(session,
 					SimpleNamespace(action='keys', chords=['Escape', 'A']), api)
 			api.assert_called_once()
