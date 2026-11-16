@@ -8,6 +8,7 @@ import win32gui
 import win32process
 from PyQt5.QtCore import QPoint, QRect, QTimer
 from PyQt5.QtWidgets import QApplication
+from fman.impl.util.qt.thread import run_in_main_thread
 
 
 _POLL_MS = 50
@@ -72,8 +73,9 @@ def _pane_placement(pane):
 	except AttributeError:
 		return None, None
 
-
+# Pane commands run on a worker thread, but the timer needs the GUI thread's event loop.
 class PropertiesPlacer:
+	@run_in_main_thread
 	def __init__(self, pane, expected):
 		self._expected = expected
 		self._target, self._screen = _pane_placement(pane)
@@ -87,6 +89,7 @@ class PropertiesPlacer:
 		self._timer = QTimer(parent)
 		self._timer.timeout.connect(self._poll)
 
+	@run_in_main_thread
 	def watch(self):
 		if self._target is None or self._expected <= 0:
 			return

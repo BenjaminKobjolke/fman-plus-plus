@@ -1,5 +1,7 @@
 """Tests for placing the Windows shell Properties dialogs near the pane."""
 
+import threading
+import time
 from unittest import TestCase, skipUnless
 from unittest.mock import MagicMock, patch
 
@@ -100,3 +102,39 @@ class PropertiesPlacementTest(TestCase):
 
 		win32gui.SetWindowPos.assert_not_called()
 		self.assertFalse(placer._timer.isActive())
+
+	def test_placer_built_on_worker_thread_runs_its_timer_on_main_thread(self):
+		pane = MagicMock()
+		pane._widget = QWidget()
+		self.addCleanup(pane._widget.deleteLater)
+		placers = []
+		errors = []
+
+		def build_placer():
+			try:
+				placer = placement.PropertiesPlacer(pane, expected=1)
+				placer.watch()
+				placers.append(placer)
+			except Exception as error:
+				errors.append(error)
+
+		with patch.object(
+			placement,
+			'_pane_placement',
+			return_value=(QPoint(100, 200), QRect(0, 0, 1000, 800)),
+		), patch.object(placement, 'own_dialog_windows', return_value=set()):
+			worker = threading.Thread(target=build_placer, daemon=True)
+			worker.start()
+			deadline = time.monotonic() + 5
+			while worker.is_alive() and time.monotonic() < deadline:
+				QApplication.processEvents()
+				worker.join(0.01)
+
+		self.assertFalse(worker.is_alive(), 'worker did not finish')
+		if errors:
+			raise errors[0]
+		self.assertEqual(len(placers), 1)
+		placer = placers[0]
+		self.addCleanup(placer._timer.stop)
+		self.assertIs(placer._timer.thread(), QApplication.instance().thread())
+		self.assertTrue(placer._timer.isActive())
