@@ -224,6 +224,46 @@ class FmanUiTest(TestCase):
 			self.assertEqual(result, fman_ui._run(args))
 		api.assert_called_once_with({}, 'GET', '/v1/links')
 
+	def test_native_windows_commands_are_read_only_and_unfenced(self):
+		for command, method, path, payload, result in (
+			('native-windows', 'GET', '/v1/native-windows', None, {'windows': []}),
+			('close-native-windows', 'POST', '/v1/native-windows/close', {},
+				{'closed': 1}),
+		):
+			with self.subTest(command=command), \
+				patch.object(fman_ui, '_read_current', return_value={}), \
+				patch.object(fman_ui, '_api', return_value=result) as api:
+				self.assertEqual(0, fman_ui.main([command]))
+			api.assert_called_once_with(
+				{}, method, path, *(() if payload is None else (payload,)),
+			)
+
+	def test_window_accepts_position_and_screen_options(self):
+		with TemporaryDirectory() as temp:
+			session = self._write_session(temp)
+			for options, expected in (
+				(['--y', '200'], {'width': 1280, 'height': 768, 'y': 200}),
+				(['--screen', '1'], {'width': 1280, 'height': 768, 'screen': 1}),
+			):
+				with self.subTest(options=options), \
+					patch.object(fman_ui, '_read_current', return_value=session), \
+					patch.object(fman_ui, '_api', return_value={'width': 1280}) as api:
+					self.assertEqual(0, fman_ui.main(['window'] + options))
+				self.assertEqual(expected, api.call_args.args[3])
+
+	def test_screen_screenshot_uses_screen_scope_without_resizing(self):
+		with TemporaryDirectory() as temp:
+			path = Path(temp) / 'screen.png'
+			data = b'\x89PNG\r\n\x1a\n' + b'\x00' * 4 + b'IHDR' + \
+				(1600).to_bytes(4, 'big') + (900).to_bytes(4, 'big') + b'\x00' * 20
+			with patch.object(fman_ui, '_read_current', return_value={}), \
+				patch.object(fman_ui, '_api', return_value=data) as api:
+				self.assertEqual(0, fman_ui.main([
+					'screenshot', '--screen', str(path)]))
+			self.assertEqual(('GET', '/v1/screenshot?scope=screen'),
+				api.call_args.args[1:3])
+			self.assertEqual(data, path.read_bytes())
+
 	def test_bare_file_name_is_resolved_against_selected_pane(self):
 		with TemporaryDirectory() as temp:
 			self._write_session(temp)

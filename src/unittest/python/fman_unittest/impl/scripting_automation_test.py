@@ -16,7 +16,7 @@ from fman.impl.overlay import Overlay
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.prompt_popup import Prompt
 from fman.impl.scripting.automation import (
-	AutomationActions, FileListHidden, UnknownFile, UnsafeDrag,
+	AutomationActions, FileListHidden, UnknownFile, UnknownScreen, UnsafeDrag,
 )
 from fman.impl.scripting.actions import InvalidPane
 from fman.impl.util.qt.key_events import parse_chord, post_chord, post_text
@@ -71,6 +71,39 @@ class ScriptingAutomationTest(TestCase):
 		self.addCleanup(window.close)
 		AutomationActions(window, None).resize_window(300, 200)
 		self.assertEqual((300, 200), (window.width(), window.height()))
+
+	def test_resize_window_moves_to_global_position(self):
+		window = _ResizableWindow()
+		window.show()
+		self.addCleanup(window.close)
+		AutomationActions(window, None).resize_window(300, 200, x=25, y=35)
+		self.assertEqual(
+			(25, 35), (window.frameGeometry().x(), window.frameGeometry().y()),
+		)
+
+	def test_resize_window_rejects_unknown_screen_with_screen_count(self):
+		window = _ResizableWindow()
+		window.resize(320, 240)
+		with self.assertRaises(UnknownScreen) as caught:
+			AutomationActions(window, None).resize_window(
+				300, 200, screen=len(QApplication.screens()))
+		self.assertEqual(
+			len(QApplication.screens()), caught.exception.screen_count,
+		)
+		self.assertEqual((320, 240), (window.width(), window.height()))
+
+	def test_resize_window_centers_on_selected_screen(self):
+		window = _ResizableWindow()
+		window.show()
+		self.addCleanup(window.close)
+		result = AutomationActions(window, None).resize_window(300, 200, screen=0)
+		available = QApplication.screens()[0].availableGeometry()
+		self.assertEqual(0, result.screen_index)
+		self.assertEqual(
+			(available.x() + (available.width() - 300) // 2,
+			 available.y() + (available.height() - 200) // 2),
+			(window.frameGeometry().x(), window.frameGeometry().y()),
+		)
 
 	def test_get_dialog_returns_none_without_an_active_modal_widget(self):
 		actions = AutomationActions(_Window(), None)

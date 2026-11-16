@@ -13,6 +13,7 @@ from fman.impl.overlay import Overlay
 from fman.impl.quicksearch import Quicksearch
 from fman.impl.prompt_popup import Prompt
 from fman.impl.scripting.actions import get_pane
+from fman.impl.scripting.native_readout import NativeReadout
 from fman.impl.scripting.dialog_details import (
 	prompt_font_sizes, quicksearch_details, rename_editor_details,
 )
@@ -33,18 +34,29 @@ class UnsafeDrag(Exception):
 	"""Raised when a drag could start a file operation."""
 
 
+class UnknownScreen(Exception):
+	"""Raised when a requested screen index does not exist."""
+
+	def __init__(self, screen_count):
+		self.screen_count = screen_count
+		super().__init__(screen_count)
+
+
 @dataclass(frozen=True)
 class WindowSize:
 	width: int
 	height: int
 	available_width: int
 	available_height: int
+	screen_index: int | None = None
 
 
 class AutomationActions:
-	def __init__(self, main_window, plugin_support):
+	def __init__(self, main_window, plugin_support, native_readout=None):
 		self._main_window = main_window
 		self._plugin_support = plugin_support
+		self._native_readout = native_readout or NativeReadout(
+			main_window, plugin_support)
 
 	@run_in_main_thread
 	def send_keys(self, chords):
@@ -168,16 +180,48 @@ class AutomationActions:
 		return bytes(buffer.data())
 
 	@run_in_main_thread
-	def resize_window(self, width: int, height: int) -> WindowSize:
+	def screen_png(self):
+		return self._native_readout.screen_png()
+
+	@run_in_main_thread
+	def native_windows(self):
+		return self._native_readout.snapshot()
+
+	@run_in_main_thread
+	def close_native_windows(self):
+		return self._native_readout.close_all()
+
+	@run_in_main_thread
+	def resize_window(self, width: int, height: int, x: int | None = None,
+			y: int | None = None, screen: int | None = None) -> WindowSize:
+		screens = QApplication.screens()
+		if screen is not None:
+			if screen < 0 or screen >= len(screens):
+				raise UnknownScreen(len(screens))
+			target_screen = screens[screen]
+			available = target_screen.availableGeometry()
 		self._main_window.showNormal()
 		self._main_window.resize(width, height)
-		self._main_window.center_on_screen()
-		screen = self._main_window.screen() or QApplication.primaryScreen()
-		available = screen.availableGeometry()
+		if screen is not None:
+			self._main_window.move(
+				available.x() + (available.width() - width) // 2,
+				available.y() + (available.height() - height) // 2,
+			)
+		elif x is not None or y is not None:
+			current = self._main_window.frameGeometry().topLeft()
+			self._main_window.move(current.x() if x is None else x,
+				current.y() if y is None else y)
+			target_screen = self._main_window.screen() or QApplication.primaryScreen()
+			available = target_screen.availableGeometry()
+		else:
+			self._main_window.center_on_screen()
+			target_screen = self._main_window.screen() or QApplication.primaryScreen()
+			available = target_screen.availableGeometry()
 		size = self._main_window.size()
 		return WindowSize(
 			size.width(), size.height(),
 			available.width(), available.height(),
+			screens.index(target_screen) if target_screen in screens else None,
 		)
 
 	@run_in_main_thread

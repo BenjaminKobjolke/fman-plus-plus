@@ -17,7 +17,10 @@ def dispatch(args, session, api, settle):
 		session_file = Path(profile).parent / SESSION_FILE
 		if session_file.exists():
 			os.utime(session_file, None)
-	state = guard_input(session, args, api)
+	unfenced = args.action in (
+		'window', 'native-windows', 'close-native-windows',
+	)
+	state = None if unfenced else guard_input(session, args, api)
 	if args.action in ('state', 'commands'):
 		return api(session, 'GET', '/v1/' + args.action)
 	if args.action == 'files':
@@ -26,6 +29,10 @@ def dispatch(args, session, api, settle):
 		return api(session, 'GET', '/v1/dialog')
 	if args.action == 'links':
 		return api(session, 'GET', '/v1/links')
+	if args.action == 'native-windows':
+		return api(session, 'GET', '/v1/native-windows')
+	if args.action == 'close-native-windows':
+		return api(session, 'POST', '/v1/native-windows/close', {})
 	if args.action == 'viewer':
 		return api(session, 'GET', '/v1/viewer?pane=%d' % args.pane)
 	if args.action == 'command':
@@ -91,9 +98,16 @@ def dispatch(args, session, api, settle):
 		settle(args.settle)
 		return result
 	if args.action == 'window':
-		result = api(session, 'POST', '/v1/window', {
-			'width': args.width, 'height': args.height,
-		})
+		screen = getattr(args, 'screen', None)
+		x = getattr(args, 'x', None)
+		y = getattr(args, 'y', None)
+		if screen is not None and (x is not None or y is not None):
+			raise RuntimeError('--screen cannot be combined with --x or --y.')
+		payload = {'width': args.width, 'height': args.height}
+		payload.update({key: value for key, value in (
+			('x', x), ('y', y), ('screen', screen),
+		) if value is not None})
+		result = api(session, 'POST', '/v1/window', payload)
 		session['requested_window'] = {
 			'width': args.width, 'height': args.height,
 		}
@@ -105,7 +119,8 @@ def dispatch(args, session, api, settle):
 		current_file.write_text(session_data, encoding='utf-8')
 		return result
 	if args.action == 'screenshot':
-		data = capture_screenshot(session, api)
+		data = capture_screenshot(
+			session, api, screen=getattr(args, 'screen', None))
 		Path(args.png_path).write_bytes(data)
 		width, height = png_size(data)
 		return {

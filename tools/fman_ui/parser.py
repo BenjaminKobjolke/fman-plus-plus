@@ -2,6 +2,8 @@
 
 import argparse
 
+from window_size import MIN_HEIGHT, MIN_WIDTH
+
 
 def parser():
 	parser = argparse.ArgumentParser(prog='fman_ui')
@@ -25,7 +27,8 @@ def parser():
 	launch.add_argument('--demo', type=int, metavar='ID',
 		help=("start fman in automation demo mode with this demo id; "
 			"consent stays unanswered"))
-	for name in ('state', 'commands', 'close', 'dialog', 'restart', 'links'):
+	for name in ('state', 'commands', 'close', 'dialog', 'restart', 'links',
+			'native-windows', 'close-native-windows'):
 		commands.add_parser(name)
 	viewer = commands.add_parser('viewer')
 	viewer.add_argument('--pane', type=int, default=0)
@@ -62,8 +65,12 @@ def parser():
 	hover.add_argument('--y', type=int, required=True)
 	hover.add_argument('--settle', type=int, default=500)
 	window = commands.add_parser('window')
-	window.add_argument('--width', type=int, required=True)
-	window.add_argument('--height', type=int, required=True)
+	window.add_argument('--width', type=int, default=MIN_WIDTH)
+	window.add_argument('--height', type=int, default=MIN_HEIGHT)
+	window.add_argument('--x', type=int)
+	window.add_argument('--y', type=int)
+	window.add_argument('--screen', type=int)
 	screenshot = commands.add_parser('screenshot')
 	screenshot.add_argument('png_path')
+	screenshot.add_argument('--screen', action='store_true')
 	return parser

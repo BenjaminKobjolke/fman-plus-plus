@@ -47,10 +47,12 @@ def ensure_window_size(session, api) -> dict:
 	return result
 
 
-def capture_screenshot(session, api) -> bytes:
+def capture_screenshot(session, api, screen=False) -> bytes:
 	min_width, min_height = minimum_size(session)
-	data = api(session, 'GET', SCREENSHOT_PATH)
+	data = api(session, 'GET', SCREENSHOT_PATH + ('?scope=screen' if screen else ''))
 	width, height = png_size(data)
+	if screen:
+		return data
 	window = session.get('window')
 	if window is not None and (
 		width < window['width'] or height < window['height']

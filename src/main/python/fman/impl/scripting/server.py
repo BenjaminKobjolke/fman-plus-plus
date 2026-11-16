@@ -20,6 +20,8 @@ from fman.impl.scripting.config import (
 	FILES_PATH,
 	HOVER_PATH,
 	LINKS_PATH,
+	NATIVE_WINDOWS_PATH,
+	NATIVE_WINDOWS_CLOSE_PATH,
 	KEYS_PATH,
 	ORIGIN_HEADER,
 	SCREENSHOT_PATH,
@@ -29,8 +31,9 @@ from fman.impl.scripting.config import (
 )
 from fman.impl.scripting.actions import InvalidPane, UnknownCommand
 from fman.impl.scripting.automation import (
-	FileListHidden, UnknownFile, UnsafeDrag,
+	FileListHidden, UnknownFile, UnknownScreen, UnsafeDrag,
 )
+from fman.impl.scripting.native_readout import validate_window_position
 from fman.impl.util.qt.key_events import parse_chord
 
 
@@ -103,9 +106,18 @@ class ScriptingServer:
 				elif path.path == SCREENSHOT_PATH:
 					if not self._automation_enabled():
 						return
+					query = parse_qs(path.query, keep_blank_values=True)
+					if query.get('scope', ['window']) == ['screen']:
+						png = server._automation_actions.screen_png()
+					else:
+						png = server._automation_actions.screenshot_png()
 					self._send_bytes(
-						200, 'image/png', server._automation_actions.screenshot_png(),
+						200, 'image/png', png,
 					)
+				elif path.path == NATIVE_WINDOWS_PATH:
+					if not self._automation_enabled():
+						return
+					self._send_json(200, server._automation_actions.native_windows())
 				elif path.path == DIALOG_PATH:
 					if not self._automation_enabled():
 						return
@@ -152,7 +164,7 @@ class ScriptingServer:
 					return
 				if urlsplit(self.path).path not in (
 					COMMAND_PATH, KEYS_PATH, CLICK_PATH, DRAG_PATH,
-					HOVER_PATH, WINDOW_PATH,
+					HOVER_PATH, WINDOW_PATH, NATIVE_WINDOWS_CLOSE_PATH,
 				):
 					self._send_error(404, 'Unknown path.')
 					return
@@ -165,6 +177,13 @@ class ScriptingServer:
 					self._send_error(400, 'Request body must be a JSON object.')
 					return
 				path = urlsplit(self.path).path
+				if path == NATIVE_WINDOWS_CLOSE_PATH:
+					if not self._automation_enabled():
+						return
+					self._send_json(200, {
+						'closed': server._automation_actions.close_native_windows(),
+					})
+					return
 				if path == WINDOW_PATH:
 					if not self._automation_enabled():
 						return
@@ -178,7 +197,18 @@ class ScriptingServer:
 							400,
 							'width and height must be integers from 200 to 10000.')
 						return
-					size = server._automation_actions.resize_window(width, height)
+					try:
+						optional = validate_window_position(payload)
+					except ValueError as error:
+						self._send_error(400, str(error))
+						return
+					try:
+						size = server._automation_actions.resize_window(
+							width, height, **optional)
+					except UnknownScreen as error:
+						self._send_error(400, 'Only %s screen(s) available.' %
+							error.screen_count)
+						return
 					self._send_json(200, {'ok': True, **asdict(size)})
 					return
 				if path in (KEYS_PATH, CLICK_PATH, DRAG_PATH, HOVER_PATH):

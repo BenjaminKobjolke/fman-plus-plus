@@ -9,7 +9,7 @@ from PyQt5.QtCore import QPoint
 
 from fman.impl.scripting.actions import InvalidPane, ScriptingActions, UnknownCommand
 from fman.impl.scripting.automation import (
-	AutomationActions, UnknownFile, UnsafeDrag, WindowSize,
+	AutomationActions, UnknownFile, UnknownScreen, UnsafeDrag, WindowSize,
 )
 from fman.impl.scripting.config import ScriptingApiConfig
 from fman.impl.scripting.link_capture import LinkCapture
@@ -117,8 +117,9 @@ class ScriptingServerTest(TestCase):
 		for method, path, payload in (
 			('GET', '/v1/files', None), ('GET', '/v1/screenshot', None),
 			('GET', '/v1/dialog', None), ('GET', '/v1/viewer', None),
-			('GET', '/v1/links', None),
+			('GET', '/v1/links', None), ('GET', '/v1/native-windows', None),
 			('POST', '/v1/window', {'width': 1280, 'height': 768}),
+			('POST', '/v1/native-windows/close', {}),
 			('POST', '/v1/hover', {'x': 1, 'y': 2}),
 			('POST', '/v1/keys', {'keys': ['A']}),
 			('POST', '/v1/click', {'x': 1, 'y': 2}),
@@ -152,6 +153,9 @@ class ScriptingServerTest(TestCase):
 		actions = MagicMock(spec=AutomationActions)
 		actions.get_visible_files.return_value = ['file:///a.txt']
 		actions.screenshot_png.return_value = b'png-data'
+		actions.screen_png.return_value = b'screen-png-data'
+		actions.native_windows.return_value = {'screens': [], 'windows': []}
+		actions.close_native_windows.return_value = 2
 		actions.get_dialog.return_value = {
 			'type': 'MessageBox', 'title': 'Confirm', 'text': 'Continue?',
 			'buttons': ['&Yes', '&No'],
@@ -164,7 +168,7 @@ class ScriptingServerTest(TestCase):
 			},
 		}
 		actions.resize_window.return_value = WindowSize(
-			1280, 768, 1920, 1080)
+			1280, 768, 1920, 1080, 0)
 		actions.hover_at.return_value = {
 			'widget': 'QWidget', 'tooltip': None,
 		}
@@ -203,12 +207,19 @@ class ScriptingServerTest(TestCase):
 			self.assertEqual({
 				'ok': True, 'width': 1280, 'height': 768,
 				'available_width': 1920, 'available_height': 1080,
+				'screen_index': 0,
 			}, self._request_at(
 				base_url, 'POST', '/v1/window', {
 					'width': 1280, 'height': 800,
 				}))
 			self.assertEqual((200, 'image/png', b'png-data'), self._binary_at(
 				base_url, '/v1/screenshot'))
+			self.assertEqual((200, 'image/png', b'screen-png-data'), self._binary_at(
+				base_url, '/v1/screenshot?scope=screen'))
+			self.assertEqual({'screens': [], 'windows': []}, self._request_at(
+				base_url, 'GET', '/v1/native-windows'))
+			self.assertEqual({'closed': 2}, self._request_at(
+				base_url, 'POST', '/v1/native-windows/close', {}))
 			self.assertEqual({
 				'dialog': actions.get_dialog.return_value,
 			}, self._request_at(base_url, 'GET', '/v1/dialog'))
@@ -223,6 +234,9 @@ class ScriptingServerTest(TestCase):
 			actions.get_dialog.assert_called_once_with()
 			actions.get_viewer.assert_called_once_with(1)
 			actions.resize_window.assert_called_once_with(1280, 800)
+			actions.screen_png.assert_called_once_with()
+			actions.native_windows.assert_called_once_with()
+			actions.close_native_windows.assert_called_once_with()
 		finally:
 			server.stop()
 		link_capture.uninstall.assert_called_once_with()
@@ -243,6 +257,26 @@ class ScriptingServerTest(TestCase):
 		unstarted_server.stop()
 		unstarted_capture.uninstall.assert_not_called()
 
+	def test_unknown_screen_is_a_bad_request_with_available_count(self):
+		config = replace(
+			ScriptingApiConfig.from_settings(_Settings({})), port=0,
+			automation=True,
+		)
+		actions = MagicMock(spec=AutomationActions)
+		actions.resize_window.side_effect = UnknownScreen(1)
+		server = ScriptingServer(config, self.TOKEN, self.actions, actions)
+		server.start()
+		try:
+			base_url = 'http://127.0.0.1:%s' % server.port
+			self.assertEqual(400, self._request_error_at(
+				base_url, 'POST', '/v1/window', {
+					'width': 1280, 'height': 768, 'screen': 1,
+				}))
+			actions.resize_window.assert_called_once_with(
+				1280, 768, screen=1)
+		finally:
+			server.stop()
+
 	def test_automation_rejects_bad_bodies_unknown_files_and_bad_panes(self):
 		config = replace(
 			ScriptingApiConfig.from_settings(_Settings({})), port=0,
@@ -261,6 +295,15 @@ class ScriptingServerTest(TestCase):
 			self.assertEqual(400, self._request_error_at(
 				base_url, 'POST', '/v1/drag', {
 					'x': 1, 'y': 2, 'to_x': True, 'to_y': 4,
+				}))
+			for value in (True, -100001, 100001, '1'):
+				self.assertEqual(400, self._request_error_at(
+					base_url, 'POST', '/v1/window', {
+						'width': 1280, 'height': 768, 'x': value,
+					}))
+			self.assertEqual(400, self._request_error_at(
+				base_url, 'POST', '/v1/window', {
+					'width': 1280, 'height': 768, 'screen': 1, 'y': 2,
 				}))
 			for payload in ({}, {'x': True, 'y': 2}, {'x': 1, 'y': '2'}):
 				with self.subTest(hover_payload=payload):
