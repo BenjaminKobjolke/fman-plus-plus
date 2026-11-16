@@ -119,6 +119,7 @@ class ScriptingServerTest(TestCase):
 			('GET', '/v1/dialog', None), ('GET', '/v1/viewer', None),
 			('GET', '/v1/links', None),
 			('POST', '/v1/window', {'width': 1280, 'height': 768}),
+			('POST', '/v1/hover', {'x': 1, 'y': 2}),
 			('POST', '/v1/keys', {'keys': ['A']}),
 			('POST', '/v1/click', {'x': 1, 'y': 2}),
 			('POST', '/v1/drag', {
@@ -164,6 +165,9 @@ class ScriptingServerTest(TestCase):
 		}
 		actions.resize_window.return_value = WindowSize(
 			1280, 768, 1920, 1080)
+		actions.hover_at.return_value = {
+			'widget': 'QWidget', 'tooltip': None,
+		}
 		link_capture = MagicMock(spec=LinkCapture)
 		link_capture.snapshot.return_value = {
 			'opened_urls': ['https://example.test/help'],
@@ -192,7 +196,14 @@ class ScriptingServerTest(TestCase):
 					'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4,
 				},
 			))
-			self.assertEqual({'ok': True}, self._request_at(
+			self.assertEqual({'ok': True, 'widget': 'QWidget', 'tooltip': None},
+				self._request_at(
+					base_url, 'POST', '/v1/hover', {'x': 30, 'y': 40},
+				))
+			self.assertEqual({
+				'ok': True, 'width': 1280, 'height': 768,
+				'available_width': 1920, 'available_height': 1080,
+			}, self._request_at(
 				base_url, 'POST', '/v1/window', {
 					'width': 1280, 'height': 800,
 				}))
@@ -208,6 +219,7 @@ class ScriptingServerTest(TestCase):
 			actions.type_text.assert_called_once_with('x')
 			actions.click_at.assert_called_once_with(10, 20, 'left', False)
 			actions.drag_at.assert_called_once_with(QPoint(1, 2), QPoint(3, 4))
+			actions.hover_at.assert_called_once_with(30, 40)
 			actions.get_dialog.assert_called_once_with()
 			actions.get_viewer.assert_called_once_with(1)
 			actions.resize_window.assert_called_once_with(1280, 800)
@@ -250,6 +262,10 @@ class ScriptingServerTest(TestCase):
 				base_url, 'POST', '/v1/drag', {
 					'x': 1, 'y': 2, 'to_x': True, 'to_y': 4,
 				}))
+			for payload in ({}, {'x': True, 'y': 2}, {'x': 1, 'y': '2'}):
+				with self.subTest(hover_payload=payload):
+					self.assertEqual(400, self._request_error_at(
+						base_url, 'POST', '/v1/hover', payload))
 			for payload in (
 				{}, {'width': 199, 'height': 768}, {'width': 10001, 'height': 768},
 				{'width': 1280, 'height': 199}, {'width': 1280, 'height': 10001},
@@ -273,6 +289,7 @@ class ScriptingServerTest(TestCase):
 			self.assertEqual(401, self._request_error_at(
 				base_url, 'GET', '/v1/files', token=None))
 			actions.resize_window.assert_not_called()
+			actions.hover_at.assert_not_called()
 		finally:
 			server.stop()
 

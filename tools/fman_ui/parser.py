@@ -57,6 +57,13 @@ def parser():
 	drag.add_argument('--to-x', type=int, required=True)
 	drag.add_argument('--to-y', type=int, required=True)
 	drag.add_argument('--settle', type=int, default=500)
+	hover = commands.add_parser('hover')
+	hover.add_argument('--x', type=int, required=True)
+	hover.add_argument('--y', type=int, required=True)
+	hover.add_argument('--settle', type=int, default=500)
+	window = commands.add_parser('window')
+	window.add_argument('--width', type=int, required=True)
+	window.add_argument('--height', type=int, required=True)
 	screenshot = commands.add_parser('screenshot')
 	screenshot.add_argument('png_path')
 	return parser

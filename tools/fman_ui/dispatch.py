@@ -84,6 +84,26 @@ def dispatch(args, session, api, settle):
 		result = api(session, 'POST', '/v1/drag', payload)
 		settle(args.settle)
 		return result
+	if args.action == 'hover':
+		result = api(session, 'POST', '/v1/hover', {
+			'x': args.x, 'y': args.y,
+		})
+		settle(args.settle)
+		return result
+	if args.action == 'window':
+		result = api(session, 'POST', '/v1/window', {
+			'width': args.width, 'height': args.height,
+		})
+		session['requested_window'] = {
+			'width': args.width, 'height': args.height,
+		}
+		session['window'] = result
+		session_file = Path(session['profile']).parent / SESSION_FILE
+		session_data = json.dumps(session, indent=2)
+		session_file.write_text(session_data, encoding='utf-8')
+		current_file = session_file.parent.parent / 'current.json'
+		current_file.write_text(session_data, encoding='utf-8')
+		return result
 	if args.action == 'screenshot':
 		data = capture_screenshot(session, api)
 		Path(args.png_path).write_bytes(data)

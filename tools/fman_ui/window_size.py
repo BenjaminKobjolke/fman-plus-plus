@@ -20,16 +20,27 @@ def png_size(data: bytes) -> tuple[int, int]:
 	return struct.unpack('>II', data[16:24])
 
 
+def minimum_size(session) -> tuple[int, int]:
+	requested = session.get('requested_window')
+	if requested is None:
+		return MIN_WIDTH, MIN_HEIGHT
+	return (
+		min(MIN_WIDTH, requested['width']),
+		min(MIN_HEIGHT, requested['height']),
+	)
+
+
 def ensure_window_size(session, api) -> dict:
+	min_width, min_height = minimum_size(session)
 	result = api(session, 'POST', WINDOW_PATH, {
-		'width': MIN_WIDTH, 'height': MIN_HEIGHT,
+		'width': min_width, 'height': min_height,
 	})
 	result = dict(result)
-	if result['width'] < MIN_WIDTH or result['height'] < MIN_HEIGHT:
+	if result['width'] < min_width or result['height'] < min_height:
 		result['window_warning'] = (
 			'The window is %sx%s, below the %sx%s minimum; '
 			'the usable screen area is %sx%s.' % (
-				result['width'], result['height'], MIN_WIDTH, MIN_HEIGHT,
+				result['width'], result['height'], min_width, min_height,
 				result['available_width'], result['available_height'],
 			)
 		)
@@ -37,20 +48,26 @@ def ensure_window_size(session, api) -> dict:
 
 
 def capture_screenshot(session, api) -> bytes:
+	min_width, min_height = minimum_size(session)
 	data = api(session, 'GET', SCREENSHOT_PATH)
 	width, height = png_size(data)
+	window = session.get('window')
+	if window is not None and (
+		width < window['width'] or height < window['height']
+	):
+		return data
 	window = None
-	if width < MIN_WIDTH or height < MIN_HEIGHT:
+	if width < min_width or height < min_height:
 		window = ensure_window_size(session, api)
 		data = api(session, 'GET', SCREENSHOT_PATH)
 		width, height = png_size(data)
-	if width < MIN_WIDTH or height < MIN_HEIGHT:
+	if width < min_width or height < min_height:
 		available_width = window['available_width']
 		available_height = window['available_height']
 		raise RuntimeError(
 			'Screenshot is %sx%s, below the %sx%s minimum; '
 			'the usable screen area is %sx%s.' % (
-				width, height, MIN_WIDTH, MIN_HEIGHT,
+				width, height, min_width, min_height,
 				available_width, available_height,
 			)
 		)

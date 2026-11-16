@@ -31,6 +31,15 @@ class FmanUiRootTest(TestCase):
 
 
 class FmanUiParserTest(TestCase):
+	def test_accepts_hover_and_window(self):
+		hover = parser().parse_args(['hover', '--x', '1', '--y', '2'])
+		window = parser().parse_args([
+			'window', '--width', '800', '--height', '600'])
+		self.assertEqual(('hover', 1, 2, 500), (
+			hover.action, hover.x, hover.y, hover.settle))
+		self.assertEqual(('window', 800, 600), (
+			window.action, window.width, window.height))
+
 	def test_accepts_large_and_core_settings(self):
 		args = parser().parse_args([
 			'launch', '--large', '5000', '--core-settings', '{}'])

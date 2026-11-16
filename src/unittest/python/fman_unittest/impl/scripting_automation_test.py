@@ -8,7 +8,7 @@ from PyQt5.QtCore import QEvent, QPoint
 from PyQt5.QtGui import QColor, QImage, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (
 	QApplication, QDialog, QDialogButtonBox, QHeaderView, QLabel, QLineEdit,
-	QMessageBox, QProgressDialog,
+	QMenu, QMessageBox, QProgressDialog,
 	QTableView, QWidget,
 )
 
@@ -351,6 +351,41 @@ class ScriptingAutomationTest(TestCase):
 			QEvent.MouseButtonPress, QEvent.MouseButtonRelease,
 			QEvent.MouseButtonDblClick, QEvent.MouseButtonRelease,
 		], window.events)
+
+	def test_hover_at_reports_tooltip_and_sends_mouse_move(self):
+		window = _MouseCapture()
+		window.resize(40, 30)
+		window.setMouseTracking(True)
+		window.setToolTip('full path')
+		window.show()
+		self.addCleanup(window.close)
+
+		result = AutomationActions(window, None).hover_at(5, 6)
+
+		self.assertEqual('full path', result['tooltip'])
+		self.assertEqual('_MouseCapture', result['widget'])
+		self.assertIn(QEvent.MouseMove, window.events)
+
+	def test_hover_at_returns_none_when_widget_has_no_tooltip(self):
+		window = _MouseCapture()
+		window.resize(40, 30)
+		window.show()
+		self.addCleanup(window.close)
+
+		self.assertIsNone(
+			AutomationActions(window, None).hover_at(5, 6)['tooltip'])
+
+	def test_hover_at_highlights_a_menu_action(self):
+		menu = QMenu()
+		self.addCleanup(menu.close)
+		action = menu.addAction('parent folder')
+		menu.popup(QPoint(100, 100))
+		self.app.processEvents()
+		point = menu.actionGeometry(action).center()
+
+		AutomationActions(menu, None).hover_at(point.x(), point.y())
+
+		self.assertIs(action, menu.activeAction())
 
 	def test_drag_at_posts_press_moves_and_release(self):
 		window = _MouseCapture()

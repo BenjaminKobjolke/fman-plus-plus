@@ -1,5 +1,6 @@
 """Tests for minimum window sizing and screenshot verification."""
 
+import json
 import struct
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -9,8 +10,10 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from dispatch import dispatch
+from session_reaper import SESSION_FILE
 from window_size import (
-	MIN_HEIGHT, MIN_WIDTH, capture_screenshot, ensure_window_size, png_size,
+	MIN_HEIGHT, MIN_WIDTH, capture_screenshot, ensure_window_size,
+	minimum_size, png_size,
 )
 
 
@@ -28,6 +31,29 @@ class WindowSizeTest(TestCase):
 
 		self.assertEqual(image, capture_screenshot({}, api))
 		api.assert_called_once_with({}, 'GET', '/v1/screenshot')
+
+	def test_requested_window_size_lowers_capture_minimum(self):
+		session = {'requested_window': {'width': 800, 'height': 600}}
+		image = _png(800, 600)
+		api = Mock(return_value=image)
+
+		self.assertEqual((800, 600), minimum_size(session))
+		self.assertEqual(image, capture_screenshot(session, api))
+		api.assert_called_once_with(session, 'GET', '/v1/screenshot')
+
+	def test_capture_without_requested_size_keeps_existing_minimum(self):
+		self.assertEqual((MIN_WIDTH, MIN_HEIGHT), minimum_size({}))
+
+	def test_capture_accepts_active_popup_at_its_own_size(self):
+		session = {
+			'requested_window': {'width': 800, 'height': 600},
+			'window': {'width': 800, 'height': 600},
+		}
+		popup = _png(245, 122)
+		api = Mock(return_value=popup)
+
+		self.assertEqual(popup, capture_screenshot(session, api))
+		api.assert_called_once_with(session, 'GET', '/v1/screenshot')
 
 	def test_capture_resizes_once_and_returns_the_second_image(self):
 		first = _png(512, 244)
@@ -105,6 +131,37 @@ class WindowSizeTest(TestCase):
 						action='screenshot', png_path=str(path)), {}, api,
 						lambda _milliseconds: None)
 			self.assertFalse(path.exists())
+
+	def test_window_dispatch_stores_requested_size_in_session(self):
+		with TemporaryDirectory() as temp:
+			session_root = Path(temp) / 'session'
+			profile = session_root / 'profile'
+			session_file = session_root / SESSION_FILE
+			current_file = Path(temp) / 'current.json'
+			session_root.mkdir()
+			session_file.write_text('{}', encoding='utf-8')
+			current_file.write_text('{}', encoding='utf-8')
+			session = {'profile': str(profile)}
+			api = Mock(return_value={
+				'ok': True, 'width': 800, 'height': 600,
+				'available_width': 1920, 'available_height': 1080,
+			})
+			with patch('dispatch.guard_input', return_value=None):
+				result = dispatch(SimpleNamespace(
+					action='window', width=800, height=600), session,
+					api, lambda _milliseconds: None)
+
+			self.assertEqual(api.return_value, result)
+			self.assertEqual((
+				'POST', '/v1/window', {'width': 800, 'height': 600},
+			), api.call_args.args[1:])
+			self.assertEqual(
+				{'width': 800, 'height': 600}, session['requested_window'])
+			self.assertEqual(api.return_value, session['window'])
+			self.assertEqual(
+				session, json.loads(session_file.read_text(encoding='utf-8')))
+			self.assertEqual(
+				session, json.loads(current_file.read_text(encoding='utf-8')))
 
 
 def _tiny_png():

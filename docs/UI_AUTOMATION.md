@@ -219,12 +219,17 @@ Every command prints one JSON result. API failures print `{"error": "…"}` and
 exit with a nonzero code.
 
 Before saving a screenshot, the driver reads the PNG's actual dimensions. If
-either dimension is below 1280×768, it resizes the window and captures once
-more. A second undersized image fails without writing the file, with a message
+either dimension is below the current minimum, it resizes the window and
+captures once more. The minimum is 1280×768 unless a smaller window size was
+requested with `window`. A second undersized image fails without writing the file, with a message
 such as `Screenshot is 1000x700, below the 1280x768 minimum; the usable screen
 area is 1000x700.` Successful screenshot results include `width` and `height`.
-The private automation API exposes the resize operation as `POST /v1/window`;
-it accepts integer `width` and `height` values from 200 through 10000, and is
+The `window` command accepts integer `width` and `height` values from 200
+through 10000, reports the actual size, and keeps later screenshots at that
+size for the main window. A screenshot minimum is reduced to the requested
+width or height when it is below 1280×768. Popups are captured on their own at
+their natural dimensions. The private automation API exposes the resize operation as
+`POST /v1/window`, which returns the actual size and usable screen area; it is
 unavailable unless automation is enabled for that isolated profile.
 
 ```bat
@@ -243,9 +248,48 @@ tools\fman_ui.bat type hidden
 tools\fman_ui.bat click --file visible.txt --pane 0 --double
 tools\fman_ui.bat click --x 250 --y 140 --right
 tools\fman_ui.bat drag --x 300 --y 60 --to-x 240 --to-y 60
+tools\fman_ui.bat hover --x 400 --y 60
+tools\fman_ui.bat window --width 800 --height 600
 tools\fman_ui.bat screenshot %TEMP%\fman.png
 tools\fman_ui.bat close
 ```
+
+`hover` uses the same window coordinates as `click --x/--y`. It reports the
+tooltip text because tooltips are separate windows and do not appear in the
+screenshot. The hover highlight remains until another mouse event. `window`
+reports the actual dimensions; later main-window screenshots keep the requested
+size. Popup screenshots use the popup's natural dimensions.
+
+### Example: check long-path hover and shortening (validation task #2366)
+
+These coordinates fit the 800×600 window. Adjust them to the screenshot if your
+layout differs. The first hover's `tooltip` should be the full path. The
+screenshots show the ellipsis highlight, menu-item highlight, and shortened
+path:
+
+```bat
+tools\fman_ui.bat launch --deep 6
+tools\fman_ui.bat click --file deep --double --pane 0
+tools\fman_ui.bat click --file level_1 --double --pane 0
+tools\fman_ui.bat click --file level_2 --double --pane 0
+tools\fman_ui.bat click --file level_3 --double --pane 0
+tools\fman_ui.bat click --file level_4 --double --pane 0
+tools\fman_ui.bat click --file level_5 --double --pane 0
+tools\fman_ui.bat click --file level_6 --double --pane 0
+tools\fman_ui.bat window --width 800 --height 600
+tools\fman_ui.bat screenshot %TEMP%\fman-path-bar.png
+tools\fman_ui.bat hover --x 180 --y 10
+tools\fman_ui.bat hover --x 85 --y 10
+tools\fman_ui.bat screenshot %TEMP%\fman-ellipsis-hover.png
+tools\fman_ui.bat click --x 85 --y 10
+tools\fman_ui.bat hover --x 70 --y 48
+tools\fman_ui.bat screenshot %TEMP%\fman-hidden-folders-menu.png
+tools\fman_ui.bat keys Escape
+tools\fman_ui.bat close
+```
+
+The folder clicks stay inside the generated fixture. The coordinates target the
+path-bar text and ellipsis, then a menu item in the popup.
 
 ### Example: check Help and Changelog links (validation task #2302)
 
@@ -276,6 +320,15 @@ pane commands then act on the tree's highlighted folder. Input commands accept
 column header's right edge in a screenshot and start the drag there. Drags that
 start on file rows are refused, so file drag-and-drop cannot start. Take another
 screenshot to confirm the result.
+
+`hover --x N --y N` moves over the widget at those window coordinates and
+returns its type and visible tooltip. The mouse move remains in place so the
+next screenshot can show a hover highlight. `window --width N --height N`
+resizes the isolated fman window and reports its actual dimensions and usable
+screen area. Values from 200 through 10000 are accepted; main-window screenshots
+keep that requested size, including widths below the usual minimum. When a
+popup is active, the screenshot captures the popup on its own at its natural
+dimensions.
 
 When a command opens an fman dialog, its HTTP request stays open until the
 dialog is answered and may time out in the driver. If a dialog is active, the

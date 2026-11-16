@@ -1,5 +1,6 @@
 """Serve the authenticated local HTTP interface for scripting fman."""
 
+from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import hmac
 import json
@@ -17,6 +18,7 @@ from fman.impl.scripting.config import (
 	DRAG_PATH,
 	DIALOG_PATH,
 	FILES_PATH,
+	HOVER_PATH,
 	LINKS_PATH,
 	KEYS_PATH,
 	ORIGIN_HEADER,
@@ -149,7 +151,8 @@ class ScriptingServer:
 				if body is None:
 					return
 				if urlsplit(self.path).path not in (
-					COMMAND_PATH, KEYS_PATH, CLICK_PATH, DRAG_PATH, WINDOW_PATH,
+					COMMAND_PATH, KEYS_PATH, CLICK_PATH, DRAG_PATH,
+					HOVER_PATH, WINDOW_PATH,
 				):
 					self._send_error(404, 'Unknown path.')
 					return
@@ -175,16 +178,18 @@ class ScriptingServer:
 							400,
 							'width and height must be integers from 200 to 10000.')
 						return
-					server._automation_actions.resize_window(width, height)
-					self._send_json(200, {'ok': True})
+					size = server._automation_actions.resize_window(width, height)
+					self._send_json(200, {'ok': True, **asdict(size)})
 					return
-				if path in (KEYS_PATH, CLICK_PATH, DRAG_PATH):
+				if path in (KEYS_PATH, CLICK_PATH, DRAG_PATH, HOVER_PATH):
 					if not self._automation_enabled():
 						return
 					if path == KEYS_PATH:
 						self._keys(payload)
 					elif path == CLICK_PATH:
 						self._click(payload)
+					elif path == HOVER_PATH:
+						self._hover(payload)
 					else:
 						self._drag(payload)
 					return
@@ -325,6 +330,15 @@ class ScriptingServer:
 					self._send_error(400, str(error))
 				else:
 					self._send_json(200, {'ok': True})
+
+			def _hover(self, payload):
+				x, y = payload.get('x'), payload.get('y')
+				if any(not isinstance(value, int) or isinstance(value, bool)
+					for value in (x, y)):
+					self._send_error(400, 'x and y must be integers.')
+					return
+				result = server._automation_actions.hover_at(x, y)
+				self._send_json(200, {'ok': True, **result})
 
 			def _read_body(self):
 				length = self.headers.get('Content-Length', '0')

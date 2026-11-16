@@ -3,10 +3,10 @@
 from dataclasses import asdict, dataclass, is_dataclass
 
 from PyQt5.QtCore import QBuffer, QIODevice, QPoint, QPointF, Qt, QEvent
-from PyQt5.QtGui import QContextMenuEvent, QMouseEvent, QTextDocument
+from PyQt5.QtGui import QContextMenuEvent, QHelpEvent, QMouseEvent, QTextDocument
 from PyQt5.QtWidgets import (
 	QAbstractItemView, QApplication, QDialogButtonBox, QHeaderView,
-	QMessageBox, QProgressDialog, QPushButton,
+	QMenu, QMessageBox, QProgressDialog, QPushButton, QToolTip,
 )
 
 from fman.impl.overlay import Overlay
@@ -99,6 +99,37 @@ class AutomationActions:
 		point = QPoint(x, y)
 		child = target.childAt(point) or target
 		self._post_click(child, child.mapFrom(target, point), button, double)
+
+	@run_in_main_thread
+	def hover_at(self, x: int, y: int) -> dict[str, str | None]:
+		target = self._window_target()
+		point = QPoint(x, y)
+		child = target.childAt(point) or target
+		point = child.mapFrom(target, point)
+		QToolTip.hideText()
+		mouse_tracking = child.hasMouseTracking()
+		if not mouse_tracking:
+			child.setMouseTracking(True)
+		try:
+			QApplication.sendEvent(child, QEvent(QEvent.Enter))
+			QApplication.sendEvent(child, QMouseEvent(
+				QEvent.MouseMove, point, Qt.NoButton, Qt.NoButton, Qt.NoModifier))
+			QApplication.sendEvent(child, QHelpEvent(
+				QEvent.ToolTip, point, child.mapToGlobal(point)))
+		finally:
+			if not mouse_tracking:
+				child.setMouseTracking(False)
+		if isinstance(child, QMenu):
+			child.setActiveAction(child.actionAt(point))
+		if not QToolTip.isVisible() and child.toolTip():
+			QToolTip.showText(child.mapToGlobal(point), child.toolTip(), child)
+		return {
+			'widget': type(child).__name__,
+			'tooltip': (
+				QToolTip.text() if QToolTip.isVisible()
+				else child.toolTip() or None
+			),
+		}
 
 	@run_in_main_thread
 	def drag_at(self, start: QPoint, end: QPoint) -> None:
