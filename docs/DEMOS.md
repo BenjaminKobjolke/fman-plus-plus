@@ -336,8 +336,10 @@ composing stale inputs.
   `properties-file`, `properties-cascade` and `properties-bottom-edge` use
   `ScreenStill`, because the native Properties windows are not part of a Qt
   window grab; recording them needs an unlocked desktop. The recorder pins fman
-  topmost, so unowned shell dialogs sort below it and are left out of the capture.
-  `RaiseNativeDialogs` lifts them above fman before each still, and
+  topmost, so a Properties dialog that is not moved beside the selection falls
+  outside the stills cropped to fman's window. `PropertiesPlacer` must run on
+  the main thread to move each dialog into the capture. `RaiseNativeDialogs`
+  lifts them above fman before each still, and
   `CloseNativeDialogs` closes them and restores the file-list focus between
   scenes. If a still lacks the dialog, check the lifted-count log line first.
   Its stills are gitignored (`media/demos/properties/`). The two-monitor case
