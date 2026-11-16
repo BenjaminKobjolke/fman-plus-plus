@@ -89,9 +89,11 @@ user's normal fman profile.
 The instance runs without user plugins and does not move or click the real
 mouse. fman's own dialogs can be inspected and answered. Native Windows
 Properties windows can be listed, captured with a whole-screen screenshot and
-closed, but cannot be clicked or otherwise driven. Other operating-system
-dialogs and global hotkeys cannot be driven. Screenshots of video viewer areas
-are black.
+closed, but cannot be clicked or otherwise driven. A whole-screen screenshot
+draws fman's own windows and Properties windows over the desktop in their real
+stacking order, even when other programs cover them; other programs' windows
+remain as they appear on screen. Other operating-system dialogs and global
+hotkeys cannot be driven. Screenshots of video viewer areas are black.
 With automation enabled, the isolated instance records web links instead of
 opening a browser.
 
@@ -229,8 +231,10 @@ the fman window and pane rectangles, and each selected cursor row. Compare the
 Properties window top with the cursor-row bottom, confirm successive windows
 are offset by 30 pixels, and check that each rectangle stays inside the screen's
 available area and has the same screen index as fman. `screenshot --screen`
-captures the whole screen, including native windows. Close each Properties
-window with `close-native-windows` after capturing it.
+draws fman's own windows and Properties windows over the desktop in their real
+stacking order, even when other programs cover them; other programs' windows
+remain as they appear on screen. Close each Properties window with
+`close-native-windows` after capturing it.
 
 ```bat
 tools\fman_ui.bat launch
