@@ -87,6 +87,35 @@ class GuardsTest(TestCase):
 			}),
 		)
 
+	def test_fence_roots_include_network_share_only_when_present(self):
+		session = {
+			'profile': '/session/profile', 'left': '/left', 'right': '/right',
+			'network_share_unc': r'\\localhost\D$\t\fman-ui\abc\share',
+		}
+		self.assertEqual(r'\\localhost\D$\t\fman-ui\abc\share',
+			guards.fence_roots(session)[-1])
+		session.pop('network_share_unc')
+		self.assertEqual(3, len(guards.fence_roots(session)))
+
+	def test_network_share_fence_allows_only_share_and_archive_contents(self):
+		root = r'\\localhost\D$\t\fman-ui\abc\share'
+		allowed = [
+			'file:////localhost/D$/t/fman-ui/abc/share',
+			'file:////localhost/D$/t/fman-ui/abc/share/folder',
+			'zip:////localhost/D$/t/fman-ui/abc/share/a.zip/x',
+		]
+		for path in allowed:
+			with self.subTest(path=path):
+				guards.check_inside_fixtures({'panes': [{'path': path}]}, [root])
+		for path in (
+			'file:////localhost/D$/t/fman-ui/abc',
+			'file:////localhost/D$/',
+			'file:////otherhost/D$/t/fman-ui/abc/share',
+		):
+			with self.subTest(path=path), self.assertRaisesRegex(
+					RuntimeError, 'outside'):
+				guards.check_inside_fixtures({'panes': [{'path': path}]}, [root])
+
 	def _session(self, temp):
 		root = Path(temp) / 'session'
 		left = root / 'left'

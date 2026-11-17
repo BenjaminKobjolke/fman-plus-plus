@@ -16,6 +16,9 @@ def parser():
 	launch.add_argument('--deep', type=int, default=0,
 		help=("number of sibling folders per level in the left fixture's "
 			"deep folder tree"))
+	launch.add_argument('--network-share', action='store_true',
+		help=("create a share folder reachable as "
+			"\\\\localhost\\<drive>$ for network checks"))
 	launch.add_argument('--core-settings', default=None,
 		help=("JSON object written to the profile's Core Settings.json "
 			"before fman starts"))

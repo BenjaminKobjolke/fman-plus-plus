@@ -22,6 +22,7 @@ from fixtures import (
 	parse_core_settings, validate_deep_count, validate_large_count,
 	write_core_settings,
 )
+from network_share import make_network_share
 from dispatch import dispatch
 from session_reaper import (
 	SESSION_FILE, close_session, fman_process_identity, kill_process,
@@ -200,6 +201,10 @@ def _launch(args):
 	if demo is not None:
 		session['demo'] = demo
 	try:
+		if getattr(args, 'network_share', False):
+			fixture = make_network_share(session_root, now)
+			session['network_share'] = fixture.url
+			session['network_share_unc'] = fixture.unc
 		_start_fman(session, session_root)
 		(session_root / SESSION_FILE).write_text(
 			json.dumps(session, indent=2), encoding='utf-8')

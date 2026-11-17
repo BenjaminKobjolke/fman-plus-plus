@@ -15,7 +15,8 @@ import fman_ui
 
 class FmanUiLaunchTest(TestCase):
 	def _launch(self, temp, *, large=0, deep=0, core_settings=None, left=None,
-			previous_version=None, first_start=False, demo=None):
+			previous_version=None, first_start=False, demo=None,
+		network_share=False):
 		patches = (
 			patch.dict(os.environ, {'TEMP': temp}),
 			patch.object(fman_ui, '_reserve_port', return_value=45678),
@@ -44,7 +45,7 @@ class FmanUiLaunchTest(TestCase):
 				left=left, right=None, large=large, deep=deep,
 				core_settings=core_settings,
 				previous_version=previous_version, first_start=first_start,
-				demo=demo))
+				demo=demo, network_share=network_share))
 			self.popen_calls = popen.call_args_list
 			self.api_calls = api.call_args_list
 			return session
@@ -84,6 +85,8 @@ class FmanUiLaunchTest(TestCase):
 					(Path(session['profile']) / 'Local' / 'Session.json').read_text())
 				self.assertEqual([{}, {}], session_settings['panes'])
 				self.assertNotIn('fman_version', session_settings)
+				self.assertNotIn('network_share', session)
+				self.assertNotIn('network_share_unc', session)
 				self.assertTrue((Path(session['left']) / 'visible.txt').exists())
 				self.assertTrue((Path(session['left']) / 'hidden.txt').exists())
 				self.assertTrue((Path(session['left']) / 'folder').is_dir())
@@ -160,6 +163,17 @@ class FmanUiLaunchTest(TestCase):
 				'level_3' / 'level_4' / 'level_5' / 'level_6'
 			self.assertEqual(str(deep), session['deep'])
 			self.assertTrue(deep.is_dir())
+
+	def test_launch_creates_and_reports_network_share_when_requested(self):
+		with TemporaryDirectory() as temp, \
+			patch('network_share.Path.is_dir', return_value=True):
+			session = self._launch(temp, network_share=True)
+			self.assertTrue(session['network_share'].startswith(
+				'network://localhost/D$/'))
+			self.assertTrue(session['network_share'].endswith('/share'))
+			self.assertTrue(session['network_share_unc'].endswith('\\share'))
+			self.assertTrue((Path(session['profile']).parent / 'share' /
+				'visible.txt').is_file())
 
 	def test_launch_with_caller_left_does_not_create_deep_fixture(self):
 		with TemporaryDirectory() as temp:

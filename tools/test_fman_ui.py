@@ -9,6 +9,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'fman_ui'))
 import test_fman_ui_session_reaper
 import test_fman_ui_fixtures
+import test_fman_ui_network_share
 import test_fman_ui_launch
 import test_fman_ui_startup_prompts
 import test_fman_ui_restart
@@ -50,6 +51,11 @@ class FmanUiParserTest(TestCase):
 		args = parser().parse_args(['launch', '--deep', '10'])
 		self.assertEqual(10, args.deep)
 
+	def test_accepts_network_share(self):
+		self.assertTrue(parser().parse_args(
+			['launch', '--network-share']).network_share)
+		self.assertFalse(parser().parse_args(['launch']).network_share)
+
 	def test_accepts_previous_version(self):
 		args = parser().parse_args([
 			'launch', '--previous-version', '1.0.0'])
@@ -76,6 +82,8 @@ def load_tests(loader, tests, pattern):
 		test_fman_ui_session_reaper.SessionReaperTest))
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_fixtures.FixturesTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_network_share.NetworkShareTest))
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_launch.FmanUiLaunchTest))
 	tests.addTests(loader.loadTestsFromTestCase(

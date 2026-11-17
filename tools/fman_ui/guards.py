@@ -18,16 +18,21 @@ DRIVE_OVERVIEW_KEYS = frozenset(('Up', 'Down', 'Home', 'End'))
 
 
 def fence_roots(session):
-	return [
+	roots = [
 		Path(session['profile']).parent,
 		Path(session['left']),
 		Path(session['right']),
 	]
+	if session.get('network_share_unc'):
+		roots.append(session['network_share_unc'])
+	return roots
 
 
 def _normalized_path(path):
 	path = os.fspath(path).replace('\\', '/')
 	if _WINDOWS_DRIVE.match(path):
+		return ntpath.normpath(path.replace('/', '\\')).casefold(), True
+	if path.startswith('//'):
 		return ntpath.normpath(path.replace('/', '\\')).casefold(), True
 	return posixpath.normpath(path).casefold(), False
 

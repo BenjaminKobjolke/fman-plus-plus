@@ -52,6 +52,17 @@ Recycle Bin entries alone, and the close result reports how many entries it
 removed. On macOS, files moved to the Trash remain there. The `hidden.txt`
 fixture is not hidden on macOS.
 
+On Windows, opt in to a disposable network share with `launch --network-share`.
+The driver creates a `share` fixture inside the session folder and exposes it
+through the matching loopback admin-share UNC path (for example,
+`\\localhost\D$\...\share`). The launch result includes its `network_share`
+URL and `network_share_unc` path. `close` deletes the share with the session.
+Only this share folder is added to the input fence; its parent and the rest of
+the drive remain outside the fence. The `network://` overview remains refused.
+Launch fails with the UNC path when Windows cannot reach the loopback admin
+share, such as when admin shares are disabled. This option is available on
+Windows only.
+
 A session that receives no driver command for 30 minutes, or whose fman process
 has exited, is closed by a watchdog started with that session. The next
 `launch` also removes such old sessions. `close` is still required at the end
@@ -198,13 +209,71 @@ The tickets watcher's validation agent finds this driver through the
 `tools/fman_ui.bat` on Windows; `tools/fman_ui.sh` is the macOS command. Both
 paths must stay real files inside
 the checkout or the watcher ignores the key. Agents may use `--large`, `--deep`,
-`--core-settings` and `restart` to check settings across a restart; these
+`--network-share`, `--core-settings` and `restart` to check settings across a restart; these
 options stay inside the temporary fixture and profile. The driver refuses
 input and commands when a pane leaves the session fixtures. Agents always run
 `tools\fman_ui.bat close` at the end,
 including when a check fails. Screenshots an agent wants to attach go under the
 ticket's `attach/validation/` folder. Agents may also use `--demo` to inspect
 startup prompts.
+
+## Example: pack archives on a network share (validation task #2431)
+
+The share fixture is reachable through fman's Network filesystem. The example
+checks Pack, Pack here and password-protected Pack, then copies a file out of
+each archive to inspect its contents. Replace the placeholder with the
+`network_share` URL from the launch result:
+
+```bat
+tools\fman_ui.bat launch --network-share
+tools\fman_ui.bat command open_directory "{\"url\":\"<network_share from launch>\"}" --pane 1
+tools\fman_ui.bat state
+tools\fman_ui.bat click --file visible.txt --pane 0
+tools\fman_ui.bat command pack --pane 0
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat click --file <zip> --double --pane 1
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat keys Backspace
+tools\fman_ui.bat click --file visible.txt --pane 1
+tools\fman_ui.bat command pack_here --pane 1
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat click --file visible.txt --pane 0
+tools\fman_ui.bat command pack_with_password --pane 0
+tools\fman_ui.bat type <password>
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat type <password>
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat restart
+tools\fman_ui.bat command open_directory "{\"url\":\"<network_share from launch>\"}" --pane 1
+tools\fman_ui.bat click --file <password-zip> --double --pane 1
+tools\fman_ui.bat click --file visible.txt --pane 1
+tools\fman_ui.bat command copy --pane 1
+tools\fman_ui.bat keys Ctrl+A
+tools\fman_ui.bat type copied.txt
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat dialog
+tools\fman_ui.bat type <password>
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat files --pane 0
+tools\fman_ui.bat close
+```
+
+In `state`, pane 1 should show a `file:////localhost/...` path. Choose the
+generated ZIP name from `files` for each archive placeholder. Pack here asks
+whether to update the existing `visible.zip`; answer Yes with `Return`. After
+password-protected Pack, restart fman before checking extraction because fman
+keeps a successful password in memory until it closes. Opening the protected
+ZIP lists its filenames without a password; copy `visible.txt` out to
+`copied.txt` to trigger the password prompt. `dialog` should report
+`value: null`; after entering the password, `files --pane 0` should show
+`copied.txt`.
 
 ## Example: demo-mode startup prompts (validation task #2319)
 
