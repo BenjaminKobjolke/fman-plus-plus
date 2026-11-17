@@ -15,7 +15,7 @@ class ExcludeFolderFromFileMentionTest(TestCase):
 				return_value=['.git']
 			),
 			patch(
-				'core.commands.file_mention_exclusions.show_prompt',
+				'core.commands.file_mention_exclusions.show_input',
 				return_value='node_modules'
 			),
 			patch(
@@ -43,15 +43,15 @@ class ExcludeFolderFromFileMentionTest(TestCase):
 				return_value=[]
 			),
 			patch(
-				'core.commands.file_mention_exclusions.show_prompt',
+				'core.commands.file_mention_exclusions.show_input',
 				return_value=None
-			) as show_prompt,
+			) as show_input,
 		):
 			ExcludeFolderFromFileMention(
 				FakePane(url='file:///C:/Work/Projects')
 			)()
 
-		show_prompt.assert_called_once_with(
+		show_input.assert_called_once_with(
 			'Folder name to skip in @ file search:', default='Projects'
 		)
 
@@ -62,7 +62,7 @@ class ExcludeFolderFromFileMentionTest(TestCase):
 				return_value=['Node_Modules']
 			),
 			patch(
-				'core.commands.file_mention_exclusions.show_prompt',
+				'core.commands.file_mention_exclusions.show_input',
 				return_value='node_modules'
 			),
 			patch(
@@ -86,16 +86,20 @@ class ExcludeFolderFromFileMentionTest(TestCase):
 						return_value=[]
 					),
 					patch(
-						'core.commands.file_mention_exclusions.show_prompt',
+						'core.commands.file_mention_exclusions.show_input',
 						return_value=prompt_result
 					),
 					patch(
 						'core.commands.file_mention_exclusions.save_setting'
 					) as save_setting,
+					patch(
+						'core.commands.file_mention_exclusions.show_status_message'
+					) as show_status,
 				):
 					ExcludeFolderFromFileMention(FakePane())()
 
 				save_setting.assert_not_called()
+				show_status.assert_not_called()
 
 	def test_add_rejects_slashes(self):
 		for name in ('foo/bar', 'foo\\bar'):
@@ -106,7 +110,7 @@ class ExcludeFolderFromFileMentionTest(TestCase):
 						return_value=[]
 					),
 					patch(
-						'core.commands.file_mention_exclusions.show_prompt',
+						'core.commands.file_mention_exclusions.show_input',
 						return_value=name
 					),
 					patch(

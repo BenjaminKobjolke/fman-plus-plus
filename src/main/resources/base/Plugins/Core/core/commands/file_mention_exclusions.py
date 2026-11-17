@@ -5,7 +5,7 @@ from core.commands.file_mention import SETTING_KEY
 from core.quicksearch_matchers import contains_substring
 from core.settings import SETTINGS_FILE, get_setting, save_setting
 from fman import (
-	DirectoryPaneCommand, QuicksearchItem, show_prompt, show_quicksearch,
+	DirectoryPaneCommand, QuicksearchItem, show_input, show_quicksearch,
 	show_status_message,
 )
 import fman.fs
@@ -41,7 +41,7 @@ class ExcludeFolderFromFileMention(DirectoryPaneCommand):
 		default_name = ''
 		if file_under_cursor and fman.fs.is_dir(file_under_cursor):
 			default_name = os.path.basename(file_under_cursor.rstrip('\\/'))
-		name = show_prompt(
+		name = show_input(
 			'Folder name to skip in @ file search:', default=default_name
 		)
 		if not name or not name.strip():
