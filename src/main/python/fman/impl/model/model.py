@@ -399,6 +399,8 @@ class Model(SortFilterTableModel, DragAndDrop):
 			self._timed_reload_pending = False
 	@run_in_main_thread
 	def _on_files_reloaded(self, rows):
+		if self._shutdown:
+			return
 		self._files = {
 			row.url: row for row in rows
 		}

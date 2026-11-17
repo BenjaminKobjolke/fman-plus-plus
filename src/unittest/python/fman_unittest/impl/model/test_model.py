@@ -16,10 +16,7 @@ from unittest.mock import MagicMock, call, patch
 import random
 
 class ExecutorTestCase(TestCase):
-
-	"""
-	Base for tests that let @run_in_main_thread methods run inline.
-	"""
+	"Base for tests that let @run_in_main_thread methods run inline."
 
 	def setUp(self):
 		super().setUp()
@@ -530,6 +527,12 @@ class ModelShutdownTest(ExecutorTestCase):
 		model.shutdown()
 		model._worker._thread.join(2)
 		model._file_watcher.shutdown.assert_called_once_with()
+	def test_reload_result_is_ignored_after_shutdown(self):
+		model = Model(StubFileSystem({}), 'null://', [Column()])
+		model.shutdown()
+		files = model._files
+		model._on_files_reloaded([f('null://late', [c('late')])])
+		self.assertIs(files, model._files)
 
 class TimedReloadTest(ExecutorTestCase):
 	def test_reloads_once_while_pending_and_again_after_completion(self):
