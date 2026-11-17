@@ -13,7 +13,7 @@ from core.commands.transfer import _from_human_readable, get_dest_suggestion
 from core.commands.util import chosen_files, get_opposite_pane
 from fman import DirectoryPaneCommand, NO, Task, YES, show_alert, \
 	show_input, submit_task
-from fman.fs import mkdir, notify_file_changed, prepare_copy
+from fman.fs import mkdir, notify_file_changed, prepare_copy, resolve
 from fman.url import as_url, dirname, join, splitscheme
 # os.path.basename, not fman.url's - see core/commands/transfer.py.
 from os.path import basename
@@ -33,6 +33,10 @@ _PASSWORD_PROMPT = 'Password:'
 _CONFIRM_PASSWORD_PROMPT = 'Confirm password:'
 _PASSWORD_MISMATCH_MESSAGE = 'The passwords do not match.'
 _TAR_PASSWORD_MESSAGE = 'Tar archives cannot be password-protected.'
+_DESTINATION_FOLDER_NOT_FOUND_MESSAGE = 'The destination folder does not exist.'
+_UNSUPPORTED_DESTINATION_MESSAGE = (
+	'Archives can only be created in local or network folders.'
+)
 _NON_ASCII_ZIP_MESSAGE = (
 	'Zip archives do not support non-ASCII passwords in 7-Zip. '
 	'Choose a .7z archive instead.'
@@ -65,6 +69,14 @@ class Pack(DirectoryPaneCommand):
 		)
 		if dest:
 			dest = _from_human_readable(dest, dest_dir, self.pane.get_path())
+			try:
+				dest = join(resolve(dirname(dest)), basename(dest))
+			except FileNotFoundError:
+				show_alert(_DESTINATION_FOLDER_NOT_FOUND_MESSAGE)
+				return
+			if splitscheme(dest)[0] != 'file://':
+				show_alert(_UNSUPPORTED_DESTINATION_MESSAGE)
+				return
 			scheme = _get_handler_for_archive(basename(dest))
 			if not scheme:
 				show_alert('Sorry, but this archive format is not supported.')

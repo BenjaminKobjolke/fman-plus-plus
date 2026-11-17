@@ -65,11 +65,13 @@ class PackHereTest(TestCase):
 			get_opposite_pane=DEFAULT,
 			show_input=DEFAULT,
 			show_alert=DEFAULT,
+			resolve=DEFAULT,
 			mkdir=DEFAULT,
 			submit_task=DEFAULT,
 		)
 		self.mocks = self.patches.start()
 		self.mocks['_get_handler_for_archive'].return_value = 'zip://'
+		self.mocks['resolve'].side_effect = lambda url: url
 		self.mocks['chosen_files'].return_value = ['file://C:/source/a.txt']
 		self.mocks['show_input'].return_value = 'file://C:/source/a.zip'
 	def tearDown(self):
@@ -110,11 +112,13 @@ class PackWithPasswordTest(TestCase):
 			get_opposite_pane=DEFAULT,
 			show_input=DEFAULT,
 			show_alert=DEFAULT,
+			resolve=DEFAULT,
 			mkdir=DEFAULT,
 			submit_task=DEFAULT,
 		)
 		self.mocks = self.patches.start()
 		self.mocks['_get_handler_for_archive'].return_value = '7z://'
+		self.mocks['resolve'].side_effect = lambda url: url
 		self.mocks['chosen_files'].return_value = ['file://C:/source/a.txt']
 		self.mocks['show_alert'].return_value = YES
 		self.mocks['get_opposite_pane'].return_value.get_path.return_value = \
@@ -156,6 +160,30 @@ class PackWithPasswordTest(TestCase):
 			call.kwargs.get('password') is True
 			for call in self.mocks['show_input'].call_args_list[1:]
 		))
+	def test_network_destination_is_resolved_before_archive_creation(self):
+		self.pane.get_path.return_value = 'network://server/share'
+		self.mocks['show_input'].side_effect = [
+			'network://server/share/a.zip', 'secret', 'secret'
+		]
+		self.mocks['_get_handler_for_archive'].return_value = 'zip://'
+		self.mocks['resolve'].side_effect = lambda url: \
+			'file:////server/share' if url == 'network://server/share' else url
+		self.command()
+		self.mocks['mkdir'].assert_called_once_with(
+			'zip:////server/share/a.zip'
+		)
+	def test_unsupported_destination_filesystem_is_refused(self):
+		self.mocks['resolve'].side_effect = None
+		self.mocks['resolve'].return_value = 'ftp://host/dir'
+		self._run('file://C:/dest/archive.7z')
+		self.mocks['show_alert'].assert_called_once()
+		self.mocks['mkdir'].assert_not_called()
+		self.mocks['submit_task'].assert_not_called()
+	def test_missing_destination_folder_is_refused(self):
+		self.mocks['resolve'].side_effect = FileNotFoundError
+		self._run('file://C:/dest/archive.7z')
+		self.mocks['show_alert'].assert_called_once()
+		self.mocks['mkdir'].assert_not_called()
 	def test_canceling_password_prompt_stops_packing(self):
 		self.mocks['show_input'].side_effect = [
 			'file://C:/dest/archive.7z', None
