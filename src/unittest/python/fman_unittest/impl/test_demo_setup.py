@@ -107,6 +107,30 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_plugin_drop_claim_demo_takes_stills(self):
+		from fman.impl.demo_scripts import DEMOS
+
+		demo = DEMOS[29]
+		still_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+
+		self.assertEqual(demo.name, 'plugin-drop-claim')
+		self.assertEqual(
+			still_names,
+			[
+				'drop-before',
+				'drop-claimed-by-plugin',
+				'drop-default-copy-prompt',
+				'drop-default-copied',
+			],
+		)
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_demos_record_opaque(self):
 		from fman.impl.demo_scripts import DEMO_OPACITY
 

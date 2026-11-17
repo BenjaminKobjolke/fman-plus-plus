@@ -247,6 +247,11 @@ REM Demo 28 shows a file inside a folder excluded from @ file search.
 if "%1"=="28" mkdir "%LEFT%\build" 2>nul
 if "%1"=="28" >"%LEFT%\build\output.log" echo Build output
 
+REM Demo 29 drops one file a demo plugin claims and one Core copies.
+if "%1"=="29" >"%LEFT%\a-claimed-by-plugin.txt" echo Claimed by DemoDropClaim
+if "%1"=="29" >"%LEFT%\a-copied-by-core.txt" echo Copied by Core
+if "%1"=="29" xcopy /e /i /q /y "%CD%\tools\create_media\DemoDropClaim" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoDropClaim\" >nul
+
 REM The desktop is cleared by the recording tool itself, before it starts this
 REM launcher ("minimize_all" in its config, on by default): it enumerates the
 REM top-level windows and minimizes each one, its own console included. A

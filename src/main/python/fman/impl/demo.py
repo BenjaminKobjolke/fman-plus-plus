@@ -32,6 +32,7 @@ from fman.impl.util.qt.key_events import (
 	parse_chord, post_chord, post_text,
 )
 from fman.impl.demo_window import foreground_process_window
+from fman.impl.demo_drop import DropCursorFile, drop_cursor_file
 
 from automated_screenshot_connector.steps import (
 	CustomStep, InsertChar, PressReturn, SendKey, SendScreenshot, flatten,
@@ -66,7 +67,8 @@ class CloseNativeDialogs:
 
 @dataclass(frozen=True)
 class RaiseNativeDialogs:
-	"""Lift this process's shell dialogs above the topmost demo window so the recorder captures them."""
+	"""Lift this process's shell dialogs above the topmost demo window \
+	so the recorder captures them."""
 
 
 @dataclass(frozen=True)
@@ -154,6 +156,8 @@ class DemoPlayer(QObject):
 		elif isinstance(action, CustomStep):
 			if isinstance(action.step, OpenContextMenu):
 				self._open_context_menu()
+			elif isinstance(action.step, DropCursorFile):
+				drop_cursor_file(self._plugin_support, action.step)
 			elif isinstance(action.step, ScreenStill):
 				if self._child_window_hwnd is None:
 					self._client.send_screenshot(action.step.name)

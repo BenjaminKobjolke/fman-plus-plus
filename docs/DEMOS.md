@@ -33,6 +33,10 @@ over a socket so the tool can capture the window. The wiring:
   Windows Properties stills, merged into `DEMOS` by `demo_scripts.py`.
 - `src/main/python/fman/impl/demo_scripts_file_mention.py` — focused @ file
   search exclusion stills, merged into `DEMOS` by `demo_scripts.py`.
+- `src/main/python/fman/impl/demo_scripts_drop.py` — focused plugin drop-claim
+  stills, merged into `DEMOS` by `demo_scripts.py`.
+- `src/main/python/fman/impl/demo_drop.py` — the demo-only step that sends a
+  file drop through the pane widget's normal drop handler.
 - `src/main/python/fman/impl/demo_scripts_tour.py` — the `tour-*` chapters,
   merged into `DEMOS` by `demo_scripts.py`. Split out to keep both files
   under the project's 300-line limit.
@@ -111,6 +115,7 @@ cannot be shown without it:
 | 24 | a `Viewer Key Bindings.json` binding Ctrl+J to `viewer_next_file` in the demo profile's Settings plugin |
 | 27 | the right pane starts at `network://localhost/<drive>$/<path>` when the matching Windows admin share is reachable; otherwise it stays local |
 | 28 | a `build` folder with `output.log` in the left folder for the @ file search exclusion commands |
+| 29 | `a-claimed-by-plugin.txt` and `a-copied-by-core.txt` in the left folder, plus the `DemoDropClaim` plugin in `Plugins\User` |
 
 Every run sets `FMAN_DATA_DIRECTORY` to that profile and wipes its `Plugins`
 folder. It also sets `PYTHON_KEYRING_BACKEND` to the null keyring, so recordings
@@ -409,13 +414,18 @@ composing stale inputs.
   during and after excluding `build`, plus the add prompt and remove quicksearch.
   Its stills are gitignored (`media/demos/file-mention-exclusions/`). Changes to
   @ file search exclusions should add a still here.
+- **29 `plugin-drop-claim`** — drops one file that `DemoDropClaim` claims and
+  one that Core copies. The stills show the plugin status message, Core's copy
+  prompt and the resulting copied file. Its stills are gitignored
+  (`media/demos/plugin-drop-claim/`). Changes to plugin drop handling should
+  add a still here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
 Tour chapters (3–7), feature clips (8, 9, 21) and plugin clip 10 record video
 only and take no stills. A stills-only screenshot check gets nothing from them;
 pick the focused stills demo (for packing changes: 27; for @ file search
-exclusions: 28).
+exclusions: 28; for plugin drop handling: 29).
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |
@@ -685,6 +695,8 @@ naturally. The seeded scratch folder is therefore always:
 lexicographic. The cursor starts on row 0, so every `Down` count in a script is
 written against this table — re-check them if the fixtures ever change. Demo
 28's `build` folder sorts before every file and shifts every left-pane row by one.
+Demo 29's two `a-*` files also sort before the examples and shift every left-pane
+row by two.
 
 **Ids 8 and 9 do not match that table.** Their extra fixtures shift every row:
 demo 8 adds `projects` and `reports`, which sort *before* every file because
