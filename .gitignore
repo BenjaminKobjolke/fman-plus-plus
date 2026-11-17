@@ -66,6 +66,10 @@ media/demos/viewer-palette/
 media/demos/usage-consent/
 # Properties stills - recorded on demand for the screenshot check, never committed
 media/demos/properties/
+# Pack stills - recorded on demand for the screenshot check, never committed
+media/demos/pack/
+# File-mention exclusion stills - recorded on demand for the screenshot check, never committed
+media/demos/file-mention-exclusions/
 tmp
 tickets/
 # Written by tools\release_create.bat (release-tool create) - transient local state

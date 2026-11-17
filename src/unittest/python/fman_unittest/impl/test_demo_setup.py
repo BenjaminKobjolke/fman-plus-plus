@@ -82,6 +82,31 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_file_mention_exclusions_demo_takes_stills(self):
+		from fman.impl.demo_scripts import DEMOS
+
+		demo = DEMOS[28]
+		still_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+
+		self.assertEqual(demo.name, 'file-mention-exclusions')
+		self.assertEqual(
+			still_names,
+			[
+				'file-mention-before',
+				'file-mention-exclude-prompt',
+				'file-mention-excluded',
+				'file-mention-remove-quicksearch',
+				'file-mention-included-again',
+			],
+		)
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_demos_record_opaque(self):
 		from fman.impl.demo_scripts import DEMO_OPACITY
 

@@ -31,6 +31,8 @@ over a socket so the tool can capture the window. The wiring:
   stills, merged into `DEMOS` by `demo_scripts.py`.
 - `src/main/python/fman/impl/demo_scripts_properties.py` — the focused native
   Windows Properties stills, merged into `DEMOS` by `demo_scripts.py`.
+- `src/main/python/fman/impl/demo_scripts_file_mention.py` — focused @ file
+  search exclusion stills, merged into `DEMOS` by `demo_scripts.py`.
 - `src/main/python/fman/impl/demo_scripts_tour.py` — the `tour-*` chapters,
   merged into `DEMOS` by `demo_scripts.py`. Split out to keep both files
   under the project's 300-line limit.
@@ -108,6 +110,7 @@ cannot be shown without it:
 | 16 | the DemoAccount fake-account plugin in `Plugins\User` |
 | 24 | a `Viewer Key Bindings.json` binding Ctrl+J to `viewer_next_file` in the demo profile's Settings plugin |
 | 27 | the right pane starts at `network://localhost/<drive>$/<path>` when the matching Windows admin share is reachable; otherwise it stays local |
+| 28 | a `build` folder with `output.log` in the left folder for the @ file search exclusion commands |
 
 Every run sets `FMAN_DATA_DIRECTORY` to that profile and wipes its `Plugins`
 folder. It also sets `PYTHON_KEYRING_BACKEND` to the null keyring, so recordings
@@ -402,12 +405,17 @@ composing stale inputs.
   admin share, with a local-folder fallback when that share is unreachable. Its
   stills are gitignored (`media/demos/pack/`). Changes to packing should add a
   still here.
+- **28 `file-mention-exclusions`** — takes stills of the @ file search before,
+  during and after excluding `build`, plus the add prompt and remove quicksearch.
+  Its stills are gitignored (`media/demos/file-mention-exclusions/`). Changes to
+  @ file search exclusions should add a still here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
 Tour chapters (3–7), feature clips (8, 9, 21) and plugin clip 10 record video
 only and take no stills. A stills-only screenshot check gets nothing from them;
-pick the focused stills demo (for packing changes: 27).
+pick the focused stills demo (for packing changes: 27; for @ file search
+exclusions: 28).
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |
@@ -675,7 +683,8 @@ naturally. The seeded scratch folder is therefore always:
 `dummy.mp4` precedes `dummy_1.jpg` because `.` sorts before `_`, and
 `dummy_10.jpg` sorts after `dummy_9.jpg` because the comparison is natural, not
 lexicographic. The cursor starts on row 0, so every `Down` count in a script is
-written against this table — re-check them if the fixtures ever change.
+written against this table — re-check them if the fixtures ever change. Demo
+28's `build` folder sorts before every file and shifts every left-pane row by one.
 
 **Ids 8 and 9 do not match that table.** Their extra fixtures shift every row:
 demo 8 adds `projects` and `reports`, which sort *before* every file because
@@ -760,8 +769,8 @@ start, and end with a `Pause(1.0)` so the recording doesn't cut off abruptly.
    Use the `OpenContextMenu` step for demos that need the file context menu.
    A demo intended for visual checks should include `Screenshot` steps for each
    UI state those checks need to judge.
-   Palette commands should add their query and still to demo 14 instead of a new
-   demo.
+   A palette command whose flow needs seeded data or several dialogs gets a
+   focused stills demo instead of demo 14.
    A feature demo that needs a signed-in fman account goes into demo 16, which
    uses the seeded fake account.
 3. **Set its `group`**, which is what decides where it ends up — the name

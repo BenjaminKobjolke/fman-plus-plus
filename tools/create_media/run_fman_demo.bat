@@ -243,6 +243,10 @@ REM Demo 23 needs one archive and one program to show every file-color group.
 if "%1"=="23" type nul > "%LEFT%\backup.zip"
 if "%1"=="23" type nul > "%LEFT%\setup.exe"
 
+REM Demo 28 shows a file inside a folder excluded from @ file search.
+if "%1"=="28" mkdir "%LEFT%\build" 2>nul
+if "%1"=="28" >"%LEFT%\build\output.log" echo Build output
+
 REM The desktop is cleared by the recording tool itself, before it starts this
 REM launcher ("minimize_all" in its config, on by default): it enumerates the
 REM top-level windows and minimizes each one, its own console included. A

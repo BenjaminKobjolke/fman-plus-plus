@@ -31,6 +31,7 @@ from fman.impl.demo_scripts_launch import LAUNCH_CLIPS
 from fman.impl.demo_scripts_listing import LISTING_CLIPS, select_theme_steps
 from fman.impl.demo_scripts_properties import PROPERTIES_CLIPS
 from fman.impl.demo_scripts_pack import PACK_CLIPS
+from fman.impl.demo_scripts_file_mention import FILE_MENTION_CLIPS
 from fman.impl.demo_scripts_tour import TOUR_CHAPTERS
 
 # Every recording starts opaque: a translucent window blends the desktop into
@@ -166,6 +167,9 @@ DEMOS.update(LAUNCH_CLIPS)
 
 # Pack stills let the visual check judge archive creation changes.
 DEMOS.update(PACK_CLIPS)
+
+# File-mention stills let the visual check judge exclusion command changes.
+DEMOS.update(FILE_MENTION_CLIPS)
 
 def build_themes_script(names):
 	"""The themes demo for the installed themes `names`, one still each.
