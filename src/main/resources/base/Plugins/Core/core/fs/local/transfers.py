@@ -18,6 +18,10 @@ from core.fs.local import read_only
 from core.fs.local import wsl_links
 
 
+# Larger chunks mean fewer syscalls and progress updates for large files.
+COPY_BUFFER_SIZE = 1024 * 1024
+
+
 class LocalTransfers:
 	def move(self, src_url, dst_url):
 		self._check_transfer_precnds(src_url, dst_url)
@@ -177,7 +181,7 @@ class CopyFile(Task):
 				num_written = 0
 				while True:
 					self.check_canceled()
-					buf = fsrc.read(16 * 1024)
+					buf = fsrc.read(COPY_BUFFER_SIZE)
 					if not buf:
 						break
 					num_written += fdst.write(buf)

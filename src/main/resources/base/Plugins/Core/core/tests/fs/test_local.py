@@ -2,6 +2,7 @@ from collections import namedtuple
 from fman import PLATFORM
 from fman.url import join, as_url, splitscheme
 from core import LocalFileSystem
+from core.fs.local.transfers import COPY_BUFFER_SIZE
 from pathlib import Path
 from stat import S_IWRITE
 from tempfile import TemporaryDirectory
@@ -153,7 +154,7 @@ class LocalFileSystemTest(TestCase):
 	def test_failed_copy_removes_partial_target_and_temporary_file(self):
 		with TemporaryDirectory() as tmp_dir:
 			src = Path(tmp_dir, 'src')
-			src.write_bytes(b'x' * (16 * 1024 + 1))
+			src.write_bytes(b'x' * (COPY_BUFFER_SIZE + 1))
 			dst = Path(tmp_dir, 'dst')
 			partial = Path(str(dst) + '.fman-partial')
 			real_open = open
@@ -165,7 +166,7 @@ class LocalFileSystemTest(TestCase):
 	def test_failed_replacement_preserves_old_target(self):
 		with TemporaryDirectory() as tmp_dir:
 			src = Path(tmp_dir, 'src')
-			src.write_bytes(b'x' * (16 * 1024 + 1))
+			src.write_bytes(b'x' * (COPY_BUFFER_SIZE + 1))
 			dst = Path(tmp_dir, 'dst')
 			dst.write_bytes(b'old contents')
 			partial = Path(str(dst) + '.fman-partial')
