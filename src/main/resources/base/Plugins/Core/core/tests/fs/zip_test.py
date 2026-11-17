@@ -64,6 +64,65 @@ class MoveByCopyTest(TestCase):
 			self.task()
 		self.fs.delete.assert_not_called()
 
+class ArchivePathSplitTest(TestCase):
+	def test_split_uses_whole_components_and_skips_archive_named_folders(self):
+		fs = ZipFileSystem(StubFS(), {'.zip', '.zipx'})
+		with TemporaryDirectory() as directory:
+			root = as_url(Path(directory).resolve())[len('file://'):]
+			os.makedirs(os.path.join(directory, 'old.zip'))
+			for path, expected in (
+					('C:/my.zipper/a.zip/x/y.txt', ('C:/my.zipper/a.zip', 'x/y.txt')),
+					('C:/data/a.ZIPX/x', ('C:/data/a.ZIPX', 'x')),
+					('C:/a.zip', ('C:/a.zip', '')),
+					('/dest.zip/a.txt', ('/dest.zip', 'a.txt')),
+					('//server/share/a.zip/x', ('//server/share/a.zip', 'x')),
+					(root + '/old.zip/new.zip/x', (root + '/old.zip/new.zip', 'x')),
+					(
+						root + '/missing.zip/inner.zip/x',
+						(root + '/missing.zip', 'inner.zip/x')
+					)):
+				with self.subTest(path=path):
+					self.assertEqual(
+						expected, fs._split(path)
+					)
+			with self.assertRaises(FileNotFoundError):
+				fs._split('C:/data/archive.zip.old/x')
+	def test_single_archive_component_needs_no_disk_check(self):
+		fs = ZipFileSystem(StubFS(), {'.zip'})
+		with patch('core.fs.zip.os.path.isdir') as isdir:
+			self.assertEqual(('C:/a.zip', 'b/c.txt'), fs._split('C:/a.zip/b/c.txt'))
+		isdir.assert_not_called()
+	def test_resolve_treats_archive_named_folders_as_file_system_locations(self):
+		with TemporaryDirectory() as directory:
+			root = Path(directory).resolve()
+			for name in ('ordinary.zip', 'my.zipper'):
+				(root / name).mkdir()
+				with ZipFile(root / name / 'container.zip', 'w') as writer:
+					writer.writestr('report.txt', b'report')
+			fs = ZipFileSystem(MagicMock(resolve=lambda url: url), {'.zip'})
+			base = as_url(root)[len('file://'):]
+			for name in ('ordinary.zip', 'my.zipper'):
+				with self.subTest(name=name):
+					self.assertEqual(as_url(root / name), fs.resolve(base + '/' + name))
+					self.assertEqual('zip://' + base + '/' + name + '/container.zip',
+						fs.resolve(base + '/' + name + '/container.zip'))
+			with self.assertRaises(FileNotFoundError):
+				fs.resolve(base + '/missing.zip/item')
+	def test_archive_below_an_archive_named_folder_reads_its_members(self):
+		with TemporaryDirectory() as directory:
+			archive = Path(directory).resolve() / 'real.zip' / 'container.zip'
+			archive.parent.mkdir()
+			with ZipFile(archive, 'w') as writer:
+				writer.writestr('ordinary.zip/report.txt', b'report')
+			filesystem = StubFS()
+			fs = ZipFileSystem(filesystem, {'.zip'})
+			filesystem.add_child(fs)
+			base = as_url(archive, 'zip://')[len('zip://'):]
+			self.assertEqual(['ordinary.zip'], list(fs.iterdir(base)))
+			self.assertTrue(fs.is_dir(base + '/ordinary.zip'))
+			self.assertEqual(['report.txt'], list(fs.iterdir(base + '/ordinary.zip')))
+			self.assertTrue(fs.exists(base + '/ordinary.zip/report.txt'))
+
 class ZipFileSystemTest(TestCase):
 	def test_extracting_password_protected_archives_prompts_once(self):
 		for extension, scheme in (('.zip', 'zip://'), ('.7z', '7z://')):
@@ -266,6 +325,13 @@ class ZipFileSystemTest(TestCase):
 						['dir'], self._listdir(dir_path),
 						'Failed at nesting level ' + file_relpath
 					)
+	def test_iterdir_includes_deeply_implied_directories(self):
+		with TemporaryDirectory() as tmp_dir:
+			zip_path = os.path.join(tmp_dir, 'test.zip')
+			with ZipFile(zip_path, 'w') as zip_file:
+				zip_file.writestr('a/b/c/d/e.txt', 'contents')
+			self.assertEqual(['a'], self._listdir(self._path('', zip_path)))
+			self.assertEqual(['d'], self._listdir(self._path('a/b/c', zip_path)))
 	def test_iterdir_nonexistent_zip(self):
 		with self.assertRaises(FileNotFoundError):
 			self._listdir('nonexistent.zip')

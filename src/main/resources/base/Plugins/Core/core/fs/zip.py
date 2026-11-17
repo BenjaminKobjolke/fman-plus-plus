@@ -55,11 +55,11 @@ class _7ZipFileSystem(FileSystem):
 	def get_default_columns(self, path):
 		return 'core.Name', 'core.file_columns.Extension', 'core.Size', 'core.Modified'
 	def resolve(self, path):
-		for suffix in self._suffixes:
-			if suffix in path.lower():
-				if not self.exists(path):
-					raise FileNotFoundError(self.scheme + path)
-				return super().resolve(path)
+		parts, candidates = self._archive_components(path)
+		if any(not os.path.isdir('/'.join(parts[:index + 1])) for index in candidates):
+			if not self.exists(path):
+				raise FileNotFoundError(self.scheme + path)
+			return super().resolve(path)
 		return self._fs.resolve(as_url(path))
 	def iterdir(self, path):
 		path_in_zip = self._split(path)[1]
@@ -216,15 +216,19 @@ class _7ZipFileSystem(FileSystem):
 							self.makedirs(parent_fullpath)
 		return CM()
 	def _split(self, path):
-		# Try longer suffixes first: .tbz and .zip prefix .tbz2 and .zipx.
-		for suffix in sorted(self._suffixes, key=len, reverse=True):
-			try:
-				split_point = path.lower().index(suffix) + len(suffix)
-			except ValueError:
-				continue
-			else:
-				return path[:split_point], path[split_point:].lstrip('/')
-		raise filenotfounderror(self.scheme + path) from None
+		"""Split at a whole archive-named component, skipping real folders."""
+		parts, candidates = self._archive_components(path)
+		if not candidates:
+			raise filenotfounderror(self.scheme + path) from None
+		index = candidates[0]
+		if len(candidates) > 1:
+			index = next((candidate for candidate in candidates[:-1]
+				if not os.path.isdir('/'.join(parts[:candidate + 1]))), candidates[-1])
+		return '/'.join(parts[:index + 1]), '/'.join(parts[index + 1:]).lstrip('/')
+	def _archive_components(self, path):
+		parts = path.split('/')
+		return parts, [index for index, part in enumerate(parts)
+			if any(part.lower().endswith(suffix) for suffix in self._suffixes)]
 	def _7zip_archive(self, zip_path):
 		"""The file 7-Zip reads; subclasses may substitute a decompressed copy."""
 		return zip_path
@@ -234,13 +238,6 @@ class _7ZipFileSystem(FileSystem):
 		args = ['l', '-ba', '-slt', self._7zip_archive(zip_path)]
 		if path_in_zip:
 			args.append(path_in_zip)
-		# We can hugely improve performance by making 7-Zip exclude children of
-		# the given directory. Unfortunately, this has a drawback: If you have
-		# a/b.txt in an archive but no separate entry for a/, then excluding */*
-		# filters out a/. We thus exclude */*/*/*. This works for all folders
-		# that contain at least one subdirectory with a file.
-		exclude = (path_in_zip + '/' if path_in_zip else '') + '*/*/*/*'
-		args.append('-x!' + exclude)
 		with _7zip(args, kill=True) as process:
 			stdout_lines = process.stdout_lines
 			file_info = self._read_file_info(stdout_lines)
