@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
@@ -263,55 +262,6 @@ class FmanUiTest(TestCase):
 			self.assertEqual(('GET', '/v1/screenshot?scope=screen'),
 				api.call_args.args[1:3])
 			self.assertEqual(data, path.read_bytes())
-
-	def test_bare_file_name_is_resolved_against_selected_pane(self):
-		with TemporaryDirectory() as temp:
-			self._write_session(temp)
-			with patch.dict(os.environ, {'TEMP': temp}), \
-				patch.object(fman_ui, '_api', side_effect=[
-					{'panes': [{'path': Path(temp, 'fman-ui', 'left').as_uri()}]},
-					{'ok': True},
-				]) as api:
-				self.assertEqual(0, fman_ui.main([
-					'click', '--file', 'visible.txt', '--settle', '0']))
-				self.assertEqual(
-					Path(temp, 'fman-ui', 'left').as_uri() + '/visible.txt',
-					api.call_args_list[1].args[3]['file'],
-				)
-
-	def test_drag_posts_start_and_end_coordinates(self):
-		with TemporaryDirectory() as temp:
-			self._write_session(temp)
-			with patch.dict(os.environ, {'TEMP': temp}), \
-				patch.object(fman_ui, '_api', side_effect=[
-					{'panes': [{'path': Path(temp, 'fman-ui', 'left').as_uri()}]},
-					{'ok': True},
-				]) as api:
-				self.assertEqual(0, fman_ui.main([
-					'drag', '--x', '1', '--y', '2', '--to-x', '3', '--to-y', '4',
-					'--settle', '0',
-				]))
-		self.assertEqual(
-			('POST', '/v1/drag', {'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4}),
-			api.call_args.args[1:],
-		)
-
-	def test_bracketed_and_spaced_file_names_remain_unencoded(self):
-		with TemporaryDirectory() as temp:
-			self._write_session(temp)
-			for name in ('[--brackets--]/visible.txt', 'file name.txt'):
-				with self.subTest(name=name), \
-					patch.dict(os.environ, {'TEMP': temp}), \
-					patch.object(fman_ui, '_api', side_effect=[
-						{'panes': [{'path': Path(temp, 'fman-ui', 'left').as_uri()}]},
-						{'ok': True},
-					]) as api:
-					self.assertEqual(0, fman_ui.main([
-						'click', '--file', name, '--settle', '0']))
-				self.assertEqual(
-					Path(temp, 'fman-ui', 'left').as_uri() + '/' + name,
-					api.call_args_list[1].args[3]['file'],
-					)
 
 	def test_launch_wait_timeout_kills_process_and_includes_log_tail(self):
 		with TemporaryDirectory() as temp:

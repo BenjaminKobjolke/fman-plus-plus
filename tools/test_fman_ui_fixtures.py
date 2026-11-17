@@ -58,6 +58,28 @@ class FixturesTest(TestCase):
 					fixtures.copy_video_fixture(root / 'left', root)
 			self.assertIn(str(source), str(error.exception))
 
+	def test_make_drop_source_creates_disposable_file(self):
+		with TemporaryDirectory() as temp:
+			path = fixtures.make_drop_source(Path(temp) / 'session')
+			self.assertEqual(
+				Path(temp) / 'session' / 'drop_source' / 'dropped.txt', path)
+			self.assertEqual('drop fixture\n', path.read_text(encoding='utf-8'))
+
+	def test_install_drop_plugin_copies_package_to_user_plugins(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp)
+			profile = root / 'profile'
+			repo = root / 'repo'
+			template = (
+				repo / 'tools' / 'fman_ui' / 'drop_test_plugin'
+				/ 'Drop Test Plugin' / 'drop_test_plugin'
+			)
+			template.mkdir(parents=True)
+			(template / '__init__.py').write_text('template', encoding='utf-8')
+			installed = fixtures.install_drop_plugin(profile, repo)
+			self.assertEqual('template',
+				(installed / '__init__.py').read_text(encoding='utf-8'))
+
 	def test_hide_sets_windows_hidden_attribute(self):
 		with TemporaryDirectory() as temp:
 			path = Path(temp) / 'hidden.txt'

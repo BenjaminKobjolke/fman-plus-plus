@@ -97,6 +97,34 @@ class GuardsTest(TestCase):
 		session.pop('network_share_unc')
 		self.assertEqual(3, len(guards.fence_roots(session)))
 
+	def test_drop_is_a_fenced_action(self):
+		self.assertIn('drop', guards.FENCED_ACTIONS)
+
+	def test_guard_drop_sources_resolves_only_existing_session_files(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'session'
+			profile = root / 'profile'
+			profile.mkdir(parents=True)
+			source = root / 'drop_source' / 'dropped.txt'
+			source.parent.mkdir()
+			source.write_text('fixture', encoding='utf-8')
+			self.assertEqual([str(source.resolve())],
+				guards.guard_drop_sources({'profile': str(profile)}, [str(source)]))
+
+	def test_guard_drop_sources_rejects_outside_and_missing_files(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'session'
+			profile = root / 'profile'
+			profile.mkdir(parents=True)
+			outside = Path(temp) / 'caller.txt'
+			outside.write_text('caller data', encoding='utf-8')
+			missing = root / 'missing.txt'
+			for source in (outside, missing):
+				with self.subTest(source=source), self.assertRaisesRegex(
+					RuntimeError, 'inside the session'):
+					guards.guard_drop_sources(
+						{'profile': str(profile)}, [str(source)])
+
 	def test_network_share_fence_allows_only_share_and_archive_contents(self):
 		root = r'\\localhost\D$\t\fman-ui\abc\share'
 		allowed = [

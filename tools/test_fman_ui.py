@@ -19,6 +19,7 @@ import test_fman_ui_window_size
 import test_fman_ui_process_launch
 import test_fman_ui_recycle_cleanup
 import test_fman_ui_driver
+import test_fman_ui_driver_actions
 from parser import parser
 import fman_ui
 
@@ -69,6 +70,17 @@ class FmanUiParserTest(TestCase):
 		args = parser().parse_args(['launch', '--demo', '1'])
 		self.assertEqual(1, args.demo)
 
+	def test_accepts_drop_plugin_and_drop_command(self):
+		launch = parser().parse_args(['launch', '--drop-plugin'])
+		drop = parser().parse_args([
+			'drop', '--file', 'one.txt', '--file', 'two.txt', '--pane', '1',
+			'--onto', 'folder', '--move', '--settle', '1000'])
+		self.assertTrue(launch.drop_plugin)
+		self.assertEqual(('drop', ['one.txt', 'two.txt'], 1, 'folder', True,
+			False, 1000), (
+			drop.action, drop.file, drop.pane, drop.onto, drop.move,
+			drop.copy, drop.settle))
+
 
 
 def load_tests(loader, tests, pattern):
@@ -76,6 +88,8 @@ def load_tests(loader, tests, pattern):
 	tests.addTests(loader.loadTestsFromTestCase(FmanUiParserTest))
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_driver.FmanUiTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_driver_actions.FmanUiActionTest))
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_recycle_cleanup.RecycleCleanupTest))
 	tests.addTests(loader.loadTestsFromTestCase(
