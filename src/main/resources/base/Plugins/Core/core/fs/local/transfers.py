@@ -149,8 +149,7 @@ class CopyFile(Task):
 				dst, dst_existed,
 				lambda temp: self._copy_regular_file(src, temp)
 			)
-		if not dst_existed:
-			self._fs.notify_file_added(dst_urlpath)
+		self._fs.notify_file_added(dst_urlpath)
 	def _write_temp_file(self, dst, dst_existed, write_temp):
 		if dst_existed:
 			locks.raise_if_locked(dst)

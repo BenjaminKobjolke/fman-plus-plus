@@ -126,6 +126,15 @@ class LocalFileSystemTest(TestCase):
 			self.assertFalse(b.exists(), 'Failed to delete symlink to folder')
 	def test_copy_file(self):
 		self._test_transfer_file(self._fs.copy, deletes_src=False)
+	def test_copy_overwrite_notifies_directory_model(self):
+		with TemporaryDirectory() as tmp_dir:
+			src = Path(tmp_dir, 'src')
+			src.write_text('new contents')
+			dst = Path(tmp_dir, 'dst')
+			dst.write_text('old contents')
+			with patch.object(self._fs, 'notify_file_added') as notify:
+				self._fs.copy(as_url(src), as_url(dst))
+			notify.assert_called_once_with(_urlpath(dst))
 	def test_open_binary_file_for_reading_and_writing(self):
 		with TemporaryDirectory() as tmp_dir:
 			path = Path(tmp_dir, 'streamed.bin')
