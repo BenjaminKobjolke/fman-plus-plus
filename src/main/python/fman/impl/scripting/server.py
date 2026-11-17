@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import hmac
 import json
 import logging
+from pathlib import Path
 from threading import Thread
 from urllib.parse import parse_qs, urlsplit
 
@@ -16,6 +17,7 @@ from fman.impl.scripting.config import (
 	COMMANDS_PATH,
 	CLICK_PATH,
 	DRAG_PATH,
+	DROP_PATH,
 	DIALOG_PATH,
 	FILES_PATH,
 	HOVER_PATH,
@@ -32,6 +34,9 @@ from fman.impl.scripting.config import (
 from fman.impl.scripting.actions import InvalidPane, UnknownCommand
 from fman.impl.scripting.automation import (
 	FileListHidden, UnknownFile, UnknownScreen, UnsafeDrag,
+)
+from fman.impl.scripting.external_drop import (
+	DROP_ACTIONS, DropRequest, DropTargetMissing,
 )
 from fman.impl.scripting.native_readout import validate_window_position
 from fman.impl.util.qt.key_events import parse_chord
@@ -164,7 +169,8 @@ class ScriptingServer:
 					return
 				if urlsplit(self.path).path not in (
 					COMMAND_PATH, KEYS_PATH, CLICK_PATH, DRAG_PATH,
-					HOVER_PATH, WINDOW_PATH, NATIVE_WINDOWS_CLOSE_PATH,
+					DROP_PATH, HOVER_PATH, WINDOW_PATH,
+					NATIVE_WINDOWS_CLOSE_PATH,
 				):
 					self._send_error(404, 'Unknown path.')
 					return
@@ -211,7 +217,8 @@ class ScriptingServer:
 						return
 					self._send_json(200, {'ok': True, **asdict(size)})
 					return
-				if path in (KEYS_PATH, CLICK_PATH, DRAG_PATH, HOVER_PATH):
+				if path in (KEYS_PATH, CLICK_PATH, DRAG_PATH, DROP_PATH,
+						HOVER_PATH):
 					if not self._automation_enabled():
 						return
 					if path == KEYS_PATH:
@@ -220,6 +227,8 @@ class ScriptingServer:
 						self._click(payload)
 					elif path == HOVER_PATH:
 						self._hover(payload)
+					elif path == DROP_PATH:
+						self._drop(payload)
 					else:
 						self._drag(payload)
 					return
@@ -360,6 +369,43 @@ class ScriptingServer:
 					self._send_error(400, str(error))
 				else:
 					self._send_json(200, {'ok': True})
+
+			def _drop(self, payload):
+				pane = payload.get('pane')
+				files = payload.get('files')
+				onto = payload.get('onto')
+				action = payload.get('action', 'default')
+				if not isinstance(pane, int) or isinstance(pane, bool):
+					self._send_error(400, 'pane must be an integer.')
+					return
+				if not isinstance(files, list) or not files or any(
+					not isinstance(file, str) or not Path(file).is_absolute()
+						or not Path(file).is_file()
+					for file in files
+				):
+					self._send_error(
+						400,
+						'files must be a non-empty list of existing absolute files.',
+					)
+					return
+				if onto is not None and not isinstance(onto, str):
+					self._send_error(400, 'onto must be a string.')
+					return
+				if not isinstance(action, str) or action not in DROP_ACTIONS:
+					self._send_error(
+						400, 'action must be copy, move or default.')
+					return
+				try:
+					result = server._automation_actions.drop_files(DropRequest(
+						pane, files, onto, action))
+				except (InvalidPane, DropTargetMissing, ValueError) as error:
+					self._send_error(400, str(error))
+					return
+				except FileListHidden:
+					self._send_error(
+						409, 'The file list is hidden behind a mounted view.')
+					return
+				self._send_json(200, {'ok': True, **asdict(result)})
 
 			def _hover(self, payload):
 				x, y = payload.get('x'), payload.get('y')

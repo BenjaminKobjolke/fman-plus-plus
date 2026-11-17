@@ -17,6 +17,7 @@ from fman.impl.scripting.native_readout import NativeReadout
 from fman.impl.scripting.dialog_details import (
 	prompt_font_sizes, quicksearch_details, rename_editor_details,
 )
+from fman.impl.scripting.external_drop import drop_files as send_drop
 from fman.impl.util.qt.key_events import post_chord, post_text
 from fman.impl.util.qt.thread import run_in_main_thread
 
@@ -104,6 +105,13 @@ class AutomationActions:
 		view.scrollTo(index)
 		point = view.visualRect(index).center()
 		self._post_click(view.viewport(), point, button, double)
+
+	@run_in_main_thread
+	def drop_files(self, request):
+		pane = get_pane(self._plugin_support, self._main_window, request.pane)
+		if pane.get_mounted_widget() is not None:
+			raise FileListHidden('The file list is hidden behind a mounted view.')
+		return send_drop(pane._widget.get_file_view(), request)
 
 	@run_in_main_thread
 	def click_at(self, x, y, button='left', double=False):
