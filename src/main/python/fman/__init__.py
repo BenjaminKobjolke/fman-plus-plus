@@ -105,6 +105,12 @@ class DirectoryPane:
 	def _broadcast(self, event, *args):
 		for listener in self._listeners:
 			getattr(listener, event)(*args)
+	def _dispatch_files_dropped(self, *args):
+		# Plugins load after Core, so ask them first.
+		for listener in reversed(self._listeners):
+			if listener.on_files_dropped(*args):
+				return True
+		return False
 
 	def get_commands(self):
 		return self._command_registry.get_commands()
@@ -432,6 +438,10 @@ class DirectoryPaneListener:
 	def before_location_change(self, url, sort_column='', ascending=True):
 		pass
 	def on_files_dropped(self, file_urls, dest_dir, is_copy_not_move):
+		"""Return True to handle the drop and skip later listeners, including
+		Core's default copy or move. Called on a worker thread, plugins before
+		Core.
+		"""
 		pass
 	def on_command(self, command_name, args):
 		pass

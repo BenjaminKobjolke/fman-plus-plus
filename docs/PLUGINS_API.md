@@ -247,6 +247,30 @@ Listeners no longer receive `on_name_edited` for Core's own Rename command
 pane receives keyboard focus. It is sent to listeners registered with that
 pane. Keep Qt calls off this callback thread.
 
+### Dropped files
+
+`DirectoryPaneListener.on_files_dropped(file_urls, dest_dir,
+is_copy_not_move)` is called on one worker thread. Listeners run in reverse
+registration order: user plugins, third-party plugins, then Core. Return a
+truthy value when your plugin handled the drop; fman stops dispatching and
+skips Core's default copy or move. Exceptions are reported and treated as an
+unhandled drop. Existing handlers that return `None` keep the previous
+behavior, so Core runs when no plugin claims the drop.
+
+For example, this listener copies each dropped file without prompting for a
+name:
+
+```python
+from fman import DirectoryPaneListener, fs
+from fman.url import basename, join
+
+class CopyWithoutPrompt(DirectoryPaneListener):
+	def on_files_dropped(self, file_urls, dest_dir, is_copy_not_move):
+		for file_url in file_urls:
+			fs.copy(file_url, join(dest_dir, basename(file_url)))
+		return True
+```
+
 ### Pane selection changes
 
 `DirectoryPaneListener.on_selection_changed()` is called on a worker thread

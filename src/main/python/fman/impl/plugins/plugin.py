@@ -357,7 +357,8 @@ class ListenerWrapper(Wrapper):
 	def on_path_changed(self):
 		self._notify_listener('on_path_changed')
 	def on_files_dropped(self, *args):
-		self._notify_listener('on_files_dropped', *args)
+		with self._report_exceptions():
+			return self._wrapped.on_files_dropped(*args)
 	def on_command(self, command, args):
 		with self._report_exceptions():
 			return self._wrapped.on_command(command, args)

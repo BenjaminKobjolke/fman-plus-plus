@@ -294,3 +294,4 @@ class DragAndDropListener(DirectoryPaneListener):
 		self.pane.run_command(
 			command, {'files': file_urls, 'dest_dir': dest_dir}
 		)
+		return True

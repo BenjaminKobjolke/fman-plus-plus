@@ -36,6 +36,47 @@ class RewriteCommandTest(TestCase):
 		)
 
 
+class FilesDroppedTest(TestCase):
+	def setUp(self):
+		self.pane = DirectoryPane(None, None, Mock())
+
+	def test_last_added_listener_can_handle_drop_before_core(self):
+		calls = []
+
+		class Listener(DirectoryPaneListener):
+			def __init__(self, pane, name, result):
+				super().__init__(pane)
+				self.name = name
+				self.result = result
+
+			def on_files_dropped(self, *args):
+				calls.append(self.name)
+				return self.result
+
+		self.pane._add_listener(Listener(self.pane, 'Core', None))
+		self.pane._add_listener(Listener(self.pane, 'plugin', True))
+
+		self.assertTrue(self.pane._dispatch_files_dropped([], 'dest', False))
+		self.assertEqual(['plugin'], calls)
+
+	def test_unhandled_drop_reaches_every_listener_through_core(self):
+		calls = []
+
+		class Listener(DirectoryPaneListener):
+			def __init__(self, pane, name):
+				super().__init__(pane)
+				self.name = name
+
+			def on_files_dropped(self, *args):
+				calls.append(self.name)
+
+		self.pane._add_listener(Listener(self.pane, 'Core'))
+		self.pane._add_listener(Listener(self.pane, 'plugin'))
+
+		self.assertFalse(self.pane._dispatch_files_dropped([], 'dest', False))
+		self.assertEqual(['plugin', 'Core'], calls)
+
+
 class ChosenFilesTest(TestCase):
 	def setUp(self):
 		self.widget = Mock()

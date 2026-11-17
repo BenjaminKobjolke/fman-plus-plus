@@ -125,7 +125,10 @@ class Controller:
 			callback(file_url, new_name)
 	def on_files_dropped(self, pane_widget, *args):
 		self._metrics.track('DroppedFile')
-		self._panes[pane_widget]._broadcast('on_files_dropped', *args)
+		pane = self._panes[pane_widget]
+		Thread(
+			target=pane._dispatch_files_dropped, args=args, daemon=True
+		).start()
 	def on_context_menu(self, pane_widget, event, file_under_mouse):
 		if event.reason() == QContextMenuEvent.Mouse:
 			via = 'Mouse'

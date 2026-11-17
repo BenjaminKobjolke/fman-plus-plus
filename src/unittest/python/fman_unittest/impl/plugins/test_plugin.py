@@ -46,6 +46,34 @@ class IncognitoListenerTest(TestCase):
 	def test_base_listener_callback_is_noop(self):
 		self.assertIsNone(DirectoryPaneListener(None).on_incognito_changed(True))
 
+class FilesDroppedTest(TestCase):
+	def test_listener_wrapper_returns_result_on_caller_thread(self):
+		caller_thread = current_thread()
+		calls = []
+
+		class Listener(DirectoryPaneListener):
+			def on_files_dropped(self, *args):
+				calls.append((args, current_thread()))
+				return True
+
+		wrapper = ListenerWrapper(Listener(None), StubErrorHandler())
+
+		self.assertTrue(wrapper.on_files_dropped(['file:///file'], 'dest', True))
+		self.assertEqual(
+			[((['file:///file'], 'dest', True), caller_thread)], calls
+		)
+
+	def test_listener_wrapper_reports_error_and_returns_none(self):
+		class Listener(DirectoryPaneListener):
+			def on_files_dropped(self, *args):
+				raise ValueError('failed')
+
+		error_handler = StubErrorHandler()
+		wrapper = ListenerWrapper(Listener(None), error_handler)
+
+		self.assertIsNone(wrapper.on_files_dropped([], 'dest', False))
+		self.assertEqual(1, len(error_handler.error_messages))
+
 class GetCommandNameTest(TestCase):
 	def test_single_letter(self):
 		self.assertEqual('c', _get_command_name('C'))
