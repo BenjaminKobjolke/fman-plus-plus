@@ -16,7 +16,7 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | Version | Change | Status | Note |
 |---------|--------|--------|------|
 | 0.20.4 | Explorer archive copy/paste and drag/drop | pending | easy — archive items enter panes through the normal copy flow |
-| 0.20.4 | Archives nested in archive-named folders fail to open or copy | pending | easy — archive path recognition issue |
+| 0.20.4 | Archives nested in archive-named folders fail to open or copy | ported | 2026-11-17 — `core/fs/zip.py`, `core/tests/fs/zip_test.py` |
 | 0.20.4 | Archives guide and plug-in API documentation | skipped | his docs |
 | 0.20.3 | Backspace at a drive root opens and highlights that drive | ported | 2026-11-11 — `src/main/resources/base/Plugins/Core/core/commands/navigation.py` |
 | 0.20.2 | Empty-space context menu creates a new file | ported | 2026-11-11 — `src/main/resources/base/Plugins/Core/Folder Context Menu (Windows).json`, `(Linux).json`, `(Mac).json`, `core/commands/new_file.py`; `CreateAndEditFile` alias rename not ported |
@@ -171,7 +171,8 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | 0.9.2 | Atomic session/dialog saves, linked settings files refused | pending | easy — plug-in JSON save is atomic; `impl/util/settings.py` session save is not |
 | 0.9.2 | Worker/process startup failures release capacity and clean up | pending | |
 | 0.9.2 | Folder-access failures recover through navigation; UTF-8/BOM config | pending | easy — config reads in `impl/util/settings.py` and `impl/plugins/config.py` omit encoding |
-| 0.9.2 | Natural sort handles long numeric runs and Unicode digits; Go To keeps offline history | pending | easy — `core/__init__.py` pads to six digits; Go To probes `isdir` on offline paths |
+| 0.9.2 | Natural sort handles long numeric runs and Unicode digits | ported | 2026-11-17 — `core/natural_sort.py`, `core/__init__.py`, `core/tests/test_natural_sort.py` |
+| 0.9.2 | Go To keeps offline history | pending | easy — Go To probes `isdir` on offline paths; not ported with the sort change |
 | 0.9.2 | Resource cache hits avoid allocation; unchanged sort prefs skip disk writes | pending | |
 | 0.9.2 | `FMAN_VERSION` replaced by `APP_VERSION` | skipped | rebrand |
 | 0.9.2 | About dialog shows product version and links | skipped | rebrand |
@@ -186,7 +187,7 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | 0.9.0 | Synthetic benchmark fixtures | pending | belongs to the suite above |
 | 0.9.0 | Native Filter Bar / Find / QuickView benchmark workloads | pending | belongs to the suite above |
 | 0.9.0 | Escape in search panels returns focus to last active pane | pending | needs search panels (0.4.0 / 0.7.0) |
-| 0.9.0 | Archive panes include deeply implied directories | pending | easy — `core/fs/zip.py` adds missing parents but its `*/*/*/*` exclusion hides them three levels down |
+| 0.9.0 | Archive panes include deeply implied directories | ported | 2026-11-17 — `core/fs/zip.py`, `core/tests/fs/zip_test.py` |
 | 0.8.1 | Nested plug-in settings merge recursively (upstream `f3e48d2`) | ported | `fman/impl/plugins/config.py`, `test_config.py` |
 | 0.8.1 | Reuse Windows directory entries' hidden attributes | skipped | `core/commands/hidden_files.py` already reads cached `st_file_attributes` |
 | 0.8.0 | Image QuickView (Ctrl+Q) | pending | this fork has own image viewer |
@@ -216,7 +217,7 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | 0.5.0 | TextField labels show input tooltips | pending | needs `show_panel` (0.4.0) |
 | 0.4.4 | Directory totals in the Size column (Ctrl+Shift+D) | pending | easy — no directory totals; upstream implementation is about 460 lines and fits this model |
 | 0.4.4 | Column widths restored by name across optional-column changes | pending | easy — `impl/session.py` restores widths by position |
-| 0.4.4 | Ignore queued pane-reload results after model shutdown | pending | easy — `impl/model/model.py` has no shutdown guard in `_on_files_reloaded` |
+| 0.4.4 | Ignore queued pane-reload results after model shutdown | ported | 2026-11-17 — `fman/impl/model/model.py`, `fman_unittest/impl/model/test_model.py` |
 | 0.4.3 | Unpack archive command | pending | easy — no unpack command; check `docs/ARCHIVES.md` before adding it |
 | 0.4.2 | Archive extraction progress and cancel | pending | easy — `core/fs/zip.py` has no extraction progress; reuse this fork's `-bsp1` task pattern |
 | 0.4.2 | Move out of / between archives verifies before deleting source | ported | 2026-11-06 — `core/fs/move_by_copy.py`, `core/fs/zip.py`, `core/tests/fs/zip_test.py`; destination existence check, not content digest |
@@ -255,7 +256,7 @@ Notes starting with easy / adapt carry the triage of 2026-10-20 (todo #12159).
 | 0.1.0 | Windows tests that do not need symlink privileges | pending | |
 | 0.1.0 | Faster sorting of large directories and pane resizing | pending | includes the later "painting failed after resize" fix |
 | 0.1.0 | Faster natural name sorting | pending | |
-| 0.1.0 | Larger local file copy buffer | pending | easy — `core/fs/local/transfers.py` uses 16 KiB; Royi uses 1 MiB |
+| 0.1.0 | Larger local file copy buffer | ported | 2026-11-17 — `core/fs/local/transfers.py`, `core/tests/fs/test_local.py` |
 | 0.1.0 | Skip unused Gnome icon provider detection on Windows | pending | |
 | 0.1.0 | F1 opens searchable keyboard shortcut guide | pending | adapt — F1 opens web help; palette already shows shortcuts |
 | 0.1.0 | 1280x800 default window, Reset Window Geometry command | pending | easy — first run maximizes; only `CenterWindow` exists; read `docs/bugs/WINDOW_RESIZE_BUG.md` first |
