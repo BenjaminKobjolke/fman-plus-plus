@@ -77,6 +77,8 @@
     {"id": 25, "name": "usage-consent", "fps": 2, "formats": [],
      "width": 1920, "height": 1080},
     {"id": 26, "name": "properties", "fps": 2, "formats": [],
+     "width": 1920, "height": 1080},
+    {"id": 27, "name": "pack", "fps": 2, "formats": [],
      "width": 1920, "height": 1080}
   ],
   "compose": [

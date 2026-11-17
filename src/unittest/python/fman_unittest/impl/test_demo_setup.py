@@ -55,6 +55,33 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_pack_demo_takes_stills(self):
+		from fman.impl.demo_scripts import DEMOS
+
+		demo = DEMOS[27]
+		still_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+
+		self.assertEqual(demo.name, 'pack')
+		self.assertEqual(
+			still_names,
+			[
+				'pack-panes',
+				'pack-prompt',
+				'pack-network-result',
+				'pack-password-prompt',
+				'pack-password-result',
+				'pack-here-result',
+				'pack-missing-folder-alert',
+			],
+		)
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_demos_record_opaque(self):
 		from fman.impl.demo_scripts import DEMO_OPACITY
 

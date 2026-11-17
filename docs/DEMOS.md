@@ -107,6 +107,7 @@ cannot be shown without it:
 | 10 | the MatrixRain plugin copied in from `%APPDATA%`, and the example text files in the *right* folder too — see [DEMOS_PLUGINS.md](DEMOS_PLUGINS.md) |
 | 16 | the DemoAccount fake-account plugin in `Plugins\User` |
 | 24 | a `Viewer Key Bindings.json` binding Ctrl+J to `viewer_next_file` in the demo profile's Settings plugin |
+| 27 | the right pane starts at `network://localhost/<drive>$/<path>` when the matching Windows admin share is reachable; otherwise it stays local |
 
 Every run sets `FMAN_DATA_DIRECTORY` to that profile and wipes its `Plugins`
 folder. It also sets `PYTHON_KEYRING_BACKEND` to the null keyring, so recordings
@@ -395,9 +396,18 @@ composing stale inputs.
   commands close the tree (#16569). The Show volumes still shows the recording
   machine's drives. A change to which item tree commands act on should add a
   still here.
+- **27 `pack`** — takes stills of the panes, the Pack prompt, archives created in
+  the right pane, the password prompt, Pack here, and the missing-folder alert.
+  The right pane starts at `network://localhost/<drive>$/...` through the Windows
+  admin share, with a local-folder fallback when that share is unreachable. Its
+  stills are gitignored (`media/demos/pack/`). Changes to packing should add a
+  still here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
+Tour chapters (3–7), feature clips (8, 9, 21) and plugin clip 10 record video
+only and take no stills. A stills-only screenshot check gets nothing from them;
+pick the focused stills demo (for packing changes: 27).
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |
@@ -670,9 +680,10 @@ written against this table — re-check them if the fixtures ever change.
 **Ids 8 and 9 do not match that table.** Their extra fixtures shift every row:
 demo 8 adds `projects` and `reports`, which sort *before* every file because
 directories sort first, and demo 9 adds `service.log` between `readme.md` and
-`todo.txt`. Both scripts therefore avoid `Down` counts entirely — demo 9 uses
-`End` then `Up` to land on the log, and demo 8 navigates by typing. Do the
-same in any new clip that seeds extra files, or recount against the real
+`todo.txt`. Those scripts avoid `Down` counts entirely — demo 9 uses `End` then
+`Up` to land on the log, and demo 8 navigates by typing. Demo 27's extra
+network right pane does not affect the shared left-pane order. Do the same in
+any new clip that seeds extra left-pane files, or recount against the real
 listing.
 
 ### Palette queries

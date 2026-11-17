@@ -53,11 +53,15 @@ if exist "%APPDATA%\fman\Local\Settings.json" (
 	copy /y "%APPDATA%\fman\Local\Settings.json" "%FMAN_DATA_DIRECTORY%\Local\" >nul
 )
 set "SETTINGS_FILE=%FMAN_DATA_DIRECTORY%\Local\Settings.json"
+set "SHOW_LOCATION_BARS="
 if "%1"=="18" (
 	REM A copied single_instance=false would make the plain launch open its own window.
 	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; New-Item -ItemType Directory -Force -Path (Split-Path $p) | Out-Null; $s=if (Test-Path -LiteralPath $p) { Get-Content -Raw -LiteralPath $p | ConvertFrom-Json } else { [pscustomobject]@{} }; $s | Add-Member -NotePropertyName single_instance -NotePropertyValue $true -Force; [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false))"
 )
-if "%1"=="15" (
+
+if "%1"=="15" set "SHOW_LOCATION_BARS=1"
+if "%1"=="27" set "SHOW_LOCATION_BARS=1"
+if defined SHOW_LOCATION_BARS (
 	REM A copied pane_location_bars_visible=false would make the first toggle show them.
 	powershell -NoProfile -Command "$p=$env:SETTINGS_FILE; if (Test-Path -LiteralPath $p) { $s=Get-Content -Raw -LiteralPath $p | ConvertFrom-Json; $null=$s.PSObject.Properties.Remove('pane_location_bars_visible'); [System.IO.File]::WriteAllText($p, ($s | ConvertTo-Json -Depth 20), [System.Text.UTF8Encoding]::new($false)) }"
 )
@@ -246,6 +250,17 @@ REM leftover window would otherwise be burned into every frame - the capture is
 REM a screen region - and while a script turns fman translucent, anything left
 REM BEHIND it shows through too. Running fman by hand skips that; close what is
 REM on screen.
+
+if "%1"=="27" (
+	REM The #17040 packing bug only appears when the destination is a network:// URL.
+	set "NETWORK_RIGHT=\\localhost\!RIGHT:~0,1!$\!RIGHT:~3!"
+	if exist "!NETWORK_RIGHT!" (
+		set "RIGHT=network://localhost/!RIGHT:~0,1!$/!RIGHT:~3!"
+		set "RIGHT=!RIGHT:\=/!"
+	) else (
+		echo WARNING: !NETWORK_RIGHT! is unreachable; demo 27 packs into the local folder.
+	)
+)
 
 "%FMAN_PYTHON%" src\main\python\fman\main.py ^
   --automation-demo %1 ^
