@@ -139,6 +139,7 @@ FunctionEnd
 Section
   ; Wait for the running app to exit so Windows releases its executable.
   IfFileExists "$InstDir\${app_name}.exe" 0 fman_wait_done
+fman_wait_start:
   StrCpy $0 120
 fman_wait_retry:
   ClearErrors
@@ -151,6 +152,14 @@ fman_wait_again:
   IntOp $0 $0 - 1
   IntCmp $0 0 fman_wait_timeout fman_wait_retry fman_wait_retry
 fman_wait_timeout:
+  ; No /SD: silent updates must still show this, Abort's text is invisible there.
+  MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND \
+    "${display_name} is still running, so it cannot be updated.$\r$\n$\r$\nClose all ${display_name} windows, then click Retry.$\r$\nClick Cancel to keep the current version." \
+    IDRETRY fman_wait_start
+  ; The updating fman already quit; give the user back the old version.
+  ${If} ${Silent}
+    Call LaunchAsNonAdmin
+  ${EndIf}
   Abort "Could not wait for ${app_name} to close."
 fman_wait_done:
   ; An upgrade must not keep packages an older build shipped: a stale copy in

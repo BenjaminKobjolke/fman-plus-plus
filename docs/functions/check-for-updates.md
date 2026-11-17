@@ -33,6 +33,11 @@ download itself has a cancelable progress dialog. When automatic updates are
 on, accepting a manual update also uses the wizard-free install; otherwise a
 manual Windows update opens the setup wizard.
 
+If fman++ is still running a minute after the installer starts, for example in
+a second window, the installer shows a message. Close fman++ and click **Retry**
+to continue the update, or click **Cancel** to keep the current version; after
+an automatic update, Cancel also starts fman++ again.
+
 These commands are also listed in portable copies, but automatic updates only
 work in an installed Windows version. Other versions, including portable
 copies, show a message explaining this. Manually checking in a portable copy

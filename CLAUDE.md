@@ -125,6 +125,9 @@ After touching `shell_icons.py`, `shell_overlays.py`, `overlay_compose.py`, or
 After touching `src/build/python/build_impl/windows.py`'s
 `write_portable_zip()`, run `uv run python tools/test_build_portable_zip.py`.
 
+After touching `src/installer/windows/Installer.nsi`, run
+`uv run python tools/test_windows_branding.py`.
+
 After a freeze that changes `pyproject.toml`'s PyQt5 or PyInstaller version, or touches `src/build/python/build_impl/windows.py` or `tools/test_non_latin_startup.py`, run `uv run python tools/test_non_latin_startup.py` (needs `target/fman` from a freeze; skips without it).
 
 ### Checking UI behavior

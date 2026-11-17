@@ -120,9 +120,21 @@ def check_installer_waits_for_running_app_and_restarts_silent_installs():
     )[0]
     assert 'IfFileExists "$InstDir\\${app_name}.exe"' in wait
     assert 'FileOpen $1 "$InstDir\\${app_name}.exe" a' in wait
-    assert 'StrCpy $0 120' in wait
+    assert "fman_wait_start:\n  StrCpy $0 120" in wait
     assert 'Sleep 500' in wait
     assert 'Abort "Could not wait for ${app_name} to close."' in wait
+
+    timeout = wait.split("fman_wait_timeout:", 1)[1]
+    assert (
+        "MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND"
+        in timeout
+    )
+    assert "IDRETRY fman_wait_start" in timeout
+    assert "${If} ${Silent}" in timeout
+    assert "Call LaunchAsNonAdmin" in timeout
+    assert timeout.index("MessageBox") < timeout.index("Call LaunchAsNonAdmin")
+    assert timeout.index("Call LaunchAsNonAdmin") < timeout.index("Abort ")
+    assert "/SD" not in timeout
 
     success = script.split("Function .onInstSuccess", 1)[1].split(
         "FunctionEnd", 1
