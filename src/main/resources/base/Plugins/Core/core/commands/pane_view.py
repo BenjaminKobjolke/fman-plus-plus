@@ -8,6 +8,7 @@ derives from it (see docs/ICONS.md).
 """
 from core.commands.util import get_opposite_pane
 from core.commands.hidden_files import _forget_pane_info
+from core.commands.window import _refresh_window_title
 from core.font_size import change_font_size, effective_font_size, \
 	get_saved_font_size, reset_font_size
 from core.folder_tree_view import FolderTreeView
@@ -81,6 +82,7 @@ class ShowOnlyActivePane(DirectoryPaneCommand):
 		for pane in self.pane.window.get_panes():
 			pane._widget.setVisible(pane is self.pane)
 		self.pane.focus()
+		_refresh_window_title(self.pane.window)
 
 class ShowAllPanes(DirectoryPaneCommand):
 	usable_in_viewer = True
@@ -92,6 +94,7 @@ class ShowAllPanes(DirectoryPaneCommand):
 		for pane in self.pane.window.get_panes():
 			pane._widget.setVisible(True)
 		self.pane.focus()
+		_refresh_window_title(self.pane.window)
 
 PANE_FONT_SIZE_KEY = 'pane_font_size'
 # The read/clamp/save/apply algorithm lives in core/font_size (imported

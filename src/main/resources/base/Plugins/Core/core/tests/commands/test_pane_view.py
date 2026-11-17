@@ -1,4 +1,5 @@
 from core.commands import pane_view
+from core.commands import window as window_commands
 from core.commands.pane_view import ShowAllPanes, ShowOnlyActivePane, \
 	AddPane, RemovePane, SwitchPanes
 from core.folder_tree_view import FolderTreeView
@@ -19,8 +20,16 @@ class _FakeWidget:
 		self._visible = visible
 	def isVisible(self):
 		return self._visible
+	def isHidden(self):
+		return not self._visible
 	def setVisible(self, visible):
 		self._visible = visible
+
+class _FakeWindowWidget:
+	def __init__(self):
+		self.title = ''
+	def setWindowTitle(self, title):
+		self.title = title
 
 class _FakePane:
 	def __init__(self, window, path='file:///current'):
@@ -40,7 +49,9 @@ class _FakePane:
 
 def _two_pane_window():
 	window = FakeWindow()
+	window._widget = _FakeWindowWidget()
 	active, other = _FakePane(window), _FakePane(window)
+	active.path, other.path = 'active-folder', 'other-folder'
 	window._panes = [active, other]
 	return window, active, other
 
@@ -51,6 +62,15 @@ class ShowOnlyActivePaneTest(TestCase):
 		self.assertTrue(active._widget.isVisible())
 		self.assertFalse(other._widget.isVisible())
 		self.assertTrue(active.focused)
+	def test_title_contains_only_the_active_pane(self):
+		window, active, other = _two_pane_window()
+		with patch.object(
+			window_commands, '_path_for_title', side_effect=lambda pane: pane.path
+		):
+			ShowOnlyActivePane(active)()
+
+		self.assertEqual('active-folder - fman++', window._widget.title)
+
 	def test_visible_only_with_multiple_panes_all_shown(self):
 		window, active, other = _two_pane_window()
 		self.assertTrue(ShowOnlyActivePane(active).is_visible())
@@ -225,6 +245,17 @@ class ShowAllPanesTest(TestCase):
 		self.assertTrue(active._widget.isVisible())
 		self.assertTrue(other._widget.isVisible())
 		self.assertTrue(active.focused)
+	def test_title_contains_all_panes_again(self):
+		window, active, other = _two_pane_window()
+		other._widget.setVisible(False)
+		with patch.object(
+			window_commands, '_path_for_title', side_effect=lambda pane: pane.path
+		):
+			ShowAllPanes(active)()
+
+		self.assertEqual(
+			'active-folder | other-folder - fman++', window._widget.title
+		)
 	def test_visible_only_when_a_pane_is_hidden(self):
 		window, active, other = _two_pane_window()
 		self.assertFalse(ShowAllPanes(active).is_visible())

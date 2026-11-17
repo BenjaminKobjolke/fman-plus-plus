@@ -1,6 +1,6 @@
 """Commands and listeners that act on the window rather than its files.
 
-The window title starts with both panes' folder names and is rebuilt on every
+The window title starts with the visible panes' folder names and is rebuilt on every
 navigation, so `_format_window_title` is a pure string builder kept apart from
 the Qt access around it. The icon toggles write settings the engine owns
 (`fman.impl.model.icon_provider`) and then reload the panes to redraw.
@@ -51,7 +51,11 @@ def _path_for_title(pane):
 
 @run_in_main_thread
 def _refresh_window_title(window):
-	paths = [_path_for_title(pane) for pane in window.get_panes()]
+	# isVisible() also depends on the main window being shown; isHidden() does not.
+	paths = [
+		_path_for_title(pane) for pane in window.get_panes()
+		if not pane._widget.isHidden()
+	]
 	window._widget.setWindowTitle(_format_window_title(paths))
 
 class UpdateWindowTitle(DirectoryPaneListener):
