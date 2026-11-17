@@ -1,5 +1,7 @@
 import json
 from dataclasses import replace
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest.mock import MagicMock
 from urllib.error import HTTPError
@@ -12,6 +14,7 @@ from fman.impl.scripting.automation import (
 	AutomationActions, UnknownFile, UnknownScreen, UnsafeDrag, WindowSize,
 )
 from fman.impl.scripting.config import ScriptingApiConfig
+from fman.impl.scripting.external_drop import DropRequest, DropResult
 from fman.impl.scripting.link_capture import LinkCapture
 from fman.impl.scripting.server import ScriptingServer
 
@@ -126,6 +129,9 @@ class ScriptingServerTest(TestCase):
 			('POST', '/v1/drag', {
 				'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4,
 			}),
+			('POST', '/v1/drop', {
+				'pane': 0, 'files': ['C:/temp/drop.txt'],
+			}),
 		):
 			with self.subTest(path=path):
 				self.assertEqual(403, self._request_error(method, path, payload))
@@ -156,6 +162,8 @@ class ScriptingServerTest(TestCase):
 		actions.screen_png.return_value = b'screen-png-data'
 		actions.native_windows.return_value = {'screens': [], 'windows': []}
 		actions.close_native_windows.return_value = 2
+		actions.drop_files.return_value = DropResult(
+			True, 'copy', 'file:///destination')
 		actions.get_dialog.return_value = {
 			'type': 'MessageBox', 'title': 'Confirm', 'text': 'Continue?',
 			'buttons': ['&Yes', '&No'],
@@ -200,6 +208,17 @@ class ScriptingServerTest(TestCase):
 					'x': 1, 'y': 2, 'to_x': 3, 'to_y': 4,
 				},
 			))
+			with TemporaryDirectory() as directory:
+				source = Path(directory, 'source.txt')
+				source.write_text('drop fixture', encoding='utf-8')
+				self.assertEqual({
+					'ok': True, 'accepted': True, 'drop_action': 'copy',
+					'dest': 'file:///destination',
+				}, self._request_at(base_url, 'POST', '/v1/drop', {
+					'pane': 0, 'files': [str(source)], 'action': 'copy',
+				}))
+				actions.drop_files.assert_called_once_with(DropRequest(
+					0, [str(source)], None, 'copy'))
 			self.assertEqual({'ok': True, 'widget': 'QWidget', 'tooltip': None},
 				self._request_at(
 					base_url, 'POST', '/v1/hover', {'x': 30, 'y': 40},
@@ -292,6 +311,10 @@ class ScriptingServerTest(TestCase):
 			base_url = 'http://127.0.0.1:%s' % server.port
 			self.assertEqual(400, self._request_error_at(
 				base_url, 'POST', '/v1/keys', {'keys': 'Ctrl+P'}))
+			self.assertEqual(400, self._request_error_at(
+				base_url, 'POST', '/v1/drop', {
+					'pane': 0, 'files': ['not-an-existing-absolute-file'],
+				}))
 			self.assertEqual(400, self._request_error_at(
 				base_url, 'POST', '/v1/drag', {
 					'x': 1, 'y': 2, 'to_x': True, 'to_y': 4,
