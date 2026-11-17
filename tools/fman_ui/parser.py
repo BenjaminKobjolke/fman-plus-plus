@@ -30,6 +30,8 @@ def parser():
 	launch.add_argument('--demo', type=int, metavar='ID',
 		help=("start fman in automation demo mode with this demo id; "
 			"consent stays unanswered"))
+	launch.add_argument('--drop-plugin', action='store_true',
+		help="install the test plugin that claims external file drops")
 	for name in ('state', 'commands', 'close', 'dialog', 'restart', 'links',
 			'native-windows', 'close-native-windows'):
 		commands.add_parser(name)
@@ -63,6 +65,15 @@ def parser():
 	drag.add_argument('--to-x', type=int, required=True)
 	drag.add_argument('--to-y', type=int, required=True)
 	drag.add_argument('--settle', type=int, default=500)
+	drop = commands.add_parser('drop')
+	drop.add_argument('--file', action='append', required=True,
+		help="session-owned file to drop; may be repeated")
+	drop.add_argument('--pane', type=int, default=0)
+	drop.add_argument('--onto')
+	action = drop.add_mutually_exclusive_group()
+	action.add_argument('--copy', action='store_true')
+	action.add_argument('--move', action='store_true')
+	drop.add_argument('--settle', type=int, default=500)
 	hover = commands.add_parser('hover')
 	hover.add_argument('--x', type=int, required=True)
 	hover.add_argument('--y', type=int, required=True)

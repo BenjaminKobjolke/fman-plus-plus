@@ -16,6 +16,10 @@ MAX_DEEP_SIBLINGS = 5000
 DAY_SECONDS = 86400
 CORE_SETTINGS_PATH = ('Plugins', 'User', 'Settings', 'Core Settings.json')
 VIDEO_FIXTURE_NAME = 'video.mp4'
+DROP_SOURCE_FOLDER = 'drop_source'
+DROP_SOURCE_FILE = 'dropped.txt'
+DROP_PLUGIN_TEMPLATE = Path(
+	'tools/fman_ui/drop_test_plugin/Drop Test Plugin/drop_test_plugin')
 VIDEO_SOURCE = Path('examples/left_pane/dummy.mp4')
 AGE_FIXTURE_DAYS = (
 	('age_0d_fresh.txt', 0.1, False),
@@ -62,6 +66,23 @@ def copy_video_fixture(path: Path, repo_root: Path) -> None:
 	if not source.is_file():
 		raise FileNotFoundError('Video fixture source does not exist: %s' % source)
 	shutil.copyfile(source, Path(path) / VIDEO_FIXTURE_NAME)
+
+
+def make_drop_source(session_root: Path) -> Path:
+	path = Path(session_root) / DROP_SOURCE_FOLDER
+	path.mkdir(parents=True, exist_ok=True)
+	file_path = path / DROP_SOURCE_FILE
+	file_path.write_text('drop fixture\n', encoding='utf-8')
+	return file_path
+
+
+def install_drop_plugin(profile: Path, repo_root: Path) -> Path:
+	source = Path(repo_root) / DROP_PLUGIN_TEMPLATE
+	if not source.is_dir():
+		raise FileNotFoundError('Drop test plugin template does not exist: %s' % source)
+	destination = Path(profile) / 'Plugins' / 'User' / 'Drop Test Plugin'
+	shutil.copytree(source, destination)
+	return destination
 
 
 def validate_large_count(count: int) -> None:

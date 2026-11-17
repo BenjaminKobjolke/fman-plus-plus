@@ -19,7 +19,8 @@ from process_launch import detached_popen, describe_refused, log_tail
 from restart import restart_session
 from fixtures import (
 	copy_video_fixture, make_deep_folder, make_fixture, make_large_folder,
-	parse_core_settings, validate_deep_count, validate_large_count,
+	install_drop_plugin, make_drop_source, parse_core_settings,
+	validate_deep_count, validate_large_count,
 	write_core_settings,
 )
 from network_share import make_network_share
@@ -141,6 +142,7 @@ def _launch(args):
 	previous_version = getattr(args, 'previous_version', None)
 	first_start = getattr(args, 'first_start', False)
 	demo = getattr(args, 'demo', None)
+	drop_plugin = getattr(args, 'drop_plugin', False)
 	if first_start and previous_version is not None:
 		raise ValueError('--first-start cannot be used with --previous-version.')
 	if previous_version is not None and not previous_version.strip():
@@ -187,10 +189,12 @@ def _launch(args):
 	token_path = local / 'ScriptingApiToken.txt'
 	token_path.write_text(uuid.uuid4().hex, encoding='utf-8')
 	write_core_settings(profile, core_settings)
+	drop_source = make_drop_source(session_root)
 	session = {
 		'session_id': session_id, 'pid': None, 'port': port,
 		'token_path': str(token_path), 'profile': str(profile),
 		'left': str(left), 'right': str(right),
+		'drop_source': str(drop_source),
 		'build': describe_build(
 			Path(__file__).resolve().parents[2],
 			os.environ.get('FMAN_PYTHON', sys.executable),
@@ -201,6 +205,9 @@ def _launch(args):
 	if demo is not None:
 		session['demo'] = demo
 	try:
+		if drop_plugin:
+			install_drop_plugin(profile, Path(__file__).resolve().parents[2])
+			session['drop_plugin'] = True
 		if getattr(args, 'network_share', False):
 			fixture = make_network_share(session_root, now)
 			session['network_share'] = fixture.url

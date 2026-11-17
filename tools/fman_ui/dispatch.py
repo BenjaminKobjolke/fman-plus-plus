@@ -6,7 +6,7 @@ from pathlib import Path
 from urllib.error import URLError
 from urllib.parse import urlsplit
 
-from guards import guard_input
+from guards import guard_drop_sources, guard_input
 from session_reaper import SESSION_FILE
 from window_size import capture_screenshot, png_size
 
@@ -89,6 +89,21 @@ def dispatch(args, session, api, settle):
 			'x': args.x, 'y': args.y, 'to_x': args.to_x, 'to_y': args.to_y,
 		}
 		result = api(session, 'POST', '/v1/drag', payload)
+		settle(args.settle)
+		return result
+	if args.action == 'drop':
+		action = 'default'
+		if args.copy:
+			action = 'copy'
+		elif args.move:
+			action = 'move'
+		payload = {
+			'pane': args.pane,
+			'files': guard_drop_sources(session, args.file),
+			'onto': args.onto,
+			'action': action,
+		}
+		result = api(session, 'POST', '/v1/drop', payload)
 		settle(args.settle)
 		return result
 	if args.action == 'hover':

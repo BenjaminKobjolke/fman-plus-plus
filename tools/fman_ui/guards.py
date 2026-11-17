@@ -5,8 +5,10 @@ import os
 import posixpath
 import re
 from pathlib import Path
+from typing import Mapping, Sequence
 
-FENCED_ACTIONS = frozenset(('keys', 'type', 'click', 'drag', 'command'))
+FENCED_ACTIONS = frozenset((
+	'keys', 'type', 'click', 'drag', 'drop', 'command'))
 PROGRESS_DIALOG_TYPE = 'QProgressDialog'
 NON_MODAL_DIALOG_TYPES = frozenset((PROGRESS_DIALOG_TYPE, 'Overlay'))
 _WINDOWS_DRIVE = re.compile(r'^[A-Za-z]:')
@@ -26,6 +28,22 @@ def fence_roots(session):
 	if session.get('network_share_unc'):
 		roots.append(session['network_share_unc'])
 	return roots
+
+
+def guard_drop_sources(session: Mapping[str, str], files: Sequence[str]) -> list[str]:
+	root = Path(session['profile']).parent.resolve()
+	resolved_files = []
+	for file in files:
+		try:
+			path = Path(file).resolve(strict=True)
+		except (OSError, RuntimeError, TypeError):
+			raise RuntimeError(
+				'Drop sources must be existing files inside the session.')
+		if not path.is_file() or not is_inside(path.as_uri(), [root]):
+			raise RuntimeError(
+				'Drop sources must be existing files inside the session.')
+		resolved_files.append(str(path))
+	return resolved_files
 
 
 def _normalized_path(path):
