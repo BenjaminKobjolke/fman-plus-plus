@@ -1,4 +1,4 @@
-"""Read and manage native Properties dialogs owned by fman."""
+"""Read main window titles and native Properties dialogs owned by fman."""
 
 import os
 from dataclasses import asdict, dataclass
@@ -62,6 +62,8 @@ class NativeSnapshot:
 	screens: list[ScreenInfo]
 	main_window: dict
 	main_window_screen: int | None
+	window_title: str
+	taskbar_title: str | None
 	panes: list[PaneGeometry]
 	windows: list[NativeWindowInfo]
 
@@ -97,8 +99,11 @@ class NativeReadout:
 					_rect(pane_rect), _rect(row_rect) if row_rect else None,
 				))
 		windows = []
+		taskbar_title = None
 		if os.name == 'nt':
 			import win32gui
+			# The native caption is what the Windows taskbar button shows.
+			taskbar_title = win32gui.GetWindowText(int(self._main_window.winId()))
 			for handle in sorted(own_dialog_windows()):
 				rect = win32gui.GetWindowRect(handle)
 				geometry = _rect_from_edges(rect)
@@ -110,7 +115,7 @@ class NativeReadout:
 				))
 		return asdict(NativeSnapshot(
 			screens, _rect(window_rect), screen_index_at(window_rect, qt_screens),
-			panes, windows,
+			self._main_window.windowTitle(), taskbar_title, panes, windows,
 		))
 
 	@run_in_main_thread

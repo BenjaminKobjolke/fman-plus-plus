@@ -293,6 +293,28 @@ The driver starts fman outside the calling shell's job, so sandboxed agents can
 run each command in its own shell call. When a connection is refused, the error
 reports whether fman exited, along with the session id and the tail of its log.
 
+## Example: check window and taskbar titles
+
+The `native-windows` readout includes `window_title`, the title set on fman's
+main Qt window, and `taskbar_title`, the caption Windows shows on its taskbar
+button. `taskbar_title` is Windows-only and `null` on other platforms.
+
+This checks the title with both fixture folders, with only the left folder
+shown, and with both folders restored:
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat command show_only_active_pane --pane 0
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat command show_all_panes --pane 0
+tools\fman_ui.bat native-windows
+tools\fman_ui.bat close
+```
+
+The first and last readouts name both fixture folders; the middle readout names
+only the left folder.
+
 ## Example: check Properties window placement (validation task #2360)
 
 The native Properties readout reports each window's rectangle and screen index,
