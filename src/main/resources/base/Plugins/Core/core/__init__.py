@@ -3,13 +3,13 @@
 from importlib import import_module as _import_module
 from datetime import datetime
 import fman.fs
-import re
 from fman.fs import Column
 from fman.url import basename
 from PyQt5.QtCore import QLocale, QDate, QDateTime, QTime
 from .util import format_size
 from .file_extension import name_for_name_column
 from .mixed_sort import DirsFirstColumn
+from .natural_sort import natural_key
 from .settings import get_setting
 
 
@@ -46,17 +46,7 @@ class Name(DirsFirstColumn, Column):
 		except OSError:
 			is_dir = False
 		major = is_dir ^ is_ascending
-		str_ = self.get_str(url).lower()
-		minor = ''
-		while str_:
-			match = re.search(r'\d+', str_)
-			if match:
-				minor += str_[:match.start()]
-				minor += '%06d' % int(match.group(0))
-				str_ = str_[match.end():]
-			else:
-				minor += str_
-				break
+		minor = natural_key(self.get_str(url))
 		return major, minor
 
 # Define here so get_default_columns(...) can reference it as core.Size:
