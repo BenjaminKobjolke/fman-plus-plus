@@ -97,8 +97,10 @@ tree on a disposable nested fixture instead of navigating to a real folder.
 All commands except `launch` and `close` read the session information written
 to the platform's temporary `fman-ui/current.json`; the driver never reads the
 user's normal fman profile.
-The instance runs without user plugins and does not move or click the real
-mouse. fman's own dialogs can be inspected and answered. Native Windows
+The instance runs without user plugins by default and does not move or click
+the real mouse. `launch --drop-plugin` opts into a disposable test plugin that
+claims external file drops. fman's own dialogs can be inspected and answered.
+Native Windows
 Properties windows can be listed, captured with a whole-screen screenshot and
 closed, but cannot be clicked or otherwise driven. A whole-screen screenshot
 draws fman's own windows and Properties windows over the desktop in their real
@@ -209,9 +211,11 @@ The tickets watcher's validation agent finds this driver through the
 `tools/fman_ui.bat` on Windows; `tools/fman_ui.sh` is the macOS command. Both
 paths must stay real files inside
 the checkout or the watcher ignores the key. Agents may use `--large`, `--deep`,
-`--network-share`, `--core-settings` and `restart` to check settings across a restart; these
-options stay inside the temporary fixture and profile. The driver refuses
-input and commands when a pane leaves the session fixtures. Agents always run
+`--network-share`, `--core-settings`, `--drop-plugin`, `drop` and `restart` to
+check settings across a restart; these options stay inside the temporary fixture
+and profile. The driver refuses input and commands when a pane leaves the
+session fixtures. `drop` also accepts only existing source files inside the
+session folder, never files from caller-provided pane folders. Agents always run
 `tools\fman_ui.bat close` at the end,
 including when a check fails. Screenshots an agent wants to attach go under the
 ticket's `attach/validation/` folder. Agents may also use `--demo` to inspect
@@ -423,6 +427,7 @@ tools\fman_ui.bat type hidden
 tools\fman_ui.bat click --file visible.txt --pane 0 --double
 tools\fman_ui.bat click --x 250 --y 140 --right
 tools\fman_ui.bat drag --x 300 --y 60 --to-x 240 --to-y 60
+tools\fman_ui.bat drop --file <drop_source path from launch> --copy
 tools\fman_ui.bat hover --x 400 --y 60
 tools\fman_ui.bat window --width 800 --height 600
 tools\fman_ui.bat window --y 200
@@ -496,8 +501,47 @@ pane commands then act on the tree's highlighted folder. Input commands accept
 
 `drag` uses the same window coordinates as `click --x` and `click --y`. Find a
 column header's right edge in a screenshot and start the drag there. Drags that
-start on file rows are refused, so file drag-and-drop cannot start. Take another
-screenshot to confirm the result.
+start on file rows are refused to protect internal file-list drags. To test an
+external file drop, use `drop` as shown below.
+
+### Example: drop an external file (validation task #2447)
+
+`launch` creates a disposable `drop_source/dropped.txt` outside both pane
+folders and returns its path as `drop_source`. Pass that path to `drop`; the
+driver refuses sources outside its session folder. Without the test plugin, a
+Core copy or move prompt may appear. `dialog` shows that prompt, and `keys
+Return` confirms it. A copy leaves the source in `drop_source`; the file appears
+in pane 1 (or inside `folder` when `--onto folder` is used). A move also puts
+the file in pane 1 and removes it from `drop_source`.
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat drop --file "<drop_source path from launch>" --copy
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat close
+
+tools\fman_ui.bat launch
+tools\fman_ui.bat drop --file "<drop_source path from launch>" --move --onto folder
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat click --file folder --pane 1 --double
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat close
+```
+
+The optional plugin claims the drop before Core handles it. It writes
+`claimed_drop.txt` into the destination with the dropped names and copy/move
+flag; pane 1 has that note but no `dropped.txt`, and `dialog` remains `null`.
+
+```bat
+tools\fman_ui.bat launch --drop-plugin
+tools\fman_ui.bat drop --file "<drop_source path from launch>" --copy
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat dialog
+tools\fman_ui.bat close
+```
 
 `hover --x N --y N` moves over the widget at those window coordinates and
 returns its type and visible tooltip. The mouse move remains in place so the
