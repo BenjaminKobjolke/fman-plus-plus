@@ -28,6 +28,7 @@ _COMMAND_MODULES = (
 	'app', 'archives', 'auto_update', 'clipboard', 'columns', 'deletion',
 	'deselect_after_transfer', 'drag_to_app', 'duplicate',
 	'file_age_shading', 'file_coloring', 'file_comment', 'file_mention',
+	'file_mention_exclusions',
 	'folder_tree',
 	'mounted_view_close', 'fman_account',
 	'console', 'drive_space', 'folder_refresh',

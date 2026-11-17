@@ -47,6 +47,10 @@ neither listed nor entered, compared without case. Default:
 
 Changes apply the next time the popup opens.
 
+Use **Exclude folder from @ file search** to add a folder name to this list,
+or **Remove folder from @ file search exclusions** to remove one. Both commands
+write the user's `Core Settings.json`.
+
 ## Implementation
 
 | Command name | Palette label | Default key binding |

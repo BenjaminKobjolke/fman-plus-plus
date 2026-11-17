@@ -35,6 +35,7 @@ EXPECTED = frozenset({
 	'DragToLastUsedApp',
 	'DeletePermanently', 'Deselect', 'DoNothing', 'DragAndDropListener',
 	'EditComment', 'EditLinkTarget', 'FileMention',
+	'ExcludeFolderFromFileMention', 'IncludeFolderInFileMention',
 	'FollowShortcut', 'GoBack', 'GoForward', 'GoHome', 'GoTo', 'GoToAppData',
 	'ToggleFolderTree', 'ToggleTreeFollowsCursor',
 	'GoToDesktop',
