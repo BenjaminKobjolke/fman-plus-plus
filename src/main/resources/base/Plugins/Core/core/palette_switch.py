@@ -5,25 +5,44 @@ from fman import load_json
 
 GO_TO = 'go_to'
 COMMAND_PALETTE = 'command_palette'
+FILE_MENTION = 'file_mention'
 COMMAND_PREFIX = '>'
+MENTION_PREFIX = '@'
+
+
+def _strip_prefix(query, prefix):
+	if query.startswith(prefix):
+		return query[len(prefix):]
+	return query
 
 
 def strip_command_prefix(query):
 	"""Remove the palette marker when it is present at the start."""
-	if query.startswith(COMMAND_PREFIX):
-		return query[len(COMMAND_PREFIX):]
-	return query
+	return _strip_prefix(query, COMMAND_PREFIX)
+
+
+def strip_mention_prefix(query):
+	"""Remove the file mention marker when it is present at the start."""
+	return _strip_prefix(query, MENTION_PREFIX)
 
 
 def goto_query_exit(text):
-	"""Switch Go To to the palette when the user types its marker."""
+	"""Switch Go To to the palette or file mention when its marker is typed."""
 	if text.startswith(COMMAND_PREFIX):
 		return COMMAND_PALETTE
+	if text.startswith(MENTION_PREFIX):
+		return FILE_MENTION
 
 
 def palette_query_exit(text):
 	"""Switch back to Go To when the palette marker is removed."""
 	if not text.startswith(COMMAND_PREFIX):
+		return GO_TO
+
+
+def mention_query_exit(text):
+	"""Switch back to Go To when the file mention marker is removed."""
+	if not text.startswith(MENTION_PREFIX):
 		return GO_TO
 
 

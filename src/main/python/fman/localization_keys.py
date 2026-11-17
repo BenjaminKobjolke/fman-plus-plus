@@ -7,6 +7,8 @@ QUICKSEARCH_KEY_SHIFT_ENTER = 'quicksearch_key_shift_enter'
 QUICKSEARCH_MORE_ACTIONS = 'quicksearch_more_actions'
 COMMAND_PALETTE_TITLE = 'command_palette_title'
 GOTO_TITLE = 'goto_title'
+FILE_MENTION_TITLE = 'file_mention_title'
+FILE_MENTION_LOCAL_ONLY = 'file_mention_local_only'
 READY = 'status_ready'
 ERROR_DISMISS = 'error_dismiss'
 PROMPT_OK = 'prompt_ok'
@@ -87,6 +89,8 @@ ENGLISH_TEXT = {
 	QUICKSEARCH_MORE_ACTIONS: 'More actions',
 	COMMAND_PALETTE_TITLE: 'Command Palette',
 	GOTO_TITLE: 'Go To',
+	FILE_MENTION_TITLE: 'Files',
+	FILE_MENTION_LOCAL_ONLY: 'File search only works in local folders.',
 	READY: 'Ready.',
 	ERROR_DISMISS: 'Dismiss',
 	PROMPT_OK: 'OK',

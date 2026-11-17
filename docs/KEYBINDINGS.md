@@ -131,6 +131,13 @@ bare letter you bind is a letter you can no longer type into the filter — bind
 `j` and no filename containing a `j` is reachable by typing. Put a modifier on
 it and both keep working.
 
+The one bare key Core binds on purpose is `@`, to `file_mention`
+([file mention popup](functions/file-mention.md)): it is rare in file names,
+and it is the key coding agents use for the same job. The cost is the same:
+`@` cannot be typed into the filter while it is bound. On layouts where `@`
+needs AltGr (German: AltGr+Q), Windows reports it as `Ctrl+Alt+@`, so
+`Key Bindings (Windows).json` binds that as well.
+
 ## Windows additions
 
 | Keys | Command |

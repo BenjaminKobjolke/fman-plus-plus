@@ -1,6 +1,6 @@
-from core.quicksearch_matchers import bucket_count, contains_chars, \
-	contains_chars_after_separator, contains_chars_any_order, \
-	match_titles_or_keywords
+from core.quicksearch_matchers import basename_contains_chars, \
+	bucket_count, contains_chars, contains_chars_after_separator, \
+	contains_chars_any_order, contains_words, match_titles_or_keywords
 from unittest import TestCase
 
 class ContainsCharsAfterSeparatorTest(TestCase):
@@ -44,6 +44,27 @@ class ContainsCharsAnyOrderTest(TestCase):
 		)
 	def test_empty_query_is_no_match(self):
 		self.assertIsNone(contains_chars_any_order('show all panes', ''))
+
+class ContainsWordsTest(TestCase):
+	def test_words_match_in_any_order(self):
+		self.assertEqual(
+			[0, 1, 2, 8, 9, 10], contains_words('ryd/inv.pdf', 'pdf ryd')
+		)
+	def test_scattered_letters_are_no_match(self):
+		self.assertIsNone(contains_words('cip_ jfa_reality_webpage', 'pdf ryd'))
+	def test_empty_query_is_no_match(self):
+		self.assertIsNone(contains_words('abc', ' '))
+
+class BasenameContainsCharsTest(TestCase):
+	def test_letters_are_found_in_the_name_with_path_offsets(self):
+		self.assertEqual(
+			[6, 8], basename_contains_chars('tools/mod_x.py', 'md')
+		)
+	def test_letters_in_the_folders_do_not_count(self):
+		self.assertIsNone(basename_contains_chars('pdf/webpage', 'pdf'))
+	def test_several_words_are_no_loose_match(self):
+		name = '2026_10_05_streifen.sync-conflict-20261104-esybydw.pdf'
+		self.assertIsNone(basename_contains_chars(name, 'ryd pdf 2026 11 16'))
 class MatchTitlesOrKeywordsTest(TestCase):
 
 	# The two cheapest of the palette's matchers; the third (any order) adds

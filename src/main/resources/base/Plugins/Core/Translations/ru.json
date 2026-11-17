@@ -6,6 +6,8 @@
   "quicksearch_more_actions": "Другие действия",
   "command_palette_title": "Палитра команд",
   "goto_title": "Перейти",
+  "file_mention_title": "Файлы",
+  "file_mention_local_only": "Поиск файлов работает только в локальных папках.",
   "status_ready": "Готово.",
   "error_dismiss": "Закрыть",
   "prompt_ok": "ОК",

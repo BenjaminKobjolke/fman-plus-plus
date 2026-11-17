@@ -2,8 +2,9 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from core.palette_switch import (
-	COMMAND_PALETTE, GO_TO, goto_query_exit, palette_exit_keys,
-	palette_query_exit, run_palette_switch, strip_command_prefix,
+	COMMAND_PALETTE, FILE_MENTION, GO_TO, goto_query_exit,
+	mention_query_exit, palette_exit_keys, palette_query_exit,
+	run_palette_switch, strip_command_prefix, strip_mention_prefix,
 )
 from fman import QuicksearchExit
 
@@ -15,6 +16,16 @@ class PaletteExitKeysTest(TestCase):
 	def test_goto_switches_when_prefix_is_typed(self):
 		self.assertEqual(COMMAND_PALETTE, goto_query_exit('>'))
 		self.assertIsNone(goto_query_exit('copy'))
+	def test_goto_switches_to_file_mention_when_at_is_typed(self):
+		self.assertEqual(FILE_MENTION, goto_query_exit('@'))
+		self.assertEqual(FILE_MENTION, goto_query_exit('@md'))
+	def test_file_mention_switches_back_when_at_is_removed(self):
+		self.assertEqual(GO_TO, mention_query_exit(''))
+		self.assertEqual(GO_TO, mention_query_exit('md'))
+		self.assertIsNone(mention_query_exit('@md'))
+	def test_strips_only_a_leading_mention_prefix(self):
+		self.assertEqual('md', strip_mention_prefix('@md'))
+		self.assertEqual('a@b', strip_mention_prefix('a@b'))
 	def test_palette_switches_back_when_prefix_is_removed(self):
 		self.assertEqual(GO_TO, palette_query_exit(''))
 		self.assertEqual(GO_TO, palette_query_exit('copy'))

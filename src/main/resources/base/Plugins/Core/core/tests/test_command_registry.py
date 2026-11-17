@@ -34,7 +34,7 @@ EXPECTED = frozenset({
 	'DecreasePaneFontSize',
 	'DragToLastUsedApp',
 	'DeletePermanently', 'Deselect', 'DoNothing', 'DragAndDropListener',
-	'EditComment', 'EditLinkTarget',
+	'EditComment', 'EditLinkTarget', 'FileMention',
 	'FollowShortcut', 'GoBack', 'GoForward', 'GoHome', 'GoTo', 'GoToAppData',
 	'ToggleFolderTree', 'ToggleTreeFollowsCursor',
 	'GoToDesktop',

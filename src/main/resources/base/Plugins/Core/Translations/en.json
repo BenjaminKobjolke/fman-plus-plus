@@ -6,6 +6,8 @@
   "quicksearch_more_actions": "More actions",
   "command_palette_title": "Command Palette",
   "goto_title": "Go To",
+  "file_mention_title": "Files",
+  "file_mention_local_only": "File search only works in local folders.",
   "status_ready": "Ready.",
   "error_dismiss": "Dismiss",
   "prompt_ok": "OK",

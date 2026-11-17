@@ -51,16 +51,37 @@ def contains_chars_any_order(text, query):
 	# Like contains_chars, but each space-separated word is matched
 	# independently, so word order in the query does not matter:
 	# 'panes show' finds 'show all panes'.
+	return _every_word(contains_chars, text, query)
+
+def contains_words(text, query):
+	# Every space-separated word must appear as a substring, in any order:
+	# 'pdf ryd' finds 'ryd/invoice.pdf'.
+	return _every_word(contains_substring, text, query)
+
+def _every_word(matcher, text, query):
 	words = query.split()
 	if not words:
 		return None
 	matched = set()
 	for word in words:
-		indices = contains_chars(text, word)
+		indices = matcher(text, word)
 		if indices is None:
 			return None
 		matched.update(indices)
 	return sorted(matched)
+
+def basename_contains_chars(path, query):
+	# Loose letters in the last path segment only, and only for a one-word
+	# query: over a whole path, or word by word, loose letters match almost
+	# any long file name. Several words are matched by contains_words.
+	if len(query.split()) != 1:
+		return None
+	name = basename(path)
+	indices = contains_chars(name, query.strip())
+	if indices is None:
+		return None
+	offset = len(path) - len(name)
+	return [i + offset for i in indices]
 
 def contains_substring(text, query):
 	try:
