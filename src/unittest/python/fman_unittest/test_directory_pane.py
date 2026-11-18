@@ -167,6 +167,7 @@ class ChosenFilesTest(TestCase):
 		self.assertEqual(['file:///selected'], pane.get_selected_files())
 		self.assertEqual('file:///list', pane.get_file_under_cursor())
 		self.assertEqual('file:///location', pane.get_path())
+
 		pane.place_cursor_at('file:///target')
 		self.assertEqual('file:///target', widget.placed_url)
 
@@ -196,4 +197,15 @@ class ChosenFilesTest(TestCase):
 		self.assertEqual(['file:///selected'], pane.get_selected_files())
 		self.assertEqual('file:///list', pane.get_file_under_cursor())
 		self.assertEqual('file:///location', pane.get_path())
+
+
+class PaneViewStateTest(TestCase):
+	def test_view_queries_delegate_to_the_pane_widget(self):
+		widget = Mock()
+		widget.is_compact_view.return_value = False
+		widget.is_thumbnail_view.return_value = True
+		pane = DirectoryPane(None, widget, Mock())
+
+		self.assertFalse(pane.is_compact_view())
+		self.assertTrue(pane.is_thumbnail_view())
 

@@ -174,6 +174,47 @@ class RememberBasePaneFontSizeTest(TestCase):
 		finally:
 			pane_view._base_pane_font_size = previous_base_size
 
+
+class PaneFontSizeCommandThumbnailRoutingTest(TestCase):
+	def test_increase_resizes_active_thumbnail_views(self):
+		pane = Mock()
+		pane.is_thumbnail_view.return_value = True
+		with patch('core.commands.pane_view.change_thumbnail_size') as change, \
+				patch('core.commands.pane_view._change_pane_font_size') as font:
+			pane_view.IncreasePaneFontSize(pane)()
+
+		change.assert_called_once_with(pane.window, +1)
+		font.assert_not_called()
+
+	def test_decrease_resizes_active_thumbnail_views(self):
+		pane = Mock()
+		pane.is_thumbnail_view.return_value = True
+		with patch('core.commands.pane_view.change_thumbnail_size') as change, \
+				patch('core.commands.pane_view._change_pane_font_size') as font:
+			pane_view.DecreasePaneFontSize(pane)()
+
+		change.assert_called_once_with(pane.window, -1)
+		font.assert_not_called()
+
+	def test_keeps_font_zoom_for_other_view_modes(self):
+		for command in (
+				pane_view.IncreasePaneFontSize,
+				pane_view.DecreasePaneFontSize):
+			with self.subTest(command=command.__name__):
+				pane = Mock()
+				pane.is_thumbnail_view.return_value = False
+				with patch(
+					'core.commands.pane_view.change_thumbnail_size'
+				) as change, patch(
+					'core.commands.pane_view._change_pane_font_size'
+				) as font:
+					command(pane)()
+				change.assert_not_called()
+				font.assert_called_once_with(
+					pane.window,
+					+1 if command is pane_view.IncreasePaneFontSize else -1
+				)
+
 class ApplyPaneFontSizeTest(TestCase):
 	def test_applies_font_size_to_a_mounted_folder_tree(self):
 		pane = Mock()

@@ -106,6 +106,9 @@ class SessionManager:
 				path = expanduser('~')
 		self.open_path_in_pane(pane, path, error_label=cmdline)
 		pane._widget.set_compact_view(pane_info.get('compact_view') is True)
+		pane._widget.set_thumbnail_view(
+			pane_info.get('thumbnail_view') is True
+		)
 		col_widths = pane_info.get('col_widths')
 		if col_widths:
 			try:
@@ -183,7 +186,8 @@ class SessionManager:
 			'location': location if location is not None else pane.get_location(),
 			'col_widths': pane.get_column_widths(),
 			'hidden': pane.isHidden(),
-			'compact_view': pane.is_compact_view()
+			'compact_view': pane.is_compact_view(),
+			'thumbnail_view': pane.is_thumbnail_view()
 		}
 
 def _apply_pane_visibility(panes, pane_infos, single_pane):

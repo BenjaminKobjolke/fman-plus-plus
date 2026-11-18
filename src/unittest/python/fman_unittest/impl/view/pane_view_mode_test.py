@@ -2,8 +2,10 @@
 
 from fman.impl.view import FileListView
 from fman.impl.view.pane_view_mode import PaneViewMode
+from fman.impl.view.thumbnail_settings import ThumbnailSettings
 from fman_unittest.impl.view.compact_view_test import StubPaneModel
-from PyQt5.QtCore import QSize
+from PyQt5 import sip
+from PyQt5.QtCore import QEvent, QSize
 from unittest.mock import Mock
 from PyQt5.QtWidgets import QApplication, QLineEdit, QVBoxLayout, QWidget
 from unittest import TestCase
@@ -39,6 +41,47 @@ class PaneViewModeTest(TestCase):
 		self.assertTrue(compact_view.isHidden())
 		self.assertIs(self.pane.focusProxy(), self.file_view)
 		self.assertIs(self.pane._location_bar.focusProxy(), self.file_view)
+
+	def test_switching_view_modes_keeps_them_exclusive_and_disposes_old_view(self):
+		self.mode.set_thumbnails(True)
+		thumbnail_view = self.mode.visible_view()
+		self.assertTrue(self.mode.is_thumbnails())
+		self.assertFalse(self.mode.is_compact())
+		self.assertFalse(thumbnail_view.isHidden())
+		self.assertTrue(self.file_view.isHidden())
+		self.assertIs(self.pane.focusProxy(), thumbnail_view)
+		self.assertIs(self.pane._location_bar.focusProxy(), thumbnail_view)
+
+		self.mode.set_compact(True)
+		compact_view = self.mode.visible_view()
+		self.assertTrue(self.mode.is_compact())
+		self.assertFalse(self.mode.is_thumbnails())
+		self.assertFalse(compact_view.isHidden())
+		self.assertTrue(thumbnail_view.isHidden())
+		self.assertIs(self.pane.focusProxy(), compact_view)
+		QApplication.sendPostedEvents(None, QEvent.DeferredDelete)
+		self.assertTrue(sip.isdeleted(thumbnail_view))
+
+		self.mode.set_compact(False)
+		self.assertFalse(self.mode.is_compact())
+		self.assertFalse(self.mode.is_thumbnails())
+		self.assertIs(self.mode.visible_view(), self.file_view)
+		self.assertFalse(self.file_view.isHidden())
+		self.assertIs(self.pane.focusProxy(), self.file_view)
+		QApplication.sendPostedEvents(None, QEvent.DeferredDelete)
+		self.assertTrue(sip.isdeleted(compact_view))
+
+	def test_thumbnail_settings_apply_to_active_and_future_view(self):
+		settings = ThumbnailSettings(size=256, image_extensions=('.png',))
+		self.mode.set_thumbnail_settings(settings)
+		self.mode.set_thumbnails(True)
+		thumbnail_view = self.mode.visible_view()
+		self.assertEqual(settings, thumbnail_view._thumbnail_cache._settings)
+		self.assertEqual(QSize(256, 256), thumbnail_view.iconSize())
+
+		self.mode.set_thumbnails(False)
+		self.mode.set_thumbnails(True)
+		self.assertEqual(settings, self.mode.visible_view()._thumbnail_cache._settings)
 
 	def test_hide_and_restore_use_the_active_compact_view(self):
 		self.mode.set_compact(True)

@@ -163,6 +163,10 @@ class DirectoryPane:
 			self._widget.get_file_under_cursor()
 	def get_chosen_files(self) -> list[str]:
 		return _get_chosen_files(self)
+	def is_compact_view(self):
+		return self._widget.is_compact_view()
+	def is_thumbnail_view(self):
+		return self._widget.is_thumbnail_view()
 	def set_file_shading(
 		self, shader: Optional[Callable[[str], Optional[Real]]],
 		style: str = 'transparency'

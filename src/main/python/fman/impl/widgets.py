@@ -167,6 +167,12 @@ class DirectoryPaneWidget(QWidget):
 		return self._view_mode.is_compact()
 	def set_compact_view(self, on):
 		self._view_mode.set_compact(on)
+	def is_thumbnail_view(self):
+		return self._view_mode.is_thumbnails()
+	def set_thumbnail_view(self, on):
+		self._view_mode.set_thumbnails(on)
+	def set_thumbnail_settings(self, settings):
+		self._view_mode.set_thumbnail_settings(settings)
 	def set_file_list_style_sheet(self, css):
 		self._view_mode.set_style_sheet(css)
 	def set_backgrounds(self, backgrounds, pane_index):

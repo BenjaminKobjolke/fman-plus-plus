@@ -12,6 +12,7 @@ from core.commands.window import _refresh_window_title
 from core.font_size import change_font_size, effective_font_size, \
 	get_saved_font_size, reset_font_size
 from core.folder_tree_view import FolderTreeView
+from core.thumbnails import change_thumbnail_size
 from fman import DirectoryPaneCommand, DirectoryPaneListener
 # Not in fman's __all__, so a star import would not bring these in - the same
 # reason commands/theme.py names the icon functions explicitly.
@@ -175,6 +176,9 @@ class IncreasePaneFontSize(DirectoryPaneCommand):
 	aliases = ('Increase font size',)
 
 	def __call__(self):
+		if self.pane.is_thumbnail_view():
+			change_thumbnail_size(self.pane.window, +1)
+			return
 		_change_pane_font_size(self.pane.window, +1)
 
 class DecreasePaneFontSize(DirectoryPaneCommand):
@@ -182,6 +186,9 @@ class DecreasePaneFontSize(DirectoryPaneCommand):
 	aliases = ('Decrease font size',)
 
 	def __call__(self):
+		if self.pane.is_thumbnail_view():
+			change_thumbnail_size(self.pane.window, -1)
+			return
 		_change_pane_font_size(self.pane.window, -1)
 
 class ResetPaneFontSize(DirectoryPaneCommand):

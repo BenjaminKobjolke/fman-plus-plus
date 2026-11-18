@@ -45,6 +45,7 @@ EXPECTED = frozenset({
 	'GoToProgramFilesX86',
 	'GoToRootOfCurrentDrive', 'GoToTemp', 'GoUp', 'Help', 'HistoryListener',
 	'IncreasePaneFontSize', 'InitColumnVisibility', 'InitHiddenFilesFilter',
+	'InitThumbnailView',
 	'InitFileAgeShading', 'InitFileColoring', 'InitMixedSorting',
 	'InitPaneFontSize', 'InstallPlugin', 'InvertSelection', 'ListPlugins',
 	'LocationBarListener', 'Minimize', 'Move', 'MoveCursorDown',
@@ -87,7 +88,7 @@ EXPECTED = frozenset({
 	'ToggleFixedColumnWidths',
 	'ToggleVersionColumn', 'ToggleExtensionColumn', 'ToggleNameWithoutExtension',
 	'ToggleCommentColumn',
-	'ToggleAttributesColumn', 'ToggleCompactView',
+	'ToggleAttributesColumn', 'ToggleCompactView', 'ToggleThumbnailView',
 	'ToggleSizeColumn', 'Undo', 'UpdateWindowTitle', 'ViewFile',
 	'ViewFileInOtherPane', 'ZenOfFman', 'none'
 })
