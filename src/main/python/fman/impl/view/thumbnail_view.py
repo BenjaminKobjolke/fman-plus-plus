@@ -1,10 +1,11 @@
 """Icon-grid view that displays asynchronously loaded file previews."""
 
+from bisect import bisect_left
 from fman.impl.view.compact_view import CompactFileView
 from fman.impl.view.thumbnail_cache import ThumbnailCache
 from fman.impl.view.thumbnail_delegate import ThumbnailDelegate
 from fman.impl.view.thumbnail_settings import ThumbnailSettings
-from PyQt5.QtCore import QPoint, QSize, Qt
+from PyQt5.QtCore import QSize, Qt
 
 
 class ThumbnailFileView(CompactFileView):
@@ -50,22 +51,35 @@ class ThumbnailFileView(CompactFileView):
 		model = self.model()
 		if model is None or not model.rowCount():
 			return
-		rect = self.viewport().rect()
-		grid = self.gridSize()
-		rows = set()
-		step_x = max(1, grid.width())
-		for x in range(grid.width() // 2, rect.width(), step_x):
-			for y in range(1, rect.height(), max(1, grid.height() // 2)):
-				# IconMode centres items in cells, leaving the top-left corner empty.
-				index = self.indexAt(QPoint(x, y))
-				if index.isValid():
-					rows.add(index.row())
+		rows = self._visible_rows(model.rowCount())
 		if not rows:
 			return
-		rows = sorted(rows)
 		self._file_view.request_rows(rows)
 		urls = [model.url(model.index(row, 0)) for row in rows]
 		self._thumbnail_cache.request(urls)
+
+	def _visible_rows(self, count: int) -> list[int]:
+		model = self.model()
+		height = self.viewport().height()
+
+		def rect(row):
+			return self.visualRect(model.index(row, 0))
+
+		# Centred icons are smaller than their grid cells, so cell-corner probes
+		# miss them.
+		first = bisect_left(
+			range(count), True, key=lambda row: rect(row).bottom() >= 0
+		)
+		rows = []
+		row = first
+		while row < count:
+			item_rect = rect(row)
+			if item_rect.top() >= height:
+				break
+			if item_rect.isValid():
+				rows.append(row)
+			row += 1
+		return rows
 
 	def set_grid_width(self, *_):
 		self._update_grid_size()

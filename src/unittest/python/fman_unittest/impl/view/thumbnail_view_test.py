@@ -4,7 +4,7 @@ from fman.impl.view import FileListView
 from fman.impl.view.thumbnail_settings import ThumbnailSettings
 from fman.impl.view.thumbnail_view import ThumbnailFileView
 from fman_unittest.impl.view.compact_view_test import StubPaneModel
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QPoint
 from PyQt5.QtGui import QColor, QImage, QKeyEvent, QPainter, QPixmap
 from PyQt5.QtWidgets import QApplication, QStyleOptionViewItem
 from PyQt5.QtCore import QRect
@@ -90,6 +90,36 @@ class ThumbnailViewTest(TestCase):
 		self.view._request_visible_rows()
 
 		self.cache.request.assert_called_once_with(['stub://a.jpg'])
+
+	def test_request_finds_rows_when_items_are_smaller_than_the_grid_cell(self):
+		self.view.set_thumbnail_settings(ThumbnailSettings(size=200))
+		self.view.resize(80, 100)
+		self.app.processEvents()
+		self.assertFalse(self.view.indexAt(QPoint(1, 1)).isValid())
+		self.cache.request.reset_mock()
+		self.file_view.request_rows.reset_mock()
+
+		self.view._request_visible_rows()
+
+		self.cache.request.assert_called_once_with(['stub://one.png'])
+		self.file_view.request_rows.assert_called_once_with([0])
+
+	def test_request_covers_rows_after_scrolling(self):
+		model = StubPaneModel([f'{row}.png' for row in range(30)])
+		self.view.setModel(model)
+		self.file_view.setModel(model)
+		self.view.setSelectionModel(self.file_view.selectionModel())
+		self.view.scrollToBottom()
+		self.app.processEvents()
+		self.cache.request.reset_mock()
+		self.file_view.request_rows.reset_mock()
+
+		self.view._request_visible_rows()
+
+		self.cache.request.assert_called_once()
+		requested_urls = self.cache.request.call_args.args[0]
+		self.assertIn('stub://29.png', requested_urls)
+		self.assertNotIn('stub://0.png', requested_urls)
 
 	def test_model_changes_keep_thumbnail_grid(self):
 		self.view.setModel(StubPaneModel(['a.jpg']))

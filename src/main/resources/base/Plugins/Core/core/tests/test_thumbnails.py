@@ -5,9 +5,14 @@ from core.thumbnails import (
 )
 from unittest import TestCase
 from unittest.mock import patch, Mock
+from PyQt5.QtWidgets import QApplication
 
 
 class ThumbnailSettingsTest(TestCase):
+	@classmethod
+	def setUpClass(cls):
+		cls.app = QApplication.instance() or QApplication([])
+
 	def test_uses_defaults_when_settings_are_absent(self):
 		with patch.object(thumbnails, 'get_setting', return_value=None):
 			settings = thumbnails.get_thumbnail_settings()

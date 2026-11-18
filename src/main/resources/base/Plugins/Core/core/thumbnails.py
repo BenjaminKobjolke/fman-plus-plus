@@ -1,6 +1,7 @@
 """Core settings and zoom behavior for fman's thumbnail pane view."""
 from core.imageviewer import IMAGE_EXTENSIONS
 from core.settings import SETTINGS_FILE, get_setting, save_setting
+from fman.impl.util.qt.thread import run_in_main_thread
 from fman.impl.view.thumbnail_settings import (
 	LOCATIONS_EVERYWHERE, LOCATIONS_LOCAL, MAX_SIZE, MIN_SIZE,
 	PREVIEWS_IMAGES, PREVIEWS_WINDOWS, ThumbnailSettings,
@@ -57,7 +58,12 @@ def change_thumbnail_size(window, delta):
 		locations=settings.locations,
 		image_extensions=settings.image_extensions,
 	)
+	_apply_to_thumbnail_panes(window, settings)
+	return size
+
+
+@run_in_main_thread
+def _apply_to_thumbnail_panes(window, settings):
 	for pane in window.get_panes():
 		if pane.is_thumbnail_view():
 			pane._widget.set_thumbnail_settings(settings)
-	return size
