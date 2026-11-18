@@ -53,9 +53,11 @@ class ThumbnailFileView(CompactFileView):
 		rect = self.viewport().rect()
 		grid = self.gridSize()
 		rows = set()
-		for x in range(0, rect.width(), max(1, grid.width())):
-			for y in range(0, rect.height(), max(1, grid.height())):
-				index = self.indexAt(QPoint(x + 1, y + 1))
+		step_x = max(1, grid.width())
+		for x in range(grid.width() // 2, rect.width(), step_x):
+			for y in range(1, rect.height(), max(1, grid.height() // 2)):
+				# IconMode centres items in cells, leaving the top-left corner empty.
+				index = self.indexAt(QPoint(x, y))
 				if index.isValid():
 					rows.add(index.row())
 		if not rows:
@@ -64,6 +66,9 @@ class ThumbnailFileView(CompactFileView):
 		self._file_view.request_rows(rows)
 		urls = [model.url(model.index(row, 0)) for row in rows]
 		self._thumbnail_cache.request(urls)
+
+	def set_grid_width(self, *_):
+		self._update_grid_size()
 
 	def _thumbnail_ready(self, url):
 		model = self.model()
@@ -74,7 +79,3 @@ class ThumbnailFileView(CompactFileView):
 		except (ValueError, KeyError):
 			return
 		self.viewport().update(self.visualRect(index))
-
-	def resizeEvent(self, event):
-		super().resizeEvent(event)
-		self._update_grid_size()

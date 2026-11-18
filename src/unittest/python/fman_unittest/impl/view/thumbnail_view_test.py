@@ -76,6 +76,35 @@ class ThumbnailViewTest(TestCase):
 		self.assertTrue(requested)
 		self.assertTrue(all(url.startswith('stub://') for url in requested))
 
+	def test_paint_requests_preview_for_item_centred_in_wide_cell(self):
+		self.view.setModel(StubPaneModel(['a.jpg']))
+		self.view.set_thumbnail_settings(ThumbnailSettings(size=128))
+		self.view.resize(400, 300)
+		self.app.processEvents()
+		self.view.setGridSize(QSize(
+			128 + self.view.GRID_PADDING,
+			128 + self.view.fontMetrics().height() * 2 + 12,
+		))
+		self.cache.request.reset_mock()
+
+		self.view._request_visible_rows()
+
+		self.cache.request.assert_called_once_with(['stub://a.jpg'])
+
+	def test_model_changes_keep_thumbnail_grid(self):
+		self.view.setModel(StubPaneModel(['a.jpg']))
+		self.view.set_thumbnail_settings(ThumbnailSettings(size=128))
+
+		self.view.set_grid_width()
+
+		self.assertEqual(
+			self.view.gridSize(),
+			QSize(
+				128 + self.view.GRID_PADDING,
+				128 + self.view.fontMetrics().height() * 2 + 12,
+			),
+		)
+
 	def test_delegate_paints_cached_preview_over_the_file_icon(self):
 		image = QImage(80, 100, QImage.Format_ARGB32)
 		image.fill(QColor('black'))
