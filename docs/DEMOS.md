@@ -116,6 +116,7 @@ cannot be shown without it:
 | 27 | the right pane starts at `network://localhost/<drive>$/<path>` when the matching Windows admin share is reachable; otherwise it stays local |
 | 28 | a `build` folder with `output.log` in the left folder for the @ file search exclusion commands |
 | 29 | `a-claimed-by-plugin.txt` and `a-copied-by-core.txt` in the left folder, plus the `DemoDropClaim` plugin in `Plugins\User` |
+| 30 | an `old.zip` folder holding `inner.zip` in the left folder; `deep.zip` (one entry four folders deep, no folder entries) and `file2`, `file10`, `file999999`, `file1000000` in the right folder |
 
 Every run sets `FMAN_DATA_DIRECTORY` to that profile and wipes its `Plugins`
 folder. It also sets `PYTHON_KEYRING_BACKEND` to the null keyring, so recordings
@@ -419,13 +420,18 @@ composing stale inputs.
   prompt and the resulting copied file. Its stills are gitignored
   (`media/demos/plugin-drop-claim/`). Changes to plugin drop handling should
   add a still here.
+- **30 `archive-sorting`** — shows the numbered files in order, an archive
+  inside a folder named `old.zip`, and a deep archive from its root through its
+  leaf. Its five stills are gitignored (`media/demos/archive-sorting/`). Changes
+  to archive browsing or name sorting should add a still here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
 Tour chapters (3–7), feature clips (8, 9, 21) and plugin clip 10 record video
 only and take no stills. A stills-only screenshot check gets nothing from them;
 pick the focused stills demo (for packing changes: 27; for @ file search
-exclusions: 28; for plugin drop handling: 29).
+exclusions: 28; for plugin drop handling: 29; for archive browsing and file name
+sorting: 30).
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |

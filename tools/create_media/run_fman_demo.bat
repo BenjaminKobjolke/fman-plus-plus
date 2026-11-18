@@ -252,6 +252,10 @@ if "%1"=="29" >"%LEFT%\a-claimed-by-plugin.txt" echo Claimed by DemoDropClaim
 if "%1"=="29" >"%LEFT%\a-copied-by-core.txt" echo Copied by Core
 if "%1"=="29" xcopy /e /i /q /y "%CD%\tools\create_media\DemoDropClaim" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoDropClaim\" >nul
 
+REM Demo 30 needs an archive-named folder, a deep archive without directory entries and numbered files.
+if "%1"=="30" "%FMAN_PYTHON%" "%CD%\tools\create_media\seed_archive_demo.py" "%LEFT%" "%RIGHT%"
+if "%1"=="30" if errorlevel 1 exit /b 1
+
 REM The desktop is cleared by the recording tool itself, before it starts this
 REM launcher ("minimize_all" in its config, on by default): it enumerates the
 REM top-level windows and minimizes each one, its own console included. A

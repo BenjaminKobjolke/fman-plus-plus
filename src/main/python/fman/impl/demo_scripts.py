@@ -33,6 +33,7 @@ from fman.impl.demo_scripts_properties import PROPERTIES_CLIPS
 from fman.impl.demo_scripts_pack import PACK_CLIPS
 from fman.impl.demo_scripts_file_mention import FILE_MENTION_CLIPS
 from fman.impl.demo_scripts_drop import DROP_CLIPS
+from fman.impl.demo_scripts_archives import ARCHIVE_CLIPS
 from fman.impl.demo_scripts_tour import TOUR_CHAPTERS
 
 # Every recording starts opaque: a translucent window blends the desktop into
@@ -173,6 +174,9 @@ DEMOS.update(PACK_CLIPS)
 DEMOS.update(FILE_MENTION_CLIPS)
 # Drop stills let the visual check judge plugin drop handling.
 DEMOS.update(DROP_CLIPS)
+
+# Archive and sort stills let the visual check judge archive browsing and name sorting.
+DEMOS.update(ARCHIVE_CLIPS)
 
 def build_themes_script(names):
 	"""The themes demo for the installed themes `names`, one still each.

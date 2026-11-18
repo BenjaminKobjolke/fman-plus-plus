@@ -83,6 +83,8 @@
     {"id": 28, "name": "file-mention-exclusions", "fps": 2, "formats": [],
      "width": 1920, "height": 1080},
     {"id": 29, "name": "plugin-drop-claim", "fps": 2, "formats": [],
+     "width": 1920, "height": 1080},
+    {"id": 30, "name": "archive-sorting", "fps": 2, "formats": [],
      "width": 1920, "height": 1080}
   ],
   "compose": [
