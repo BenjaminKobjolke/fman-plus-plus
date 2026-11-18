@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import zipfile
 
 
 AGE_FOLDER = 'ages'
@@ -13,6 +14,11 @@ MAX_LARGE_COUNT = 50000
 DEEP_FOLDER = 'deep'
 DEEP_LEVELS = 6
 MAX_DEEP_SIBLINGS = 5000
+ARCHIVE_NAME = 'archive.zip'
+ARCHIVE_LEVELS = 4
+MAX_ARCHIVE_COUNT = 50000
+ARCHIVE_LARGE_FILE = 'large_file.bin'
+ARCHIVE_LARGE_FILE_SIZE = 2 * 1024 * 1024
 DAY_SECONDS = 86400
 CORE_SETTINGS_PATH = ('Plugins', 'User', 'Settings', 'Core Settings.json')
 VIDEO_FIXTURE_NAME = 'video.mp4'
@@ -121,6 +127,32 @@ def make_deep_folder(path: Path, count: int) -> Path | None:
 		current = current / ('level_%d' % level)
 		current.mkdir(exist_ok=True)
 	return current
+
+
+def validate_archive_count(count: int) -> None:
+	if count < 0 or count > MAX_ARCHIVE_COUNT:
+		raise ValueError(
+			'--archive must be between 0 and %d.' % MAX_ARCHIVE_COUNT)
+
+
+def make_archive_fixture(path: Path, count: int) -> Path | None:
+	validate_archive_count(count)
+	if count == 0:
+		return None
+	path = Path(path)
+	path.mkdir(parents=True, exist_ok=True)
+	target = path / ARCHIVE_NAME
+	large_file = bytes(range(256)) * (ARCHIVE_LARGE_FILE_SIZE // 256)
+	# Stored entries keep the archive large on disk for responsiveness checks.
+	with zipfile.ZipFile(target, 'w', zipfile.ZIP_STORED) as archive:
+		archive.writestr(ARCHIVE_LARGE_FILE, large_file)
+		for index in range(count):
+			levels = index % (ARCHIVE_LEVELS + 1)
+			folders = ['level_%d' % level
+				for level in range(1, levels + 1)]
+			name = '/'.join(folders + ['file_%05d.txt' % index])
+			archive.writestr(name, 'archive fixture %d\n' % index)
+	return target
 
 
 def parse_core_settings(text: str | None) -> dict[str, object] | None:

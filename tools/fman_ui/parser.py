@@ -16,6 +16,9 @@ def parser():
 	launch.add_argument('--deep', type=int, default=0,
 		help=("number of sibling folders per level in the left fixture's "
 			"deep folder tree"))
+	launch.add_argument('--archive', type=int, default=0,
+		help=("number of small files in the left fixture's archive.zip, "
+			"which also holds a 2 MiB large_file.bin"))
 	launch.add_argument('--network-share', action='store_true',
 		help=("create a share folder reachable as "
 			"\\\\localhost\\<drive>$ for network checks"))

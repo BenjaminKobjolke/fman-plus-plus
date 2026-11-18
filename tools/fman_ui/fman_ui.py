@@ -18,9 +18,10 @@ from parser import parser as _parser
 from process_launch import detached_popen, describe_refused, log_tail
 from restart import restart_session
 from fixtures import (
-	copy_video_fixture, make_deep_folder, make_fixture, make_large_folder,
+	copy_video_fixture, make_archive_fixture, make_deep_folder, make_fixture,
+	make_large_folder,
 	install_drop_plugin, make_drop_source, parse_core_settings,
-	validate_deep_count, validate_large_count,
+	validate_archive_count, validate_deep_count, validate_large_count,
 	write_core_settings,
 )
 from network_share import make_network_share
@@ -138,6 +139,7 @@ def _start_fman(session, session_root):
 def _launch(args):
 	validate_large_count(args.large)
 	validate_deep_count(args.deep)
+	validate_archive_count(args.archive)
 	core_settings = parse_core_settings(args.core_settings)
 	previous_version = getattr(args, 'previous_version', None)
 	first_start = getattr(args, 'first_start', False)
@@ -164,8 +166,10 @@ def _launch(args):
 	if not args.left:
 		make_large_folder(left, args.large, now)
 		deep = make_deep_folder(left, args.deep)
+		archive = make_archive_fixture(left, args.archive)
 	else:
 		deep = None
+		archive = None
 	local = profile / 'Local'
 	local.mkdir(parents=True, exist_ok=True)
 	port = _reserve_port()
@@ -202,6 +206,8 @@ def _launch(args):
 	}
 	if deep is not None:
 		session['deep'] = str(deep)
+	if archive is not None:
+		session['archive'] = str(archive)
 	if demo is not None:
 		session['demo'] = demo
 	try:

@@ -52,6 +52,11 @@ class FmanUiParserTest(TestCase):
 		args = parser().parse_args(['launch', '--deep', '10'])
 		self.assertEqual(10, args.deep)
 
+	def test_accepts_archive(self):
+		args = parser().parse_args(['launch', '--archive', '500'])
+		self.assertEqual(500, args.archive)
+		self.assertEqual(0, parser().parse_args(['launch']).archive)
+
 	def test_accepts_network_share(self):
 		self.assertTrue(parser().parse_args(
 			['launch', '--network-share']).network_share)

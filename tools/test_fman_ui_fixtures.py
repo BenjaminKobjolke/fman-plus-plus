@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
+import zipfile
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -12,6 +13,39 @@ import fixtures
 
 
 class FixturesTest(TestCase):
+	def test_make_archive_fixture_creates_stored_nested_files_and_large_file(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'fixture'
+			archive = fixtures.make_archive_fixture(root, 7)
+			self.assertEqual(root / 'archive.zip', archive)
+			with zipfile.ZipFile(archive) as zipped:
+				infos = zipped.infolist()
+				entries = {info.filename: info for info in infos}
+				self.assertEqual(2 * 1024 * 1024,
+					entries['large_file.bin'].file_size)
+				self.assertEqual(bytes(range(256)) * 4,
+					zipped.read('large_file.bin')[:1024])
+				self.assertEqual(7, sum(
+					Path(name).name.startswith('file_')
+					and name.endswith('.txt')
+					for name in entries))
+				self.assertTrue(any(name.startswith(
+					'level_1/level_2/level_3/level_4/') for name in entries))
+				self.assertTrue(all(info.compress_type == zipfile.ZIP_STORED
+					for info in infos))
+
+	def test_make_archive_fixture_zero_does_not_create_file(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'fixture'
+			self.assertIsNone(fixtures.make_archive_fixture(root, 0))
+		self.assertFalse(root.exists())
+
+	def test_validate_archive_count_rejects_invalid_counts(self):
+		for count in (-1, fixtures.MAX_ARCHIVE_COUNT + 1):
+			with self.subTest(count=count), self.assertRaisesRegex(
+				ValueError, r'--archive must be between 0 and 50000\.'):
+				fixtures.validate_archive_count(count)
+
 	def test_make_fixture_creates_layout_and_controlled_age_files(self):
 		now = 1_800_000_000
 		with TemporaryDirectory() as temp, \

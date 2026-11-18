@@ -14,7 +14,23 @@ import fman_ui
 
 
 class FmanUiLaunchTest(TestCase):
-	def _launch(self, temp, *, large=0, deep=0, core_settings=None, left=None,
+	def test_launch_creates_archive_fixture_and_reports_its_path(self):
+		with TemporaryDirectory() as temp:
+			session = self._launch(temp, archive=3)
+			archive = Path(session['left']) / 'archive.zip'
+			self.assertEqual(str(archive), session['archive'])
+			self.assertTrue(archive.is_file())
+
+	def test_launch_with_caller_left_does_not_create_archive_fixture(self):
+		with TemporaryDirectory() as temp:
+			left = Path(temp) / 'provided-left'
+			left.mkdir()
+			session = self._launch(temp, archive=3, left=str(left))
+			self.assertNotIn('archive', session)
+			self.assertFalse((left / 'archive.zip').exists())
+
+	def _launch(self, temp, *, large=0, deep=0, archive=0,
+			core_settings=None, left=None,
 			previous_version=None, first_start=False, demo=None,
 		network_share=False):
 		patches = (
@@ -42,7 +58,7 @@ class FmanUiLaunchTest(TestCase):
 			patches[9] as api, patches[10]:
 			popen.return_value.pid = 123
 			session = fman_ui._launch(SimpleNamespace(
-				left=left, right=None, large=large, deep=deep,
+				left=left, right=None, large=large, deep=deep, archive=archive,
 				core_settings=core_settings,
 				previous_version=previous_version, first_start=first_start,
 				demo=demo, network_share=network_share))
@@ -70,7 +86,8 @@ class FmanUiLaunchTest(TestCase):
 				}):
 				popen.return_value.pid = 123
 				session = fman_ui._launch(SimpleNamespace(
-					left=None, right=None, large=0, deep=0, core_settings=None,
+					left=None, right=None, large=0, deep=0, archive=0,
+					core_settings=None,
 					previous_version=None))
 				settings = json.loads(
 					(Path(session['profile']) / 'Local' / 'Settings.json').read_text())
@@ -288,19 +305,19 @@ class FmanUiLaunchTest(TestCase):
 	def test_invalid_launch_options_fail_before_session_directory_is_created(self):
 		with TemporaryDirectory() as temp, patch.dict(os.environ, {'TEMP': temp}):
 			for args in (
-				SimpleNamespace(left=None, right=None, large=-1, deep=0,
+				SimpleNamespace(left=None, right=None, large=-1, deep=0, archive=0,
 					core_settings=None),
-				SimpleNamespace(left=None, right=None, large=0, deep=0,
+				SimpleNamespace(left=None, right=None, large=0, deep=0, archive=0,
 					core_settings='[1]'),
-				SimpleNamespace(left=None, right=None, large=0, deep=-1,
+				SimpleNamespace(left=None, right=None, large=0, deep=-1, archive=0,
 					core_settings=None, previous_version=None),
-				SimpleNamespace(left=None, right=None, large=0, deep=5001,
+				SimpleNamespace(left=None, right=None, large=0, deep=5001, archive=0,
 					core_settings=None, previous_version=None),
-				SimpleNamespace(left=None, right=None, large=0, deep=0,
+				SimpleNamespace(left=None, right=None, large=0, deep=0, archive=0,
 					core_settings=None, previous_version=' '),
-				SimpleNamespace(left=None, right=None, large=0, deep=0,
+				SimpleNamespace(left=None, right=None, large=0, deep=0, archive=0,
 					core_settings=None, previous_version=''),
-				SimpleNamespace(left=None, right=None, large=0, deep=0,
+				SimpleNamespace(left=None, right=None, large=0, deep=0, archive=0,
 					core_settings=None, previous_version='1.0.0',
 					first_start=True),
 			):
