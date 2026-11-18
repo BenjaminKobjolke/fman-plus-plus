@@ -85,6 +85,10 @@ uploaded stills; an older tool ignores the field and captures the desktop as
 before. `ScreenStill` steps are captured by the tool from the screen, so they
 need an unlocked desktop.
 
+A `ScreenStill` that targets a child window (`ExpectChildWindow`) is captured by HWND with
+`PrintWindow`; the child is brought to the front only when Windows allows it, so demos 15 and 18
+also complete on a locked or disconnected desktop.
+
 ### Panes and the demo profile
 
 Demo 1 reads the committed `examples/left_pane` (images + a video) and
