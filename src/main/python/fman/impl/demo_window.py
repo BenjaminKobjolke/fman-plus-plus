@@ -1,6 +1,7 @@
 """Small Windows helpers used by multi-window screenshot demos."""
 
 import ctypes
+import logging
 import sys
 
 
@@ -73,11 +74,8 @@ def _parent_by_pid():
 	return parent_by_pid
 
 
-def foreground_process_window(process_id: int, title_part: str) -> int | None:
-	"""Restore and foreground a visible top-level window owned by a process."""
-	if sys.platform != 'win32':
-		return None
-
+def _find_process_window(process_id: int, title_part: str) -> int | None:
+	"""Find a visible top-level window owned by a process or its descendants."""
 	from ctypes import wintypes
 
 	user32 = ctypes.windll.user32
@@ -97,18 +95,6 @@ def foreground_process_window(process_id: int, title_part: str) -> int | None:
 		wintypes.HWND, wintypes.LPWSTR, ctypes.c_int,
 	]
 	user32.GetWindowTextW.restype = ctypes.c_int
-	user32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
-	user32.ShowWindow.restype = wintypes.BOOL
-	user32.SetForegroundWindow.argtypes = [wintypes.HWND]
-	user32.SetForegroundWindow.restype = wintypes.BOOL
-	user32.BringWindowToTop.argtypes = [wintypes.HWND]
-	user32.BringWindowToTop.restype = wintypes.BOOL
-	user32.AttachThreadInput.argtypes = [
-		wintypes.DWORD, wintypes.DWORD, wintypes.BOOL,
-	]
-	user32.AttachThreadInput.restype = wintypes.BOOL
-	user32.GetForegroundWindow.restype = wintypes.HWND
-
 	# The venv python.exe is a launcher; the window belongs to its child process.
 	process_ids = process_tree(process_id, _parent_by_pid())
 
@@ -129,25 +115,64 @@ def foreground_process_window(process_id: int, title_part: str) -> int | None:
 
 	callback = callback_type(visit)
 	user32.EnumWindows(callback, 0)
-	if not windows:
-		return None
+	return int(windows[0]) if windows else None
 
-	hwnd = windows[0]
+
+def _bring_to_foreground(process_id: int, hwnd: int) -> bool:
+	"""Try to restore and foreground a window, returning whether it succeeded."""
+	from ctypes import wintypes
+
+	user32 = ctypes.windll.user32
+	user32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
+	user32.ShowWindow.restype = wintypes.BOOL
+	user32.SetForegroundWindow.argtypes = [wintypes.HWND]
+	user32.SetForegroundWindow.restype = wintypes.BOOL
+	user32.BringWindowToTop.argtypes = [wintypes.HWND]
+	user32.BringWindowToTop.restype = wintypes.BOOL
+	user32.AttachThreadInput.argtypes = [
+		wintypes.DWORD, wintypes.DWORD, wintypes.BOOL,
+	]
+	user32.AttachThreadInput.restype = wintypes.BOOL
+	user32.GetForegroundWindow.restype = wintypes.HWND
+	user32.GetWindowThreadProcessId.argtypes = [
+		wintypes.HWND, ctypes.POINTER(wintypes.DWORD),
+	]
+	user32.GetWindowThreadProcessId.restype = wintypes.DWORD
+
 	user32.AllowSetForegroundWindow(process_id)
 	user32.ShowWindow(hwnd, 9)  # SW_RESTORE also shows a normal window.
 	user32.BringWindowToTop(hwnd)
 	user32.SetForegroundWindow(hwnd)
 	if user32.GetForegroundWindow() == hwnd:
-		return int(hwnd)
+		return True
 
 	foreground = user32.GetForegroundWindow()
+	if not foreground:
+		return False
 	foreground_thread = user32.GetWindowThreadProcessId(foreground, None)
 	current_thread = ctypes.windll.kernel32.GetCurrentThreadId()
 	if not user32.AttachThreadInput(current_thread, foreground_thread, True):
-		return None
+		return False
 	try:
 		user32.BringWindowToTop(hwnd)
 		user32.SetForegroundWindow(hwnd)
-		return int(hwnd) if user32.GetForegroundWindow() == hwnd else None
+		return user32.GetForegroundWindow() == hwnd
 	finally:
 		user32.AttachThreadInput(current_thread, foreground_thread, False)
+
+
+def foreground_process_window(process_id: int, title_part: str) -> int | None:
+	"""Find a visible window and best-effort bring it to the foreground."""
+	if sys.platform != 'win32':
+		return None
+
+	hwnd = _find_process_window(process_id, title_part)
+	if hwnd is None:
+		return None
+	if not _bring_to_foreground(process_id, hwnd):
+		logging.getLogger(__name__).info(
+			'Could not foreground child window HWND %s; the desktop may be '
+			'locked or disconnected. Continuing; the still is captured by HWND.',
+			hwnd,
+		)
+	return int(hwnd)

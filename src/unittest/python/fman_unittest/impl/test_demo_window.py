@@ -1,7 +1,10 @@
 """Tests for the process helpers used by screenshot demos."""
 
-from unittest import TestCase
+import sys
+from unittest import TestCase, skipUnless
+from unittest.mock import patch
 
+from fman.impl import demo_window
 from fman.impl.demo_window import process_tree
 
 
@@ -26,3 +29,24 @@ class ProcessTreeTest(TestCase):
 		self.assertEqual(
 			{10, 11, 12}, process_tree(10, {11: 10, 12: 11, 10: 12}),
 		)
+
+
+@skipUnless(sys.platform == 'win32', 'Windows window APIs are required')
+class ForegroundProcessWindowTest(TestCase):
+	@patch.object(demo_window, '_bring_to_foreground', return_value=False)
+	@patch.object(demo_window, '_find_process_window', return_value=456)
+	def test_returns_window_when_it_cannot_be_brought_to_foreground(
+		self, find_window, bring_to_foreground,
+	):
+		self.assertEqual(456, demo_window.foreground_process_window(123, 'x'))
+		find_window.assert_called_once_with(123, 'x')
+		bring_to_foreground.assert_called_once_with(123, 456)
+
+	@patch.object(demo_window, '_bring_to_foreground')
+	@patch.object(demo_window, '_find_process_window', return_value=None)
+	def test_returns_none_when_no_window_is_found(
+		self, find_window, bring_to_foreground,
+	):
+		self.assertIsNone(demo_window.foreground_process_window(123, 'x'))
+		find_window.assert_called_once_with(123, 'x')
+		bring_to_foreground.assert_not_called()

@@ -80,7 +80,9 @@ class LaunchFman:
 
 @dataclass(frozen=True)
 class ExpectChildWindow:
-	"""Bring the new fman window showing the folder to the foreground."""
+	"""Find the new fman window showing the folder and try to bring it
+	to the foreground.
+	"""
 
 	folder: str
 	timeout_s: float = 20.0
