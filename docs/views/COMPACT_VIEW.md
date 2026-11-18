@@ -18,3 +18,5 @@ column header, so choose a sort from the command palette or use its key binding.
 The usual selection, rename, copy, move, open, drag-and-drop and context-menu
 commands remain available. Left and Right continue through their configured key
 bindings; without a binding, the list uses Qt's previous/next-column movement.
+
+For a grid of image previews, see [Thumbnail view](THUMBNAIL_VIEW.md).
