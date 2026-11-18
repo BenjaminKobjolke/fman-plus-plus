@@ -74,6 +74,8 @@ media/demos/file-mention-exclusions/
 media/demos/plugin-drop-claim/
 # Archive and sort stills - visual check only
 media/demos/archive-sorting/
+# Thumbnail view stills - recorded on demand for the screenshot check, never committed
+media/demos/thumbnail-view/
 # Single-instance stills - recorded on demand for the screenshot check, never committed
 media/demos/single-instance/
 tmp
