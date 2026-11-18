@@ -110,7 +110,7 @@ hotkeys cannot be driven. Screenshots of video viewer areas are black.
 With automation enabled, the isolated instance records web links instead of
 opening a browser.
 
-## Fixtures for file-age shading and large folders
+## Fixtures for file-age shading, large folders and archives
 
 The files in `ages` receive modification times relative to the launch time, so
 each launch recreates the same age spread. Use `close` and then `launch` to reset
@@ -139,6 +139,26 @@ left fixture, with `N` empty `sibling_0000`-style folders at each level above
 `level_6`. The maximum is 5000 siblings per level. It is opt-in; `launch` adds
 the absolute `level_6` path as `deep` in its JSON result and saved session when
 `N` is greater than zero. Caller-provided `--left` folders are not changed.
+
+`--archive N` creates `archive.zip` in the left fixture with `N` small text
+files spread across the root and a four-level folder chain. It also contains
+`large_file.bin`, exactly 2 097 152 bytes of fixed content. The archive uses
+`ZIP_STORED`, so the large file remains large on disk; the maximum is 50000
+small files. It is opt-in, and `launch` reports the absolute archive path as
+`archive` when `N` is greater than zero. Caller-provided `--left` folders are
+not changed.
+
+Open the archive, inspect its listing, then select the large file and start a
+copy to the right pane:
+
+```bat
+tools\fman_ui.bat launch --archive 20000
+tools\fman_ui.bat click --file archive.zip --double --pane 0
+tools\fman_ui.bat files --pane 0
+tools\fman_ui.bat click --file large_file.bin --pane 0
+tools\fman_ui.bat keys F5
+tools\fman_ui.bat dialog
+```
 
 This follows validation task #2227. Convert the `deep` path from the first
 command's JSON result to a `file://` URL with forward slashes (for example,
@@ -211,7 +231,8 @@ The tickets watcher's validation agent finds this driver through the
 `tools/fman_ui.bat` on Windows; `tools/fman_ui.sh` is the macOS command. Both
 paths must stay real files inside
 the checkout or the watcher ignores the key. Agents may use `--large`, `--deep`,
-`--network-share`, `--core-settings`, `--drop-plugin`, `drop` and `restart` to
+`--archive`, `--network-share`, `--core-settings`, `--drop-plugin`, `drop` and
+`restart` to
 check settings across a restart; these options stay inside the temporary fixture
 and profile. The driver refuses input and commands when a pane leaves the
 session fixtures. `drop` also accepts only existing source files inside the
