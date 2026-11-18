@@ -17,6 +17,7 @@ import test_fman_ui_build_info
 import test_fman_ui_guards
 import test_fman_ui_window_size
 import test_fman_ui_process_launch
+import test_fman_ui_installer
 import test_fman_ui_recycle_cleanup
 import test_fman_ui_driver
 import test_fman_ui_driver_actions
@@ -115,6 +116,12 @@ def load_tests(loader, tests, pattern):
 		test_fman_ui_guards.GuardsTest))
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_process_launch.ProcessLaunchTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_installer.InstallerParserTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_installer.InstallerSnapshotTest))
+	tests.addTests(loader.loadTestsFromTestCase(
+		test_fman_ui_installer.InstallerSessionTest))
 	tests.addTests(loader.loadTestsFromTestCase(
 		test_fman_ui_window_size.WindowSizeTest))
 	return tests

@@ -105,7 +105,8 @@ Properties windows can be listed, captured with a whole-screen screenshot and
 closed, but cannot be clicked or otherwise driven. A whole-screen screenshot
 draws fman's own windows and Properties windows over the desktop in their real
 stacking order, even when other programs cover them; other programs' windows
-remain as they appear on screen. Other operating-system dialogs and global
+remain as they appear on screen. The installer subcommand can inspect and
+answer its Windows installer dialog. Other operating-system dialogs and global
 hotkeys cannot be driven. Screenshots of video viewer areas are black.
 With automation enabled, the isolated instance records web links instead of
 opening a browser.
@@ -224,6 +225,51 @@ tools\fman_ui.bat screenshot %TEMP%\fman-large.png
 tools\fman_ui.bat close
 ```
 
+## Example: Windows installer update with two windows (validation task #2454)
+
+This check installs the existing `target\fmanSetup.exe` into a disposable
+folder under `%TEMP%\fman-ui\installer`, starts two fman windows, and checks
+the installer's locked-file timeout. Build the setup first with
+`tools\build_windows_installer.bat` when it is missing.
+
+The check writes per-user `HKCU` installer entries, the user Start-menu
+shortcuts and the user `Path` value, then restores their saved values during
+cleanup. It refuses to start when `HKCU\Software\fman` already exists, so a
+per-user fman install cannot be redirected. The all-users installation stays
+untouched. The temporary copy uses `portable.txt` and its own `Data` profile;
+the setup runs with `__COMPAT_LAYER=RunAsInvoker` and `/CurrentUser`. The driver
+never runs the temporary `uninstall.exe`. Always run `installer cleanup`, even
+after a failed check, to stop the temporary processes, restore the snapshot and
+remove the temporary install.
+
+Run the Retry sequence first, then poll `installer state` until its
+`installer.exit_code` is set:
+
+```bat
+tools\fman_ui.bat installer launch
+tools\fman_ui.bat installer update
+timeout /t 65 /nobreak >nul
+tools\fman_ui.bat installer state
+tools\fman_ui.bat installer close-window --index 0
+tools\fman_ui.bat installer answer retry
+tools\fman_ui.bat installer state
+tools\fman_ui.bat installer cleanup
+tools\fman_ui.bat installer launch
+tools\fman_ui.bat installer update
+timeout /t 65 /nobreak >nul
+tools\fman_ui.bat installer answer cancel
+tools\fman_ui.bat installer state
+tools\fman_ui.bat installer cleanup
+```
+
+After about 60 seconds, `state.message_box.text` should report that fman is
+still running and cannot be updated, with `topmost: true`. After Retry, poll
+`installer state` until `exit_code: 0`, confirm
+`sentinel_present: false`, and find a fman process with
+`started_after_update: true`. After Cancel, confirm `exit_code: 2`,
+`sentinel_present: true`, the same installed version, and a process with
+`started_after_update: true`.
+
 ## Use by the tickets watcher
 
 The tickets watcher's validation agent finds this driver through the
@@ -234,8 +280,10 @@ the checkout or the watcher ignores the key. Agents may use `--large`, `--deep`,
 `--archive`, `--network-share`, `--core-settings`, `--drop-plugin`, `drop` and
 `restart` to
 check settings across a restart; these options stay inside the temporary fixture
-and profile. The driver refuses input and commands when a pane leaves the
-session fixtures. `drop` also accepts only existing source files inside the
+and profile. Agents may use the `installer` actions for the Windows installer
+check and must always run `installer cleanup`. The driver refuses input and
+commands when a pane leaves the session fixtures. `drop` also accepts only
+existing source files inside the
 session folder, never files from caller-provided pane folders. Agents always run
 `tools\fman_ui.bat close` at the end,
 including when a check fails. Screenshots an agent wants to attach go under the

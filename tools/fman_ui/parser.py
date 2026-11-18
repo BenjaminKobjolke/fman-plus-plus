@@ -90,4 +90,18 @@ def parser():
 	screenshot = commands.add_parser('screenshot')
 	screenshot.add_argument('png_path')
 	screenshot.add_argument('--screen', action='store_true')
+	installer = commands.add_parser('installer')
+	installer_actions = installer.add_subparsers(
+		dest='installer_action', required=True)
+	launch_installer = installer_actions.add_parser('launch')
+	launch_installer.add_argument('--setup', default=None)
+	launch_installer.add_argument('--windows', type=int, default=2)
+	for action in ('update', 'state', 'cleanup'):
+		installer_actions.add_parser(action)
+	close_installer_window = installer_actions.add_parser('close-window')
+	close_installer_window.add_argument('--index', type=int, default=0)
+	answer = installer_actions.add_parser('answer')
+	choices = answer.add_subparsers(dest='choice', required=True)
+	choices.add_parser('retry')
+	choices.add_parser('cancel')
 	return parser

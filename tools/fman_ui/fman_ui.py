@@ -31,6 +31,7 @@ from session_reaper import (
 	process_start_time, reap_stale,
 )
 from startup_prompts import read_startup_prompts
+from installer_session import run_installer
 WINDOW_SIZE = {'width': 1280, 'height': 800}
 
 
@@ -243,6 +244,8 @@ def _settle(milliseconds):
 
 
 def _run(args):
+	if args.action == 'installer':
+		return run_installer(args)
 	if args.action == 'launch':
 		return _launch(args)
 	session = _read_current()
