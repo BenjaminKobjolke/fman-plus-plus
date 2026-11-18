@@ -428,6 +428,10 @@ composing stale inputs.
   inside a folder named `old.zip`, and a deep archive from its root through its
   leaf. Its five stills are gitignored (`media/demos/archive-sorting/`). Changes
   to archive browsing or name sorting should add a still here.
+- **31 `thumbnail-view`** — shows the seeded JPEGs in thumbnail view, enlarges
+  the previews, then returns to the normal list. Its stills are gitignored
+  (`media/demos/thumbnail-view/`). Changes to image previews should add a still
+  here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
