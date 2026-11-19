@@ -72,7 +72,10 @@ def main(argv=None):
 			_skip_interpreter_teardown.exit_code = code
 		else:
 			_skip_interpreter_teardown.exit_code = 1
-		raise
+		# Imported test modules may register shutdown handlers that destroy Qt
+		# objects. Exit before those handlers run, as well as before interpreter
+		# teardown, to avoid a native crash after the test summary.
+		_skip_interpreter_teardown()
 
 
 def _skip_interpreter_teardown():

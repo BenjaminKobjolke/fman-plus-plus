@@ -84,6 +84,24 @@ def check_unittest_with_timeout():
 		assert result.returncode == 0, result.stdout + result.stderr
 		assert "OK" in result.stdout + result.stderr, result.stdout + result.stderr
 
+	with tempfile.TemporaryDirectory(prefix="unittest-atexit-") as temporary:
+		tests_directory = Path(temporary)
+		(tests_directory / "test_atexit_sample.py").write_text(
+			"import atexit\n"
+			"import os\n"
+			"import unittest\n\n"
+			"atexit.register(os._exit, 3)\n\n"
+			"class AtexitTest(unittest.TestCase):\n"
+			"    def test_passes(self):\n"
+			"        self.assertTrue(True)\n",
+			encoding="utf-8",
+		)
+
+		result, _ = run_runner(tools_directory, tests_directory, "test_passes")
+		# The runner exits before test modules' native shutdown callbacks run.
+		assert result.returncode == 0, result.stdout + result.stderr
+		assert "OK" in result.stdout + result.stderr, result.stdout + result.stderr
+
 
 if __name__ == "__main__":
 	check_unittest_with_timeout()
