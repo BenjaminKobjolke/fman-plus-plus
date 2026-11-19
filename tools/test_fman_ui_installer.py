@@ -190,9 +190,14 @@ class InstallerSessionTest(TestCase):
 					if dialogs:
 						break
 					time.sleep(.1)
-				if not dialogs and process.poll() is None:
-					self.skipTest(
-						'no interactive desktop exposed the child MessageBoxW window')
+				if not dialogs:
+					exit_code = process.poll()
+					# A zero MessageBoxW result means Windows exposed no dialog
+					# to this process.
+					if exit_code is None or exit_code == 0:
+						self.skipTest(
+							('no interactive desktop exposed the child MessageBoxW '
+							 'window'))
 				self.assertTrue(dialogs, 'MessageBoxW did not appear within 10 seconds')
 				dialog = dialogs[0]
 				self.assertEqual(('title', 'text', True),
