@@ -35,6 +35,8 @@ over a socket so the tool can capture the window. The wiring:
   search exclusion stills, merged into `DEMOS` by `demo_scripts.py`.
 - `src/main/python/fman/impl/demo_scripts_drop.py` — focused plugin drop-claim
   stills, merged into `DEMOS` by `demo_scripts.py`.
+- `src/main/python/fman/impl/demo_scripts_column_toggle.py` — plugin column
+  visibility stills, merged into `DEMOS` by `demo_scripts.py`.
 - `src/main/python/fman/impl/demo_drop.py` — the demo-only step that sends a
   file drop through the pane widget's normal drop handler.
 - `src/main/python/fman/impl/demo_scripts_tour.py` — the `tour-*` chapters,
@@ -121,6 +123,7 @@ cannot be shown without it:
 | 28 | a `build` folder with `output.log` in the left folder for the @ file search exclusion commands |
 | 29 | `a-claimed-by-plugin.txt` and `a-copied-by-core.txt` in the left folder, plus the `DemoDropClaim` plugin in `Plugins\User` |
 | 30 | an `old.zip` folder holding `inner.zip` in the left folder; `deep.zip` (one entry four folders deep, no folder entries) and `file2`, `file10`, `file999999`, `file1000000` in the right folder |
+| 32 | an `after-restart` folder in the left folder, plus the `DemoColumnToggle` plugin in `Plugins\User` |
 
 Every run sets `FMAN_DATA_DIRECTORY` to that profile and wipes its `Plugins`
 folder. It also sets `PYTHON_KEYRING_BACKEND` to the null keyring, so recordings
@@ -432,6 +435,11 @@ composing stale inputs.
   the previews, then returns to the normal list. Its stills are gitignored
   (`media/demos/thumbnail-view/`). Changes to image previews should add a still
   here.
+- **32 `plugin-column-toggle`** — shows a plugin-owned tag column, its palette
+  entry, the hidden and shown states, and the hidden state in a second window
+  after restart. Its five stills are gitignored
+  (`media/demos/plugin-column-toggle/`). Changes to plugin column visibility or
+  `toggle_column` should add a still here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.

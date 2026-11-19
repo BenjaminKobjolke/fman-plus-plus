@@ -131,6 +131,37 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_plugin_column_toggle_demo_takes_stills(self):
+		from fman.impl.demo import ScreenStill
+		from fman.impl.demo_scripts import DEMOS
+
+		demo = DEMOS[32]
+		screenshot_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+		still_steps = [
+			step for step in demo.steps
+			if step.__class__.__name__ in ('Screenshot', 'ScreenStill')
+		]
+
+		self.assertEqual(demo.name, 'plugin-column-toggle')
+		self.assertEqual(
+			screenshot_names,
+			[
+				'column-shown',
+				'column-palette-entry',
+				'column-hidden-by-plugin',
+				'column-shown-again',
+			],
+		)
+		self.assertIsInstance(still_steps[-1], ScreenStill)
+		self.assertEqual(still_steps[-1].name, 'column-hidden-after-restart')
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_demos_record_opaque(self):
 		from fman.impl.demo_scripts import DEMO_OPACITY
 

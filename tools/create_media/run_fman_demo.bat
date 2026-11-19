@@ -252,6 +252,10 @@ if "%1"=="29" >"%LEFT%\a-claimed-by-plugin.txt" echo Claimed by DemoDropClaim
 if "%1"=="29" >"%LEFT%\a-copied-by-core.txt" echo Copied by Core
 if "%1"=="29" xcopy /e /i /q /y "%CD%\tools\create_media\DemoDropClaim" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoDropClaim\" >nul
 
+REM Demo 32 shows a plugin-owned column toggled through the hidden Core command.
+if "%1"=="32" xcopy /e /i /q /y "%CD%\tools\create_media\DemoColumnToggle" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoColumnToggle\" >nul
+if "%1"=="32" mkdir "%LEFT%\after-restart" 2>nul
+
 REM Demo 30 needs an archive-named folder, a deep archive without directory entries and numbered files.
 if "%1"=="30" "%FMAN_PYTHON%" "%CD%\tools\create_media\seed_archive_demo.py" "%LEFT%" "%RIGHT%"
 if "%1"=="30" if errorlevel 1 exit /b 1

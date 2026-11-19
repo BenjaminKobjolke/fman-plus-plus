@@ -87,6 +87,8 @@
     {"id": 30, "name": "archive-sorting", "fps": 2, "formats": [],
      "width": 1920, "height": 1080},
     {"id": 31, "name": "thumbnail-view", "fps": 2, "formats": [],
+     "width": 1920, "height": 1080},
+    {"id": 32, "name": "plugin-column-toggle", "fps": 2, "formats": [],
      "width": 1920, "height": 1080}
   ],
   "compose": [
