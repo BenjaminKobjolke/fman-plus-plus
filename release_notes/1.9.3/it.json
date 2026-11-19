@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniature e ricerca dei file più veloce",
+  "notes": [
+    "Novità: sfoglia i file immagine in una griglia di miniature e trova file o cartelle all’interno della cartella corrente con la ricerca @.",
+    "Miglioramenti: Go To abbrevia i percorsi lunghi, i nomi dei file con numeri vengono ordinati in modo più naturale e le copie locali si trasferiscono più velocemente.",
+    "Correzioni: gli archivi funzionano in modo più affidabile nelle cartelle di rete, gli elenchi dei file si aggiornano correttamente dopo le sostituzioni e gli aggiornamenti di Windows possono essere riprovati se fman è ancora aperto."
+  ]
+}

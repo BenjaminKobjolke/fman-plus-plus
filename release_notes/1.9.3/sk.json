@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniatúry a rýchlejšie vyhľadávanie súborov",
+  "notes": [
+    "Novinka: Prehliadajte obrazové súbory v mriežke miniatúr a pomocou vyhľadávania s @ nájdite súbory alebo priečinky v rámci aktuálneho priečinka.",
+    "Vylepšenie: Príkaz Prejsť na skracuje dlhé cesty, súbory s číslami v názve sa zoraďujú prirodzenejšie a lokálne kópie sa prenášajú rýchlejšie.",
+    "Oprava: Archívy fungujú spoľahlivejšie v sieťových priečinkoch, zoznamy súborov sa po nahradení správne obnovujú a aktualizácie systému Windows možno skúsiť znova, aj keď je fman stále otvorený."
+  ]
+}

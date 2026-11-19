@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Sličice i brže pronalaženje datoteka",
+  "notes": [
+    "Novo: Pregledajte slikovne datoteke u mreži sličica i pronađite datoteke ili fascikle unutar trenutne fascikle pomoću pretrage @.",
+    "Poboljšano: Go To skraćuje duge putanje, nazivi datoteka s brojevima sortiraju se prirodnije, a lokalne kopije se brže prenose.",
+    "Ispravljeno: Arhive pouzdanije rade u mrežnim fasciklama, spiskovi datoteka se pravilno osvežavaju nakon zamene, a ažuriranja za Windows mogu ponovo da se pokušaju dok je fman još otvoren."
+  ]
+}

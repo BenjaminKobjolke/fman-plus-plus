@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniaturas y búsqueda de archivos más rápida",
+  "notes": [
+    "Novedad: Explora archivos de imagen en una cuadrícula de miniaturas y encuentra archivos o carpetas dentro de la carpeta actual con la búsqueda @.",
+    "Mejoras: «Ir a» acorta las rutas largas, los nombres de archivo con números se ordenan de forma más natural y las copias locales se transfieren más rápido.",
+    "Correcciones: Los archivos comprimidos funcionan de forma más fiable en las carpetas de red, las listas de archivos se actualizan correctamente después de reemplazar archivos y se pueden volver a intentar las actualizaciones de Windows aunque fman siga abierto."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniatiūros ir greitesnė failų paieška",
+  "notes": [
+    "Nauja: naršykite vaizdų failus miniatiūrų tinklelyje ir naudodami @ paiešką raskite failus ar aplankus dabartiniame aplanke ir jo poaplankiuose.",
+    "Patobulinta: „Eiti į“ sutrumpina ilgus kelius, failų pavadinimai su skaičiais rikiuojami natūraliau, o vietinės kopijos perkeliamos greičiau.",
+    "Ištaisyta: archyvai patikimiau veikia tinklo aplankuose, failų sąrašai po pakeitimų atnaujinami tinkamai, o „Windows“ naujinimus galima bandyti iš naujo, kol fman vis dar atidaryta."
+  ]
+}

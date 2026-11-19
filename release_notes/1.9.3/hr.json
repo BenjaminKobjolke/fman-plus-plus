@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Minijature i brže pronalaženje datoteka",
+  "notes": [
+    "Novo: Pregledavajte slikovne datoteke u mreži minijatura i pomoću pretraživanja znakom @ pronađite datoteke ili mape unutar trenutačne mape.",
+    "Poboljšano: Značajka „Idi na” skraćuje duge putanje, nazivi datoteka s brojevima sortiraju se prirodnije, a lokalne kopije prenose se brže.",
+    "Ispravljeno: Arhive pouzdanije rade u mrežnim mapama, popisi datoteka ispravno se osvježavaju nakon zamjene, a ažuriranja sustava Windows mogu se ponovno pokrenuti dok je fman još otvoren."
+  ]
+}

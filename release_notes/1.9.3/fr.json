@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniatures et recherche de fichiers plus rapide",
+  "notes": [
+    "Nouveau : parcourez les fichiers image sous forme de grille de miniatures et recherchez des fichiers ou des dossiers situés sous le dossier actuel à l’aide de la recherche @.",
+    "Améliorations : la fonction Aller à raccourcit les chemins longs, les noms de fichiers contenant des chiffres sont triés de façon plus naturelle et les copies locales sont transférées plus rapidement.",
+    "Corrections : les archives fonctionnent plus fiablement dans les dossiers réseau, les listes de fichiers sont actualisées correctement après les remplacements et les mises à jour de Windows peuvent être relancées lorsque fman est encore ouvert."
+  ]
+}

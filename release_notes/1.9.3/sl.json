@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Sličice in hitrejše iskanje datotek",
+  "notes": [
+    "Novo: Brskajte po slikovnih datotekah v mreži sličic in z iskanjem @ poiščite datoteke ali mape v trenutni mapi in njenih podmapah.",
+    "Izboljšano: Funkcija »Pojdi na« skrajša dolge poti, imena datotek s številkami se razvrščajo bolj naravno, lokalne kopije pa se prenašajo hitreje.",
+    "Popravljeno: Arhivi v omrežnih mapah delujejo zanesljiveje, seznami datotek se po zamenjavah pravilno osvežijo, posodobitve sistema Windows pa je mogoče znova poskusiti namestiti, ko je fman še odprt."
+  ]
+}

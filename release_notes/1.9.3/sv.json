@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniatyrbilder och snabbare filsökning",
+  "notes": [
+    "Nytt: Bläddra bland bildfiler i ett rutnät med miniatyrbilder och hitta filer eller mappar i den aktuella mappen med @-sökningen.",
+    "Förbättrat: Gå till förkortar långa sökvägar, filnamn med siffror sorteras mer naturligt och lokala kopior överförs snabbare.",
+    "Åtgärdat: Arkiv fungerar mer tillförlitligt i nätverksmappar, fillistor uppdateras korrekt efter ersättningar och Windows-uppdateringar kan försökas igen medan fman fortfarande är öppet."
+  ]
+}

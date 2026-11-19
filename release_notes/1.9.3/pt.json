@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniaturas e localização mais rápida de ficheiros",
+  "notes": [
+    "Novo: Explore ficheiros de imagem numa grelha de miniaturas e encontre ficheiros ou pastas dentro da pasta atual através da pesquisa @.",
+    "Melhorias: A opção Go To encurta caminhos longos, os nomes de ficheiros com números são ordenados de forma mais natural e as cópias locais são transferidas mais rapidamente.",
+    "Corrigido: Os arquivos funcionam de forma mais fiável em pastas de rede, as listas de ficheiros são atualizadas corretamente após substituições e as atualizações do Windows podem ser tentadas novamente enquanto o fman ainda estiver aberto."
+  ]
+}

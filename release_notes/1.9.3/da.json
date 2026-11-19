@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniaturebilleder og hurtigere filsøgning",
+  "notes": [
+    "Nyt: Gennemse billedfiler i et gitter med miniaturebilleder, og find filer eller mapper under den aktuelle mappe med @-søgningen.",
+    "Forbedret: Gå til forkorter lange stier, filnavne med tal sorteres mere naturligt, og lokale kopier overføres hurtigere.",
+    "Rettet: Arkiver fungerer mere pålideligt i netværksmapper, fillister opdateres korrekt efter udskiftninger, og Windows-opdateringer kan forsøges igen, mens fman stadig er åbent."
+  ]
+}

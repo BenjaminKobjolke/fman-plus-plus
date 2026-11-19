@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniaturi și găsirea mai rapidă a fișierelor",
+  "notes": [
+    "Nou: Răsfoiți fișierele imagine într-o grilă de miniaturi și găsiți fișiere sau foldere din subfolderele folderului curent folosind căutarea cu @.",
+    "Îmbunătățit: „Accesează” scurtează căile lungi, fișierele cu numere în nume sunt sortate mai natural, iar copiile locale se transferă mai rapid.",
+    "Remediat: Arhivele funcționează mai fiabil în folderele de rețea, listele de fișiere se reîmprospătează corect după înlocuiri, iar actualizările Windows pot fi reîncercate când fman este încă deschis."
+  ]
+}

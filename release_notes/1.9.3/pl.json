@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniatury i szybsze wyszukiwanie plików",
+  "notes": [
+    "Nowość: Przeglądaj pliki graficzne w siatce miniatur i wyszukuj pliki lub foldery w podfolderach bieżącego folderu za pomocą wyszukiwania @.",
+    "Ulepszenia: Funkcja „Przejdź do” skraca długie ścieżki, pliki z liczbami w nazwach są sortowane w bardziej naturalny sposób, a lokalne kopie są przesyłane szybciej.",
+    "Poprawki: Archiwa działają bardziej niezawodnie w folderach sieciowych, listy plików odświeżają się prawidłowo po zastąpieniu plików, a aktualizacje systemu Windows można ponowić, gdy fman jest nadal otwarty."
+  ]
+}

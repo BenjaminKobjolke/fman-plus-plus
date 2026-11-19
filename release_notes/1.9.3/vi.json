@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Hình thu nhỏ và tìm tệp nhanh hơn",
+  "notes": [
+    "Mới: Duyệt các tệp hình ảnh trong lưới hình thu nhỏ và tìm tệp hoặc thư mục bên trong thư mục hiện tại bằng tính năng tìm kiếm @.",
+    "Cải tiến: Tính năng Đi tới rút gọn các đường dẫn dài, sắp xếp tên tệp có số tự nhiên hơn và tăng tốc độ truyền bản sao cục bộ.",
+    "Đã sửa: Tệp lưu trữ hoạt động ổn định hơn trong các thư mục mạng, danh sách tệp được làm mới chính xác sau khi thay thế và có thể thử lại các bản cập nhật Windows khi fman vẫn đang mở."
+  ]
+}

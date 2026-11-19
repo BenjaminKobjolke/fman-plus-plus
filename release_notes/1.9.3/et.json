@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Pisipildid ja failide kiirem leidmine",
+  "notes": [
+    "Uus: Sirvige pildifaile pisipildivõrgustikus ning leidke @-otsingu abil praeguse kausta alamkaustadest faile ja kaustu.",
+    "Täiustatud: Go To lühendab pikki failiteid, numbreid sisaldavad failinimed sorteeritakse loomulikumalt ja kohalikke koopiaid edastatakse kiiremini.",
+    "Parandatud: Arhiivid töötavad võrgukaustades usaldusväärsemalt, faililoendid värskendatakse pärast asendamist õigesti ning Windowsi värskendusi saab uuesti proovida, kui fman on endiselt avatud."
+  ]
+}

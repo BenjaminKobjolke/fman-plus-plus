@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Sīktēli un ātrāka failu atrašana",
+  "notes": [
+    "Jauns: Pārlūkojiet attēlu failus sīktēlu režģī un atrodiet failus vai mapes zem pašreizējās mapes, izmantojot @ meklēšanu.",
+    "Uzlabots: Go To saīsina garus ceļus, failu nosaukumi ar skaitļiem tiek kārtoti dabiskāk, un lokālās kopijas tiek pārsūtītas ātrāk.",
+    "Novērsts: Arhīvi tīkla mapēs darbojas uzticamāk, failu saraksti pēc aizstāšanas tiek atsvaidzināti pareizi, un Windows atjauninājumus var mēģināt instalēt vēlreiz, kamēr fman joprojām ir atvērts."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniatury a rychlejší hledání souborů",
+  "notes": [
+    "Nově: Procházejte obrázkové soubory v mřížce miniatur a pomocí vyhledávání @ najděte soubory nebo složky v aktuální složce a jejích podsložkách.",
+    "Vylepšeno: Funkce Přejít zkracuje dlouhé cesty, názvy souborů s čísly se řadí přirozeněji a místní kopie se přenášejí rychleji.",
+    "Opraveno: Archivy fungují ve složkách v síti spolehlivěji, seznamy souborů se po nahrazení správně obnovují a aktualizaci ve Windows lze zopakovat, i když je fman stále spuštěný."
+  ]
+}

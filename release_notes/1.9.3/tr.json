@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Küçük resimler ve dosyaları daha hızlı bulma",
+  "notes": [
+    "Yeni: Görsel dosyalarına küçük resim ızgarasında göz atın ve @ aramasını kullanarak geçerli klasörün altındaki dosya veya klasörleri bulun.",
+    "İyileştirildi: Şuraya Git uzun yolları kısaltıyor, numara içeren dosya adları daha doğal sıralanıyor ve yerel kopyalar daha hızlı aktarılıyor.",
+    "Düzeltildi: Arşivler ağ klasörlerinde daha güvenilir çalışıyor, değiştirme işlemlerinden sonra dosya listeleri doğru şekilde yenileniyor ve fman hâlâ açıkken Windows güncellemeleri yeniden denenebiliyor."
+  ]
+}

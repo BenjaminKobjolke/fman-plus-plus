@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniaturansichten und schnelleres Finden von Dateien",
+  "notes": [
+    "Neu: Bilddateien in einem Raster mit Miniaturansichten durchsuchen und mit der @-Suche Dateien oder Ordner unterhalb des aktuellen Ordners finden.",
+    "Verbessert: „Gehe zu“ kürzt lange Pfade, Dateinamen mit Zahlen werden natürlicher sortiert und lokale Kopien schneller übertragen.",
+    "Behoben: Archive funktionieren zuverlässiger in Netzwerkordnern, Dateilisten werden nach dem Ersetzen korrekt aktualisiert und Windows-Updates können erneut versucht werden, während fman noch geöffnet ist."
+  ]
+}

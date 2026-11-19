@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Thumbnails and faster file finding",
+  "notes": [
+    "New: Browse image files in a thumbnail grid, and find files or folders below the current folder with the @ search.",
+    "Improved: Go To shortens long paths, file names with numbers sort more naturally, and local copies transfer faster.",
+    "Fixed: Archives work more reliably in network folders, file lists refresh correctly after replacements, and Windows updates can be retried when fman is still open."
+  ]
+}

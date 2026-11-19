@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniaturen en sneller bestanden vinden",
+  "notes": [
+    "Nieuw: Blader door afbeeldingsbestanden in een raster met miniaturen en vind bestanden of mappen onder de huidige map met de zoekfunctie @.",
+    "Verbeterd: Ga naar kortere lange paden in, bestandsnamen met cijfers worden logischer gesorteerd en lokale kopieën worden sneller overgezet.",
+    "Opgelost: Archieven werken betrouwbaarder in netwerkmappen, bestandslijsten worden na vervangingen correct vernieuwd en Windows-updates kunnen opnieuw worden geprobeerd terwijl fman nog open is."
+  ]
+}

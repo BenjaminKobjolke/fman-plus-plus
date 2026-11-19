@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniatűrök és gyorsabb fájlkeresés",
+  "notes": [
+    "Új: A képfájlok miniatűrös rácsnézetben böngészhetők, a @ kereséssel pedig az aktuális mappa alatti fájlok és mappák is megtalálhatók.",
+    "Továbbfejlesztve: Az Ugrás funkció lerövidíti a hosszú elérési utakat, a számozott fájlnevek természetesebb sorrendben jelennek meg, a helyi másolatok pedig gyorsabban másolhatók át.",
+    "Javítva: A tömörített fájlok megbízhatóbban működnek hálózati mappákban, a fájllisták csere után megfelelően frissülnek, és a Windows-frissítések akkor is újrapróbálhatók, ha az fman még nyitva van."
+  ]
+}

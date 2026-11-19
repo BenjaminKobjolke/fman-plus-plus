@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Miniatyrbilder og raskere filsøk",
+  "notes": [
+    "Nytt: Bla gjennom bildefiler i et rutenett med miniatyrbilder, og finn filer eller mapper under den gjeldende mappen med @-søket.",
+    "Forbedret: «Gå til» forkorter lange baner, filnavn med tall sorteres mer naturlig, og lokale kopier overføres raskere.",
+    "Rettet: Arkiver fungerer mer pålitelig i nettverksmapper, fillister oppdateres riktig etter erstatninger, og Windows-oppdateringer kan prøves på nytt mens fman fortsatt er åpent."
+  ]
+}

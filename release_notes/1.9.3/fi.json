@@ -1,0 +1,10 @@
+{
+  "version": "1.9.3",
+  "date": "2026-11-19",
+  "title": "Pikkukuvat ja tiedostojen nopeampi etsiminen",
+  "notes": [
+    "Uutta: Selaa kuvatiedostoja pikkukuvaruudukossa ja etsi nykyisen kansion alikansioista tiedostoja tai kansioita @-haulla.",
+    "Parannettu: Go To lyhentää pitkiä polkuja, numeroita sisältävät tiedostonimet lajitellaan luontevammin ja paikalliset kopiot siirtyvät nopeammin.",
+    "Korjattu: Arkistot toimivat luotettavammin verkkokansioissa, tiedostoluettelot päivittyvät oikein korvaamisen jälkeen ja Windows-päivityksiä voi yrittää uudelleen, kun fman on yhä avoinna."
+  ]
+}
