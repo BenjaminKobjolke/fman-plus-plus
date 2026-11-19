@@ -11,11 +11,14 @@ from types import SimpleNamespace
 from unittest import TestCase, skipUnless
 from unittest.mock import patch
 
+import psutil
+
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'fman_ui'))
 import installer_session
 import installer_processes
 import installer_snapshot
 import native_dialogs
+import session_reaper
 from parser import parser
 
 
@@ -38,6 +41,16 @@ class FakeRegistry:
 
 	def delete_key(self, key):
 		self.keys.discard(key)
+
+
+def _dialogs_for_process_tree(pid):
+	# The venv python.exe is a launcher; the real interpreter child owns the window.
+	try:
+		children = psutil.Process(pid).children(recursive=True)
+	except psutil.NoSuchProcess:
+		children = []
+	return [dialog for process_id in [pid, *(child.pid for child in children)]
+		for dialog in native_dialogs.dialogs_for_process(process_id)]
 
 
 class InstallerParserTest(TestCase):
@@ -182,11 +195,12 @@ class InstallerSessionTest(TestCase):
 				"0x00000005 | 0x00040000))"
 			)
 			process = subprocess.Popen([sys.executable, '-c', code])
+			process_start_time = psutil.Process(process.pid).create_time()
 			try:
 				deadline = time.monotonic() + 10
 				dialogs = []
 				while time.monotonic() < deadline:
-					dialogs = native_dialogs.dialogs_for_process(process.pid)
+					dialogs = _dialogs_for_process_tree(process.pid)
 					if dialogs:
 						break
 					time.sleep(.1)
@@ -208,7 +222,7 @@ class InstallerSessionTest(TestCase):
 				self.assertEqual(control_id, process.wait(timeout=5))
 			finally:
 				if process.poll() is None:
-					process.kill()
+					session_reaper.kill_process(process.pid, process_start_time)
 					process.wait(timeout=5)
 
 	@skipUnless(sys.platform == 'win32', 'Windows file version API')
