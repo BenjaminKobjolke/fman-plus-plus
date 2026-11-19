@@ -23,6 +23,7 @@ __all__ = [
 	'InitColumnVisibility', 'RememberSortSettings', 'SortByColumn',
 	'ToggleModifiedColumn', 'ToggleSizeColumn', 'ToggleExtensionColumn',
 	'ToggleVersionColumn', 'ToggleAttributesColumn', 'ToggleFixedColumnWidths',
+	'ToggleColumn',
 	'ToggleNameWithoutExtension', 'ToggleCommentColumn'
 ]
 
@@ -90,6 +91,17 @@ class ToggleSizeColumn(DirectoryPaneCommand):
 
 	def __call__(self):
 		_toggle_column(self.pane.window, 'core.Size')
+
+class ToggleColumn(DirectoryPaneCommand):
+	"""Plugins call ``pane.run_command('toggle_column', {'column': ...})`` to toggle a
+	registered column; state is saved in ``hidden_columns`` of Core Settings.json.
+	"""
+
+	def __call__(self, column: str) -> None:
+		_toggle_column(self.pane.window, column)
+
+	def is_visible(self) -> bool:
+		return False
 
 class ToggleModifiedColumn(DirectoryPaneCommand):
 

@@ -1,6 +1,6 @@
 from core.commands.columns import (
 	_apply_column_visibility, _get_hidden_flags, SortByColumn, ToggleCommentColumn,
-	ToggleFixedColumnWidths,
+	ToggleColumn, ToggleFixedColumnWidths,
 )
 from unittest import TestCase
 from unittest.mock import Mock, call, patch
@@ -124,3 +124,53 @@ class ToggleCommentColumnTest(TestCase):
 		self.assertEqual(
 			call('core.file_columns.Comment', True), set_hidden.call_args,
 		)
+
+class ToggleColumnTest(TestCase):
+	def test_toggles_plugin_column_in_hidden_columns(self):
+		settings = {'hidden_columns': []}
+		window = Mock()
+		window.get_panes.return_value = []
+		pane = Mock(window=window)
+
+		def get_setting(_file, key, default):
+			return settings.get(key, default)
+
+		def save_setting(_file, key, value):
+			settings[key] = value
+
+		with patch('core.column_visibility.get_setting', side_effect=get_setting), \
+			patch('core.column_visibility.save_setting', side_effect=save_setting), \
+			patch('core.commands.columns._apply_column_visibility'), \
+			patch('core.panes.reload_panes'):
+			command = ToggleColumn(pane)
+			command('ftpclient.columns.Permissions')
+			self.assertEqual(
+				['ftpclient.columns.Permissions'], settings['hidden_columns']
+			)
+			command('ftpclient.columns.Permissions')
+		self.assertEqual([], settings['hidden_columns'])
+
+	def test_toggles_builtin_size_setting(self):
+		window = Mock()
+		window.get_panes.return_value = []
+		pane = Mock(window=window)
+		settings = {}
+
+		def get_setting(_file, key, default):
+			return settings.get(key, default)
+
+		def save_setting(_file, key, value):
+			settings[key] = value
+
+		with patch('core.column_visibility.get_setting', side_effect=get_setting), \
+			patch('core.column_visibility.save_setting', side_effect=save_setting), \
+			patch('core.commands.columns._apply_column_visibility'), \
+			patch('core.panes.reload_panes'):
+			command = ToggleColumn(pane)
+			command('core.Size')
+			self.assertTrue(settings['hide_size_column'])
+			command('core.Size')
+		self.assertFalse(settings['hide_size_column'])
+
+	def test_is_hidden_from_command_palette(self):
+		self.assertFalse(ToggleColumn(Mock()).is_visible())

@@ -84,7 +84,7 @@ EXPECTED = frozenset({
 	'DeselectSameExtension',
 	'SelectionSummaryListener', 'ToggleSelectionFolderSizes',
 	'ToggleSelectionSummaryLocation',
-	'ToggleModifiedColumn', 'ToggleNetworkIcons', 'ToggleSelection',
+	'ToggleColumn', 'ToggleModifiedColumn', 'ToggleNetworkIcons', 'ToggleSelection',
 	'ToggleFixedColumnWidths',
 	'ToggleVersionColumn', 'ToggleExtensionColumn', 'ToggleNameWithoutExtension',
 	'ToggleCommentColumn',
