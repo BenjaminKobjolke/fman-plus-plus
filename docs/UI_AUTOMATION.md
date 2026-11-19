@@ -97,9 +97,10 @@ tree on a disposable nested fixture instead of navigating to a real folder.
 All commands except `launch` and `close` read the session information written
 to the platform's temporary `fman-ui/current.json`; the driver never reads the
 user's normal fman profile.
-The instance runs without user plugins by default and does not move or click
-the real mouse. `launch --drop-plugin` opts into a disposable test plugin that
-claims external file drops. fman's own dialogs can be inspected and answered.
+The instance runs without user plugins by default; for FTP panes, see
+"FTP and SFTP panes: use the FTP plugin's driver" below. It does not move or
+click the real mouse. `launch --drop-plugin` opts into a disposable test plugin
+that claims external file drops. fman's own dialogs can be inspected and answered.
 Native Windows
 Properties windows can be listed, captured with a whole-screen screenshot and
 closed, but cannot be clicked or otherwise driven. A whole-screen screenshot
@@ -289,6 +290,32 @@ session folder, never files from caller-provided pane folders. Agents always run
 including when a check fails. Screenshots an agent wants to attach go under the
 ticket's `attach/validation/` folder. Agents may also use `--demo` to inspect
 startup prompts.
+
+## FTP and SFTP panes: use the FTP plugin's driver
+
+fman's driver never loads user plugins. For checks of FTP or SFTP panes or FTP
+plugin commands, use `%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat`,
+documented in that plugin's `docs/FTP_UI_DRIVER.md`. It starts its own isolated
+fman with the working-tree plugin and loopback FTP/SFTP fixture servers, forwards
+fman's generic driver commands, and has its own `restart` that keeps the profile
+and fixtures. Always run `close` at the end.
+
+This sequence follows validation task #2497: hide the Permissions column, restart
+fman, reopen the FTP fixture and inspect the screenshot, then show the column
+again and close the session.
+
+```bat
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" launch --delay 0
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" command open_directory "{\"url\":\"ftp://ftp-fixture/\"}" --pane 1
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" command toggle_ftp_permissions_column "{}" --pane 1
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" screenshot "%TEMP%\ftp-perm-hidden.png"
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" restart
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" command open_directory "{\"url\":\"ftp://ftp-fixture/\"}" --pane 1
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" screenshot "%TEMP%\ftp-perm-after-restart.png"
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" command toggle_ftp_permissions_column "{}" --pane 1
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" screenshot "%TEMP%\ftp-perm-shown.png"
+call "%APPDATA%\fman\Plugins\User\FMAN_FTPClient\tools\ftp_ui_driver.bat" close
+```
 
 ## Example: pack archives on a network share (validation task #2431)
 
