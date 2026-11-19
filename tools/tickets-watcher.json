@@ -30,7 +30,7 @@
       "test": "green"
     },
     "tools\\run_core_tests.bat": {
-      "test": "failed"
+      "test": "green"
     },
     "tools\\run_robocopy_tests.bat": {
       "test": "green"
@@ -51,7 +51,7 @@
       "test": "green"
     },
     "uv run python tools\\test_fman_ui.py": {
-      "test": "failed"
+      "test": "green"
     },
     "tools\\run_automation_tests.bat": {
       "test": "green"
@@ -182,10 +182,5 @@
     "src/installer/**",
     "src/repo/**",
     "src/sign/**"
-  ],
-  "analysis_command_failing_tests": {
-    "uv run python tools\\test_fman_ui.py": [
-      "(failures=1)"
-    ]
-  }
+  ]
 }
