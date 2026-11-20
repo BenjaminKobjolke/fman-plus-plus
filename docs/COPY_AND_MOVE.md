@@ -222,6 +222,12 @@ connection count for the source and destination servers. It asks a server only
 once when both URLs point to it, and shows `Threads: N` alone when every
 connection count is unknown.
 
+Copy and Move also show the recent average transfer speed below the progress
+text. While files are still being gathered, the time estimate says
+`estimating`; it changes to an approximate remaining time after gathering
+finishes and the total size is known. Transfers waiting in the queue have no
+speed line because they have not started.
+
 `TransferWorkers` (`core/transfer_workers.py`) runs the queue:
 
 - **One worker runs on the command's thread**, exactly as before. Several
