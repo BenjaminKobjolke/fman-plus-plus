@@ -380,7 +380,8 @@ ZIP lists its filenames without a password; copy `visible.txt` out to
 
 The normal screenshot paints the visible non-modal progress dialog over the
 main window at its on-screen position; any part outside the main window is
-clipped. The whole-screen screenshot includes it in its real stacking order.
+clipped. On Windows, it includes the dialog's title bar and frame. The
+whole-screen screenshot includes it in its real stacking order.
 
 ```bat
 tools\fman_ui.bat launch --large 50000
@@ -517,6 +518,7 @@ such as `Screenshot is 1000x700, below the 1280x768 minimum; the usable screen
 area is 1000x700.` Successful screenshot results include `width` and `height`.
 Plain screenshots paint visible non-modal progress dialogs over the main window
 at their on-screen position, clipping parts outside the main window.
+On Windows, the dialog's title bar and frame are included.
 `screenshot --screen` includes them in their real stacking order.
 The `window` command accepts integer `width` and `height` values from 200
 through 10000, reports the actual size, and keeps later screenshots at that
