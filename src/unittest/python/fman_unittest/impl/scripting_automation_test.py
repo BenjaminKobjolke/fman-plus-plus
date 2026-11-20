@@ -55,10 +55,7 @@ class ScriptingAutomationTest(TestCase):
 		self.assertEqual(window.grab().size(), image.size())
 
 	def test_screenshot_paints_visible_progress_dialog_over_window(self):
-		window, dialog = self._progress_dialog_window()
-		dialog.show()
-		dialog.move(20, 20)
-		self.app.processEvents()
+		window, dialog = self._shown_progress_dialog_window()
 
 		image = QImage.fromData(
 			AutomationActions(window, None).screenshot_png(), 'PNG')
@@ -70,10 +67,45 @@ class ScriptingAutomationTest(TestCase):
 			QColor('red'), image.pixelColor(dialog_point))
 		self.assertEqual(QColor('red'), image.pixelColor(295, 195))
 
+	def test_screenshot_paints_progress_dialog_frame_on_windows(self):
+		window, dialog = self._shown_progress_dialog_window()
+		frame = QImage(dialog.frameGeometry().size(), QImage.Format_ARGB32)
+		frame.fill(QColor('green'))
+
+		with patch(
+			'fman.impl.scripting.window_capture.QGuiApplication.platformName',
+			return_value='windows',
+		), patch(
+			'fman.impl.scripting.window_capture.print_window_image',
+			return_value=frame,
+		):
+			image = QImage.fromData(
+				AutomationActions(window, None).screenshot_png(), 'PNG')
+
+		frame_point = window.mapFromGlobal(
+			dialog.frameGeometry().topLeft() + QPoint(1, 1))
+		self.assertEqual(QColor('green'), image.pixelColor(frame_point))
+		self.assertEqual(QColor('red'), image.pixelColor(295, 195))
+
+	def test_screenshot_falls_back_to_client_grab_when_print_window_fails(self):
+		window, dialog = self._shown_progress_dialog_window()
+
+		with patch(
+			'fman.impl.scripting.window_capture.QGuiApplication.platformName',
+			return_value='windows',
+		), patch(
+			'fman.impl.scripting.window_capture.print_window_image',
+			return_value=None,
+		):
+			image = QImage.fromData(
+				AutomationActions(window, None).screenshot_png(), 'PNG')
+
+		client_point = window.mapFromGlobal(
+			dialog.mapToGlobal(QPoint(10, 10)))
+		self.assertNotEqual(QColor('red'), image.pixelColor(client_point))
+
 	def test_screenshot_does_not_paint_hidden_progress_dialog(self):
-		window, dialog = self._progress_dialog_window()
-		dialog.show()
-		dialog.move(20, 20)
+		window, dialog = self._shown_progress_dialog_window()
 		dialog.hide()
 		self.app.processEvents()
 
@@ -99,6 +131,13 @@ class ScriptingAutomationTest(TestCase):
 		dialog.setPalette(palette)
 		dialog.setMinimumDuration(0)
 		self.addCleanup(dialog.close)
+		return window, dialog
+
+	def _shown_progress_dialog_window(self):
+		window, dialog = self._progress_dialog_window()
+		dialog.show()
+		dialog.move(20, 20)
+		self.app.processEvents()
 		return window, dialog
 
 	def test_resize_window_resizes_and_reports_available_area(self):
