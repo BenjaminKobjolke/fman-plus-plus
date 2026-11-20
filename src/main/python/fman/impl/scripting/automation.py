@@ -18,6 +18,7 @@ from fman.impl.scripting.dialog_details import (
 	prompt_font_sizes, quicksearch_details, rename_editor_details,
 )
 from fman.impl.scripting.external_drop import drop_files as send_drop
+from fman.impl.scripting.window_capture import grab_with_progress_dialogs
 from fman.impl.util.qt.key_events import post_chord, post_text
 from fman.impl.util.qt.thread import run_in_main_thread
 
@@ -184,7 +185,13 @@ class AutomationActions:
 	def screenshot_png(self):
 		buffer = QBuffer()
 		buffer.open(QIODevice.WriteOnly)
-		self._window_target().grab().save(buffer, 'PNG')
+		target = self._window_target()
+		pixmap = (
+			grab_with_progress_dialogs(self._main_window)
+			if target is self._main_window
+			else target.grab()
+		)
+		pixmap.save(buffer, 'PNG')
 		return bytes(buffer.data())
 
 	@run_in_main_thread

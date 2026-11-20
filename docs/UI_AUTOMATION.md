@@ -104,11 +104,12 @@ that claims external file drops. fman's own dialogs can be inspected and answere
 Native Windows
 Properties windows can be listed, captured with a whole-screen screenshot and
 closed, but cannot be clicked or otherwise driven. A whole-screen screenshot
-draws fman's own windows and Properties windows over the desktop in their real
-stacking order, even when other programs cover them; other programs' windows
-remain as they appear on screen. The installer subcommand can inspect and
-answer its Windows installer dialog. Other operating-system dialogs and global
-hotkeys cannot be driven. Screenshots of video viewer areas are black.
+draws fman's own visible windows, including progress dialogs, and Properties
+windows over the desktop in their real stacking order, even when other programs
+cover them; other programs' windows remain as they appear on screen. The
+installer subcommand can inspect and answer its Windows installer dialog.
+Other operating-system dialogs and global hotkeys cannot be driven.
+Screenshots of video viewer areas are black.
 With automation enabled, the isolated instance records web links instead of
 opening a browser.
 
@@ -375,6 +376,23 @@ ZIP lists its filenames without a password; copy `visible.txt` out to
 `value: null`; after entering the password, `files --pane 0` should show
 `copied.txt`.
 
+## Example: capture a copy progress window (validation task #2520)
+
+The normal screenshot paints the visible non-modal progress dialog over the
+main window at its on-screen position; any part outside the main window is
+clipped. The whole-screen screenshot includes it in its real stacking order.
+
+```bat
+tools\fman_ui.bat launch --large 50000
+tools\fman_ui.bat click --file large --pane 0
+tools\fman_ui.bat keys F5
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat dialog
+tools\fman_ui.bat screenshot %TEMP%\fman-progress.png
+tools\fman_ui.bat screenshot --screen %TEMP%\fman-progress-screen.png
+tools\fman_ui.bat close
+```
+
 ## Example: demo-mode startup prompts (validation task #2319)
 
 Demo `1` should report `demo_mode: true`, `update_check_scheduled: false`, and
@@ -497,6 +515,9 @@ requested with `window`. `screenshot --screen` captures the entire display and
 skips the resize retry. A second undersized window image fails without writing the file, with a message
 such as `Screenshot is 1000x700, below the 1280x768 minimum; the usable screen
 area is 1000x700.` Successful screenshot results include `width` and `height`.
+Plain screenshots paint visible non-modal progress dialogs over the main window
+at their on-screen position, clipping parts outside the main window.
+`screenshot --screen` includes them in their real stacking order.
 The `window` command accepts integer `width` and `height` values from 200
 through 10000, reports the actual size, and keeps later screenshots at that
 size for the main window. A screenshot minimum is reduced to the requested
@@ -664,6 +685,9 @@ tools\fman_ui.bat dialog
 
 `dialog` also reports visible non-modal progress dialogs. Their `text` is the
 dialog label, and `progress` contains its current `value` and `maximum`.
+Plain screenshots paint these dialogs over the main window at their on-screen
+position, clipping parts outside it; `screenshot --screen` includes them in
+their real stacking order.
 `viewer --pane N` reads the mounted viewer in that pane. For video it reports
 `loaded`, `paused`, `position` (seconds), and `duration` (seconds); before the
 player starts, the last three values are `null`. Video areas remain black in

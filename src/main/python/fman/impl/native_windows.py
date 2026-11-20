@@ -25,8 +25,8 @@ def own_dialog_windows() -> set[int]:
 	return windows
 
 
-def own_windows_top_to_bottom(main_hwnd: int) -> list[int]:
-	"""Return visible fman windows in the order Windows stacks them."""
+def own_windows_top_to_bottom(qt_hwnds: set[int]) -> list[int]:
+	"""Return visible Qt windows and native dialogs in Windows stacking order."""
 	import win32gui
 	import win32process
 
@@ -36,7 +36,7 @@ def own_windows_top_to_bottom(main_hwnd: int) -> list[int]:
 	def collect(hwnd, _):
 		if not _is_own_window(hwnd, process_id, win32gui, win32process):
 			return
-		if hwnd == main_hwnd or win32gui.GetClassName(hwnd) == _DIALOG_CLASS:
+		if hwnd in qt_hwnds or win32gui.GetClassName(hwnd) == _DIALOG_CLASS:
 			windows.append(hwnd)
 
 	win32gui.EnumWindows(collect, None)

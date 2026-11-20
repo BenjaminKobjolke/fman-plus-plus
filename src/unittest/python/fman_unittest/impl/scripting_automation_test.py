@@ -54,6 +54,53 @@ class ScriptingAutomationTest(TestCase):
 		self.assertFalse(image.isNull())
 		self.assertEqual(window.grab().size(), image.size())
 
+	def test_screenshot_paints_visible_progress_dialog_over_window(self):
+		window, dialog = self._progress_dialog_window()
+		dialog.show()
+		dialog.move(20, 20)
+		self.app.processEvents()
+
+		image = QImage.fromData(
+			AutomationActions(window, None).screenshot_png(), 'PNG')
+
+		self.assertEqual(window.grab().size(), image.size())
+		dialog_point = window.mapFromGlobal(
+			dialog.mapToGlobal(QPoint(10, 10)))
+		self.assertNotEqual(
+			QColor('red'), image.pixelColor(dialog_point))
+		self.assertEqual(QColor('red'), image.pixelColor(295, 195))
+
+	def test_screenshot_does_not_paint_hidden_progress_dialog(self):
+		window, dialog = self._progress_dialog_window()
+		dialog.show()
+		dialog.move(20, 20)
+		dialog.hide()
+		self.app.processEvents()
+
+		image = QImage.fromData(
+			AutomationActions(window, None).screenshot_png(), 'PNG')
+
+		self.assertEqual(QColor('red'), image.pixelColor(30, 30))
+
+	def _progress_dialog_window(self):
+		window = QWidget()
+		window.setFixedSize(300, 200)
+		window.setAutoFillBackground(True)
+		palette = window.palette()
+		palette.setColor(window.backgroundRole(), QColor('red'))
+		window.setPalette(palette)
+		window.show()
+		self.addCleanup(window.close)
+
+		dialog = QProgressDialog(window)
+		dialog.setAutoFillBackground(True)
+		palette = dialog.palette()
+		palette.setColor(dialog.backgroundRole(), QColor('blue'))
+		dialog.setPalette(palette)
+		dialog.setMinimumDuration(0)
+		self.addCleanup(dialog.close)
+		return window, dialog
+
 	def test_resize_window_resizes_and_reports_available_area(self):
 		window = _ResizableWindow()
 		window.resize(320, 240)

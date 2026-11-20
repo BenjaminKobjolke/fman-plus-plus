@@ -144,7 +144,9 @@ class NativeReadout:
 			screen_rect = screen.geometry()
 			layers = []
 			for handle in reversed(own_windows_top_to_bottom(
-					int(self._main_window.winId()))):
+					{int(widget.winId())
+					 for widget in QApplication.topLevelWidgets()
+					 if widget.isVisible()})):
 				edges = win32gui.GetWindowRect(handle)
 				rect = QRect(
 					edges[0], edges[1], edges[2] - edges[0], edges[3] - edges[1],

@@ -30,15 +30,16 @@ class NativeWindowsTest(TestCase):
 	def test_own_windows_keep_enum_order_and_dialog_api(self):
 		import win32gui
 		import win32process
-		main, foreign, dialog_one, dialog_two, invisible_dialog = range(1, 6)
-		handles = [main, foreign, dialog_one, dialog_two, invisible_dialog]
-		visible = {main, foreign, dialog_one, dialog_two}
+		main, qt_tool, foreign, dialog_one, dialog_two, invisible_dialog = range(1, 7)
+		handles = [main, qt_tool, foreign, dialog_one, dialog_two, invisible_dialog]
+		visible = {main, qt_tool, foreign, dialog_one, dialog_two}
 		classes = {
-			main: 'FmanWindow', foreign: '#32770', dialog_one: '#32770',
+			main: 'FmanWindow', qt_tool: 'Qt5QWindowIcon',
+			foreign: '#32770', dialog_one: '#32770',
 			dialog_two: '#32770', invisible_dialog: '#32770',
 		}
 		process_ids = {
-			main: os.getpid(), foreign: os.getpid() + 1,
+			main: os.getpid(), qt_tool: os.getpid(), foreign: os.getpid() + 1,
 			dialog_one: os.getpid(), dialog_two: os.getpid(),
 			invisible_dialog: os.getpid(),
 		}
@@ -52,7 +53,7 @@ class NativeWindowsTest(TestCase):
 				lambda hwnd: (0, process_ids[hwnd])),
 		):
 			self.assertEqual(
-				[main, dialog_one, dialog_two],
-				own_windows_top_to_bottom(main),
+				[main, qt_tool, dialog_one, dialog_two],
+				own_windows_top_to_bottom({main, qt_tool}),
 			)
 			self.assertEqual({dialog_one, dialog_two}, own_dialog_windows())
