@@ -256,6 +256,9 @@ REM Demo 32 shows a plugin-owned column toggled through the hidden Core command.
 if "%1"=="32" xcopy /e /i /q /y "%CD%\tools\create_media\DemoColumnToggle" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoColumnToggle\" >nul
 if "%1"=="32" mkdir "%LEFT%\after-restart" 2>nul
 
+REM Demo 34 shows a narrow pane with six columns competing for width.
+if "%1"=="34" xcopy /e /i /q /y "%CD%\tools\create_media\DemoNarrowColumns" "%FMAN_DATA_DIRECTORY%\Plugins\User\DemoNarrowColumns\" >nul
+
 REM Demo 30 needs an archive-named folder, a deep archive without directory entries and numbered files.
 if "%1"=="30" "%FMAN_PYTHON%" "%CD%\tools\create_media\seed_archive_demo.py" "%LEFT%" "%RIGHT%"
 if "%1"=="30" if errorlevel 1 exit /b 1

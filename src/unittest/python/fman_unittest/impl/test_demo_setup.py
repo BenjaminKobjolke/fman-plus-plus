@@ -162,6 +162,30 @@ class DemoSetupTest(unittest.TestCase):
 		CONNECTOR_AVAILABLE,
 		'automated-screenshot-connector is not installed in this environment',
 	)
+	def test_narrow_pane_columns_demo_takes_stills(self):
+		from fman.impl.demo_scripts import DEMOS
+
+		demo = DEMOS[34]
+		screenshot_names = [
+			step.name for step in demo.steps
+			if step.__class__.__name__ == 'Screenshot'
+		]
+
+		self.assertEqual(demo.name, 'narrow-pane-columns')
+		self.assertEqual(
+			screenshot_names,
+			[
+				'narrow-columns-equal',
+				'narrow-columns-25',
+				'narrow-columns-15',
+				'narrow-columns-restored',
+			],
+		)
+
+	@unittest.skipUnless(
+		CONNECTOR_AVAILABLE,
+		'automated-screenshot-connector is not installed in this environment',
+	)
 	def test_demos_record_opaque(self):
 		from fman.impl.demo_scripts import DEMO_OPACITY
 

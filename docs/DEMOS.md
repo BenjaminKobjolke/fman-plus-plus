@@ -124,6 +124,7 @@ cannot be shown without it:
 | 29 | `a-claimed-by-plugin.txt` and `a-copied-by-core.txt` in the left folder, plus the `DemoDropClaim` plugin in `Plugins\User` |
 | 30 | an `old.zip` folder holding `inner.zip` in the left folder; `deep.zip` (one entry four folders deep, no folder entries) and `file2`, `file10`, `file999999`, `file1000000` in the right folder |
 | 32 | an `after-restart` folder in the left folder, plus the `DemoColumnToggle` plugin in `Plugins\User` |
+| 34 | the `DemoNarrowColumns` plugin in `Plugins\User`, which adds fixed Permissions, Owner and Group values |
 
 Every run sets `FMAN_DATA_DIRECTORY` to that profile and wipes its `Plugins`
 folder. It also sets `PYTHON_KEYRING_BACKEND` to the null keyring, so recordings
@@ -446,6 +447,10 @@ composing stale inputs.
   (`media/demos/copy-progress/`). The `Screenshot` uses fman's own window
   capture; the `ScreenStill`s are captured from the screen. Changes to the
   progress dialog or transfer speed display should add a still here.
+- **34 `narrow-pane-columns`** — shows Name, Size, Modified, Permissions, Owner
+  and Group in the left pane at equal width, at 25 %, at 15 % and after restoring
+  equal widths. Its four stills are gitignored (`media/demos/narrow-pane-columns/`).
+  Changes to column sizing in narrow panes should add a still here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
@@ -453,7 +458,8 @@ Tour chapters (3–7), feature clips (8, 9, 21) and plugin clip 10 record video
 only and take no stills. A stills-only screenshot check gets nothing from them;
 pick the focused stills demo (for packing changes: 27; for @ file search
 exclusions: 28; for plugin drop handling: 29; for archive browsing and file name
-sorting: 30; for the progress dialog during a copy: 33).
+sorting: 30; for the progress dialog during a copy: 33; for column widths in
+narrow panes: 34).
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |
