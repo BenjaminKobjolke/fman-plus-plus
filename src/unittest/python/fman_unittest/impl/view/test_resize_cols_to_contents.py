@@ -25,13 +25,26 @@ class GetIdealColumnWidthsTest(TestCase):
 			[70, 80, 100], [100, 300, 100], [50, 80, 100], 250,
 			fit_name_column=True
 		)
+	def test_narrow_pane_shrinks_others_before_name(self):
+		widths = _get_ideal_column_widths(
+			[50, 300, 200, 200], [400, 250, 180, 190], 700,
+			fit_name_column=True, min_col_width=20
+		)
+		self.assertAlmostEqual(400, widths[0], delta=1)
+		self.assertTrue(all(width > 20 for width in widths[1:]))
+		self.assertEqual(700, sum(widths))
+	def test_very_narrow_pane_trims_name_after_others_at_floor(self):
+		self._expect(
+			[240, 20, 20, 20], [50, 300, 200, 200], [400, 250, 180, 190],
+			300, fit_name_column=True, min_col_width=20
+		)
 	def _expect(
 		self, result, widths, min_widths, available_width, delta_percent=0,
-		fit_name_column=False
+		fit_name_column=False, min_col_width=0
 	):
 		actual = \
 			_get_ideal_column_widths(
-				widths, min_widths, available_width, fit_name_column
+				widths, min_widths, available_width, fit_name_column, min_col_width
 			)
 		self.assertEqual(len(result), len(actual))
 		if delta_percent:

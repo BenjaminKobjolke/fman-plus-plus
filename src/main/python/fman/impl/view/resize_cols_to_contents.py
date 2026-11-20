@@ -122,7 +122,8 @@ class ResizeColumnsToContents(UniformRowHeights):
 			if not self.fit_name_column:
 				visible_curr_widths = target_widths
 			ideal_widths = _get_ideal_column_widths(
-				visible_curr_widths, target_widths, width, self.fit_name_column
+				visible_curr_widths, target_widths, width, self.fit_name_column,
+				header.minimumSectionSize()
 			)
 		self._handle_col_resize = False
 		try:
@@ -214,7 +215,8 @@ def measure_text_width(view, text):
 
 
 def _get_ideal_column_widths(
-	curr_widths, min_widths, available_width, fit_name_column=False
+	curr_widths, min_widths, available_width, fit_name_column=False,
+	min_col_width=0
 ):
 	if not min_widths:
 		raise ValueError(repr(min_widths))
@@ -235,6 +237,9 @@ def _get_ideal_column_widths(
 			for c in truncated_columns:
 				result[c] = min_widths[c]
 			width = sum(result)
+		elif fit_name_column:
+			result[0] = max(result[0], min_widths[0])
+			width = sum(result)
 	if width > available_width:
 		trim_required = width - available_width
 		trimmable_cols = [
@@ -249,9 +254,36 @@ def _get_ideal_column_widths(
 			result[c] -= trim
 		trim_required -= to_trim
 		if trim_required > 0:
-			col_trims = _distribute_exponentially(trim_required, result)
-			for c, trim in enumerate(col_trims):
-				result[c] -= trim
+			if fit_name_column:
+				non_name_excess = [
+					max(0, result[c] - min_col_width)
+					for c in range(1, len(result))
+				]
+				trim = min(trim_required, sum(non_name_excess))
+				col_trims = _distribute_exponentially(trim, non_name_excess)
+				trimmed = 0
+				for c, col_trim, excess in zip(
+					range(1, len(result)), col_trims, non_name_excess
+				):
+					col_trim = min(col_trim, excess)
+					result[c] -= col_trim
+					trimmed += col_trim
+				trim_required -= trimmed
+				for c in range(1, len(result)):
+					if trim_required and result[c] > min_col_width:
+						col_trim = min(trim_required, result[c] - min_col_width)
+						result[c] -= col_trim
+						trim_required -= col_trim
+				if trim_required > 0:
+					name_trim = min(
+						trim_required, max(0, result[0] - min_col_width)
+					)
+					result[0] -= name_trim
+					trim_required -= name_trim
+			if trim_required > 0:
+				col_trims = _distribute_exponentially(trim_required, result)
+				for c, trim in enumerate(col_trims):
+					result[c] -= trim
 	elif width < available_width:
 		result[0] += available_width - width
 	last_col_excess = result[-1] - min_widths[-1]
