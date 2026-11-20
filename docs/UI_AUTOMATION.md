@@ -301,6 +301,10 @@ fman with the working-tree plugin and loopback FTP/SFTP fixture servers, forward
 fman's generic driver commands, and has its own `restart` that keeps the profile
 and fixtures. Always run `close` at the end.
 
+Fenced actions are allowed on the fixture URLs listed in the session's
+`remote_paths` (`ftp://ftp-fixture/` and `sftp://sftp-fixture/`) and on no
+other remote location.
+
 This sequence follows validation task #2497: hide the Permissions column, restart
 fman, reopen the FTP fixture and inspect the screenshot, then show the column
 again and close the session.
