@@ -715,6 +715,7 @@ class Task:
 	blocks_later_tasks = False
 	keeps_focus = False
 	minimizable = False
+	progress_in_bytes = False
 	icon = None
 
 	def __init__(self, title, size=0, fn=lambda: None, args=(), kwargs=None):

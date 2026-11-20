@@ -19,6 +19,7 @@ from PyQt5.QtTest import QTest
 from fman.impl.view import ProxyStyle
 from PyQt5.QtWidgets import QApplication, QLabel, QStatusBar, QStyle, \
 	QStyleFactory, QPushButton, QToolButton, QWidget
+from time import monotonic
 from unittest import TestCase
 
 class WorkersLabelTest(TestCase):
@@ -303,6 +304,41 @@ class WorkersLabelTest(TestCase):
 		dialog.set_text('Copying 3 files')
 		dialog._update()
 		self.assertEqual('Copying 3 files', dialog._workers_label._text.text())
+		self.assertNotIn('Calculating speed', dialog._workers_label._text.text())
+	def test_tool_window_options_read_byte_progress_from_task(self):
+		class ByteProgressTask:
+			progress_in_bytes = True
+		self.assertTrue(ToolWindowOptions.of(ByteProgressTask()).progress_in_bytes)
+		self.assertFalse(ToolWindowOptions.of(object()).progress_in_bytes)
+	def test_byte_progress_dialog_shows_rate_under_its_text(self):
+		dialog = self._dialog(options=ToolWindowOptions(
+			False, False, None, progress_in_bytes=True
+		))
+		dialog.set_text('Copying 3 files')
+		dialog._update()
+		text = dialog.findChild(QLabel).text()
+		self.assertIn('Copying 3 files\n', text)
+		self.assertIn('Calculating speed...', text)
+	def test_byte_progress_dialog_shows_rate_in_workers_label(self):
+		dialog = self._dialog(options=ToolWindowOptions(
+			False, False, None, progress_in_bytes=True
+		))
+		dialog.show_workers(_FakeWorkers(_Worker(1)))
+		dialog.set_text('Copying 3 files')
+		dialog._update()
+		self.assertIn('Copying 3 files\n', dialog._workers_label._text.text())
+		self.assertIn('Calculating speed...', dialog._workers_label._text.text())
+	def test_byte_progress_dialog_marks_final_size_in_rate_line(self):
+		dialog = self._dialog(options=ToolWindowOptions(
+			False, False, None, progress_in_bytes=True
+		))
+		dialog.mark_size_final()
+		now = monotonic()
+		dialog._rate.add(0, now - 2)
+		dialog._rate.add(25, now - 1)
+		dialog.set_progress(50)
+		dialog._update()
+		self.assertIn('left', dialog.findChild(QLabel).text())
 	def test_long_file_name_does_not_widen_the_dialog(self):
 		dialog = self._dialog()
 		dialog.set_text('Deleting a.png')

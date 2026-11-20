@@ -25,6 +25,7 @@ class _RetryProgressDialog(ChildProgressDialog):
 
 class FileTreeOperation(FileTreeGathering, Task):
 	minimizable = True
+	progress_in_bytes = True
 
 	def __init__(
 		self, descr_verb, files, dest_dir, dest_name=None, fs=fman.fs,
@@ -120,7 +121,10 @@ class FileTreeOperation(FileTreeGathering, Task):
 				self.show_alert(text, OK, OK)
 	def _gather_in_background(self):
 		try:
-			self._gather_aborted = not self._gather_files()
+			gathered = self._gather_files()
+			self._gather_aborted = not gathered
+			if gathered:
+				self._dialog.mark_size_final()
 		except Task.Canceled:
 			self._gather_canceled = True
 		except Exception as e:
@@ -180,10 +184,6 @@ class FileTreeOperation(FileTreeGathering, Task):
 	def _transfer_one(self, worker, task, is_last):
 		self.check_canceled()
 		size = task.get_size()
-		if size:
-			with self._progress_lock:
-				# The total grows as tasks start: it is unknown while gathering.
-				self.set_size(self.get_size() + size)
 		progress = WorkerProgress(
 			self._dialog, self._progress_lock, worker, task,
 			forward_text=self._worker_count == 1

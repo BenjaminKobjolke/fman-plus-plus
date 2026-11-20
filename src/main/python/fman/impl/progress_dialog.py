@@ -3,9 +3,11 @@
 from fbs_runtime.platform import is_windows
 from fman import QuicksearchItem
 from fman.impl.util.qt.thread import run_in_main_thread
+from fman.impl.transfer_rate import TransferRate, format_rate_line
 from fman.impl.workers_label import ElidingLabel, WorkersLabel
 from PyQt5.QtCore import QTimer, Qt, QEvent, QSize
 from PyQt5.QtWidgets import QProgressDialog, QProgressBar, QPushButton, QLabel
+from time import monotonic
 
 class ProgressDialog(QProgressDialog):
 
@@ -45,6 +47,8 @@ class ProgressDialog(QProgressDialog):
 		self._title = title
 		self._size = self.maximum()
 		self._text = ''
+		self._rate = TransferRate() if options.progress_in_bytes else None
+		self._size_final = False
 		self._cancel_text = None
 		self._progress = 0
 		self._was_canceled = False
@@ -78,6 +82,8 @@ class ProgressDialog(QProgressDialog):
 		self.setMaximum(min(size, self._MAX_C_INT))
 	def set_progress(self, progress):
 		self._progress = progress
+	def mark_size_final(self):
+		self._size_final = True
 	def get_progress(self):
 		return self._progress
 	def reject(self):
@@ -202,11 +208,19 @@ class ProgressDialog(QProgressDialog):
 	def _update(self):
 		if self.wasCanceled():
 			return
+		text = self._text
+		if self._rate is not None:
+			self._rate.add(self._progress, monotonic())
+			text += '\n' + format_rate_line(
+				self._rate.bytes_per_second(),
+				self._size - self._progress,
+				self._size_final
+			)
 		if self._workers_label is None:
-			self.setLabelText(self._text)
+			self.setLabelText(text)
 		# QLabel#setText(...) is not virtual, so setLabelText(...) would not
 		# reach the workers label's own text.
-		elif self._workers_label.refresh(self._text):
+		elif self._workers_label.refresh(text):
 			self.adjustSize()
 		self._set_value(self._progress)
 	def _set_value(self, progress):

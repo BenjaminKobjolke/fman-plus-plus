@@ -211,6 +211,11 @@ class FileTreeGathering:
 		# tree, and each task must reach the transferring thread when found.
 		for task in self._iter(tasks):
 			self._completion.add_task(task)
+			size = task.get_size()
+			if size:
+				with self._progress_lock:
+					# The total grows as files are found during gathering.
+					self.set_size(self.get_size() + size)
 			self._queue.put(task)
 	def _handle_exception(self, message, is_last, exc):
 		with self._alert_lock:

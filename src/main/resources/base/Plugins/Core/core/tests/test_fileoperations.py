@@ -1,7 +1,7 @@
 from core.fileoperations import CopyFiles
 from core.tests import StubFS
 from core.tests.test_failed_transfers import FailedTransferOperationsTestMixin
-from fman import YES, NO, OK, YES_TO_ALL, ABORT, PLATFORM
+from fman import YES, NO, OK, YES_TO_ALL, ABORT, PLATFORM, Task
 from fman.impl.overwrite_dialog import OverwriteChoice
 from fman.url import join, dirname, as_url, as_human_readable
 from tempfile import TemporaryDirectory
@@ -15,6 +15,34 @@ import stat
 class FileTreeOperationAT(FailedTransferOperationsTestMixin):
 	def test_core_file_operations_are_minimizable(self):
 		self.assertTrue(self.operation.minimizable)
+	def test_gathered_task_sizes_are_added_when_enqueued(self):
+		op = self.operation([join(self.src, 'one.txt')], self.dest, fs=self._fs)
+		op._dialog = self._progress_dialog
+		tasks = [Task('one', size=4), Task('two', size=6)]
+		with patch.object(op._completion, 'add_task'):
+			with patch.object(op, '_iter', return_value=tasks):
+				op._enqueue(tasks)
+		self.assertEqual(10, op.get_size())
+		self.assertEqual(10, self._progress_dialog.task_size)
+	def test_size_is_final_only_after_complete_gather(self):
+		def canceled():
+			raise Task.Canceled()
+		def failed():
+			raise ValueError('gather failed')
+		cases = ((lambda: True, 1), (lambda: False, 0), (canceled, 0),
+				 (failed, 0))
+		for gather, expected_calls in cases:
+			with self.subTest(expected_calls=expected_calls, gather=gather):
+				op = self.operation(
+					[join(self.src, 'one.txt')], self.dest, fs=self._fs
+				)
+				op._dialog = self._progress_dialog
+				self._progress_dialog.final_size_calls = 0
+				op._gather_files = gather
+				op._gather_in_background()
+				self.assertEqual(
+					expected_calls, self._progress_dialog.final_size_calls
+				)
 
 	if PLATFORM == 'Windows':
 		_NO_SUCH_FILE_MSG = 'the system cannot find the file specified'
@@ -541,6 +569,7 @@ class CopyFilesTest(FileTreeOperationAT, TestCase):
 		self.assertTrue(self._fs.exists(join(self.dest, 'first.txt')))
 		self.assertFalse(self._fs.exists(join(self.dest, 'second.txt')))
 		self.assertTrue(self._fs.exists(join(self.dest, 'third.txt')))
+		self.assertEqual(task.get_size(), task.get_progress())
 	def test_failed_transfer_reporting_excludes_failure_and_keeps_later_success(self):
 		first, second, third = self._make_sources()
 		self._expect_alert((
@@ -594,11 +623,17 @@ class MockProgressDialog:
 	def __init__(self, test_case):
 		self._test_case = test_case
 		self._progress = 0
+		self.task_size = 0
+		self.final_size_calls = 0
 		self._expected_alerts = []
 		self._expected_overwrites = []
 		self._expected_prompts = []
 		self.workers = None
 		self.canceled = False
+	def set_task_size(self, size):
+		self.task_size = size
+	def mark_size_final(self):
+		self.final_size_calls += 1
 	def expect_alert(self, args, answer, kwargs=None):
 		self._expected_alerts.append((args, answer, kwargs))
 	def verify_expected_dialogs_were_shown(self):
@@ -645,8 +680,6 @@ class MockProgressDialog:
 		pass
 	def was_canceled(self):
 		return self.canceled
-	def set_task_size(self, size):
-		pass
 	def get_progress(self):
 		return self._progress
 	def set_progress(self, progress):

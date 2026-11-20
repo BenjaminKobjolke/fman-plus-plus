@@ -9,6 +9,8 @@ class StubProgressDialog:
 		pass
 	def set_task_size(self, size):
 		self._task_size = size
+	def mark_size_final(self):
+		pass
 	def set_progress(self, progress):
 		self._progress = progress
 	def get_progress(self):
@@ -47,6 +49,8 @@ class ChildProgressDialog:
 			'Setting the size of a subtask that has already been started is '
 			'currently not supported.'
 		)
+	def mark_size_final(self):
+		self._parent.mark_size_final()
 	def set_progress(self, progress):
 		self._parent.set_progress(self._progress_start + progress)
 	def get_progress(self):

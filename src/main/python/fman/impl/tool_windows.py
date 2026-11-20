@@ -11,13 +11,15 @@ class ToolWindowOptions:
 	keeps_focus: bool = False
 	minimizable: bool = False
 	icon: object = None
+	progress_in_bytes: bool = False
 
 	@classmethod
 	def of(cls, task):
 		return cls(
 			keeps_focus=getattr(task, 'keeps_focus', False),
 			minimizable=getattr(task, 'minimizable', False),
-			icon=getattr(task, 'icon', None)
+			icon=getattr(task, 'icon', None),
+			progress_in_bytes=getattr(task, 'progress_in_bytes', False)
 		)
 
 
