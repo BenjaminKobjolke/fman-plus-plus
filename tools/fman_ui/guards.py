@@ -27,6 +27,10 @@ def fence_roots(session):
 	]
 	if session.get('network_share_unc'):
 		roots.append(session['network_share_unc'])
+	remote_paths = session.get('remote_paths')
+	if isinstance(remote_paths, dict):
+		roots.extend(path for path in remote_paths.values()
+			if isinstance(path, str) and path)
 	return roots
 
 
@@ -55,6 +59,23 @@ def _normalized_path(path):
 	return posixpath.normpath(path).casefold(), False
 
 
+def _is_inside_url_root(url, root):
+	url_scheme, url_path = url.split('://', 1)
+	root_scheme, root_path = root.split('://', 1)
+	if url_scheme.casefold() != root_scheme.casefold():
+		return False
+	url_path = url_path.rstrip('/')
+	root_path = root_path.rstrip('/')
+	if not url_path or not root_path:
+		return False
+	url_path = posixpath.normpath(url_path).casefold()
+	root_path = posixpath.normpath(root_path).casefold()
+	try:
+		return posixpath.commonpath((root_path, url_path)) == root_path
+	except ValueError:
+		return False
+
+
 def is_inside(url, roots):
 	if not isinstance(url, str) or '://' not in url:
 		return False
@@ -67,6 +88,10 @@ def is_inside(url, roots):
 	for root in roots:
 		root = os.fspath(root)
 		if not root:
+			continue
+		if '://' in root:
+			if _is_inside_url_root(url, root):
+				return True
 			continue
 		normalized_root, windows_root = _normalized_path(root)
 		if windows_path != windows_root:

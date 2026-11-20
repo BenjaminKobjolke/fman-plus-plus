@@ -22,6 +22,26 @@ class GuardsTest(TestCase):
 			with self.subTest(url=url):
 				self.assertFalse(guards.is_inside(url, [r'D:\s']))
 
+	def test_is_inside_accepts_declared_remote_url_roots(self):
+		for url in (
+			'ftp://ftp-fixture/', 'ftp://ftp-fixture',
+			'ftp://ftp-fixture/sub/x', 'FTP://FTP-Fixture/x',
+		):
+			with self.subTest(url=url):
+				self.assertTrue(guards.is_inside(url, ['ftp://ftp-fixture/']))
+
+	def test_is_inside_rejects_remote_urls_outside_declared_url_root(self):
+		for url in (
+			'ftp://ftp-fixture-evil/', 'ftp://other/',
+			'sftp://ftp-fixture/', 'ftp://ftp-fixture/../other',
+			'file://ftp-fixture/x',
+		):
+			with self.subTest(url=url):
+				self.assertFalse(guards.is_inside(url, ['ftp://ftp-fixture/']))
+
+	def test_is_inside_does_not_accept_remote_urls_from_local_roots(self):
+		self.assertFalse(guards.is_inside('ftp://ftp-fixture/', [r'D:\s']))
+
 	def test_is_inside_uses_temporary_path_roots(self):
 		with TemporaryDirectory() as temp:
 			root = Path(temp) / 'session'
@@ -96,6 +116,37 @@ class GuardsTest(TestCase):
 			guards.fence_roots(session)[-1])
 		session.pop('network_share_unc')
 		self.assertEqual(3, len(guards.fence_roots(session)))
+
+	def test_fence_roots_include_declared_remote_paths(self):
+		session = {
+			'profile': '/session/profile', 'left': '/left', 'right': '/right',
+			'remote_paths': {
+				'ftp': 'ftp://ftp-fixture/',
+				'sftp': 'sftp://sftp-fixture/',
+				'empty': '', 'invalid': None,
+			},
+		}
+		self.assertEqual(
+			[Path('/session'), Path('/left'), Path('/right'),
+				'ftp://ftp-fixture/', 'sftp://sftp-fixture/'],
+			guards.fence_roots(session),
+		)
+		session.pop('remote_paths')
+		self.assertEqual(3, len(guards.fence_roots(session)))
+
+	def test_check_inside_fixtures_accepts_remote_path_declared_by_session(self):
+		session = {
+			'profile': '/session/profile', 'left': '/left', 'right': '/right',
+			'remote_paths': {'ftp': 'ftp://ftp-fixture/'},
+		}
+		guards.check_inside_fixtures({'panes': [
+			{'path': 'file:///left'}, {'path': 'ftp://ftp-fixture/'},
+		]}, guards.fence_roots(session))
+		with self.assertRaisesRegex(RuntimeError, 'outside the session fixtures'):
+			guards.check_inside_fixtures({'panes': [
+				{'path': 'file:///left'}, {'path': 'ftp://ftp-fixture/'},
+			]}, guards.fence_roots({key: value for key, value in session.items()
+				if key != 'remote_paths'}))
 
 	def test_drop_is_a_fenced_action(self):
 		self.assertIn('drop', guards.FENCED_ACTIONS)
