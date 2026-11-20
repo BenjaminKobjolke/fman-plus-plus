@@ -440,6 +440,12 @@ composing stale inputs.
   after restart. Its five stills are gitignored
   (`media/demos/plugin-column-toggle/`). Changes to plugin column visibility or
   `toggle_column` should add a still here.
+- **33 `copy-progress`** — copies a seeded folder of small, nonempty files and
+  takes stills of the active progress dialog in fman's window, on the screen,
+  and after cancellation. Its stills are gitignored
+  (`media/demos/copy-progress/`). The `Screenshot` uses fman's own window
+  capture; the `ScreenStill`s are captured from the screen. Changes to the
+  progress dialog or transfer speed display should add a still here.
 
 Screenshot checks should not record demo 1: until the screenshot tool honors
 `--output` for demos (#15344), its stills overwrite the committed README images.
@@ -447,7 +453,7 @@ Tour chapters (3–7), feature clips (8, 9, 21) and plugin clip 10 record video
 only and take no stills. A stills-only screenshot check gets nothing from them;
 pick the focused stills demo (for packing changes: 27; for @ file search
 exclusions: 28; for plugin drop handling: 29; for archive browsing and file name
-sorting: 30).
+sorting: 30; for the progress dialog during a copy: 33).
 - **3–7, the `tour-*` chapters** — the README's feature tour:
 
   | id | name | shows | measured |

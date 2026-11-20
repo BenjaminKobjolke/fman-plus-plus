@@ -36,6 +36,7 @@ from fman.impl.demo_scripts_drop import DROP_CLIPS
 from fman.impl.demo_scripts_column_toggle import COLUMN_TOGGLE_CLIPS
 from fman.impl.demo_scripts_archives import ARCHIVE_CLIPS
 from fman.impl.demo_scripts_thumbnails import THUMBNAIL_CLIPS
+from fman.impl.demo_scripts_copy_progress import COPY_PROGRESS_CLIPS
 from fman.impl.demo_scripts_tour import TOUR_CHAPTERS
 
 # Every recording starts opaque: a translucent window blends the desktop into
@@ -185,6 +186,9 @@ DEMOS.update(ARCHIVE_CLIPS)
 
 # Thumbnail stills let the visual check judge the image preview feature.
 DEMOS.update(THUMBNAIL_CLIPS)
+
+# Copy-progress stills let the visual check judge the active progress window.
+DEMOS.update(COPY_PROGRESS_CLIPS)
 
 def build_themes_script(names):
 	"""The themes demo for the installed themes `names`, one still each.

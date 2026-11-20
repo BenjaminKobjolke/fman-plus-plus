@@ -260,6 +260,10 @@ REM Demo 30 needs an archive-named folder, a deep archive without directory entr
 if "%1"=="30" "%FMAN_PYTHON%" "%CD%\tools\create_media\seed_archive_demo.py" "%LEFT%" "%RIGHT%"
 if "%1"=="30" if errorlevel 1 exit /b 1
 
+REM Demo 33 copies a seeded folder long enough to show the progress dialog.
+if "%1"=="33" "%FMAN_PYTHON%" "%CD%\tools\create_media\seed_copy_progress_demo.py" "%LEFT%"
+if "%1"=="33" if errorlevel 1 exit /b 1
+
 REM The desktop is cleared by the recording tool itself, before it starts this
 REM launcher ("minimize_all" in its config, on by default): it enumerates the
 REM top-level windows and minimizes each one, its own console included. A
