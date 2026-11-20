@@ -80,6 +80,8 @@ media/demos/thumbnail-view/
 media/demos/single-instance/
 # Copy-progress stills - recorded on demand for the screenshot check, never committed
 media/demos/copy-progress/
+# Narrow-pane column stills - recorded on demand for the screenshot check, never committed
+media/demos/narrow-pane-columns/
 tmp
 tickets/
 # Written by tools\release_create.bat (release-tool create) - transient local state
