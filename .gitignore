@@ -78,6 +78,8 @@ media/demos/archive-sorting/
 media/demos/thumbnail-view/
 # Single-instance stills - recorded on demand for the screenshot check, never committed
 media/demos/single-instance/
+# Copy-progress stills - recorded on demand for the screenshot check, never committed
+media/demos/copy-progress/
 tmp
 tickets/
 # Written by tools\release_create.bat (release-tool create) - transient local state
