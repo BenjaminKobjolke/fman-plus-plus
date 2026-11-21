@@ -25,7 +25,8 @@ def show_file_comment_error(error):
 	show_status_message('Could not update file comments: %s' % error)
 
 _COMMAND_MODULES = (
-	'app', 'archives', 'auto_update', 'clipboard', 'columns', 'deletion',
+	'app', 'archives', 'auto_update', 'clipboard', 'columns', 'confirmations',
+	'deletion',
 	'deselect_after_transfer', 'drag_to_app', 'duplicate',
 	'file_age_shading', 'file_coloring', 'file_comment', 'file_mention',
 	'file_mention_exclusions',

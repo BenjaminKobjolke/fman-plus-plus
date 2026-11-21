@@ -18,6 +18,8 @@ from fman.fs import (
 )
 from core import elevation
 from core.commands.util import NO_SELECTION
+from core.commands.confirmations import CONFIRM_DELETE_PERMANENTLY, \
+	CONFIRM_MOVE_TO_TRASH, is_confirm_enabled
 from core.commands import show_file_comment_error
 from core.transfer_workers import DONE, TransferWorkers, WorkerProgress
 from core.undo_history import TrashRecord, history
@@ -63,6 +65,8 @@ class MoveToTrash(DirectoryPaneCommand):
 # model. Deliberately not in __all__, which keeps them from being picked up as
 # commands.
 def confirm_trash(urls):
+	if not is_confirm_enabled(CONFIRM_MOVE_TO_TRASH):
+		return True
 	description = _describe(urls, 'these %d files')
 	trash_name = _trash_name()
 	msg = \
@@ -70,6 +74,8 @@ def confirm_trash(urls):
 	return bool(show_alert(msg, YES | NO, YES) & YES)
 
 def confirm_delete(urls):
+	if not is_confirm_enabled(CONFIRM_DELETE_PERMANENTLY):
+		return True
 	description = _describe(urls, 'these %d items')
 	message = \
 	translate(DELETE_CONFIRM) % description

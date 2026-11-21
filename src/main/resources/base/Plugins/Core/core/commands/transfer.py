@@ -14,6 +14,8 @@ from core.commands.util import get_opposite_pane, \
 	CANNOT_READ, NO_SELECTION
 from core.commands.deselect_after_transfer import is_enabled as \
 	deselect_after_transfer_enabled
+from core.commands.confirmations import CONFIRM_COPY, CONFIRM_MOVE, \
+	is_confirm_enabled, skip_prompt_destination
 from core.fileoperations import CopyFiles, MoveFiles
 from core.path_completion import complete_path
 from core.transfer_queue import run_queued
@@ -54,6 +56,7 @@ class _TreeCommand(DirectoryPaneCommand):
 	usable_in_viewer = True
 	_files_from_selection = False
 	_queued = True
+	_confirm_setting = None
 
 	def __call__(self, files=None, dest_dir=None):
 		self._files_from_selection = files is None
@@ -61,7 +64,10 @@ class _TreeCommand(DirectoryPaneCommand):
 			files = self.get_chosen_files()
 		if dest_dir is None:
 			dest_dir = get_opposite_pane(self.pane).get_path()
-		proceed = self._confirm_tree_operation(files, dest_dir)
+		if self._confirm_setting and not is_confirm_enabled(self._confirm_setting):
+			proceed = skip_prompt_destination(type(self), files, dest_dir)
+		else:
+			proceed = self._confirm_tree_operation(files, dest_dir)
 		if proceed:
 			dest_dir, dest_name = proceed
 			transfers = tuple(
@@ -230,6 +236,8 @@ def _split(url):
 	return scheme + head, tail
 
 class Copy(_TreeCommand):
+	_confirm_setting = CONFIRM_COPY
+
 	def _call(self, files, dest_dir, dest_name=None):
 		on_file_done = self._deselect if \
 			self._files_from_selection and deselect_after_transfer_enabled() \
@@ -254,6 +262,8 @@ class Copy(_TreeCommand):
 				show_file_comment_error(error)
 
 class Move(_TreeCommand):
+	_confirm_setting = CONFIRM_MOVE
+
 	def _call(self, files, dest_dir, dest_name=None):
 		operation = MoveFiles(files, dest_dir, dest_name)
 		submit_task(operation)

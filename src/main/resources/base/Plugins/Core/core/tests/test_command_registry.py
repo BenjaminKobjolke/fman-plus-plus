@@ -81,6 +81,8 @@ EXPECTED = frozenset({
 	'ToggleFtpFolderRefresh', 'ToggleOverwriteDetails', 'DeselectGroup',
 	'ToggleAutomaticUpdates',
 	'ToggleCopyPathsWithForwardSlashes',
+	'ToggleCopyConfirmation', 'ToggleDeletePermanentlyConfirmation',
+	'ToggleMoveConfirmation', 'ToggleMoveToTrashConfirmation',
 	'DeselectSameExtension',
 	'SelectionSummaryListener', 'ToggleSelectionFolderSizes',
 	'ToggleSelectionSummaryLocation',

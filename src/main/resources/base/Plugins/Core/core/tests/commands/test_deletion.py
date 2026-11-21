@@ -167,14 +167,23 @@ class TrashTest(TestCase):
 			'Do you really want to PERMANENTLY delete a.txt? This action '
 			'cannot be undone!'
 		)
-		with patch('core.commands.deletion.show_alert', return_value=YES) as alert:
+		with patch('core.commands.deletion.is_confirm_enabled', return_value=True), \
+				patch('core.commands.deletion.show_alert', return_value=YES) as alert:
 			self.assertTrue(deletion.confirm_delete(urls))
 		alert.assert_called_once_with(
 			message, deletion.YES | deletion.NO, deletion.YES,
 			button_texts={deletion.YES: 'Delete', deletion.NO: 'Cancel'}
 		)
-		with patch('core.commands.deletion.show_alert', return_value=deletion.NO):
+		with patch('core.commands.deletion.is_confirm_enabled', return_value=True), \
+				patch('core.commands.deletion.show_alert', return_value=deletion.NO):
 			self.assertFalse(deletion.confirm_delete(urls))
+
+	def test_confirmations_can_be_disabled_without_showing_alerts(self):
+		with patch('core.commands.deletion.is_confirm_enabled', return_value=False), \
+				patch('core.commands.deletion.show_alert') as show_alert:
+			self.assertTrue(deletion.confirm_trash(['file:///a.txt']))
+			self.assertTrue(deletion.confirm_delete(['file:///a.txt']))
+		show_alert.assert_not_called()
 
 	def test_delete_uses_elevation_then_submits_background_task_when_needed(self):
 		urls = ['file:///a.txt']

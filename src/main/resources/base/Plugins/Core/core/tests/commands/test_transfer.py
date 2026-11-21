@@ -326,6 +326,57 @@ class QueuedTransferTest(TestCase):
 	_SRC = 'file:///src/a.txt'
 	_DEST = 'file:///dest/a.txt'
 
+	def test_copy_and_move_skip_prompt_when_confirmation_is_disabled(self):
+		for command_type in (Copy, Move):
+			with self.subTest(command=command_type.__name__):
+				command = command_type(Mock())
+				command._confirm_tree_operation = Mock()
+				with patch(
+					'core.commands.transfer.is_confirm_enabled', return_value=False
+				), patch('core.commands.transfer.run_queued') as run_queued:
+					command(files=[self._SRC], dest_dir='file:///dest')
+				command._confirm_tree_operation.assert_not_called()
+				self.assertEqual(
+					((self._SRC, self._DEST),), run_queued.call_args.args[1].args[-1]
+				)
+
+	def test_copy_and_move_keep_prompt_when_confirmation_is_enabled(self):
+		for command_type in (Copy, Move):
+			with self.subTest(command=command_type.__name__):
+				command = command_type(Mock())
+				command._confirm_tree_operation = Mock(
+					return_value=('file:///dest', None)
+				)
+				with patch(
+					'core.commands.transfer.is_confirm_enabled', return_value=True
+				), patch('core.commands.transfer.run_queued'):
+					command(files=[self._SRC], dest_dir='file:///dest')
+				command._confirm_tree_operation.assert_called_once()
+
+	def test_symlink_keeps_prompt_when_confirmation_is_disabled(self):
+		command = Symlink(Mock())
+		command.get_chosen_files = Mock(return_value=[self._SRC])
+		command._confirm_tree_operation = Mock(
+			return_value=('file:///dest', None)
+		)
+		with patch('core.commands.symlink.is_file_url', return_value=True), \
+				patch(
+					'core.commands.symlink.get_opposite_pane'
+				) as opposite_pane, \
+				patch(
+					'core.commands.transfer.get_opposite_pane'
+				) as transfer_opposite_pane, \
+				patch(
+					'core.commands.transfer.is_confirm_enabled', return_value=False
+				) as enabled, \
+				patch.object(command, '_run'):
+			opposite_pane.return_value.get_path.return_value = 'file:///dest'
+			transfer_opposite_pane.return_value.get_path.return_value = 'file:///dest'
+			command.pane.get_path.return_value = 'file:///src'
+			command()
+		command._confirm_tree_operation.assert_called_once()
+		enabled.assert_not_called()
+
 	def setUp(self):
 		history.clear()
 

@@ -207,6 +207,24 @@ Drag-and-drop, clipboard paste and elevated copies leave pane selection alone.
 Moves need no selection update: successful items leave the source pane, while
 items restored after a stopped move remain unselected as before.
 
+## Confirmation prompts
+
+Copy, Move, Move to trash and Delete permanently each ask for confirmation by
+default. Their settings in `Core Settings.json` are `confirm_copy`,
+`confirm_move`, `confirm_move_to_trash` and `confirm_delete_permanently`; each
+defaults to `true`. Use **Toggle copy confirmation**, **Toggle move
+confirmation**, **Toggle move to trash confirmation** or **Toggle delete
+permanently confirmation** in the command palette to switch the matching
+question off or back on.
+
+When the Copy or Move question is off, the operation uses the other pane's
+folder and keeps each original name. Drag-and-drop follows these same Copy and
+Move settings. Empty selections and copying or moving a folder into itself are
+still refused, and the overwrite question still appears for an existing file.
+Symlink always asks. Turning off Move to trash confirmation also applies when
+undoing a copy, which moves the copied files to the recycle bin; deleting
+permanently has its own setting.
+
 ## Parallel workers
 
 A file system can ask for several transferring threads: Copy and Move ask
