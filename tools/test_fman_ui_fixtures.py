@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import struct
 import sys
 from tempfile import TemporaryDirectory
 import zipfile
@@ -13,6 +14,26 @@ import fixtures
 
 
 class FixturesTest(TestCase):
+	def test_make_archive_fixture_stores_created_and_modified_times(self):
+		with TemporaryDirectory() as temp:
+			root = Path(temp) / 'fixture'
+			archive = fixtures.make_archive_fixture(root, 3)
+			with zipfile.ZipFile(archive) as zipped:
+				for info in zipped.infolist():
+					(tag, size, reserved, attribute_tag, attribute_size,
+						mtime, atime, ctime) = struct.unpack(
+							'<HHIHHQQQ', info.extra)
+					self.assertEqual(0x000A, tag)
+					self.assertEqual(32, size)
+					self.assertEqual(0, reserved)
+					self.assertEqual(1, attribute_tag)
+					self.assertEqual(24, attribute_size)
+					self.assertEqual(132675269500000000, mtime)
+					self.assertEqual(mtime, atime)
+					self.assertEqual(132224078450000000, ctime)
+					self.assertEqual(
+						fixtures.ARCHIVE_MODIFIED.timetuple()[:6], info.date_time)
+
 	def test_make_archive_fixture_creates_stored_nested_files_and_large_file(self):
 		with TemporaryDirectory() as temp:
 			root = Path(temp) / 'fixture'

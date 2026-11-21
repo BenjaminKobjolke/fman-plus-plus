@@ -149,7 +149,20 @@ files spread across the root and a four-level folder chain. It also contains
 `ZIP_STORED`, so the large file remains large on disk; the maximum is 50000
 small files. It is opt-in, and `launch` reports the absolute archive path as
 `archive` when `N` is greater than zero. Caller-provided `--left` folders are
-not changed.
+not changed. Every entry stores a creation time of 2020-01-02 03:04:05 UTC and
+a modified time of 2021-06-07 08:09:10 UTC. 7-Zip and fman show these in local
+time using the machine's current UTC offset; on a Europe/Berlin machine in
+winter, Created is `02.01.20 04:04` and Modified is `07.06.21 09:09`. Folders
+inside the archive have no entries of their own and show no Created value.
+
+To check the Created column, run `launch --archive 3`, open `archive.zip`, and
+read the Created values in the listing. Zip panes show the Created column by
+default:
+
+```bat
+tools\fman_ui.bat launch --archive 3
+tools\fman_ui.bat click --file archive.zip --double --pane 0
+```
 
 Open the archive, inspect its listing, then select the large file and start a
 copy to the right pane:

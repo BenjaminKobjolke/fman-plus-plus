@@ -1,9 +1,11 @@
 """Create disposable fixture folders for the fman UI automation driver."""
 
+from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
 import shutil
+import struct
 import subprocess
 import zipfile
 
@@ -19,6 +21,8 @@ ARCHIVE_LEVELS = 4
 MAX_ARCHIVE_COUNT = 50000
 ARCHIVE_LARGE_FILE = 'large_file.bin'
 ARCHIVE_LARGE_FILE_SIZE = 2 * 1024 * 1024
+ARCHIVE_CREATED = datetime(2020, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
+ARCHIVE_MODIFIED = datetime(2021, 6, 7, 8, 9, 10, tzinfo=timezone.utc)
 DAY_SECONDS = 86400
 CORE_SETTINGS_PATH = ('Plugins', 'User', 'Settings', 'Core Settings.json')
 VIDEO_FIXTURE_NAME = 'video.mp4'
@@ -135,6 +139,25 @@ def validate_archive_count(count: int) -> None:
 			'--archive must be between 0 and %d.' % MAX_ARCHIVE_COUNT)
 
 
+def _filetime(moment: datetime) -> int:
+	epoch = datetime(1601, 1, 1, tzinfo=timezone.utc)
+	delta = moment - epoch
+	return (delta.days * 86400 + delta.seconds) * 10_000_000 \
+		+ delta.microseconds * 10
+
+
+def _archive_entry(name: str) -> zipfile.ZipInfo:
+	info = zipfile.ZipInfo(name, ARCHIVE_MODIFIED.timetuple()[:6])
+	info.compress_type = zipfile.ZIP_STORED
+	# 7-Zip reads the creation time only from this field.
+	info.extra = struct.pack(
+		'<HHIHHQQQ', 0x000A, 32, 0, 1, 24,
+		_filetime(ARCHIVE_MODIFIED), _filetime(ARCHIVE_MODIFIED),
+		_filetime(ARCHIVE_CREATED),
+	)
+	return info
+
+
 def make_archive_fixture(path: Path, count: int) -> Path | None:
 	validate_archive_count(count)
 	if count == 0:
@@ -145,13 +168,14 @@ def make_archive_fixture(path: Path, count: int) -> Path | None:
 	large_file = bytes(range(256)) * (ARCHIVE_LARGE_FILE_SIZE // 256)
 	# Stored entries keep the archive large on disk for responsiveness checks.
 	with zipfile.ZipFile(target, 'w', zipfile.ZIP_STORED) as archive:
-		archive.writestr(ARCHIVE_LARGE_FILE, large_file)
+		archive.writestr(_archive_entry(ARCHIVE_LARGE_FILE), large_file)
 		for index in range(count):
 			levels = index % (ARCHIVE_LEVELS + 1)
 			folders = ['level_%d' % level
 				for level in range(1, levels + 1)]
 			name = '/'.join(folders + ['file_%05d.txt' % index])
-			archive.writestr(name, 'archive fixture %d\n' % index)
+			archive.writestr(
+				_archive_entry(name), 'archive fixture %d\n' % index)
 	return target
 
 
