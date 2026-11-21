@@ -117,6 +117,9 @@ DIALOG_CLIPS = {
 		name='command-palette',
 		steps=(
 			Pause(1.5), PressKey('Ctrl+Shift+P'), Pause(0.6),
+			TypeText('confirmation'), Pause(1.0),
+			Screenshot('confirmation-toggles-palette'),
+			PressKey('Escape'), Pause(0.6), PressKey('Ctrl+Shift+P'), Pause(0.6),
 			TypeText('go to network'), Pause(1.0),
 			Screenshot('go-to-network-palette'),
 			PressKey('Return'), Pause(20.0),

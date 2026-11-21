@@ -353,7 +353,11 @@ class DemoSetupTest(unittest.TestCase):
 		self.assertEqual(demo.name, 'command-palette')
 		self.assertEqual(
 			screenshot_names,
-			['go-to-network-palette', 'go-to-network-pane'],
+			[
+				'confirmation-toggles-palette',
+				'go-to-network-palette',
+				'go-to-network-pane',
+			],
 		)
 
 	@unittest.skipUnless(

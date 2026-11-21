@@ -315,10 +315,11 @@ composing stale inputs.
   and of the file context menu (the still shows the menu alone). It never presses
   Return, which would raise a UAC prompt. Exists so the screenshot check can judge
   palette entries and context-menu items.
-- **14 `command-palette`** — stills of palette searches, currently *Go to network*
-  and the network view it opens (Windows). Exists so the screenshot check can judge
-  new palette entries. A change that adds a palette command should add a `TypeText`
-  query plus a `Screenshot` still here, so its check has something to judge.
+- **14 `command-palette`** — stills of palette searches, currently the *Toggle …
+  confirmation* commands, *Go to network* and the network view it opens (Windows).
+  Exists so the screenshot check can judge new palette entries. A change that adds
+  a palette command should add a `TypeText` query plus a `Screenshot` still here,
+  so its check has something to judge.
 - **15 `listing`** — stills of both panes without and with file age shading on
   backdated scratch files. It also takes `listing-file-colors` and
   `listing-file-colors-with-age` with **Toggle file coloring** on, then turns
