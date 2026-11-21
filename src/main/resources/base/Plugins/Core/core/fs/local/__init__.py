@@ -37,7 +37,8 @@ class LocalFileSystem(LocalTransfers, FileSystem):
 		self._watcher = None
 	def get_default_columns(self, path):
 		columns = (
-			'core.Name', 'core.file_columns.Extension', 'core.Size', 'core.Modified'
+			'core.Name', 'core.file_columns.Extension', 'core.Size', 'core.Modified',
+			'core.file_columns.Created',
 		)
 		if PLATFORM == 'Windows':
 			columns += ('core.file_columns.Version',)
@@ -79,6 +80,10 @@ class LocalFileSystem(LocalTransfers, FileSystem):
 		return self.stat(path).st_size
 	def modified_datetime(self, path):
 		return datetime.fromtimestamp(self.stat(path).st_mtime)
+	def created_datetime(self, path):
+		# st_ctime is the metadata-change time on macOS/Linux, not creation.
+		birthtime = getattr(self.stat(path), 'st_birthtime', None)
+		return None if birthtime is None else datetime.fromtimestamp(birthtime)
 	def touch(self, path):
 		os_path = Path(self._url_to_os_path(path))
 		if not os_path.is_absolute():

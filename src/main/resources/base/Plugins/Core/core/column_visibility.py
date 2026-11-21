@@ -6,6 +6,7 @@ from core.settings import get_setting, save_setting
 COLUMN_SETTINGS = {
 	'core.Size': ('hide_size_column', False),
 	'core.Modified': ('hide_modified_column', False),
+	'core.file_columns.Created': ('hide_created_column', True),
 	'core.file_columns.Extension': ('hide_extension_column', True),
 	'core.file_columns.Version': ('hide_version_column', True),
 	'core.file_columns.Attributes': ('hide_attributes_column', True),

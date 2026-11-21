@@ -53,7 +53,7 @@ class ColumnVisibilityTest(TestCase):
 			self.assertFalse(is_column_hidden('core.Modified'))
 			for name in (
 				'core.file_columns.Extension', 'core.file_columns.Version',
-				'core.file_columns.Attributes',
+				'core.file_columns.Attributes', 'core.file_columns.Created',
 			):
 				self.assertTrue(is_column_hidden(name))
 			self.assertFalse(is_column_hidden('core.file_columns.Comment'))

@@ -1,5 +1,5 @@
 """Additional columns for filesystems backed by file metadata."""
-from core import Name
+from core import Modified, Name
 from core.column_visibility import is_column_hidden
 from core.descript_ion import get_comment
 from core.file_extension import split_extension
@@ -9,6 +9,15 @@ from fman.fs import Column
 from core.mixed_sort import DirsFirstColumn
 import stat
 import fman.fs
+
+class Created(Modified):
+	"""Birth time; empty where the filesystem does not know it."""
+	def _get_mtime(self, url):
+		try:
+			return self._fs.query(url, 'created_datetime')
+		except AttributeError:
+			# Plugin column sets may show this on filesystems without creation times.
+			return None
 
 class Extension(DirsFirstColumn, Column):
 	def __init__(self, fs=fman.fs):

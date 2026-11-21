@@ -53,7 +53,10 @@ class _7ZipFileSystem(FileSystem):
 			if scheme == self.scheme
 		)
 	def get_default_columns(self, path):
-		return 'core.Name', 'core.file_columns.Extension', 'core.Size', 'core.Modified'
+		return (
+			'core.Name', 'core.file_columns.Extension', 'core.Size', 'core.Modified',
+			'core.file_columns.Created',
+		)
 	def resolve(self, path):
 		parts, candidates = self._archive_components(path)
 		if any(not os.path.isdir('/'.join(parts[:index + 1])) for index in candidates):
@@ -186,6 +189,8 @@ class _7ZipFileSystem(FileSystem):
 		return open_entry(self, path, mode)
 	def modified_datetime(self, path):
 		return self._query_info_attr(path, 'mtime', None)
+	def created_datetime(self, path):
+		return self._query_info_attr(path, 'ctime', None)
 	def _query_info_attr(self, path, attr, folder_default):
 		def compute_value():
 			path_in_zip = self._split(path)[1]
@@ -250,7 +255,7 @@ class _7ZipFileSystem(FileSystem):
 	def _raise_filenotfounderror_if_not_exists(self, zip_path):
 		os.stat(zip_path)
 	def _read_file_info(self, stdout):
-		path = size = mtime = None
+		path = size = mtime = ctime = None
 		is_dir = False
 		for line in stdout:
 			line = line.rstrip('\r\n')
@@ -266,15 +271,14 @@ class _7ZipFileSystem(FileSystem):
 				if size_str:
 					size = int(size_str)
 			elif line.startswith('Modified = '):
-				mtime_str = line[len('Modified = '):]
-				if mtime_str:
-					# 7-Zip 26 adds fractional seconds, which older parsing rejected.
-					mtime = datetime.strptime(mtime_str[:19], '%Y-%m-%d %H:%M:%S')
+				mtime = _parse_7zip_time(line[len('Modified = '):])
+			elif line.startswith('Created = '):
+				ctime = _parse_7zip_time(line[len('Created = '):])
 			elif line.startswith('Attributes = '):
 				attributes = line[len('Attributes = '):]
 				is_dir = is_dir or attributes.startswith('D')
 		if path:
-			return _FileInfo(path, is_dir, size, mtime)
+			return _FileInfo(path, is_dir, size, mtime, ctime)
 	def _put_in_cache(self, zip_path, file_info):
 		for field in file_info._fields:
 			if field != 'path':
@@ -676,7 +680,15 @@ class SevenZipFileSystem(_7ZipFileSystem):
 class TarFileSystem(_7ZipFileSystem):
 	scheme = 'tar://'
 
-_FileInfo = namedtuple('_FileInfo', ('path', 'is_dir', 'size_bytes', 'mtime'))
+def _parse_7zip_time(value):
+	if not value:
+		return None
+	# 7-Zip 26 adds fractional seconds, which older parsing rejected.
+	return datetime.strptime(value[:19], '%Y-%m-%d %H:%M:%S')
+
+_FileInfo = namedtuple(
+	'_FileInfo', ('path', 'is_dir', 'size_bytes', 'mtime', 'ctime')
+)
 
 class SourceClosingTextIOWrapper(TextIOWrapper):
 	def close(self):

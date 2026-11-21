@@ -155,5 +155,6 @@ class Modified(DirsFirstColumn, Column):
 _file_columns = _import_module('.file_columns', __name__)
 Attributes = _file_columns.Attributes
 Comment = _file_columns.Comment
+Created = _file_columns.Created
 Extension = _file_columns.Extension
 Version = _file_columns.Version

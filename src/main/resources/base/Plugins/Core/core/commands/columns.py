@@ -21,7 +21,8 @@ from fman.impl.util.qt.thread import run_in_main_thread
 
 __all__ = [
 	'InitColumnVisibility', 'RememberSortSettings', 'SortByColumn',
-	'ToggleModifiedColumn', 'ToggleSizeColumn', 'ToggleExtensionColumn',
+	'ToggleModifiedColumn', 'ToggleCreatedColumn', 'ToggleSizeColumn',
+	'ToggleExtensionColumn',
 	'ToggleVersionColumn', 'ToggleAttributesColumn', 'ToggleFixedColumnWidths',
 	'ToggleColumn',
 	'ToggleNameWithoutExtension', 'ToggleCommentColumn'
@@ -110,6 +111,10 @@ class ToggleModifiedColumn(DirectoryPaneCommand):
 
 	def __call__(self):
 		_toggle_column(self.pane.window, 'core.Modified')
+
+class ToggleCreatedColumn(DirectoryPaneCommand):
+	aliases = ('Toggle created column',)
+	def __call__(self): _toggle_column(self.pane.window, 'core.file_columns.Created')
 
 class ToggleExtensionColumn(DirectoryPaneCommand):
 	aliases = ('Toggle extension column',)
