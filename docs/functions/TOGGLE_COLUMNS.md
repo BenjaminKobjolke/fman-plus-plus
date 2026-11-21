@@ -7,7 +7,8 @@ columns in the file panes, for people who mostly care about file names.
 
 1. Open the command palette and search "column".
 2. Run **"Toggle size column"** to hide the Size column; run it again to show
-   it. Same for **"Toggle modified column"** and the Modified column.
+   it. Same for **"Toggle modified column"** and the Modified column, and
+   **"Toggle created column"** and the Created column.
 3. Right-click a column header to toggle any available column, including
    columns supplied by plugins. Both panes change together, and the choice
    survives restarting fman. The first column (normally Name) is always shown.
@@ -18,6 +19,7 @@ columns in the file panes, for people who mostly care about file names.
 |----------------------------|-------------------------|------------------------------------|----------------------|
 | `toggle_size_column`       | Toggle size column      | show / hide size column            | none (palette only)  |
 | `toggle_modified_column`   | Toggle modified column  | show / hide modified column, date  | none (palette only)  |
+| `toggle_created_column`    | Toggle created column   | show / hide created column, creation date, birth time | none (palette only) |
 | `toggle_extension_column`  | Toggle extension column | show / hide extension               | none (palette only)  |
 | `toggle_version_column`    | Toggle version column   | show / hide version                 | none (palette only)  |
 | `toggle_attributes_column` | Toggle attributes column| show / hide attributes, permissions | none (palette only)  |
@@ -37,13 +39,17 @@ e.g.:
 
 ## Notes
 
-- The hidden state for Size, Modified, Extension, Version, and Attributes
+- The hidden state for Size, Modified, Created, Extension, Version, and Attributes
   remains in their existing `hide_size_column`, `hide_modified_column`,
+  `hide_created_column`,
   `hide_extension_column`, `hide_version_column`, and
   `hide_attributes_column` keys in `Core Settings.json`. Hidden plugin columns
   are stored by qualified name in its `hidden_columns` list and stay hidden
-  when a plugin includes them in a column set. Extension, Version, and
-  Attributes start hidden by default.
+  when a plugin includes them in a column set. Created, Extension, Version,
+  and Attributes start hidden by default.
+- Created shows a file's birth time on Windows and macOS; Linux and filesystems
+  without creation metadata show an empty cell. Archives show the entry's
+  stored creation time when present. It uses the same date format as Modified.
 - Extension shows the last suffix (`archive.tar.gz` → `gz`); dotfiles and
   extensionless files have an empty value. Version shows Windows executable
   and library versions. Attributes shows `rhsa` flags on Windows and
