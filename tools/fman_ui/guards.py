@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Mapping, Sequence
 
 FENCED_ACTIONS = frozenset((
-	'keys', 'type', 'click', 'drag', 'drop', 'command'))
+	'keys', 'type', 'click', 'drag', 'drop', 'drag-file', 'command'))
 PROGRESS_DIALOG_TYPE = 'QProgressDialog'
 NON_MODAL_DIALOG_TYPES = frozenset((PROGRESS_DIALOG_TYPE, 'Overlay'))
 _WINDOWS_DRIVE = re.compile(r'^[A-Za-z]:')

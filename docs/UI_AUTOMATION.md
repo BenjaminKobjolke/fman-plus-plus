@@ -68,7 +68,7 @@ has exited, is closed by a watchdog started with that session. The next
 `launch` also removes such old sessions. `close` is still required at the end
 of every check.
 
-Before `keys`, `type`, `click`, `drag` or `command`, the driver checks that
+Before `keys`, `type`, `click`, `drag`, `drop`, `drag-file` or `command`, the driver checks that
 every pane's `state` path is inside this session's temporary folder or one of
 its fixture folders. It refuses the action if any pane is outside those roots;
 `null` paths count as outside. A standalone `keys Escape` is allowed so it can
@@ -279,14 +279,15 @@ The tickets watcher's validation agent finds this driver through the
 `tools/fman_ui.bat` on Windows; `tools/fman_ui.sh` is the macOS command. Both
 paths must stay real files inside
 the checkout or the watcher ignores the key. Agents may use `--large`, `--deep`,
-`--archive`, `--network-share`, `--core-settings`, `--drop-plugin`, `drop` and
-`restart` to
+`--archive`, `--network-share`, `--core-settings`, `--drop-plugin`, `drop`,
+`drag-file` and `restart` to
 check settings across a restart; these options stay inside the temporary fixture
 and profile. Agents may use the `installer` actions for the Windows installer
 check and must always run `installer cleanup`. The driver refuses input and
 commands when a pane leaves the session fixtures. `drop` also accepts only
-existing source files inside the
-session folder, never files from caller-provided pane folders. Agents always run
+existing source files inside the session folder, never files from caller-provided
+pane folders. `drag-file` accepts only rows displayed in panes inside the session
+fixtures. Agents always run
 `tools\fman_ui.bat close` at the end,
 including when a check fails. Screenshots an agent wants to attach go under the
 ticket's `attach/validation/` folder. Agents may also use `--demo` to inspect
@@ -551,6 +552,7 @@ tools\fman_ui.bat click --file visible.txt --pane 0 --double
 tools\fman_ui.bat click --x 250 --y 140 --right
 tools\fman_ui.bat drag --x 300 --y 60 --to-x 240 --to-y 60
 tools\fman_ui.bat drop --file <drop_source path from launch> --copy
+tools\fman_ui.bat drag-file --file visible.txt --pane 0 --to-pane 1 --copy
 tools\fman_ui.bat hover --x 400 --y 60
 tools\fman_ui.bat window --width 800 --height 600
 tools\fman_ui.bat window --y 200
@@ -624,8 +626,35 @@ pane commands then act on the tree's highlighted folder. Input commands accept
 
 `drag` uses the same window coordinates as `click --x` and `click --y`. Find a
 column header's right edge in a screenshot and start the drag there. Drags that
-start on file rows are refused to protect internal file-list drags. To test an
-external file drop, use `drop` as shown below.
+start on file rows are refused to protect internal file-list drags. Use
+`drag-file` to drag rows between the two fixture panes; `--file` accepts either
+a full fman URL or a name resolved against the source pane, and `--onto` accepts
+a folder row resolved against the target pane. The drop uses fman's normal copy
+or move behavior.
+
+### Example: drag a fixture file between panes (validation task #2564)
+
+With copy confirmation enabled, `drag-file` sends the file URLs and drop events
+used by an internal row drag. The normal Copy prompt appears in `dialog`;
+confirm it, then check that `files --pane 1` lists `visible.txt`. The move
+example targets a folder row in the other pane.
+
+```bat
+tools\fman_ui.bat launch
+tools\fman_ui.bat drag-file --file visible.txt --pane 0 --to-pane 1 --copy
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat close
+
+tools\fman_ui.bat launch
+tools\fman_ui.bat drag-file --file visible.txt --pane 0 --to-pane 1 --move --onto folder
+tools\fman_ui.bat dialog
+tools\fman_ui.bat keys Return
+tools\fman_ui.bat click --file folder --pane 1 --double
+tools\fman_ui.bat files --pane 1
+tools\fman_ui.bat close
+```
 
 ### Example: drop an external file (validation task #2447)
 

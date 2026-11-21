@@ -115,6 +115,21 @@ class AutomationActions:
 		return send_drop(pane._widget.get_file_view(), request)
 
 	@run_in_main_thread
+	def drag_files(self, request):
+		from fman.impl.scripting.pane_drag import drag_between
+
+		source = get_pane(
+			self._plugin_support, self._main_window, request.source_pane)
+		target = get_pane(
+			self._plugin_support, self._main_window, request.pane)
+		if (source.get_mounted_widget() is not None
+				or target.get_mounted_widget() is not None):
+			raise FileListHidden(
+				'The file list is hidden behind a mounted view.')
+		return drag_between(source._widget.get_file_view(),
+			target._widget.get_file_view(), request)
+
+	@run_in_main_thread
 	def click_at(self, x, y, button='left', double=False):
 		target = self._window_target()
 		point = QPoint(x, y)

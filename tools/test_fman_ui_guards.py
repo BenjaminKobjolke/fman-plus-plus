@@ -150,6 +150,7 @@ class GuardsTest(TestCase):
 
 	def test_drop_is_a_fenced_action(self):
 		self.assertIn('drop', guards.FENCED_ACTIONS)
+		self.assertIn('drag-file', guards.FENCED_ACTIONS)
 
 	def test_guard_drop_sources_resolves_only_existing_session_files(self):
 		with TemporaryDirectory() as temp:
@@ -212,6 +213,7 @@ class GuardsTest(TestCase):
 				SimpleNamespace(action='type', text='hello'),
 				SimpleNamespace(action='click', file=None, x=1, y=2),
 				SimpleNamespace(action='drag', x=1, y=2, to_x=3, to_y=4),
+				SimpleNamespace(action='drag-file', file=['inside.txt']),
 				SimpleNamespace(action='command', name='new_folder',
 					args_json='{}', pane=0),
 			):

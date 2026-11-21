@@ -65,14 +65,8 @@ def dispatch(args, session, api, settle):
 		return result
 	if args.action == 'click':
 		if args.file is not None:
-			pane_index = args.pane
-			if pane_index < 0 or pane_index >= len(state['panes']):
-				raise RuntimeError('Pane index is out of range.')
-			if not urlsplit(args.file).scheme:
-				base = state['panes'][pane_index]['path'].rstrip('/') + '/'
-				file_url = base + args.file
-			else:
-				file_url = args.file
+			pane_index, file_url = _resolve_file_url(
+				state, args.pane, args.file)
 			payload = {'pane': pane_index, 'file': file_url}
 		else:
 			if args.y is None:
@@ -104,6 +98,30 @@ def dispatch(args, session, api, settle):
 			'action': action,
 		}
 		result = api(session, 'POST', '/v1/drop', payload)
+		settle(args.settle)
+		return result
+	if args.action == 'drag-file':
+		source_pane = args.pane
+		_pane_path(state, args.to_pane)
+		files = [
+			_resolve_file_url(state, source_pane, file_name)[1]
+			for file_name in args.file
+		]
+		onto = None
+		if args.onto is not None:
+			onto = _resolve_file_url(state, args.to_pane, args.onto)[1]
+		action = 'default'
+		if args.copy:
+			action = 'copy'
+		elif args.move:
+			action = 'move'
+		result = api(session, 'POST', '/v1/drag-files', {
+			'source_pane': source_pane,
+			'files': files,
+			'pane': args.to_pane,
+			'onto': onto,
+			'action': action,
+		})
 		settle(args.settle)
 		return result
 	if args.action == 'hover':
@@ -143,3 +161,16 @@ def dispatch(args, session, api, settle):
 			'width': width, 'height': height,
 		}
 	raise RuntimeError('Unknown command.')
+
+
+def _resolve_file_url(state, pane_index, file_name):
+	base = _pane_path(state, pane_index).rstrip('/') + '/'
+	if not urlsplit(file_name).scheme:
+		file_name = base + file_name
+	return pane_index, file_name
+
+
+def _pane_path(state, pane_index):
+	if pane_index < 0 or pane_index >= len(state['panes']):
+		raise RuntimeError('Pane index is out of range.')
+	return state['panes'][pane_index]['path']

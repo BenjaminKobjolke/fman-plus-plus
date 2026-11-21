@@ -39,12 +39,20 @@ class DropResult:
 
 def drop_files(view: FileListView, request: DropRequest) -> DropResult:
 	"""Deliver a local file drop to ``view`` using Qt's normal view events."""
+	mime_data = QMimeData()
+	mime_data.setUrls([QUrl.fromLocalFile(path) for path in request.files])
+	return send_drop(view, mime_data, request.onto, request.action)
+
+
+def send_drop(view: FileListView, mime_data: QMimeData, onto: str | None,
+		action: str) -> DropResult:
+	"""Send a prepared drag payload through the view's normal drop events."""
 	model = view.model()
 	viewport = view.viewport()
-	if request.onto is not None:
-		index = model.find(request.onto)
+	if onto is not None:
+		index = model.find(onto)
 		if not index.isValid() or not fs.is_dir(model.url(index)):
-			raise DropTargetMissing(request.onto)
+			raise DropTargetMissing(onto)
 		point = view.visualRect(index).center()
 	else:
 		point = _empty_area_point(view, viewport)
@@ -52,9 +60,7 @@ def drop_files(view: FileListView, request: DropRequest) -> DropResult:
 	if not viewport.rect().contains(point):
 		raise DropTargetMissing('No drop target is visible.')
 
-	mime_data = QMimeData()
-	mime_data.setUrls([QUrl.fromLocalFile(path) for path in request.files])
-	modifiers = _drop_modifiers(request.action)
+	modifiers = _drop_modifiers(action)
 	possible_actions = Qt.CopyAction | Qt.MoveAction
 	buttons = Qt.LeftButton
 	enter = QDragEnterEvent(

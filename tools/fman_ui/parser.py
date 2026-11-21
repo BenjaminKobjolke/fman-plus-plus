@@ -77,6 +77,18 @@ def parser():
 	action.add_argument('--copy', action='store_true')
 	action.add_argument('--move', action='store_true')
 	drop.add_argument('--settle', type=int, default=500)
+	drag_file = commands.add_parser('drag-file')
+	drag_file.add_argument('--file', action='append', required=True,
+		help="file-list row to drag; may be repeated")
+	drag_file.add_argument('--pane', type=int, default=0,
+		help='source pane')
+	drag_file.add_argument('--to-pane', type=int, default=1,
+		help='target pane')
+	drag_file.add_argument('--onto')
+	action = drag_file.add_mutually_exclusive_group()
+	action.add_argument('--copy', action='store_true')
+	action.add_argument('--move', action='store_true')
+	drag_file.add_argument('--settle', type=int, default=500)
 	hover = commands.add_parser('hover')
 	hover.add_argument('--x', type=int, required=True)
 	hover.add_argument('--y', type=int, required=True)

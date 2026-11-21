@@ -17,6 +17,7 @@ from fman.impl.scripting.config import (
 	COMMANDS_PATH,
 	CLICK_PATH,
 	DRAG_PATH,
+	DRAG_FILES_PATH,
 	DROP_PATH,
 	DIALOG_PATH,
 	FILES_PATH,
@@ -169,7 +170,7 @@ class ScriptingServer:
 					return
 				if urlsplit(self.path).path not in (
 					COMMAND_PATH, KEYS_PATH, CLICK_PATH, DRAG_PATH,
-					DROP_PATH, HOVER_PATH, WINDOW_PATH,
+					DROP_PATH, DRAG_FILES_PATH, HOVER_PATH, WINDOW_PATH,
 					NATIVE_WINDOWS_CLOSE_PATH,
 				):
 					self._send_error(404, 'Unknown path.')
@@ -218,6 +219,7 @@ class ScriptingServer:
 					self._send_json(200, {'ok': True, **asdict(size)})
 					return
 				if path in (KEYS_PATH, CLICK_PATH, DRAG_PATH, DROP_PATH,
+						DRAG_FILES_PATH,
 						HOVER_PATH):
 					if not self._automation_enabled():
 						return
@@ -229,6 +231,8 @@ class ScriptingServer:
 						self._hover(payload)
 					elif path == DROP_PATH:
 						self._drop(payload)
+					elif path == DRAG_FILES_PATH:
+						self._drag_files(payload)
 					else:
 						self._drag(payload)
 					return
@@ -400,6 +404,24 @@ class ScriptingServer:
 						pane, files, onto, action))
 				except (InvalidPane, DropTargetMissing, ValueError) as error:
 					self._send_error(400, str(error))
+					return
+				except FileListHidden:
+					self._send_error(
+						409, 'The file list is hidden behind a mounted view.')
+					return
+				self._send_json(200, {'ok': True, **asdict(result)})
+
+			def _drag_files(self, payload):
+				from fman.impl.scripting.pane_drag import parse_pane_drag
+
+				try:
+					request = parse_pane_drag(payload)
+					result = server._automation_actions.drag_files(request)
+				except (ValueError, InvalidPane, DropTargetMissing) as error:
+					self._send_error(400, str(error))
+					return
+				except UnknownFile:
+					self._send_error(404, 'Unknown file.')
 					return
 				except FileListHidden:
 					self._send_error(

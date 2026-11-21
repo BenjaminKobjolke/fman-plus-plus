@@ -11,10 +11,12 @@ from PyQt5.QtCore import QPoint
 
 from fman.impl.scripting.actions import InvalidPane, ScriptingActions, UnknownCommand
 from fman.impl.scripting.automation import (
-	AutomationActions, UnknownFile, UnknownScreen, UnsafeDrag, WindowSize,
+	AutomationActions, FileListHidden, UnknownFile, UnknownScreen, UnsafeDrag,
+	WindowSize,
 )
 from fman.impl.scripting.config import ScriptingApiConfig
 from fman.impl.scripting.external_drop import DropRequest, DropResult
+from fman.impl.scripting.pane_drag import PaneDragRequest
 from fman.impl.scripting.link_capture import LinkCapture
 from fman.impl.scripting.server import ScriptingServer
 
@@ -132,6 +134,9 @@ class ScriptingServerTest(TestCase):
 			('POST', '/v1/drop', {
 				'pane': 0, 'files': ['C:/temp/drop.txt'],
 			}),
+			('POST', '/v1/drag-files', {
+				'source_pane': 0, 'files': ['file:///source.txt'], 'pane': 1,
+			}),
 		):
 			with self.subTest(path=path):
 				self.assertEqual(403, self._request_error(method, path, payload))
@@ -164,6 +169,8 @@ class ScriptingServerTest(TestCase):
 		actions.close_native_windows.return_value = 2
 		actions.drop_files.return_value = DropResult(
 			True, 'copy', 'file:///destination')
+		actions.drag_files.return_value = DropResult(
+			True, 'move', 'file:///destination')
 		actions.get_dialog.return_value = {
 			'type': 'MessageBox', 'title': 'Confirm', 'text': 'Continue?',
 			'buttons': ['&Yes', '&No'],
@@ -219,6 +226,15 @@ class ScriptingServerTest(TestCase):
 				}))
 				actions.drop_files.assert_called_once_with(DropRequest(
 					0, [str(source)], None, 'copy'))
+				self.assertEqual({
+					'ok': True, 'accepted': True, 'drop_action': 'move',
+					'dest': 'file:///destination',
+				}, self._request_at(base_url, 'POST', '/v1/drag-files', {
+					'source_pane': 0, 'files': ['file:///source.txt'],
+					'pane': 1, 'action': 'move',
+				}))
+				actions.drag_files.assert_called_once_with(PaneDragRequest(
+					0, ['file:///source.txt'], 1, None, 'move'))
 			self.assertEqual({'ok': True, 'widget': 'QWidget', 'tooltip': None},
 				self._request_at(
 					base_url, 'POST', '/v1/hover', {'x': 30, 'y': 40},
@@ -314,6 +330,20 @@ class ScriptingServerTest(TestCase):
 			self.assertEqual(400, self._request_error_at(
 				base_url, 'POST', '/v1/drop', {
 					'pane': 0, 'files': ['not-an-existing-absolute-file'],
+				}))
+			self.assertEqual(400, self._request_error_at(
+				base_url, 'POST', '/v1/drag-files', {
+					'source_pane': 0, 'files': [], 'pane': 1,
+				}))
+			actions.drag_files.side_effect = UnknownFile('missing')
+			self.assertEqual(404, self._request_error_at(
+				base_url, 'POST', '/v1/drag-files', {
+					'source_pane': 0, 'files': ['file:///missing.txt'], 'pane': 1,
+				}))
+			actions.drag_files.side_effect = FileListHidden('hidden')
+			self.assertEqual(409, self._request_error_at(
+				base_url, 'POST', '/v1/drag-files', {
+					'source_pane': 0, 'files': ['file:///source.txt'], 'pane': 1,
 				}))
 			self.assertEqual(400, self._request_error_at(
 				base_url, 'POST', '/v1/drag', {
