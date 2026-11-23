@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Mere kontrol og tydeligere filoverførsler",
+  "notes": [
+    "Nyt: Vis datoer for filoprettelse i den valgfri kolonne Oprettet, og træk filer mellem ruder.",
+    "Forbedret: Dialogboksene Kopiér og Flyt viser nu overførselshastighed og anslået resterende tid, og bekræftelser for filhandlinger kan konfigureres.",
+    "Rettet: Windows-opdateringer starter nu korrekt med den påkrævede UAC-prompt, og smalle ruder holder kolonnen Navn anvendelig."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Lielāka kontrole un skaidrāka failu pārsūtīšana",
+  "notes": [
+    "Jaunums: Neobligātajā kolonnā “Izveides datums” tiek rādīti failu izveides datumi, un failus var vilkt starp rūtīm.",
+    "Uzlabojums: Kopēšanas un pārvietošanas dialoglodziņos tagad tiek rādīts pārsūtīšanas ātrums un aptuvenais atlikušais laiks, kā arī ir iespējams konfigurēt apstiprinājumus failu darbībām.",
+    "Novērsta problēma: Windows atjauninājumi tagad tiek palaisti pareizi ar nepieciešamo UAC uzvedni, un šaurās rūtīs kolonna “Nosaukums” joprojām ir ērti lietojama."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Rohkem kontrolli ja selgem failiedastus",
+  "notes": [
+    "Uus: Failide loomiskuupäevad kuvatakse valikulises „Loodud” veerus ning faile saab paanide vahel lohistada.",
+    "Täiustatud: Kopeerimise ja teisaldamise dialoogides kuvatakse nüüd edastuskiirus ja hinnanguline järelejäänud aeg. Failitoimingute kinnitusi saab seadistada.",
+    "Parandatud: Windowsi värskendused käivituvad nüüd nõutava UAC-kinnitusega õigesti ning kitsastes paanides on veerg „Nimi” endiselt kasutatav."
+  ]
+}

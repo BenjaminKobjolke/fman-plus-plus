@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Mai mult control și transferuri de fișiere mai clare",
+  "notes": [
+    "Nou: Afișați datele creării fișierelor în coloana opțională „Data creării” și trageți fișiere între panouri.",
+    "Îmbunătățit: Dialogurile Copiere și Mutare afișează acum viteza de transfer și timpul estimat rămas, iar confirmările pentru operațiunile cu fișiere pot fi configurate.",
+    "Remediat: Actualizările Windows se lansează acum corect, cu solicitarea UAC necesară, iar în panourile înguste coloana Nume rămâne utilizabilă."
+  ]
+}

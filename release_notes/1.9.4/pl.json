@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Większa kontrola i czytelniejsze transfery plików",
+  "notes": [
+    "Nowość: Wyświetlaj daty utworzenia plików w opcjonalnej kolumnie „Utworzono” i przeciągaj pliki między panelami.",
+    "Ulepszenie: Okna dialogowe kopiowania i przenoszenia pokazują teraz szybkość transferu oraz szacowany pozostały czas. Można też skonfigurować potwierdzenia operacji na plikach.",
+    "Poprawka: Aktualizacje systemu Windows uruchamiają się teraz prawidłowo i wyświetlają wymagany monit UAC, a w wąskich panelach kolumna „Nazwa” pozostaje użyteczna."
+  ]
+}

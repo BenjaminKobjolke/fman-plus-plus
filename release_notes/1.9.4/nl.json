@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Meer controle en duidelijkere bestandsoverdrachten",
+  "notes": [
+    "Nieuw: Toon aanmaakdatums van bestanden in de optionele kolom Gemaakt en versleep bestanden tussen deelvensters.",
+    "Verbeterd: De dialoogvensters Kopiëren en Verplaatsen tonen nu de overdrachtssnelheid en de geschatte resterende tijd. Ook kun je bevestigingen voor bestandsbewerkingen instellen.",
+    "Opgelost: Windows-updates worden nu correct gestart met de vereiste UAC-melding, en in smalle deelvensters blijft de kolom Naam bruikbaar."
+  ]
+}

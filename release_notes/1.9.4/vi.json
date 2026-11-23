@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Kiểm soát tốt hơn và truyền tệp rõ ràng hơn",
+  "notes": [
+    "Mới: Hiển thị ngày tạo tệp trong cột Tạo lúc tùy chọn và kéo tệp giữa các khung.",
+    "Cải thiện: Các hộp thoại Sao chép và Di chuyển hiện hiển thị tốc độ truyền và thời gian còn lại ước tính, đồng thời cho phép tùy chỉnh xác nhận khi thao tác với tệp.",
+    "Đã sửa: Các bản cập nhật Windows giờ khởi chạy đúng cách với lời nhắc UAC cần thiết; các khung hẹp cũng giữ cho cột Tên luôn dễ sử dụng."
+  ]
+}

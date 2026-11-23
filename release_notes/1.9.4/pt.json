@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Mais controlo e transferências de ficheiros mais claras",
+  "notes": [
+    "Novo: Veja as datas de criação dos ficheiros na coluna opcional «Criado» e arraste ficheiros entre painéis.",
+    "Melhorado: As caixas de diálogo Copiar e Mover mostram agora a velocidade de transferência e o tempo restante estimado, com confirmações configuráveis para operações com ficheiros.",
+    "Corrigido: As atualizações do Windows iniciam-se agora corretamente com o pedido UAC necessário, e os painéis estreitos mantêm a coluna «Nome» utilizável."
+  ]
+}

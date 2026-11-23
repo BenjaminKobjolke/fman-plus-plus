@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Više kontrole i jasniji prenosi datoteka",
+  "notes": [
+    "Novo: Prikazujte datume kreiranja datoteka u opcionoj koloni „Kreirano“ i prevlačite datoteke između okana.",
+    "Unapređeno: Dijalozi za kopiranje i premeštanje sada prikazuju brzinu prenosa i procenjeno preostalo vreme, uz mogućnost podešavanja potvrda za operacije sa datotekama.",
+    "Ispravljeno: Ažuriranja operativnog sistema Windows sada se pravilno pokreću uz obavezni UAC upit, a u uskim oknima kolona „Naziv“ ostaje upotrebljiva."
+  ]
+}

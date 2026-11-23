@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Davantage de contrôle et des transferts de fichiers plus clairs",
+  "notes": [
+    "Nouveauté : affichez les dates de création des fichiers dans la colonne facultative « Créé le » et faites glisser des fichiers d’un volet à l’autre.",
+    "Amélioration : les boîtes de dialogue Copier et Déplacer affichent désormais la vitesse de transfert et le temps restant estimé. Vous pouvez aussi configurer les confirmations pour les opérations sur les fichiers.",
+    "Correction : les mises à jour Windows se lancent désormais correctement avec l’invite UAC requise, et les volets étroits permettent de conserver une colonne Nom utilisable."
+  ]
+}

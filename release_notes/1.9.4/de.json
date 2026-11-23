@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Mehr Kontrolle und übersichtlichere Dateiübertragungen",
+  "notes": [
+    "Neu: Erstellungsdaten von Dateien in der optionalen Spalte „Erstellt“ anzeigen und Dateien zwischen den Bereichen ziehen.",
+    "Verbessert: Die Dialoge „Kopieren“ und „Verschieben“ zeigen jetzt die Übertragungsgeschwindigkeit und die geschätzte verbleibende Zeit an. Außerdem lassen sich Bestätigungen für Dateiaktionen konfigurieren.",
+    "Behoben: Windows-Updates werden jetzt korrekt mit der erforderlichen UAC-Abfrage gestartet, und auch in schmalen Bereichen bleibt die Spalte „Name“ nutzbar."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "More control and clearer file transfers",
+  "notes": [
+    "New: Show file creation dates in the optional Created column, and drag files between panes.",
+    "Improved: Copy and Move dialogs now show transfer speed and estimated time remaining, with configurable confirmations for file operations.",
+    "Fixed: Windows updates now launch correctly with the required UAC prompt, and narrow panes keep the Name column usable."
+  ]
+}

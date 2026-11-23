@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Più controllo e trasferimenti di file più chiari",
+  "notes": [
+    "Novità: mostra le date di creazione dei file nella colonna opzionale «Creato» e trascina i file da un riquadro all’altro.",
+    "Miglioramenti: le finestre di dialogo Copia e Sposta ora mostrano la velocità di trasferimento e il tempo rimanente stimato; è inoltre possibile configurare le conferme per le operazioni sui file.",
+    "Correzioni: gli aggiornamenti di Windows ora si avviano correttamente con la richiesta UAC necessaria e, anche nei riquadri stretti, la colonna Nome rimane utilizzabile."
+  ]
+}

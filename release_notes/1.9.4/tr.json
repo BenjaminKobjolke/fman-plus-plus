@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Dosya aktarımları üzerinde daha fazla kontrol ve daha net görünürlük",
+  "notes": [
+    "Yeni: Dosya oluşturulma tarihlerini isteğe bağlı Oluşturulma sütununda gösterin ve dosyaları bölmeler arasında sürükleyin.",
+    "İyileştirildi: Kopyala ve Taşı iletişim kutuları artık aktarım hızını ve tahmini kalan süreyi gösteriyor. Dosya işlemleri için onayları yapılandırabilirsiniz.",
+    "Düzeltildi: Windows güncelleştirmeleri artık gerekli UAC istemiyle doğru şekilde başlatılıyor ve dar bölmelerde Ad sütunu kullanılabilir durumda kalıyor."
+  ]
+}

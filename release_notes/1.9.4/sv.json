@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Mer kontroll och tydligare filöverföringar",
+  "notes": [
+    "Nytt: Visa filernas skapandedatum i den valfria kolumnen Skapad och dra filer mellan paneler.",
+    "Förbättrat: Dialogrutorna Kopiera och Flytta visar nu överföringshastighet och uppskattad återstående tid, med inställningsbara bekräftelser för filåtgärder.",
+    "Åtgärdat: Windows-uppdateringar startar nu korrekt med den UAC-prompt som krävs, och i smala paneler förblir kolumnen Namn användbar."
+  ]
+}

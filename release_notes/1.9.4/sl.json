@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Več nadzora in preglednejši prenosi datotek",
+  "notes": [
+    "Novo: Datume ustvarjanja datotek lahko prikažete v izbirnem stolpcu »Ustvarjeno«, datoteke pa lahko povlečete med podokni.",
+    "Izboljšano: Pogovorni okni »Kopiraj« in »Premakni« zdaj prikazujeta hitrost prenosa in predvideni preostali čas, potrditve za operacije z datotekami pa je mogoče prilagoditi.",
+    "Popravljeno: Posodobitve sistema Windows se zdaj pravilno zaženejo z zahtevanim pozivom UAC, tudi v ozkih podoknih pa je stolpec »Ime« še vedno uporaben."
+  ]
+}

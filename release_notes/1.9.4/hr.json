@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Veća kontrola i jasniji prijenosi datoteka",
+  "notes": [
+    "Novo: Prikaz datuma stvaranja datoteka u neobaveznom stupcu „Stvoreno” i povlačenje datoteka između okana.",
+    "Poboljšano: Dijaloški okviri za kopiranje i premještanje sada prikazuju brzinu prijenosa i procijenjeno preostalo vrijeme, a potvrde za radnje s datotekama mogu se prilagoditi.",
+    "Ispravljeno: Ažuriranja sustava Windows sada se pravilno pokreću uz obavezni UAC upit, a u uskim oknima stupac „Naziv” ostaje upotrebljiv."
+  ]
+}

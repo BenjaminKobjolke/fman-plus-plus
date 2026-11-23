@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Nagyobb irányítás és átláthatóbb fájlátvitelek",
+  "notes": [
+    "Újdonság: A fájlok létrehozási dátuma megjeleníthető az opcionális „Létrehozva” oszlopban, a fájlok pedig áthúzhatók a panelek között.",
+    "Fejlesztés: A Másolás és Áthelyezés párbeszédablakok most megjelenítik az átviteli sebességet és a becsült hátralévő időt; a fájlműveletekhez tartozó megerősítések pedig beállíthatók.",
+    "Javítás: A Windows-frissítések most már megfelelően indulnak el a szükséges UAC-kéréssel, a keskeny panelekben pedig továbbra is használható a Név oszlop."
+  ]
+}

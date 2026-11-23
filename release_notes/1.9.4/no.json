@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Mer kontroll og tydeligere filoverføringer",
+  "notes": [
+    "Nytt: Vis datoen filer ble opprettet i den valgfrie Opprettet-kolonnen, og dra filer mellom rutene.",
+    "Forbedret: Dialogboksene for kopiering og flytting viser nå overføringshastighet og beregnet gjenstående tid, med konfigurerbare bekreftelser for filhandlinger.",
+    "Rettet: Windows-oppdateringer starter nå som de skal med den nødvendige UAC-ledeteksten, og smale ruter lar deg fortsatt bruke Navn-kolonnen."
+  ]
+}

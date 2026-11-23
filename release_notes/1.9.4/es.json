@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Más control y transferencias de archivos más claras",
+  "notes": [
+    "Nuevo: muestra las fechas de creación de los archivos en la columna opcional «Creado» y arrastra archivos de un panel a otro.",
+    "Mejorado: los cuadros de diálogo «Copiar» y «Mover» ahora muestran la velocidad de transferencia y el tiempo restante estimado, y permiten configurar las confirmaciones para las operaciones con archivos.",
+    "Corregido: las actualizaciones de Windows ahora se inician correctamente con el aviso UAC necesario, y en los paneles estrechos la columna «Nombre» sigue siendo utilizable."
+  ]
+}

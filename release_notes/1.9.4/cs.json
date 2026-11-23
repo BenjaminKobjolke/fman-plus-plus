@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Větší kontrola a přehlednější přenosy souborů",
+  "notes": [
+    "Nově: Ve volitelném sloupci Vytvořeno můžete zobrazit data vytvoření souborů a soubory přetahovat mezi panely.",
+    "Vylepšeno: Dialogová okna Kopírovat a Přesunout nyní zobrazují rychlost přenosu a odhadovaný zbývající čas. Potvrzování operací se soubory lze také nastavit.",
+    "Opraveno: Aktualizace Windows se nyní spouštějí správně včetně požadované výzvy UAC a úzké panely umožňují pohodlné používání sloupce Název."
+  ]
+}

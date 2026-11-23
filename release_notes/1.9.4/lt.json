@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Daugiau valdymo galimybių ir aiškesnis failų perkėlimas",
+  "notes": [
+    "Nauja: pasirinktinai rodomame „Sukurta“ stulpelyje pateikiamos failų sukūrimo datos, o failus galima vilkti tarp sričių.",
+    "Patobulinta: kopijavimo ir perkėlimo dialogo languose dabar rodoma perkėlimo sparta ir likęs laikas; taip pat galima konfigūruoti failų operacijų patvirtinimus.",
+    "Ištaisyta: „Windows“ naujinimai dabar paleidžiami tinkamai, parodžius reikiamą UAC raginimą, o siauruose polangiuose stulpelis „Pavadinimas“ išlieka patogus naudoti."
+  ]
+}

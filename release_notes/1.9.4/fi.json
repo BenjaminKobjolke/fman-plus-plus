@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Lisää hallintaa ja selkeämmät tiedostonsiirrot",
+  "notes": [
+    "Uutta: Näytä tiedostojen luontipäivämäärät valinnaisessa Luotu-sarakkeessa ja vedä tiedostoja ruutujen välillä.",
+    "Parannettu: Kopioi- ja Siirrä-valintaikkunoissa näkyvät nyt siirtonopeus ja arvioitu jäljellä oleva aika. Tiedostotoimintojen vahvistuspyyntöjä voi myös mukauttaa.",
+    "Korjattu: Windows-päivitykset käynnistyvät nyt oikein tarvittavan UAC-kehotteen kanssa, ja kapeissa ruuduissa Nimi-sarake pysyy käyttökelpoisena."
+  ]
+}

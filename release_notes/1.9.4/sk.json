@@ -1,0 +1,10 @@
+{
+  "version": "1.9.4",
+  "date": "2026-11-23",
+  "title": "Viac kontroly a prehľadnejšie prenosy súborov",
+  "notes": [
+    "Novinka: Zobrazte dátumy vytvorenia súborov vo voliteľnom stĺpci Vytvorené a presúvajte súbory medzi panelmi myšou.",
+    "Vylepšenie: Dialógové okná Kopírovať a Presunúť teraz zobrazujú rýchlosť prenosu a odhadovaný zostávajúci čas. Potvrdenia pri operáciách so súbormi si môžete nastaviť.",
+    "Oprava: Aktualizácie systému Windows sa teraz spúšťajú správne s požadovanou výzvou UAC a v úzkych paneloch zostáva stĺpec Názov použiteľný."
+  ]
+}
