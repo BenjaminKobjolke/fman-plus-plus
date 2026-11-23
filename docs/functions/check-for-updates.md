@@ -44,8 +44,10 @@ copies, show a message explaining this. Manually checking in a portable copy
 downloads `fmanPortable.zip`; after you confirm, fman closes and replaces the
 portable program files while keeping its data, then starts the updated copy.
 
-An all-users installation in Program Files needs one UAC confirmation for each
-automatic update. It remains in Program Files after the update.
+On an administrator account, Windows shows one UAC confirmation each time the
+installer runs, whether manually or automatically. An all-users installation
+stays in Program Files; declining the prompt keeps fman++ open and skips the
+update until the next check.
 
 ## Commands
 
