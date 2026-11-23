@@ -4,8 +4,10 @@ import sys
 import time
 
 from fbs_runtime.application_context import is_frozen
-from fman import PLATFORM
+from fman import PLATFORM, links, show_alert
 from fman.impl.portable import portable_app_dir
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QDesktopServices
 
 from core.settings import get_setting, SETTINGS_FILE
 
@@ -25,6 +27,7 @@ TIMER_SLACK_SECONDS = 10 * 60
 UNSUPPORTED_MESSAGE = (
 	'Automatic updates only work with the installed Windows version.'
 )
+INSTALLER_ERROR = 'Could not start the update installer: %s'
 REGISTRY_KEY = r'Software\fman'
 UNINSTALLER_NAME = 'uninstall.exe'
 
@@ -89,14 +92,36 @@ def get_install_mode():
 	return None
 
 
-def installer_command(setup_path):
-	"""Build the NSIS silent command while keeping its required final /D value."""
+def installer_parameters():
+	"""Build silent NSIS parameters with its required final, unquoted /D value."""
 	mode = get_install_mode()
 	if mode is None:
 		return None
 	install_dir = os.path.dirname(sys.executable)
-	# NSIS requires /D= as the last, unquoted argument; Popen(list) quotes it.
-	return '"%s" /S %s /D=%s' % (setup_path, mode, install_dir)
+	# ShellExecute passes parameters verbatim; NSIS requires /D= last and unquoted.
+	return '/S %s /D=%s' % (mode, install_dir)
+
+
+def start_installer(setup_path, parameters):
+	"""Start the elevated installer through Windows ShellExecute.
+
+	The installer requests elevation, which CreateProcess refuses with error 740.
+	"""
+	from win32api import ShellExecute
+	from win32con import SW_SHOWNORMAL
+	import pywintypes
+	from winerror import ERROR_CANCELLED
+	try:
+		ShellExecute(
+			0, None, setup_path, parameters,
+			os.path.dirname(setup_path), SW_SHOWNORMAL
+		)
+	except pywintypes.error as e:
+		if e.winerror != ERROR_CANCELLED:
+			show_alert(INSTALLER_ERROR % e.strerror)
+			QDesktopServices.openUrl(QUrl(links.RELEASES))
+		return False
+	return True
 
 
 def is_check_due(now=None):

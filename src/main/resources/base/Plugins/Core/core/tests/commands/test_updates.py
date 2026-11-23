@@ -3,7 +3,6 @@ import tempfile
 from core.commands.updates import CheckForUpdates
 from core.updates import UpdateStatus
 from fman import NO, YES, links
-from subprocess import DEVNULL
 from unittest import TestCase
 from unittest.mock import patch
 from urllib.error import URLError
@@ -18,7 +17,8 @@ class CheckForUpdatesTest(TestCase):
 			'submit_task', 'Popen', 'sys', 'PLATFORM', 'net.download',
 			'portable_app_dir', 'extract_update', 'start_swap',
 			'auto_update.is_enabled', 'auto_update.is_supported',
-			'auto_update.is_check_due', 'auto_update.installer_command',
+			'auto_update.is_check_due', 'auto_update.installer_parameters',
+			'auto_update.start_installer',
 			'show_update_countdown',
 		):
 			p = patch('core.commands.updates.' + name, 'Linux') \
@@ -30,9 +30,10 @@ class CheckForUpdatesTest(TestCase):
 		self.patches['auto_update.is_enabled'].return_value = False
 		self.patches['auto_update.is_supported'].return_value = True
 		self.patches['auto_update.is_check_due'].return_value = True
-		self.patches['auto_update.installer_command'].return_value = (
-			'silent setup command'
+		self.patches['auto_update.installer_parameters'].return_value = (
+			'/S silent parameters'
 		)
+		self.patches['auto_update.start_installer'].return_value = True
 		self.patches['check_for_update'].return_value = UpdateStatus(
 			'1.7.13', '1.8.0'
 		)
@@ -57,9 +58,10 @@ class CheckForUpdatesTest(TestCase):
 			url
 		)
 		self.assertEqual('fmanSetup.exe', os.path.basename(path))
-		self.patches['Popen'].assert_called_once_with(
-			[path], cwd=os.path.dirname(path), stdout=DEVNULL, stderr=DEVNULL
+		self.patches['auto_update.start_installer'].assert_called_once_with(
+			path, None
 		)
+		self.patches['Popen'].assert_not_called()
 		self.patches['sys'].exit.assert_called_once_with(0)
 		self.patches['extract_update'].assert_not_called()
 		self.patches['start_swap'].assert_not_called()
@@ -92,9 +94,6 @@ class CheckForUpdatesTest(TestCase):
 		self.patches['show_alert'].return_value = YES
 		self.patches['submit_task'].side_effect = lambda task: task()
 		self.patches['net.download'].side_effect = self._write_download
-		self.patches['auto_update.installer_command'].return_value = (
-			'silent setup command'
-		)
 		with tempfile.TemporaryDirectory() as directory:
 			with patch(
 				'core.commands.updates.tempfile.gettempdir', return_value=directory
@@ -102,11 +101,10 @@ class CheckForUpdatesTest(TestCase):
 				with patch('core.commands.updates.PLATFORM', 'Windows'):
 					CheckForUpdates(None)()
 		path = self.patches['net.download'].call_args.args[1]
-		self.patches['auto_update.installer_command'].assert_called_once_with(path)
-		self.patches['Popen'].assert_called_once_with(
-			'silent setup command', cwd=os.path.dirname(path),
-			stdout=DEVNULL, stderr=DEVNULL
+		self.patches['auto_update.start_installer'].assert_called_once_with(
+			path, '/S silent parameters'
 		)
+		self.patches['Popen'].assert_not_called()
 		self.patches['sys'].exit.assert_called_once_with(0)
 
 	def test_manual_yes_uses_wizard_when_automatic_install_is_unsupported(self):
@@ -114,10 +112,10 @@ class CheckForUpdatesTest(TestCase):
 		self.patches['auto_update.is_supported'].return_value = False
 		self._download_update('Windows', self._write_download)
 		path = self.patches['net.download'].call_args.args[1]
-		self.patches['Popen'].assert_called_once_with(
-			[path], cwd=os.path.dirname(path), stdout=DEVNULL, stderr=DEVNULL
+		self.patches['auto_update.start_installer'].assert_called_once_with(
+			path, None
 		)
-		self.patches['auto_update.installer_command'].assert_not_called()
+		self.patches['Popen'].assert_not_called()
 
 	def test_silent_automatic_check_returns_when_not_due(self):
 		self.patches['auto_update.is_enabled'].return_value = True
@@ -152,11 +150,10 @@ class CheckForUpdatesTest(TestCase):
 		)
 		self.patches['show_alert'].assert_not_called()
 		path = self.patches['net.download'].call_args.args[1]
-		self.patches['auto_update.installer_command'].assert_called_once_with(path)
-		self.patches['Popen'].assert_called_once_with(
-			'silent setup command', cwd=os.path.dirname(path),
-			stdout=DEVNULL, stderr=DEVNULL
+		self.patches['auto_update.start_installer'].assert_called_once_with(
+			path, '/S silent parameters'
 		)
+		self.patches['Popen'].assert_not_called()
 		self.patches['sys'].exit.assert_called_once_with(0)
 
 	def test_cancelled_automatic_countdown_repeats_on_next_due_check(self):
@@ -179,7 +176,7 @@ class CheckForUpdatesTest(TestCase):
 		path = self.patches['net.download'].call_args.args[1]
 		self.assertEqual('fmanPortable.zip', os.path.basename(path))
 		self.patches['extract_update'].assert_called_once()
-		self.patches['auto_update.installer_command'].assert_not_called()
+		self.patches['auto_update.start_installer'].assert_not_called()
 		self.patches['show_update_countdown'].assert_not_called()
 
 	def test_invalid_portable_archive_reports_error_and_opens_releases(self):
@@ -201,6 +198,12 @@ class CheckForUpdatesTest(TestCase):
 		path = self.patches['net.download'].call_args.args[1]
 		self.assertEqual('fman.dmg', os.path.basename(path))
 		self.patches['Popen'].assert_called_once_with(['open', path])
+		self.patches['sys'].exit.assert_not_called()
+
+	def test_installer_not_started_keeps_fman_running(self):
+		self.patches['auto_update.start_installer'].return_value = False
+		self._download_update('Windows', self._write_download)
+		self.patches['auto_update.start_installer'].assert_called_once()
 		self.patches['sys'].exit.assert_not_called()
 
 	def test_download_error_reports_and_opens_release_page(self):

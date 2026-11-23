@@ -3,7 +3,7 @@ import os
 import sys
 import tempfile
 import zipfile
-from subprocess import DEVNULL, Popen
+from subprocess import Popen
 
 from core import auto_update, net
 from core.portable_update import PORTABLE_ASSET, extract_update, start_swap
@@ -146,10 +146,8 @@ def _install(latest, portable_dir=None, silent=False):
 		return
 
 	if PLATFORM == 'Windows':
-		command = auto_update.installer_command(path) if silent else [path]
-		if command is None:
-			command = [path]
-		Popen(command, cwd=os.path.dirname(path), stdout=DEVNULL, stderr=DEVNULL)
-		sys.exit(0)
+		parameters = auto_update.installer_parameters() if silent else None
+		if auto_update.start_installer(path, parameters):
+			sys.exit(0)
 	else:
 		Popen(['open', path])

@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skipUnless
 from unittest.mock import MagicMock, Mock, patch
 
 from core import auto_update
@@ -111,12 +111,67 @@ class InstallModeTest(TestCase):
 	def test_unknown_registry_install_is_unsupported(self):
 		self.assertIsNone(auto_update.get_install_mode())
 
-	def test_installer_command_keeps_unquoted_d_equals_last(self):
+	def test_installer_parameters_keep_unquoted_d_equals_last(self):
 		with patch.object(auto_update, 'get_install_mode', return_value='/CurrentUser'):
 			self.assertEqual(
-				'"C:\\Temp\\fmanSetup.exe" /S /CurrentUser /D=C:\\Apps\\fman',
-				auto_update.installer_command(r'C:\Temp\fmanSetup.exe')
+				'/S /CurrentUser /D=C:\\Apps\\fman',
+				auto_update.installer_parameters()
 			)
+
+
+@skipUnless(auto_update.PLATFORM == 'Windows', 'ShellExecute is a Windows API')
+class StartInstallerTest(TestCase):
+	def test_starts_installer_with_parameters_and_working_directory(self):
+		with patch('win32api.ShellExecute') as shell_execute:
+			self.assertTrue(auto_update.start_installer(
+				r'C:\Temp\fmanSetup.exe',
+				'/S /CurrentUser /D=C:\\Apps\\fman'
+			))
+
+		shell_execute.assert_called_once_with(
+			0, None, r'C:\Temp\fmanSetup.exe',
+			'/S /CurrentUser /D=C:\\Apps\\fman', r'C:\Temp', 1
+		)
+
+	def test_starts_installer_without_parameters(self):
+		with patch('win32api.ShellExecute') as shell_execute:
+			self.assertTrue(auto_update.start_installer(
+				r'C:\Temp\fmanSetup.exe', None
+			))
+
+		self.assertIsNone(shell_execute.call_args.args[3])
+
+	def test_cancelled_uac_prompt_is_silent(self):
+		import pywintypes
+		from winerror import ERROR_CANCELLED
+		error = pywintypes.error(
+			ERROR_CANCELLED, 'ShellExecute',
+			'The operation was canceled by the user.'
+		)
+		with patch('win32api.ShellExecute', side_effect=error), \
+				patch('core.auto_update.show_alert') as alert, \
+				patch('core.auto_update.QDesktopServices') as desktop_services:
+			self.assertFalse(auto_update.start_installer(
+				r'C:\Temp\fmanSetup.exe', None
+			))
+
+		alert.assert_not_called()
+		desktop_services.openUrl.assert_not_called()
+
+	def test_other_shell_execute_error_reports_and_opens_releases(self):
+		import pywintypes
+		error = pywintypes.error(31, 'ShellExecute', 'Windows error message')
+		with patch('win32api.ShellExecute', side_effect=error), \
+				patch('core.auto_update.show_alert') as alert, \
+				patch('core.auto_update.QDesktopServices') as desktop_services:
+			self.assertFalse(auto_update.start_installer(
+				r'C:\Temp\fmanSetup.exe', None
+			))
+
+		alert.assert_called_once()
+		self.assertIn('Windows error message', alert.call_args.args[0])
+		url = desktop_services.openUrl.call_args.args[0]
+		self.assertEqual(auto_update.links.RELEASES, url.toString())
 
 
 class AutoUpdateSettingsAndDueTest(TestCase):
