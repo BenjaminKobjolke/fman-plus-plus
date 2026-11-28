@@ -12,6 +12,8 @@ claude-plans
 .claude
 .reasonix/
 code_analysis_results
+# Sidecar the code analyzer writes next to its rules file
+code_analysis_rules.exception_baseline.json
 PLAN_RELEASE_NOTES.md
 tmp/commit_msg.tmp
 .php-cs-fixer.cache
