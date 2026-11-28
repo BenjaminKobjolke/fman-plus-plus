@@ -93,6 +93,7 @@ class ProgressDialog(QProgressDialog):
 	def cancel(self):
 		super().cancel()
 		self._tool_windows.remove(self)
+		self.deleteLater()
 	def minimize(self):
 		if self._options.minimizable and not self._options.keeps_focus:
 			self._tool_windows.minimize(

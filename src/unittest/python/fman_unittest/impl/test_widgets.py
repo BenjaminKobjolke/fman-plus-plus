@@ -2,7 +2,8 @@ from fman.impl.widgets import LOADING_MESSAGE, LOADING_MESSAGE_NETWORK, \
 	format_loading_message, _overlay_pos
 from fman.impl.prompt_popup import Prompt
 from fman.impl.widgets import MainWindow
-from PyQt5.QtCore import QRect, QSize
+from PyQt5 import sip
+from PyQt5.QtCore import QEvent, QRect, QSize
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QWidget
 from unittest import TestCase
@@ -156,6 +157,8 @@ class ExecDialogTest(TestCase):
 			)
 		embedded.assert_called_once_with(dialog, window)
 		self.assertIsNone(window._dialog)
+		QApplication.sendPostedEvents(None, QEvent.DeferredDelete)
+		self.assertTrue(sip.isdeleted(dialog))
 		window.close()
 
 	def test_show_alert_uses_embedded_dialog_when_no_modal_widget_is_active(self):
@@ -202,4 +205,20 @@ class ExecDialogTest(TestCase):
 					)
 				self.assertTrue(dialog.windowFlags() & Qt.FramelessWindowHint)
 				self.assertTrue(dialog.property('frameless'))
+				QApplication.sendPostedEvents(None, QEvent.DeferredDelete)
+				self.assertTrue(sip.isdeleted(dialog))
 				window.close()
+
+	def test_repeated_dialogs_leave_no_dialog_children(self):
+		window = self._window()
+		initial_count = len(window.findChildren(QDialog))
+		with patch(
+			'fman.impl.widgets.QApplication.activeModalWidget', return_value=QDialog()
+		), patch('fman.impl.widgets.Scrim'):
+			for _ in range(20):
+				dialog = QDialog()
+				dialog.exec = MagicMock(return_value=QDialog.Accepted)
+				MainWindow.exec_dialog.__wrapped__(window, dialog)
+			QApplication.sendPostedEvents(None, QEvent.DeferredDelete)
+		self.assertEqual(initial_count, len(window.findChildren(QDialog)))
+		window.close()

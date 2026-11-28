@@ -730,6 +730,8 @@ class MainWindow(QMainWindow):
 					scrim.close()
 		finally:
 			self._dialog = None
+			# A finished child is re-polished on every app-wide stylesheet change.
+			dialog.deleteLater()
 	@run_in_main_thread
 	def show_status_message(self, text, timeout_secs=None):
 		self._status_history.append(text)

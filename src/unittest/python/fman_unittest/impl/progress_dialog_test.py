@@ -13,7 +13,8 @@ from fman.impl.widgets import MainWindow
 from fman.impl.progress_dialog import ProgressDialog
 from fman.impl.tool_windows import ToolWindowOptions, ToolWindows
 from fman.impl.workers_label import elide_lines, WorkersLabel
-from PyQt5.QtCore import Qt
+from PyQt5 import sip
+from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QPalette
 from PyQt5.QtTest import QTest
 from fman.impl.view import ProxyStyle
@@ -102,6 +103,14 @@ class WorkersLabelTest(TestCase):
 		dialog.cancel()
 		self.assertEqual([], tool_windows.minimized())
 		self.assertEqual([], status_bar.findChildren(QToolButton))
+	def test_finished_dialog_is_deleted_after_cancel(self):
+		dialog = ProgressDialog(
+			None, 'Copying', 100, QPalette(),
+			ToolWindowOptions(False, False, None), ToolWindows(QStatusBar())
+		)
+		dialog.cancel()
+		QApplication.sendPostedEvents(None, QEvent.DeferredDelete)
+		self.assertTrue(sip.isdeleted(dialog))
 
 	def test_minimize_button_has_tab_focus(self):
 		dialog = self._dialog(options=ToolWindowOptions(False, True, None))
